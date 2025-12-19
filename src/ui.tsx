@@ -45,6 +45,81 @@ const getTextColor = (rgb: number[]): string => {
   return luminance > 0.5 ? '#1a1a1a' : '#ffffff';
 };
 
+// Contrast Tooltip Component - compact inline tooltip
+const ContrastTooltip: React.FC<{
+  ratio: number;
+  children: React.ReactNode;
+  isDark: boolean;
+}> = ({ ratio, children, isDark }) => {
+  const [show, setShow] = useState(false);
+  
+  const getLevel = () => {
+    if (ratio >= 7) return { level: 'AAA', desc: 'Excellent' };
+    if (ratio >= 4.5) return { level: 'AA', desc: 'Good for text' };
+    if (ratio >= 3) return { level: 'AA Large', desc: 'Large text only' };
+    return { level: 'Fail', desc: 'Not accessible' };
+  };
+  
+  const { level, desc } = getLevel();
+  const theme = isDark ? styles.dark : styles.light;
+  
+  return (
+    <div 
+      style={{ position: 'relative', display: 'inline-block' }}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      {children}
+      {show && (
+        <div style={{
+          position: 'absolute',
+          bottom: '100%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          marginBottom: '6px',
+          backgroundColor: isDark ? '#0a0a0a' : '#ffffff',
+          border: `1px solid ${theme.border}`,
+          borderRadius: '6px',
+          padding: '8px 10px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          zIndex: 9999,
+          fontSize: '10px',
+          color: theme.text,
+          whiteSpace: 'nowrap',
+          pointerEvents: 'none',
+        }}>
+          {/* Arrow */}
+          <div style={{
+            position: 'absolute',
+            bottom: '-5px',
+            left: '50%',
+            transform: 'translateX(-50%) rotate(45deg)',
+            width: '8px',
+            height: '8px',
+            backgroundColor: isDark ? '#0a0a0a' : '#ffffff',
+            borderRight: `1px solid ${theme.border}`,
+            borderBottom: `1px solid ${theme.border}`,
+          }} />
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{
+              padding: '1px 5px',
+              borderRadius: '3px',
+              backgroundColor: ratio >= 4.5 ? '#22c55e' : ratio >= 3 ? '#f59e0b' : '#ef4444',
+              color: '#ffffff',
+              fontWeight: 700,
+              fontSize: '9px',
+            }}>
+              {level}
+            </span>
+            <span style={{ color: theme.textMuted }}>{desc}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const copyToClipboard = (text: string, label: string) => {
   const textarea = document.createElement('textarea');
   textarea.value = text;
@@ -474,20 +549,21 @@ const App: React.FC = () => {
                       const isGood = ratio >= 4.5;
                       const isOk = ratio >= 3;
                       return (
-                        <span
-                          key={c.hex}
-                          style={{
-                            fontSize: '10px',
-                            fontWeight: 600,
-                            padding: '3px 8px',
-                            borderRadius: '4px',
-                            backgroundColor: isGood ? '#22c55e' : isOk ? '#f59e0b' : '#6b7280',
-                            color: '#ffffff',
-                          }}
-                          title={`Contrast ratio: ${ratio.toFixed(2)}:1 - ${isGood ? 'Great for all text' : isOk ? 'OK for large text' : 'Low contrast'}`}
-                        >
-                          {ratio.toFixed(1)}:1
-                        </span>
+                        <ContrastTooltip key={c.hex} ratio={ratio} isDark={isDark}>
+                          <span
+                            style={{
+                              fontSize: '10px',
+                              fontWeight: 600,
+                              padding: '3px 8px',
+                              borderRadius: '4px',
+                              backgroundColor: isGood ? '#22c55e' : isOk ? '#f59e0b' : '#6b7280',
+                              color: '#ffffff',
+                              cursor: 'help',
+                            }}
+                          >
+                            {ratio.toFixed(1)}:1
+                          </span>
+                        </ContrastTooltip>
                       );
                     })}
                   </div>
