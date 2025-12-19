@@ -47,16 +47,16 @@
   - [x] 3.7 Add "Generate" button that collects all config and sends to plugin code
   - [x] 3.8 Wire modal to open from main UI when user clicks "Generate Color System" on a combination
 
-- [ ] 4.0 Implement Figma Frame Generation
-  - [ ] 4.1 Create `generateColorSystemFrames()` function in `code.ts` that receives config from UI
-  - [ ] 4.2 Implement parent frame creation with auto-layout, positioned next to current selection
-  - [ ] 4.3 Build `createColorSwatch()` helper - rectangle with fill, optional label, hex text
-  - [ ] 4.4 Implement "Minimal" layout: horizontal scale strips with step numbers and hex values
-  - [ ] 4.5 Implement "Detailed" layout: scales + role labels (Primary, Secondary, etc.) + accessibility badges
-  - [ ] 4.6 Implement "Presentation" layout: Primary Palette section + Extended Palette section
-  - [ ] 4.7 Add usage proportion visualization (bar or percentage labels) for Detailed/Presentation modes
-  - [ ] 4.8 Create text styles helper for consistent typography (scale labels, hex values, section headers)
-  - [ ] 4.9 Add Black/White swatches to Primary Palette section
+- [x] 4.0 Implement Figma Frame Generation
+  - [x] 4.1 Create `generateColorSystemFrames()` function in `code.ts` that receives config from UI
+  - [x] 4.2 Implement parent frame creation with auto-layout, positioned next to current selection
+  - [x] 4.3 Build `createColorSwatch()` helper - rectangle with fill, optional label, hex text
+  - [x] 4.4 Implement "Minimal" layout: horizontal scale strips with step numbers and hex values
+  - [x] 4.5 Implement "Detailed" layout: scales + role labels (Primary, Secondary, etc.) + accessibility badges
+  - [x] 4.6 Implement "Presentation" layout: Primary Palette section + Extended Palette section
+  - [x] 4.7 Add usage proportion visualization (bar or percentage labels) for Detailed/Presentation modes
+  - [x] 4.8 Create text styles helper for consistent typography (scale labels, hex values, section headers)
+  - [x] 4.9 Add Black/White swatches to Primary Palette section
 
 - [ ] 5.0 Add Light/Dark Mode Support
   - [ ] 5.1 Extend `generateColorScale()` to accept a "mode" parameter (light/dark)

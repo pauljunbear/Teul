@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { 
   generateColorScale, 
   generateColorScales,
@@ -14,7 +14,8 @@ import {
   radixColors,
   neutralFamilies,
   type NeutralName,
-  type RadixColorFamily
+  type RadixColorFamily,
+  type RadixScale
 } from '../lib/radixColors';
 
 // Types
@@ -136,8 +137,105 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
     });
   };
 
+  // Convert Radix scale to array format
+  const radixScaleToSteps = (scale: RadixScale): { step: number; hex: string }[] => {
+    return Object.entries(scale).map(([step, hex]) => ({
+      step: parseInt(step),
+      hex,
+    }));
+  };
+
+  // Generate scale data for a color
+  const generateScaleData = useCallback((
+    hex: string,
+    role: string,
+    name: string,
+    mode: 'light' | 'dark'
+  ) => {
+    if (scaleMethod === 'custom') {
+      const scale = generateColorScale(hex, mode, name);
+      return {
+        name,
+        role,
+        steps: scale.steps.map(s => ({ step: s.step, hex: s.hex })),
+      };
+    } else {
+      const family = findClosestRadixFamily(hex);
+      const radixScale = mode === 'light' ? family.light : family.dark;
+      return {
+        name: family.displayName,
+        role,
+        steps: radixScaleToSteps(radixScale),
+      };
+    }
+  }, [scaleMethod]);
+
   // Handle generate
   const handleGenerate = () => {
+    // Build scales data
+    const primary = roleAssignments.find(r => r.role === 'primary');
+    const secondary = roleAssignments.find(r => r.role === 'secondary');
+    const accent = roleAssignments.find(r => r.role === 'accent');
+
+    // Get neutral scale
+    const neutralScale = radixColors[effectiveNeutral];
+
+    // Build light mode scales
+    const lightScales: any = {
+      neutral: {
+        name: effectiveNeutral.charAt(0).toUpperCase() + effectiveNeutral.slice(1),
+        role: 'Neutral',
+        steps: radixScaleToSteps(neutralScale.light),
+      },
+    };
+
+    if (primary) {
+      lightScales.primary = generateScaleData(primary.hex, 'Primary', primary.name, 'light');
+    }
+    if (secondary) {
+      lightScales.secondary = generateScaleData(secondary.hex, 'Secondary', secondary.name, 'light');
+    }
+    if (accent) {
+      lightScales.accent = generateScaleData(accent.hex, 'Accent', accent.name, 'light');
+    }
+
+    // Build dark mode scales if needed
+    let darkScales: any = undefined;
+    if (includeDarkMode) {
+      darkScales = {
+        neutral: {
+          name: effectiveNeutral.charAt(0).toUpperCase() + effectiveNeutral.slice(1),
+          role: 'Neutral',
+          steps: radixScaleToSteps(neutralScale.dark),
+        },
+      };
+
+      if (primary) {
+        darkScales.primary = generateScaleData(primary.hex, 'Primary', primary.name, 'dark');
+      }
+      if (secondary) {
+        darkScales.secondary = generateScaleData(secondary.hex, 'Secondary', secondary.name, 'dark');
+      }
+      if (accent) {
+        darkScales.accent = generateScaleData(accent.hex, 'Accent', accent.name, 'dark');
+      }
+    }
+
+    // Calculate usage proportions based on assigned roles
+    const usageProportions = {
+      primary: primary ? 40 : 0,
+      secondary: secondary ? 25 : 0,
+      accent: accent ? 15 : 0,
+      neutral: 20,
+    };
+
+    // Adjust if some roles are missing
+    const total = usageProportions.primary + usageProportions.secondary + usageProportions.accent + usageProportions.neutral;
+    if (total < 100) {
+      usageProportions.neutral += (100 - total);
+    }
+
+    // Send to plugin
     onGenerate({
       sourceColors: colors,
       roleAssignments,
@@ -147,6 +245,33 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
       includeDarkMode,
       systemName,
     });
+
+    // Also send computed scales data
+    parent.postMessage({
+      pluginMessage: {
+        type: 'generate-color-system',
+        config: {
+          sourceColors: colors,
+          roleAssignments,
+          scaleMethod,
+          neutralFamily,
+          detailLevel,
+          includeDarkMode,
+          systemName,
+        },
+        scales: {
+          systemName,
+          detailLevel,
+          includeDarkMode,
+          scales: {
+            light: lightScales,
+            dark: darkScales,
+          },
+          usageProportions,
+        },
+      },
+    }, '*');
+
     onClose();
   };
 

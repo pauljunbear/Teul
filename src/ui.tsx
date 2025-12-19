@@ -710,14 +710,8 @@ const App: React.FC = () => {
         colors={colorSystemColors}
         combinationName={colorSystemName}
         isDark={isDark}
-        onGenerate={(config) => {
-          // Send message to plugin code to generate frames
-          parent.postMessage({ 
-            pluginMessage: { 
-              type: 'generate-color-system',
-              config 
-            } 
-          }, '*');
+        onGenerate={() => {
+          // Modal handles sending the message with computed scales
         }}
       />
     </div>

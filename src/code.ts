@@ -303,4 +303,624 @@ figma.ui.onmessage = async (msg) => {
   if (msg.type === 'copy') {
     figma.notify(`${msg.text} copied!`);
   }
+
+  // Generate Color System Frames
+  if (msg.type === 'generate-color-system') {
+    try {
+      await generateColorSystemFrames(msg.config, msg.scales);
+    } catch (error) {
+      console.error('Error generating color system:', error);
+      figma.notify('Failed to generate color system');
+    }
+  }
 };
+
+// ============================================
+// Color System Frame Generation
+// ============================================
+
+interface ColorScaleData {
+  name: string;
+  role: string;
+  steps: { step: number; hex: string }[];
+}
+
+interface ColorSystemData {
+  systemName: string;
+  detailLevel: 'minimal' | 'detailed' | 'presentation';
+  includeDarkMode: boolean;
+  scales: {
+    light: {
+      primary?: ColorScaleData;
+      secondary?: ColorScaleData;
+      accent?: ColorScaleData;
+      neutral: ColorScaleData;
+    };
+    dark?: {
+      primary?: ColorScaleData;
+      secondary?: ColorScaleData;
+      accent?: ColorScaleData;
+      neutral: ColorScaleData;
+    };
+  };
+  usageProportions: {
+    primary: number;
+    secondary: number;
+    accent: number;
+    neutral: number;
+  };
+}
+
+// Font loading helper
+async function loadFonts() {
+  await figma.loadFontAsync({ family: "Inter", style: "Regular" });
+  await figma.loadFontAsync({ family: "Inter", style: "Medium" });
+  await figma.loadFontAsync({ family: "Inter", style: "Semi Bold" });
+  await figma.loadFontAsync({ family: "Inter", style: "Bold" });
+}
+
+// Get contrasting text color
+function getContrastingColor(hex: string): RGB {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+  return luminance > 0.5 ? { r: 0.1, g: 0.1, b: 0.1 } : { r: 1, g: 1, b: 1 };
+}
+
+// Create a text node with styling
+function createText(
+  content: string,
+  fontSize: number,
+  fontStyle: "Regular" | "Medium" | "Semi Bold" | "Bold" = "Regular",
+  color: RGB = { r: 0.2, g: 0.2, b: 0.2 }
+): TextNode {
+  const text = figma.createText();
+  text.fontName = { family: "Inter", style: fontStyle };
+  text.characters = content;
+  text.fontSize = fontSize;
+  text.fills = [{ type: 'SOLID', color }];
+  return text;
+}
+
+// Create a color swatch with optional label
+function createColorSwatch(
+  hex: string,
+  width: number,
+  height: number,
+  cornerRadius: number = 4
+): RectangleNode {
+  const rect = figma.createRectangle();
+  rect.resize(width, height);
+  rect.cornerRadius = cornerRadius;
+  rect.fills = [{ type: 'SOLID', color: hexToFigmaRgb(hex) }];
+  rect.name = hex;
+  return rect;
+}
+
+// Create a single scale row (horizontal strip of 12 colors)
+async function createScaleRow(
+  scale: ColorScaleData,
+  mode: 'light' | 'dark',
+  showLabels: boolean = true,
+  swatchSize: number = 40
+): Promise<FrameNode> {
+  const row = figma.createFrame();
+  row.name = `${scale.name} Scale`;
+  row.layoutMode = 'VERTICAL';
+  row.primaryAxisSizingMode = 'AUTO';
+  row.counterAxisSizingMode = 'AUTO';
+  row.itemSpacing = 4;
+  row.fills = [];
+
+  // Role label
+  if (showLabels) {
+    const labelColor = mode === 'dark' ? { r: 0.9, g: 0.9, b: 0.9 } : { r: 0.3, g: 0.3, b: 0.3 };
+    const label = createText(scale.role.toUpperCase(), 10, "Bold", labelColor);
+    label.letterSpacing = { value: 1, unit: "PIXELS" };
+    row.appendChild(label);
+  }
+
+  // Color swatches container
+  const swatchesContainer = figma.createFrame();
+  swatchesContainer.name = "Swatches";
+  swatchesContainer.layoutMode = 'HORIZONTAL';
+  swatchesContainer.primaryAxisSizingMode = 'AUTO';
+  swatchesContainer.counterAxisSizingMode = 'AUTO';
+  swatchesContainer.itemSpacing = 2;
+  swatchesContainer.fills = [];
+
+  for (const step of scale.steps) {
+    const swatchFrame = figma.createFrame();
+    swatchFrame.name = `Step ${step.step}`;
+    swatchFrame.layoutMode = 'VERTICAL';
+    swatchFrame.primaryAxisSizingMode = 'AUTO';
+    swatchFrame.counterAxisSizingMode = 'AUTO';
+    swatchFrame.itemSpacing = 2;
+    swatchFrame.fills = [];
+
+    const swatch = createColorSwatch(
+      step.hex,
+      swatchSize,
+      swatchSize,
+      step.step === 1 ? 4 : step.step === 12 ? 4 : 0
+    );
+    swatchFrame.appendChild(swatch);
+
+    if (showLabels) {
+      const hexLabel = createText(
+        step.hex.toUpperCase().slice(1),
+        7,
+        "Regular",
+        mode === 'dark' ? { r: 0.6, g: 0.6, b: 0.6 } : { r: 0.5, g: 0.5, b: 0.5 }
+      );
+      swatchFrame.appendChild(hexLabel);
+    }
+
+    swatchesContainer.appendChild(swatchFrame);
+  }
+
+  row.appendChild(swatchesContainer);
+
+  // Step numbers
+  if (showLabels) {
+    const numbersContainer = figma.createFrame();
+    numbersContainer.name = "Step Numbers";
+    numbersContainer.layoutMode = 'HORIZONTAL';
+    numbersContainer.primaryAxisSizingMode = 'AUTO';
+    numbersContainer.counterAxisSizingMode = 'AUTO';
+    numbersContainer.itemSpacing = 2;
+    numbersContainer.fills = [];
+
+    for (let i = 1; i <= 12; i++) {
+      const numFrame = figma.createFrame();
+      numFrame.resize(swatchSize, 12);
+      numFrame.fills = [];
+      numFrame.layoutMode = 'HORIZONTAL';
+      numFrame.primaryAxisAlignItems = 'CENTER';
+      numFrame.counterAxisAlignItems = 'CENTER';
+
+      const num = createText(
+        i.toString(),
+        8,
+        "Regular",
+        mode === 'dark' ? { r: 0.5, g: 0.5, b: 0.5 } : { r: 0.6, g: 0.6, b: 0.6 }
+      );
+      numFrame.appendChild(num);
+      numbersContainer.appendChild(numFrame);
+    }
+
+    row.appendChild(numbersContainer);
+  }
+
+  return row;
+}
+
+// Create Black/White swatches
+function createBWSwatches(size: number = 60): FrameNode {
+  const container = figma.createFrame();
+  container.name = "Black & White";
+  container.layoutMode = 'HORIZONTAL';
+  container.primaryAxisSizingMode = 'AUTO';
+  container.counterAxisSizingMode = 'AUTO';
+  container.itemSpacing = 8;
+  container.fills = [];
+
+  // Black
+  const blackFrame = figma.createFrame();
+  blackFrame.name = "Black";
+  blackFrame.layoutMode = 'VERTICAL';
+  blackFrame.primaryAxisSizingMode = 'AUTO';
+  blackFrame.counterAxisSizingMode = 'AUTO';
+  blackFrame.itemSpacing = 4;
+  blackFrame.fills = [];
+
+  const blackSwatch = createColorSwatch('#000000', size, size, 8);
+  blackFrame.appendChild(blackSwatch);
+
+  const blackLabel = createText("Black", 10, "Medium", { r: 0.3, g: 0.3, b: 0.3 });
+  blackFrame.appendChild(blackLabel);
+
+  // White
+  const whiteFrame = figma.createFrame();
+  whiteFrame.name = "White";
+  whiteFrame.layoutMode = 'VERTICAL';
+  whiteFrame.primaryAxisSizingMode = 'AUTO';
+  whiteFrame.counterAxisSizingMode = 'AUTO';
+  whiteFrame.itemSpacing = 4;
+  whiteFrame.fills = [];
+
+  const whiteSwatch = createColorSwatch('#FFFFFF', size, size, 8);
+  whiteSwatch.strokes = [{ type: 'SOLID', color: { r: 0.9, g: 0.9, b: 0.9 } }];
+  whiteSwatch.strokeWeight = 1;
+  whiteFrame.appendChild(whiteSwatch);
+
+  const whiteLabel = createText("White", 10, "Medium", { r: 0.3, g: 0.3, b: 0.3 });
+  whiteFrame.appendChild(whiteLabel);
+
+  container.appendChild(blackFrame);
+  container.appendChild(whiteFrame);
+
+  return container;
+}
+
+// Create usage proportion bar
+function createUsageProportionBar(
+  proportions: { primary: number; secondary: number; accent: number; neutral: number },
+  colors: { primary?: string; secondary?: string; accent?: string; neutral: string },
+  width: number = 400,
+  mode: 'light' | 'dark' = 'light'
+): FrameNode {
+  const container = figma.createFrame();
+  container.name = "Usage Proportions";
+  container.layoutMode = 'VERTICAL';
+  container.primaryAxisSizingMode = 'AUTO';
+  container.counterAxisSizingMode = 'AUTO';
+  container.itemSpacing = 8;
+  container.fills = [];
+
+  const labelColor = mode === 'dark' ? { r: 0.9, g: 0.9, b: 0.9 } : { r: 0.3, g: 0.3, b: 0.3 };
+  const title = createText("USAGE PROPORTIONS", 10, "Bold", labelColor);
+  title.letterSpacing = { value: 1, unit: "PIXELS" };
+  container.appendChild(title);
+
+  // Bar container
+  const barFrame = figma.createFrame();
+  barFrame.name = "Bar";
+  barFrame.layoutMode = 'HORIZONTAL';
+  barFrame.primaryAxisSizingMode = 'AUTO';
+  barFrame.counterAxisSizingMode = 'AUTO';
+  barFrame.itemSpacing = 0;
+  barFrame.fills = [];
+  barFrame.cornerRadius = 4;
+  barFrame.clipsContent = true;
+
+  const total = proportions.primary + proportions.secondary + proportions.accent + proportions.neutral;
+
+  const segments = [
+    { key: 'primary', color: colors.primary, proportion: proportions.primary },
+    { key: 'secondary', color: colors.secondary, proportion: proportions.secondary },
+    { key: 'accent', color: colors.accent, proportion: proportions.accent },
+    { key: 'neutral', color: colors.neutral, proportion: proportions.neutral },
+  ].filter(s => s.color && s.proportion > 0);
+
+  for (const segment of segments) {
+    const segmentWidth = (segment.proportion / total) * width;
+    const rect = figma.createRectangle();
+    rect.resize(segmentWidth, 24);
+    rect.fills = [{ type: 'SOLID', color: hexToFigmaRgb(segment.color!) }];
+    rect.name = segment.key;
+    barFrame.appendChild(rect);
+  }
+
+  container.appendChild(barFrame);
+
+  // Legend
+  const legendFrame = figma.createFrame();
+  legendFrame.name = "Legend";
+  legendFrame.layoutMode = 'HORIZONTAL';
+  legendFrame.primaryAxisSizingMode = 'AUTO';
+  legendFrame.counterAxisSizingMode = 'AUTO';
+  legendFrame.itemSpacing = 16;
+  legendFrame.fills = [];
+
+  for (const segment of segments) {
+    const item = figma.createFrame();
+    item.layoutMode = 'HORIZONTAL';
+    item.primaryAxisSizingMode = 'AUTO';
+    item.counterAxisSizingMode = 'AUTO';
+    item.itemSpacing = 4;
+    item.fills = [];
+    item.counterAxisAlignItems = 'CENTER';
+
+    const dot = createColorSwatch(segment.color!, 8, 8, 4);
+    item.appendChild(dot);
+
+    const label = createText(
+      `${segment.key.charAt(0).toUpperCase() + segment.key.slice(1)}: ${segment.proportion}%`,
+      9,
+      "Regular",
+      mode === 'dark' ? { r: 0.7, g: 0.7, b: 0.7 } : { r: 0.4, g: 0.4, b: 0.4 }
+    );
+    item.appendChild(label);
+
+    legendFrame.appendChild(item);
+  }
+
+  container.appendChild(legendFrame);
+
+  return container;
+}
+
+// Generate MINIMAL layout
+async function generateMinimalLayout(
+  scales: ColorSystemData['scales']['light'],
+  mode: 'light' | 'dark'
+): Promise<FrameNode> {
+  const frame = figma.createFrame();
+  frame.name = `Color Scales (${mode})`;
+  frame.layoutMode = 'VERTICAL';
+  frame.primaryAxisSizingMode = 'AUTO';
+  frame.counterAxisSizingMode = 'AUTO';
+  frame.itemSpacing = 16;
+  frame.paddingLeft = 24;
+  frame.paddingRight = 24;
+  frame.paddingTop = 24;
+  frame.paddingBottom = 24;
+  frame.cornerRadius = 12;
+  frame.fills = [{ 
+    type: 'SOLID', 
+    color: mode === 'dark' ? { r: 0.1, g: 0.1, b: 0.1 } : { r: 0.98, g: 0.98, b: 0.98 } 
+  }];
+
+  // Add scales
+  const scaleOrder = ['primary', 'secondary', 'accent', 'neutral'] as const;
+  for (const key of scaleOrder) {
+    const scale = scales[key];
+    if (scale) {
+      const row = await createScaleRow(scale, mode, true, 36);
+      frame.appendChild(row);
+    }
+  }
+
+  return frame;
+}
+
+// Generate DETAILED layout
+async function generateDetailedLayout(
+  scales: ColorSystemData['scales']['light'],
+  proportions: ColorSystemData['usageProportions'],
+  mode: 'light' | 'dark'
+): Promise<FrameNode> {
+  const frame = figma.createFrame();
+  frame.name = `Color System (${mode})`;
+  frame.layoutMode = 'VERTICAL';
+  frame.primaryAxisSizingMode = 'AUTO';
+  frame.counterAxisSizingMode = 'AUTO';
+  frame.itemSpacing = 24;
+  frame.paddingLeft = 32;
+  frame.paddingRight = 32;
+  frame.paddingTop = 32;
+  frame.paddingBottom = 32;
+  frame.cornerRadius = 16;
+  frame.fills = [{ 
+    type: 'SOLID', 
+    color: mode === 'dark' ? { r: 0.1, g: 0.1, b: 0.1 } : { r: 0.98, g: 0.98, b: 0.98 } 
+  }];
+
+  // Usage proportions
+  const colors = {
+    primary: scales.primary?.steps[8]?.hex,
+    secondary: scales.secondary?.steps[8]?.hex,
+    accent: scales.accent?.steps[8]?.hex,
+    neutral: scales.neutral.steps[8].hex,
+  };
+  const proportionBar = createUsageProportionBar(proportions, colors, 500, mode);
+  frame.appendChild(proportionBar);
+
+  // Divider
+  const divider = figma.createRectangle();
+  divider.resize(500, 1);
+  divider.fills = [{ 
+    type: 'SOLID', 
+    color: mode === 'dark' ? { r: 0.2, g: 0.2, b: 0.2 } : { r: 0.9, g: 0.9, b: 0.9 } 
+  }];
+  frame.appendChild(divider);
+
+  // Add scales with larger swatches
+  const scaleOrder = ['primary', 'secondary', 'accent', 'neutral'] as const;
+  for (const key of scaleOrder) {
+    const scale = scales[key];
+    if (scale) {
+      const row = await createScaleRow(scale, mode, true, 40);
+      frame.appendChild(row);
+    }
+  }
+
+  return frame;
+}
+
+// Generate PRESENTATION layout
+async function generatePresentationLayout(
+  systemName: string,
+  scales: ColorSystemData['scales']['light'],
+  proportions: ColorSystemData['usageProportions'],
+  mode: 'light' | 'dark'
+): Promise<FrameNode> {
+  const frame = figma.createFrame();
+  frame.name = `${systemName} - ${mode === 'dark' ? 'Dark' : 'Light'} Mode`;
+  frame.layoutMode = 'VERTICAL';
+  frame.primaryAxisSizingMode = 'AUTO';
+  frame.counterAxisSizingMode = 'AUTO';
+  frame.itemSpacing = 32;
+  frame.paddingLeft = 40;
+  frame.paddingRight = 40;
+  frame.paddingTop = 40;
+  frame.paddingBottom = 40;
+  frame.cornerRadius = 20;
+  frame.fills = [{ 
+    type: 'SOLID', 
+    color: mode === 'dark' ? { r: 0.08, g: 0.08, b: 0.08 } : { r: 1, g: 1, b: 1 } 
+  }];
+
+  const textColor = mode === 'dark' ? { r: 0.95, g: 0.95, b: 0.95 } : { r: 0.1, g: 0.1, b: 0.1 };
+  const mutedColor = mode === 'dark' ? { r: 0.6, g: 0.6, b: 0.6 } : { r: 0.5, g: 0.5, b: 0.5 };
+
+  // Header
+  const header = figma.createFrame();
+  header.name = "Header";
+  header.layoutMode = 'VERTICAL';
+  header.primaryAxisSizingMode = 'AUTO';
+  header.counterAxisSizingMode = 'AUTO';
+  header.itemSpacing = 8;
+  header.fills = [];
+
+  const title = createText(systemName, 28, "Bold", textColor);
+  header.appendChild(title);
+
+  const subtitle = createText(`${mode === 'dark' ? 'Dark' : 'Light'} Mode Color System`, 14, "Regular", mutedColor);
+  header.appendChild(subtitle);
+
+  frame.appendChild(header);
+
+  // Primary Palette Section
+  const primarySection = figma.createFrame();
+  primarySection.name = "Primary Palette";
+  primarySection.layoutMode = 'VERTICAL';
+  primarySection.primaryAxisSizingMode = 'AUTO';
+  primarySection.counterAxisSizingMode = 'AUTO';
+  primarySection.itemSpacing = 16;
+  primarySection.fills = [];
+
+  const primaryTitle = createText("PRIMARY PALETTE", 11, "Bold", mutedColor);
+  primaryTitle.letterSpacing = { value: 1.5, unit: "PIXELS" };
+  primarySection.appendChild(primaryTitle);
+
+  // Primary colors row
+  const primaryRow = figma.createFrame();
+  primaryRow.name = "Primary Colors";
+  primaryRow.layoutMode = 'HORIZONTAL';
+  primaryRow.primaryAxisSizingMode = 'AUTO';
+  primaryRow.counterAxisSizingMode = 'AUTO';
+  primaryRow.itemSpacing = 16;
+  primaryRow.fills = [];
+
+  // Black & White
+  const bw = createBWSwatches(80);
+  primaryRow.appendChild(bw);
+
+  // Main colors (step 9 of each scale)
+  const mainColors = ['primary', 'secondary', 'accent', 'neutral'] as const;
+  for (const key of mainColors) {
+    const scale = scales[key];
+    if (scale && scale.steps[8]) {
+      const colorFrame = figma.createFrame();
+      colorFrame.name = scale.role;
+      colorFrame.layoutMode = 'VERTICAL';
+      colorFrame.primaryAxisSizingMode = 'AUTO';
+      colorFrame.counterAxisSizingMode = 'AUTO';
+      colorFrame.itemSpacing = 4;
+      colorFrame.fills = [];
+
+      const swatch = createColorSwatch(scale.steps[8].hex, 80, 80, 8);
+      colorFrame.appendChild(swatch);
+
+      const label = createText(scale.role, 10, "Medium", mutedColor);
+      colorFrame.appendChild(label);
+
+      const hexLabel = createText(scale.steps[8].hex.toUpperCase(), 9, "Regular", mutedColor);
+      colorFrame.appendChild(hexLabel);
+
+      primaryRow.appendChild(colorFrame);
+    }
+  }
+
+  primarySection.appendChild(primaryRow);
+  frame.appendChild(primarySection);
+
+  // Usage Proportions
+  const colors = {
+    primary: scales.primary?.steps[8]?.hex,
+    secondary: scales.secondary?.steps[8]?.hex,
+    accent: scales.accent?.steps[8]?.hex,
+    neutral: scales.neutral.steps[8].hex,
+  };
+  const proportionBar = createUsageProportionBar(proportions, colors, 600, mode);
+  frame.appendChild(proportionBar);
+
+  // Extended Palette Section
+  const extendedSection = figma.createFrame();
+  extendedSection.name = "Extended Palette";
+  extendedSection.layoutMode = 'VERTICAL';
+  extendedSection.primaryAxisSizingMode = 'AUTO';
+  extendedSection.counterAxisSizingMode = 'AUTO';
+  extendedSection.itemSpacing = 16;
+  extendedSection.fills = [];
+
+  const extendedTitle = createText("EXTENDED PALETTE", 11, "Bold", mutedColor);
+  extendedTitle.letterSpacing = { value: 1.5, unit: "PIXELS" };
+  extendedSection.appendChild(extendedTitle);
+
+  // Add all scales
+  const scaleOrder = ['neutral', 'primary', 'secondary', 'accent'] as const;
+  for (const key of scaleOrder) {
+    const scale = scales[key];
+    if (scale) {
+      const row = await createScaleRow(scale, mode, true, 48);
+      extendedSection.appendChild(row);
+    }
+  }
+
+  frame.appendChild(extendedSection);
+
+  return frame;
+}
+
+// Main function to generate color system frames
+async function generateColorSystemFrames(config: any, scalesData: ColorSystemData) {
+  await loadFonts();
+
+  const { detailLevel, includeDarkMode, systemName } = scalesData;
+  const { light: lightScales, dark: darkScales } = scalesData.scales;
+
+  // Create parent container
+  const container = figma.createFrame();
+  container.name = `Color System - ${systemName}`;
+  container.layoutMode = 'HORIZONTAL';
+  container.primaryAxisSizingMode = 'AUTO';
+  container.counterAxisSizingMode = 'AUTO';
+  container.itemSpacing = 32;
+  container.fills = [];
+
+  // Generate light mode frame
+  let lightFrame: FrameNode;
+  switch (detailLevel) {
+    case 'minimal':
+      lightFrame = await generateMinimalLayout(lightScales, 'light');
+      break;
+    case 'detailed':
+      lightFrame = await generateDetailedLayout(lightScales, scalesData.usageProportions, 'light');
+      break;
+    case 'presentation':
+      lightFrame = await generatePresentationLayout(systemName, lightScales, scalesData.usageProportions, 'light');
+      break;
+    default:
+      lightFrame = await generateDetailedLayout(lightScales, scalesData.usageProportions, 'light');
+  }
+  container.appendChild(lightFrame);
+
+  // Generate dark mode frame if requested
+  if (includeDarkMode && darkScales) {
+    let darkFrame: FrameNode;
+    switch (detailLevel) {
+      case 'minimal':
+        darkFrame = await generateMinimalLayout(darkScales, 'dark');
+        break;
+      case 'detailed':
+        darkFrame = await generateDetailedLayout(darkScales, scalesData.usageProportions, 'dark');
+        break;
+      case 'presentation':
+        darkFrame = await generatePresentationLayout(systemName, darkScales, scalesData.usageProportions, 'dark');
+        break;
+      default:
+        darkFrame = await generateDetailedLayout(darkScales, scalesData.usageProportions, 'dark');
+    }
+    container.appendChild(darkFrame);
+  }
+
+  // Position next to selection or in viewport center
+  const selection = figma.currentPage.selection;
+  if (selection.length > 0) {
+    const bounds = selection[0];
+    container.x = bounds.x + bounds.width + 48;
+    container.y = bounds.y;
+  } else {
+    container.x = figma.viewport.center.x - container.width / 2;
+    container.y = figma.viewport.center.y - container.height / 2;
+  }
+
+  figma.currentPage.selection = [container];
+  figma.viewport.scrollAndZoomIntoView([container]);
+
+  figma.notify(`Created "${systemName}" color system with ${includeDarkMode ? 'light & dark modes' : 'light mode'}`);
+}
