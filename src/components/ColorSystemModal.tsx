@@ -79,6 +79,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
   const [neutralFamily, setNeutralFamily] = useState<NeutralName | 'auto'>('auto');
   const [detailLevel, setDetailLevel] = useState<OutputDetailLevel>('detailed');
   const [includeDarkMode, setIncludeDarkMode] = useState(true);
+  const [createStyles, setCreateStyles] = useState(false);
   const [systemName, setSystemName] = useState(combinationName || 'My Color System');
   
   // Initialize role assignments from colors
@@ -265,7 +266,19 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
       systemName,
     });
 
-    // Also send computed scales data
+    // Prepare scales data for messages
+    const scalesPayload = {
+      systemName,
+      detailLevel,
+      includeDarkMode,
+      scales: {
+        light: lightScales,
+        dark: darkScales,
+      },
+      usageProportions,
+    };
+
+    // Send frame generation message
     parent.postMessage({
       pluginMessage: {
         type: 'generate-color-system',
@@ -278,18 +291,20 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
           includeDarkMode,
           systemName,
         },
-        scales: {
-          systemName,
-          detailLevel,
-          includeDarkMode,
-          scales: {
-            light: lightScales,
-            dark: darkScales,
-          },
-          usageProportions,
-        },
+        scales: scalesPayload,
       },
     }, '*');
+
+    // Also create Figma color styles if requested
+    if (createStyles) {
+      parent.postMessage({
+        pluginMessage: {
+          type: 'create-color-styles',
+          scales: scalesPayload,
+          systemName,
+        },
+      }, '*');
+    }
 
     onClose();
   };
@@ -711,6 +726,37 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
                 </div>
                 <div style={{ fontSize: '11px', color: theme.textMuted }}>
                   Generate both light and dark variants
+                </div>
+              </div>
+            </label>
+          </div>
+
+          {/* Create Color Styles Toggle */}
+          <div style={sectionStyle}>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                cursor: 'pointer',
+                padding: '12px',
+                backgroundColor: theme.inputBg,
+                borderRadius: '8px',
+                border: createStyles ? `2px solid ${theme.accent}` : `1px solid transparent`,
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={createStyles}
+                onChange={(e) => setCreateStyles(e.target.checked)}
+                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+              />
+              <div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: theme.text }}>
+                  Create Figma Color Styles
+                </div>
+                <div style={{ fontSize: '11px', color: theme.textMuted }}>
+                  Add colors to your Figma styles library
                 </div>
               </div>
             </label>

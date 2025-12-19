@@ -66,13 +66,13 @@
   - [x] 5.5 Extend frame generation to output both light and dark mode sections
   - [x] 5.6 Add visual separator and labels for Light Mode / Dark Mode sections in output
 
-- [ ] 6.0 Implement "Create Color Styles" Feature
-  - [ ] 6.1 Add "Create Color Styles" button to generated frames (or as post-generation action in UI)
-  - [ ] 6.2 Create `createFigmaColorStyles()` function in `code.ts`
-  - [ ] 6.3 Implement naming convention: `[System Name]/[Role]/[Step]` (e.g., "Brand/Primary/500")
-  - [ ] 6.4 Create folder structure in Figma styles panel by role
-  - [ ] 6.5 Handle duplicate style names - prompt to overwrite or rename
-  - [ ] 6.6 Create styles for both light and dark mode variants with `/Light` and `/Dark` suffixes
+- [x] 6.0 Implement "Create Color Styles" Feature
+  - [x] 6.1 Add "Create Color Styles" button to generated frames (or as post-generation action in UI)
+  - [x] 6.2 Create `createFigmaColorStyles()` function in `code.ts`
+  - [x] 6.3 Implement naming convention: `[System Name]/[Role]/[Step]` (e.g., "Brand/Primary/500")
+  - [x] 6.4 Create folder structure in Figma styles panel by role
+  - [x] 6.5 Handle duplicate style names - prompt to overwrite or rename
+  - [x] 6.6 Create styles for both light and dark mode variants with `/Light` and `/Dark` suffixes
 
 - [ ] 7.0 Build Export Options
   - [ ] 7.1 Add export dropdown/menu to modal or post-generation UI
