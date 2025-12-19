@@ -29,13 +29,13 @@
   - [x] 1.5 Add `getAccessibilityRating()` function that returns "AAA", "AA", or "Fail" based on contrast
   - [x] 1.6 Create TypeScript types for ColorScale, ColorStep, and AccessibilityRating in `types.d.ts`
 
-- [ ] 2.0 Integrate Radix Color Data & Matching
-  - [ ] 2.1 Create `src/lib/radixColors.ts` with all Radix color scales (light mode)
-  - [ ] 2.2 Add dark mode variants for all Radix scales
-  - [ ] 2.3 Implement `findClosestRadixFamily()` function that matches a hex color to nearest Radix family
-  - [ ] 2.4 Create `getNeutralForAccent()` function that returns recommended neutral based on hue
-  - [ ] 2.5 Add neutral family data: Gray, Mauve, Slate, Sage, Olive, Sand (light + dark)
-  - [ ] 2.6 Create types for RadixColorFamily, RadixScale, NeutralFamily
+- [x] 2.0 Integrate Radix Color Data & Matching
+  - [x] 2.1 Create `src/lib/radixColors.ts` with all Radix color scales (light mode)
+  - [x] 2.2 Add dark mode variants for all Radix scales
+  - [x] 2.3 Implement `findClosestRadixFamily()` function that matches a hex color to nearest Radix family
+  - [x] 2.4 Create `getNeutralForAccent()` function that returns recommended neutral based on hue
+  - [x] 2.5 Add neutral family data: Gray, Mauve, Slate, Sage, Olive, Sand (light + dark)
+  - [x] 2.6 Create types for RadixColorFamily, RadixScale, NeutralFamily
 
 - [ ] 3.0 Build Configuration Modal UI
   - [ ] 3.1 Create `ColorSystemModal.tsx` component with modal structure using existing Dialog component
