@@ -260,13 +260,27 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
   const [exportFormat, setExportFormat] = useState<'css' | 'tailwind' | 'json'>('css');
   
   // Initialize role assignments from colors
-  const [roleAssignments, setRoleAssignments] = useState<RoleAssignment[]>(() => 
-    colors.map((c, i) => ({
-      hex: c.hex,
-      name: c.name,
-      role: i === 0 ? 'primary' : i === 1 ? 'secondary' : i === 2 ? 'accent' : null,
-    }))
-  );
+  const [roleAssignments, setRoleAssignments] = useState<RoleAssignment[]>([]);
+
+  // Update role assignments when colors change (e.g., when modal opens with new colors)
+  React.useEffect(() => {
+    if (colors && colors.length > 0) {
+      setRoleAssignments(
+        colors.map((c, i) => ({
+          hex: c.hex,
+          name: c.name,
+          role: i === 0 ? 'primary' : i === 1 ? 'secondary' : i === 2 ? 'accent' : null,
+        }))
+      );
+    }
+  }, [colors]);
+
+  // Update system name when combinationName changes
+  React.useEffect(() => {
+    if (combinationName) {
+      setSystemName(combinationName);
+    }
+  }, [combinationName]);
 
   // Auto-suggested neutral based on primary color
   const suggestedNeutral = useMemo(() => {
