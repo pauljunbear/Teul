@@ -74,10 +74,10 @@
   - [x] 6.5 Handle duplicate style names - prompt to overwrite or rename
   - [x] 6.6 Create styles for both light and dark mode variants with `/Light` and `/Dark` suffixes
 
-- [ ] 7.0 Build Export Options
-  - [ ] 7.1 Add export dropdown/menu to modal or post-generation UI
-  - [ ] 7.2 Implement `exportAsCSS()` - generates CSS custom properties (--primary-1, --primary-2, etc.)
-  - [ ] 7.3 Implement `exportAsTailwind()` - generates Tailwind theme extend config
-  - [ ] 7.4 Implement `exportAsJSON()` - structured JSON with all colors, roles, and metadata
-  - [ ] 7.5 Add copy-to-clipboard functionality for each export format
-  - [ ] 7.6 Show success toast/notification after copying
+- [x] 7.0 Build Export Options
+  - [x] 7.1 Add export dropdown/menu to modal or post-generation UI
+  - [x] 7.2 Implement `exportAsCSS()` - generates CSS custom properties (--primary-1, --primary-2, etc.)
+  - [x] 7.3 Implement `exportAsTailwind()` - generates Tailwind theme extend config
+  - [x] 7.4 Implement `exportAsJSON()` - structured JSON with all colors, roles, and metadata
+  - [x] 7.5 Add copy-to-clipboard functionality for each export format
+  - [x] 7.6 Show success toast/notification after copying

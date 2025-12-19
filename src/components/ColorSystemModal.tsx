@@ -18,6 +18,181 @@ import {
   type RadixScale
 } from '../lib/radixColors';
 
+// ============================================
+// Export Functions
+// ============================================
+
+interface ExportScale {
+  name: string;
+  role: string;
+  steps: { step: number; hex: string }[];
+}
+
+interface ExportScales {
+  primary?: ExportScale;
+  secondary?: ExportScale;
+  accent?: ExportScale;
+  neutral: ExportScale;
+}
+
+// Convert step number to CSS variable name suffix
+function stepToVarSuffix(step: number): string {
+  const mapping: Record<number, string> = {
+    1: '50', 2: '100', 3: '200', 4: '300', 5: '400', 6: '500',
+    7: '600', 8: '700', 9: '800', 10: '900', 11: '950', 12: '1000',
+  };
+  return mapping[step] || step.toString();
+}
+
+// Export as CSS custom properties
+function exportAsCSS(
+  scales: ExportScales, 
+  darkScales: ExportScales | undefined,
+  systemName: string
+): string {
+  const prefix = systemName.toLowerCase().replace(/\s+/g, '-');
+  let css = `/* ${systemName} Color System */\n`;
+  css += `/* Generated with Wado Sanzo Colors */\n\n`;
+  
+  css += `:root {\n`;
+  
+  // Light mode variables
+  const scaleOrder = ['primary', 'secondary', 'accent', 'neutral'] as const;
+  for (const key of scaleOrder) {
+    const scale = scales[key];
+    if (scale) {
+      css += `  /* ${scale.role} */\n`;
+      for (const step of scale.steps) {
+        css += `  --${prefix}-${key}-${stepToVarSuffix(step.step)}: ${step.hex};\n`;
+      }
+      css += `\n`;
+    }
+  }
+  css += `}\n`;
+
+  // Dark mode variables
+  if (darkScales) {
+    css += `\n/* Dark Mode */\n`;
+    css += `[data-theme="dark"],\n.dark {\n`;
+    for (const key of scaleOrder) {
+      const scale = darkScales[key];
+      if (scale) {
+        css += `  /* ${scale.role} */\n`;
+        for (const step of scale.steps) {
+          css += `  --${prefix}-${key}-${stepToVarSuffix(step.step)}: ${step.hex};\n`;
+        }
+        css += `\n`;
+      }
+    }
+    css += `}\n`;
+  }
+
+  return css;
+}
+
+// Export as Tailwind config
+function exportAsTailwind(
+  scales: ExportScales,
+  darkScales: ExportScales | undefined,
+  systemName: string
+): string {
+  const prefix = systemName.toLowerCase().replace(/\s+/g, '-');
+  
+  const buildColorObject = (scalesData: ExportScales): Record<string, Record<string, string>> => {
+    const colors: Record<string, Record<string, string>> = {};
+    const scaleOrder = ['primary', 'secondary', 'accent', 'neutral'] as const;
+    
+    for (const key of scaleOrder) {
+      const scale = scalesData[key];
+      if (scale) {
+        colors[key] = {};
+        for (const step of scale.steps) {
+          colors[key][stepToVarSuffix(step.step)] = step.hex;
+        }
+      }
+    }
+    return colors;
+  };
+
+  const lightColors = buildColorObject(scales);
+  
+  let config = `// ${systemName} - Tailwind CSS Config\n`;
+  config += `// Generated with Wado Sanzo Colors\n\n`;
+  config += `module.exports = {\n`;
+  config += `  theme: {\n`;
+  config += `    extend: {\n`;
+  config += `      colors: ${JSON.stringify(lightColors, null, 8).replace(/"/g, "'").split('\n').map((line, i) => i === 0 ? line : '      ' + line).join('\n')},\n`;
+  config += `    },\n`;
+  config += `  },\n`;
+  config += `};\n`;
+
+  if (darkScales) {
+    const darkColors = buildColorObject(darkScales);
+    config += `\n// Dark mode colors (use with darkMode: 'class')\n`;
+    config += `// Add to your CSS or use CSS variables approach:\n`;
+    config += `/*\n${JSON.stringify(darkColors, null, 2)}\n*/\n`;
+  }
+
+  return config;
+}
+
+// Export as JSON
+function exportAsJSON(
+  scales: ExportScales,
+  darkScales: ExportScales | undefined,
+  systemName: string
+): string {
+  const buildScaleObject = (scalesData: ExportScales) => {
+    const result: Record<string, any> = {};
+    const scaleOrder = ['primary', 'secondary', 'accent', 'neutral'] as const;
+    
+    for (const key of scaleOrder) {
+      const scale = scalesData[key];
+      if (scale) {
+        result[key] = {
+          name: scale.name,
+          role: scale.role,
+          colors: scale.steps.reduce((acc, step) => {
+            acc[stepToVarSuffix(step.step)] = step.hex;
+            return acc;
+          }, {} as Record<string, string>),
+        };
+      }
+    }
+    return result;
+  };
+
+  const data: Record<string, any> = {
+    name: systemName,
+    generatedAt: new Date().toISOString(),
+    generator: 'Wado Sanzo Colors',
+    light: buildScaleObject(scales),
+  };
+
+  if (darkScales) {
+    data.dark = buildScaleObject(darkScales);
+  }
+
+  return JSON.stringify(data, null, 2);
+}
+
+// Copy to clipboard helper
+function copyToClipboard(text: string, label: string) {
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.style.position = 'fixed';
+  textarea.style.left = '-9999px';
+  document.body.appendChild(textarea);
+  textarea.select();
+  try {
+    document.execCommand('copy');
+    parent.postMessage({ pluginMessage: { type: 'notify', text: `Copied ${label} to clipboard` } }, '*');
+  } catch {
+    parent.postMessage({ pluginMessage: { type: 'notify', text: 'Copy failed' } }, '*');
+  }
+  document.body.removeChild(textarea);
+}
+
 // Types
 type ColorRole = 'primary' | 'secondary' | 'accent';
 type ScaleMethod = 'custom' | 'radix-match';
@@ -81,6 +256,8 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
   const [includeDarkMode, setIncludeDarkMode] = useState(true);
   const [createStyles, setCreateStyles] = useState(false);
   const [systemName, setSystemName] = useState(combinationName || 'My Color System');
+  const [showExport, setShowExport] = useState(false);
+  const [exportFormat, setExportFormat] = useState<'css' | 'tailwind' | 'json'>('css');
   
   // Initialize role assignments from colors
   const [roleAssignments, setRoleAssignments] = useState<RoleAssignment[]>(() => 
@@ -141,6 +318,72 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
       } as ColorScale;
     }
   }, [roleAssignments, scaleMethod]);
+
+  // Compute full scales for export
+  const exportScales = useMemo(() => {
+    const primary = roleAssignments.find(r => r.role === 'primary');
+    const secondary = roleAssignments.find(r => r.role === 'secondary');
+    const accent = roleAssignments.find(r => r.role === 'accent');
+    const neutralScale = radixColors[effectiveNeutral];
+
+    const buildScale = (assignment: RoleAssignment | undefined, role: string, mode: 'light' | 'dark'): ExportScale | undefined => {
+      if (!assignment) return undefined;
+      if (scaleMethod === 'custom') {
+        const scale = generateColorScale(assignment.hex, mode, assignment.name);
+        return {
+          name: assignment.name,
+          role,
+          steps: scale.steps.map(s => ({ step: s.step, hex: s.hex })),
+        };
+      } else {
+        const family = findClosestRadixFamily(assignment.hex);
+        const radixScale = mode === 'light' ? family.light : family.dark;
+        return {
+          name: family.displayName,
+          role,
+          steps: Object.entries(radixScale).map(([step, hex]) => ({ step: parseInt(step), hex })),
+        };
+      }
+    };
+
+    const light: ExportScales = {
+      primary: buildScale(primary, 'Primary', 'light'),
+      secondary: buildScale(secondary, 'Secondary', 'light'),
+      accent: buildScale(accent, 'Accent', 'light'),
+      neutral: {
+        name: effectiveNeutral.charAt(0).toUpperCase() + effectiveNeutral.slice(1),
+        role: 'Neutral',
+        steps: Object.entries(neutralScale.light).map(([step, hex]) => ({ step: parseInt(step), hex })),
+      },
+    };
+
+    const dark: ExportScales | undefined = includeDarkMode ? {
+      primary: buildScale(primary, 'Primary', 'dark'),
+      secondary: buildScale(secondary, 'Secondary', 'dark'),
+      accent: buildScale(accent, 'Accent', 'dark'),
+      neutral: {
+        name: effectiveNeutral.charAt(0).toUpperCase() + effectiveNeutral.slice(1),
+        role: 'Neutral',
+        steps: Object.entries(neutralScale.dark).map(([step, hex]) => ({ step: parseInt(step), hex })),
+      },
+    } : undefined;
+
+    return { light, dark };
+  }, [roleAssignments, scaleMethod, effectiveNeutral, includeDarkMode]);
+
+  // Generate export content
+  const exportContent = useMemo(() => {
+    switch (exportFormat) {
+      case 'css':
+        return exportAsCSS(exportScales.light, exportScales.dark, systemName);
+      case 'tailwind':
+        return exportAsTailwind(exportScales.light, exportScales.dark, systemName);
+      case 'json':
+        return exportAsJSON(exportScales.light, exportScales.dark, systemName);
+      default:
+        return '';
+    }
+  }, [exportFormat, exportScales, systemName]);
 
   // Handle role assignment
   const assignRole = (colorHex: string, role: ColorRole | null) => {
@@ -760,6 +1003,96 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
                 </div>
               </div>
             </label>
+          </div>
+
+          {/* Export Section */}
+          <div style={sectionStyle}>
+            <button
+              onClick={() => setShowExport(!showExport)}
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '8px',
+                border: `1px solid ${theme.border}`,
+                backgroundColor: theme.inputBg,
+                color: theme.text,
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <span>📤 Export Code</span>
+              <span style={{ fontSize: '16px' }}>{showExport ? '▲' : '▼'}</span>
+            </button>
+
+            {showExport && (
+              <div style={{ marginTop: '12px' }}>
+                {/* Format selector */}
+                <div style={{ display: 'flex', gap: '6px', marginBottom: '12px' }}>
+                  {([
+                    { id: 'css', label: 'CSS' },
+                    { id: 'tailwind', label: 'Tailwind' },
+                    { id: 'json', label: 'JSON' },
+                  ] as const).map((format) => (
+                    <button
+                      key={format.id}
+                      onClick={() => setExportFormat(format.id)}
+                      style={{
+                        ...buttonStyle(exportFormat === format.id),
+                        flex: 1,
+                        padding: '8px',
+                        fontSize: '12px',
+                      }}
+                    >
+                      {format.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Preview area */}
+                <div
+                  style={{
+                    backgroundColor: isDark ? '#1a1a1a' : '#f5f5f5',
+                    borderRadius: '8px',
+                    padding: '12px',
+                    border: `1px solid ${theme.border}`,
+                    maxHeight: '200px',
+                    overflow: 'auto',
+                  }}
+                >
+                  <pre
+                    style={{
+                      margin: 0,
+                      fontSize: '10px',
+                      fontFamily: 'Monaco, Consolas, monospace',
+                      color: theme.text,
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-all',
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {exportContent}
+                  </pre>
+                </div>
+
+                {/* Copy button */}
+                <button
+                  onClick={() => copyToClipboard(exportContent, exportFormat.toUpperCase())}
+                  style={{
+                    ...buttonStyle(true),
+                    width: '100%',
+                    marginTop: '8px',
+                    padding: '10px',
+                    backgroundColor: '#22c55e',
+                  }}
+                >
+                  📋 Copy {exportFormat.toUpperCase()}
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
