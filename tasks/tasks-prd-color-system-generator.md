@@ -58,13 +58,13 @@
   - [x] 4.8 Create text styles helper for consistent typography (scale labels, hex values, section headers)
   - [x] 4.9 Add Black/White swatches to Primary Palette section
 
-- [ ] 5.0 Add Light/Dark Mode Support
-  - [ ] 5.1 Extend `generateColorScale()` to accept a "mode" parameter (light/dark)
-  - [ ] 5.2 Create dark mode scale generation logic (inverted lightness curve)
-  - [ ] 5.3 Update modal preview to show both light and dark variants side-by-side
-  - [ ] 5.4 Add theme toggle in modal that switches preview between light/dark
-  - [ ] 5.5 Extend frame generation to output both light and dark mode sections
-  - [ ] 5.6 Add visual separator and labels for Light Mode / Dark Mode sections in output
+- [x] 5.0 Add Light/Dark Mode Support
+  - [x] 5.1 Extend `generateColorScale()` to accept a "mode" parameter (light/dark)
+  - [x] 5.2 Create dark mode scale generation logic (inverted lightness curve)
+  - [x] 5.3 Update modal preview to show both light and dark variants side-by-side
+  - [x] 5.4 Add theme toggle in modal that switches preview between light/dark
+  - [x] 5.5 Extend frame generation to output both light and dark mode sections
+  - [x] 5.6 Add visual separator and labels for Light Mode / Dark Mode sections in output
 
 - [ ] 6.0 Implement "Create Color Styles" Feature
   - [ ] 6.1 Add "Create Color Styles" button to generated frames (or as post-generation action in UI)

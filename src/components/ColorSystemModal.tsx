@@ -78,7 +78,6 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
   const [scaleMethod, setScaleMethod] = useState<ScaleMethod>('custom');
   const [neutralFamily, setNeutralFamily] = useState<NeutralName | 'auto'>('auto');
   const [detailLevel, setDetailLevel] = useState<OutputDetailLevel>('detailed');
-  const [previewMode, setPreviewMode] = useState<ThemeMode>('light');
   const [includeDarkMode, setIncludeDarkMode] = useState(true);
   const [systemName, setSystemName] = useState(combinationName || 'My Color System');
   
@@ -102,25 +101,45 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
 
   const effectiveNeutral = neutralFamily === 'auto' ? suggestedNeutral : neutralFamily;
 
-  // Generate preview scales
+  // Generate preview scales (light mode)
   const previewScales = useMemo(() => {
     const primary = roleAssignments.find(r => r.role === 'primary');
     if (!primary) return null;
 
     if (scaleMethod === 'custom') {
-      return generateColorScale(primary.hex, previewMode, 'Primary');
+      return generateColorScale(primary.hex, 'light', 'Primary');
     } else {
       const family = findClosestRadixFamily(primary.hex);
       return {
         name: family.displayName,
         baseHex: primary.hex,
-        steps: Object.entries(previewMode === 'light' ? family.light : family.dark).map(
+        steps: Object.entries(family.light).map(
           ([step, hex]) => ({ step: parseInt(step), hex, oklch: { l: 0, c: 0, h: 0 }, usage: '' })
         ),
-        mode: previewMode,
+        mode: 'light' as const,
       } as ColorScale;
     }
-  }, [roleAssignments, scaleMethod, previewMode]);
+  }, [roleAssignments, scaleMethod]);
+
+  // Generate dark preview scales
+  const darkPreviewScales = useMemo(() => {
+    const primary = roleAssignments.find(r => r.role === 'primary');
+    if (!primary) return null;
+
+    if (scaleMethod === 'custom') {
+      return generateColorScale(primary.hex, 'dark', 'Primary');
+    } else {
+      const family = findClosestRadixFamily(primary.hex);
+      return {
+        name: family.displayName,
+        baseHex: primary.hex,
+        steps: Object.entries(family.dark).map(
+          ([step, hex]) => ({ step: parseInt(step), hex, oklch: { l: 0, c: 0, h: 0 }, usage: '' })
+        ),
+        mode: 'dark' as const,
+      } as ColorScale;
+    }
+  }, [roleAssignments, scaleMethod]);
 
   // Handle role assignment
   const assignRole = (colorHex: string, role: ColorRole | null) => {
@@ -565,72 +584,106 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
             </div>
           </div>
 
-          {/* Theme Preview Toggle */}
+          {/* Scale Preview - Side by Side */}
           <div style={sectionStyle}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <label style={{ ...labelStyle, margin: 0 }}>Preview</label>
-              <div style={{ display: 'flex', gap: '4px' }}>
-                <button
-                  onClick={() => setPreviewMode('light')}
-                  style={{
-                    ...buttonStyle(previewMode === 'light'),
-                    padding: '6px 12px',
-                    fontSize: '11px',
-                  }}
-                >
-                  ☀️ Light
-                </button>
-                <button
-                  onClick={() => setPreviewMode('dark')}
-                  style={{
-                    ...buttonStyle(previewMode === 'dark'),
-                    padding: '6px 12px',
-                    fontSize: '11px',
-                  }}
-                >
-                  🌙 Dark
-                </button>
-              </div>
-            </div>
+            <label style={labelStyle}>Scale Preview</label>
+            <p style={{ fontSize: '11px', color: theme.textMuted, margin: '0 0 12px' }}>
+              {scaleMethod === 'radix-match' ? 'Matched to closest Radix scale' : 'Custom generated scale'}
+            </p>
 
-            {/* Scale Preview */}
-            {previewScales && (
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {/* Light Mode Preview */}
               <div
                 style={{
-                  backgroundColor: previewMode === 'light' ? '#ffffff' : '#1a1a1a',
+                  flex: 1,
+                  backgroundColor: '#ffffff',
                   borderRadius: '8px',
-                  padding: '12px',
+                  padding: '10px',
                   border: `1px solid ${theme.border}`,
                 }}
               >
                 <div style={{ 
-                  fontSize: '10px', 
+                  fontSize: '9px', 
                   fontWeight: 600, 
-                  color: previewMode === 'light' ? '#666' : '#aaa',
-                  marginBottom: '8px',
+                  color: '#888',
+                  marginBottom: '6px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
                 }}>
-                  {scaleMethod === 'radix-match' ? `Matched: ${previewScales.name}` : 'Custom Scale'}
+                  ☀️ Light
                 </div>
-                <div style={{ display: 'flex', gap: '2px' }}>
-                  {previewScales.steps.map((step) => (
-                    <div
-                      key={step.step}
-                      style={{
-                        flex: 1,
-                        height: '32px',
-                        backgroundColor: step.hex,
-                        borderRadius: step.step === 1 ? '4px 0 0 4px' : step.step === 12 ? '0 4px 4px 0' : '0',
-                      }}
-                      title={`Step ${step.step}: ${step.hex}`}
-                    />
-                  ))}
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
-                  <span style={{ fontSize: '8px', color: previewMode === 'light' ? '#999' : '#666' }}>1</span>
-                  <span style={{ fontSize: '8px', color: previewMode === 'light' ? '#999' : '#666' }}>12</span>
-                </div>
+                {previewScales && (
+                  <>
+                    <div style={{ display: 'flex', gap: '1px' }}>
+                      {previewScales.steps.map((step) => (
+                        <div
+                          key={step.step}
+                          style={{
+                            flex: 1,
+                            height: '24px',
+                            backgroundColor: step.hex,
+                            borderRadius: step.step === 1 ? '3px 0 0 3px' : step.step === 12 ? '0 3px 3px 0' : '0',
+                          }}
+                          title={`Step ${step.step}: ${step.hex}`}
+                        />
+                      ))}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px' }}>
+                      <span style={{ fontSize: '7px', color: '#aaa' }}>1</span>
+                      <span style={{ fontSize: '7px', color: '#aaa' }}>12</span>
+                    </div>
+                  </>
+                )}
               </div>
-            )}
+
+              {/* Dark Mode Preview */}
+              {includeDarkMode && (
+                <div
+                  style={{
+                    flex: 1,
+                    backgroundColor: '#1a1a1a',
+                    borderRadius: '8px',
+                    padding: '10px',
+                    border: `1px solid ${theme.border}`,
+                  }}
+                >
+                  <div style={{ 
+                    fontSize: '9px', 
+                    fontWeight: 600, 
+                    color: '#888',
+                    marginBottom: '6px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}>
+                    🌙 Dark
+                  </div>
+                  {darkPreviewScales && (
+                    <>
+                      <div style={{ display: 'flex', gap: '1px' }}>
+                        {darkPreviewScales.steps.map((step) => (
+                          <div
+                            key={step.step}
+                            style={{
+                              flex: 1,
+                              height: '24px',
+                              backgroundColor: step.hex,
+                              borderRadius: step.step === 1 ? '3px 0 0 3px' : step.step === 12 ? '0 3px 3px 0' : '0',
+                            }}
+                            title={`Step ${step.step}: ${step.hex}`}
+                          />
+                        ))}
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px' }}>
+                        <span style={{ fontSize: '7px', color: '#666' }}>1</span>
+                        <span style={{ fontSize: '7px', color: '#666' }}>12</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Include Dark Mode Toggle */}
