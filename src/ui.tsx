@@ -1,13 +1,10 @@
 /// <reference lib="dom" />
 
 import * as React from 'react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createRoot } from 'react-dom/client';
-import { motion, AnimatePresence } from 'framer-motion';
 import { colorData } from './colorData';
-import { ThemeToggle } from './components/theme-toggle';
-import { Search } from 'lucide-react';
-import './globals.css';
+import { getContrastRatio, getContrastLevel, colorDistance, rgbToLab } from './lib/utils';
 
 interface Color {
   name: string;
@@ -21,324 +18,595 @@ interface Color {
 
 interface ColorCombo {
   id: number;
-  colors: Array<{
-    hex: string;
-    name: string;
-  }>;
+  colors: Color[];
 }
 
-interface ColorCardProps {
-  color: Color;
-  onClick: (color: Color) => void;
-}
-
-interface GradientButtonsProps {
-  colors: Array<{
-    hex: string;
-    name: string;
-  }>;
-}
+const SWATCH_GROUPS = [
+  { id: -1, name: 'All' },
+  { id: 0, name: 'Reds' },
+  { id: 1, name: 'Yellows' },
+  { id: 2, name: 'Greens' },
+  { id: 3, name: 'Blues' },
+  { id: 4, name: 'Purples' },
+  { id: 5, name: 'Neutrals' },
+];
 
 const calculateCombinations = (color: Color): ColorCombo[] => {
-  const colorCombos = color.combinations.map((comboId: number) => {
+  return color.combinations.map((comboId) => {
     const comboColors = colorData.colors.filter(c => 
-      c.combinations.includes(comboId) && c !== color
+      c.combinations.includes(comboId) && c.hex !== color.hex
     );
-    return {
-      id: comboId,
-      colors: comboColors.map(c => ({
-        hex: c.hex,
-        name: c.name
-      }))
-    };
+    return { id: comboId, colors: comboColors };
   });
-  return colorCombos;
 };
 
-const ColorCard: React.FC<ColorCardProps> = ({ color, onClick }) => {
-  return (
-    <motion.div
-      onClick={() => onClick(color)}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{
-        y: -5,
-        scale: 1.02,
-        transition: { type: "spring", stiffness: 300, damping: 20 }
-      }}
-      whileTap={{ scale: 0.98 }}
-      className="h-full"
-    >
-      <div className="card h-full flex flex-col">
-        <div 
-          className="w-full h-24" 
-          style={{ backgroundColor: color.hex }}
-        />
-        <div className="p-3 text-center flex-1 flex flex-col justify-between">
-          <h3 className="font-medium text-base text-foreground mb-2 pt-1">{color.name}</h3>
-          <div>
-            <p className="text-xs text-muted-foreground mb-2">hex: {color.hex}</p>
-            <p className="text-xs text-muted-foreground pb-1">
-              {calculateCombinations(color).length} combinations
-            </p>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
+const getTextColor = (rgb: number[]): string => {
+  const luminance = (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255;
+  return luminance > 0.5 ? '#1a1a1a' : '#ffffff';
 };
 
-const GradientButtons: React.FC<GradientButtonsProps> = ({ colors }) => {
-  const handleGradient = (type: 'LINEAR' | 'RADIAL' | 'ANGULAR' | 'DIAMOND') => {
-    parent.postMessage({ 
-      pluginMessage: { 
-        type: 'apply-gradient',
-        gradientType: type,
-        colors: colors.map(c => ({
-          hex: c.hex,
-          name: c.name
-        }))
-      } 
-    }, '*');
-  };
+const copyToClipboard = (text: string, label: string) => {
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.style.position = 'fixed';
+  textarea.style.left = '-9999px';
+  document.body.appendChild(textarea);
+  textarea.select();
+  try {
+    document.execCommand('copy');
+    parent.postMessage({ pluginMessage: { type: 'notify', text: `Copied ${label}` } }, '*');
+  } catch {
+    parent.postMessage({ pluginMessage: { type: 'notify', text: 'Copy failed' } }, '*');
+  }
+  document.body.removeChild(textarea);
+};
 
-  return (
-    <div className="flex flex-wrap gap-1 mt-3 justify-center">
-      <button 
-        className="button button-outline button-xs flex-1"
-        onClick={() => handleGradient('LINEAR')}
-      >
-        <span className="mr-1">↗️</span>
-        Linear
-      </button>
-      <button 
-        className="button button-outline button-xs flex-1"
-        onClick={() => handleGradient('RADIAL')}
-      >
-        <span className="mr-1">⭕️</span>
-        Radial
-      </button>
-      <button 
-        className="button button-outline button-xs flex-1"
-        onClick={() => handleGradient('ANGULAR')}
-      >
-        <span className="mr-1">🔄</span>
-        Angular
-      </button>
-      <button 
-        className="button button-outline button-xs flex-1"
-        onClick={() => handleGradient('DIAMOND')}
-      >
-        <span className="mr-1">💎</span>
-        Diamond
-      </button>
-    </div>
-  );
+// Styles
+const styles = {
+  light: {
+    bg: '#ffffff',
+    cardBg: '#ffffff',
+    text: '#1a1a1a',
+    textMuted: '#666666',
+    border: '#e5e5e5',
+    inputBg: '#f5f5f5',
+    btnBg: '#f0f0f0',
+    btnHover: '#e5e5e5',
+    btnActive: '#1a1a1a',
+    btnActiveText: '#ffffff',
+  },
+  dark: {
+    bg: '#1a1a1a',
+    cardBg: '#262626',
+    text: '#ffffff',
+    textMuted: '#a3a3a3',
+    border: '#404040',
+    inputBg: '#333333',
+    btnBg: '#333333',
+    btnHover: '#404040',
+    btnActive: '#ffffff',
+    btnActiveText: '#1a1a1a',
+  }
 };
 
 const App: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedColor, setSelectedColor] = useState<Color | null>(null);
-  const [view, setView] = useState<'grid' | 'combinations'>('grid');
-  const [filteredColors, setFilteredColors] = useState(colorData.colors);
-  const [combinations, setCombinations] = useState<ColorCombo[]>([]);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [selectedSwatch, setSelectedSwatch] = useState(-1);
+  const [isDark, setIsDark] = useState(true);
+  const [showExport, setShowExport] = useState(false);
+  const [exportColors, setExportColors] = useState<Color[]>([]);
+
+  const theme = isDark ? styles.dark : styles.light;
+
+  const filteredColors = useMemo(() => {
+    let colors = colorData.colors;
+    if (selectedSwatch >= 0) colors = colors.filter(c => c.swatch === selectedSwatch);
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      colors = colors.filter(c => c.name.toLowerCase().includes(term) || c.hex.toLowerCase().includes(term));
+    }
+    return colors;
+  }, [searchTerm, selectedSwatch]);
+
+  const combinations = useMemo(() => selectedColor ? calculateCombinations(selectedColor) : [], [selectedColor]);
 
   useEffect(() => {
-    const filtered = colorData.colors.filter(color =>
-      color.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      color.hex.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredColors(filtered);
-  }, [searchTerm]);
-
-  // Listen for messages from the plugin code
-  useEffect(() => {
-    window.onmessage = (event) => {
-      const msg = event.data.pluginMessage;
-      if (msg && msg.type === 'copy-to-clipboard') {
-        const textArea = document.createElement('textarea');
-        textArea.value = msg.text;
-        document.body.appendChild(textArea);
-        textArea.select();
-        try {
-          document.execCommand('copy');
-        } catch (err) {
-          console.error('Failed to copy:', err);
-        }
-        document.body.removeChild(textArea);
+    window.onmessage = (e) => {
+      const msg = e.data.pluginMessage;
+      if (msg?.type === 'selection-color') {
+        const targetLab = rgbToLab(msg.rgb[0], msg.rgb[1], msg.rgb[2]);
+        const closest = colorData.colors.reduce((acc, c) => {
+          const dist = colorDistance(c.lab, targetLab);
+          return dist < acc.distance ? { color: c, distance: dist } : acc;
+        }, { color: null as Color | null, distance: Infinity });
+        if (closest.color) setSelectedColor(closest.color);
       }
     };
   }, []);
 
-  const handleColorClick = (color: Color) => {
-    // First scroll to top immediately
-    if (containerRef.current) {
-      containerRef.current.scrollTop = 0;
-    }
-    
-    // Then update state
-    const colorCombos = calculateCombinations(color);
-    setSelectedColor(color);
-    setCombinations(colorCombos);
-    setView('combinations');
-  };
+  const buttonStyle = (active = false): React.CSSProperties => ({
+    padding: '8px 16px',
+    borderRadius: '8px',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '13px',
+    fontWeight: 600,
+    backgroundColor: active ? theme.btnActive : theme.btnBg,
+    color: active ? theme.btnActiveText : theme.text,
+    transition: 'all 0.15s ease',
+  });
 
-  const handleGenerate = () => {
-    const randomIndex = Math.floor(Math.random() * colorData.colors.length);
-    const randomColor = colorData.colors[randomIndex];
-    handleColorClick(randomColor);
-  };
-
-  const formatColorValues = (color: Color) => {
-    const { cmyk, rgb } = color;
-    return {
-      cmyk: `C:${cmyk[0]} / M:${cmyk[1]} / Y:${cmyk[2]} / K:${cmyk[3]}`,
-      rgb: `R:${rgb[0]} / G:${rgb[1]} / B:${rgb[2]}`
-    };
-  };
-
-  const handleCopyHex = async (hex: string) => {
-    try {
-      await navigator.clipboard.writeText(hex);
-      // Show Figma notification
-      parent.postMessage({ pluginMessage: { type: 'notify', text: `Copied ${hex} to clipboard!` } }, '*');
-    } catch (err) {
-      // Fallback for older browsers
-      const textArea = document.createElement('textarea');
-      textArea.value = hex;
-      document.body.appendChild(textArea);
-      textArea.select();
-      try {
-        document.execCommand('copy');
-        // Show Figma notification
-        parent.postMessage({ pluginMessage: { type: 'notify', text: `Copied ${hex} to clipboard!` } }, '*');
-      } catch (copyErr) {
-        console.error('Failed to copy:', copyErr);
-        parent.postMessage({ pluginMessage: { type: 'notify', text: 'Failed to copy to clipboard' } }, '*');
-      }
-      document.body.removeChild(textArea);
-    }
-  };
-
-  const handleBackClick = () => {
-    if (view === 'combinations') {
-      // First scroll to top immediately
-      if (containerRef.current) {
-        containerRef.current.scrollTop = 0;
-      }
-      
-      // Then update state
-      setView('grid');
-      setSelectedColor(null);
-      setCombinations([]);
-    }
+  const iconButtonStyle: React.CSSProperties = {
+    width: '40px',
+    height: '40px',
+    borderRadius: '8px',
+    border: `1px solid ${theme.border}`,
+    backgroundColor: theme.cardBg,
+    color: theme.text,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '18px',
   };
 
   return (
-    <div className="bg-background min-h-screen p-4 overflow-auto" ref={containerRef}>
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Sanzo Wada Color Library</h1>
-          <ThemeToggle />
-        </div>
-        
-        <div className="flex items-center gap-2 mb-6">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform text-muted-foreground" style={{ width: '16px', height: '16px' }} />
-            <input
-              type="text"
-              placeholder="Search colors..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="input pl-10"
-            />
-          </div>
-          
-          {view === 'combinations' && (
-            <button className="button button-outline" onClick={handleBackClick}>
-              ← Back
+    <div style={{
+      height: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      backgroundColor: theme.bg,
+      color: theme.text,
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      overflow: 'hidden',
+    }}>
+      {/* Header */}
+      <div style={{
+        flexShrink: 0,
+        padding: '16px',
+        borderBottom: `1px solid ${theme.border}`,
+        backgroundColor: theme.bg,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+          <h1 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Sanzo Wada Colors</h1>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {selectedColor && (
+              <button style={iconButtonStyle} onClick={() => setSelectedColor(null)} title="Back">
+                ←
+              </button>
+            )}
+            <button 
+              style={iconButtonStyle} 
+              onClick={() => {
+                const random = colorData.colors[Math.floor(Math.random() * colorData.colors.length)];
+                setSelectedColor(random);
+              }}
+              title="Random"
+            >
+              ⟳
             </button>
-          )}
-          
-          <button className="button button-default" onClick={handleGenerate}>
-            Generate
-          </button>
+            <button style={iconButtonStyle} onClick={() => setIsDark(!isDark)} title="Toggle Theme">
+              {isDark ? '☀️' : '🌙'}
+            </button>
+          </div>
         </div>
 
-        {selectedColor && view === 'combinations' && (
-          <div className="mb-6">
-            <div className="card">
-              <div 
-                className="w-full h-32" 
-                style={{ backgroundColor: selectedColor.hex }} 
-              />
-              <div className="p-4 text-center">
-                <h2 className="text-xl font-bold mb-3 pt-1">{selectedColor.name}</h2>
-                <p className="text-sm text-muted-foreground mb-2">hex: {selectedColor.hex}</p>
-                <p className="text-sm text-muted-foreground mb-2">{formatColorValues(selectedColor).cmyk}</p>
-                <p className="text-sm text-muted-foreground mb-3">{formatColorValues(selectedColor).rgb}</p>
-                <p className="text-sm font-medium pb-1">{combinations.length} combinations</p>
+        <input
+          type="text"
+          placeholder="Search colors..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '12px 16px',
+            borderRadius: '8px',
+            border: `1px solid ${theme.border}`,
+            backgroundColor: theme.inputBg,
+            color: theme.text,
+            fontSize: '14px',
+            outline: 'none',
+            boxSizing: 'border-box',
+            marginBottom: '12px',
+          }}
+        />
+
+        {!selectedColor && (
+          <div style={{ display: 'flex', gap: '4px' }}>
+            {SWATCH_GROUPS.map(g => (
+              <button
+                key={g.id}
+                onClick={() => setSelectedSwatch(g.id)}
+                style={{
+                  flex: 1,
+                  padding: '8px 4px',
+                  borderRadius: '6px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  backgroundColor: selectedSwatch === g.id ? theme.btnActive : theme.btnBg,
+                  color: selectedSwatch === g.id ? theme.btnActiveText : theme.text,
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                {g.name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
+        {!selectedColor ? (
+          // Color Grid
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+            {filteredColors.map(color => {
+              const textColor = getTextColor(color.rgb);
+              const combos = calculateCombinations(color);
+              return (
+                <div
+                  key={color.hex}
+                  onClick={() => setSelectedColor(color)}
+                  style={{
+                    backgroundColor: color.hex,
+                    borderRadius: '8px',
+                    padding: '10px',
+                    cursor: 'pointer',
+                    minHeight: '70px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'flex-end',
+                    boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+                    transition: 'transform 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.03)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  <div style={{ fontWeight: 700, fontSize: '11px', color: textColor, marginBottom: '2px', lineHeight: 1.2 }}>
+                    {color.name}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '9px', color: textColor, opacity: 0.8, fontFamily: 'monospace' }}>
+                      {color.hex.toUpperCase()}
+                    </span>
+                    <span style={{
+                      fontSize: '9px',
+                      color: textColor,
+                      backgroundColor: 'rgba(0,0,0,0.15)',
+                      padding: '1px 5px',
+                      borderRadius: '8px',
+                      fontWeight: 600,
+                    }}>
+                      {combos.length}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+            {filteredColors.length === 0 && (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: theme.textMuted }}>
+                No colors found
               </div>
+            )}
+          </div>
+        ) : (
+          // Detail View
+          <div>
+            {/* Hero */}
+            <div style={{
+              backgroundColor: selectedColor.hex,
+              borderRadius: '16px',
+              padding: '24px',
+              marginBottom: '16px',
+            }}>
+              <h2 style={{
+                fontSize: '24px',
+                fontWeight: 800,
+                color: getTextColor(selectedColor.rgb),
+                margin: '0 0 8px 0',
+              }}>
+                {selectedColor.name}
+              </h2>
+              <p style={{
+                fontSize: '14px',
+                color: getTextColor(selectedColor.rgb),
+                opacity: 0.8,
+                margin: 0,
+                fontFamily: 'monospace',
+              }}>
+                {selectedColor.hex.toUpperCase()}
+              </p>
             </div>
-            
-            <div className="grid gap-3 mt-4">
-              {combinations.map((combo, index) => (
-                <div key={combo.id} className="card">
-                  <div className="p-3">
-                    <h3 className="text-base font-medium mb-3 text-center">Set {index + 1}</h3>
-                    <div className="flex gap-2 flex-wrap justify-center">
-                      {[selectedColor, ...combo.colors].map((color, i) => (
-                        <div
-                          key={i}
-                          className="w-10 h-10 rounded-md cursor-pointer transition-transform hover:scale-110 active:scale-95"
-                          style={{ backgroundColor: color.hex }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCopyHex(color.hex);
-                          }}
-                          title={`${color.name} - ${color.hex}`}
-                        />
-                      ))}
-                    </div>
-                    <GradientButtons colors={[selectedColor, ...combo.colors]} />
+
+            {/* Color Values */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '8px',
+              marginBottom: '16px',
+            }}>
+              {[
+                { label: 'RGB', value: selectedColor.rgb.join(', ') },
+                { label: 'CMYK', value: selectedColor.cmyk.join(', ') },
+                { label: 'HEX', value: selectedColor.hex },
+              ].map(item => (
+                <div
+                  key={item.label}
+                  style={{
+                    backgroundColor: theme.cardBg,
+                    border: `1px solid ${theme.border}`,
+                    borderRadius: '8px',
+                    padding: '12px',
+                    cursor: item.label === 'HEX' ? 'pointer' : 'default',
+                  }}
+                  onClick={() => item.label === 'HEX' && copyToClipboard(item.value, item.value)}
+                >
+                  <div style={{ fontSize: '10px', color: theme.textMuted, marginBottom: '4px', fontWeight: 600 }}>
+                    {item.label}
+                  </div>
+                  <div style={{ fontSize: '12px', fontFamily: 'monospace', color: theme.text }}>
+                    {item.value}
                   </div>
                 </div>
               ))}
             </div>
+
+            {/* Actions */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '24px' }}>
+              <button
+                onClick={() => parent.postMessage({ pluginMessage: { type: 'apply-fill', ...selectedColor } }, '*')}
+                style={{
+                  ...buttonStyle(true),
+                  padding: '14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}
+              >
+                🎨 Apply Fill
+              </button>
+              <button
+                onClick={() => parent.postMessage({ pluginMessage: { type: 'apply-stroke', ...selectedColor } }, '*')}
+                style={{
+                  ...buttonStyle(),
+                  padding: '14px',
+                  border: `1px solid ${theme.border}`,
+                }}
+              >
+                ✏️ Apply Stroke
+              </button>
+              <button
+                onClick={() => parent.postMessage({ pluginMessage: { type: 'create-style', ...selectedColor } }, '*')}
+                style={{
+                  ...buttonStyle(),
+                  padding: '14px',
+                  border: `1px solid ${theme.border}`,
+                }}
+              >
+                ✨ Create Style
+              </button>
+              <button
+                onClick={() => copyToClipboard(selectedColor.hex, selectedColor.hex)}
+                style={{
+                  ...buttonStyle(),
+                  padding: '14px',
+                  border: `1px solid ${theme.border}`,
+                }}
+              >
+                📋 Copy Hex
+              </button>
+            </div>
+
+            {/* Combinations */}
+            <h3 style={{ fontSize: '14px', fontWeight: 700, color: theme.textMuted, marginBottom: '12px' }}>
+              {combinations.length} COMBINATIONS
+            </h3>
+
+            {combinations.map((combo, idx) => {
+              return (
+                <div
+                  key={combo.id}
+                  style={{
+                    backgroundColor: theme.cardBg,
+                    border: `1px solid ${theme.border}`,
+                    borderRadius: '12px',
+                    padding: '16px',
+                    marginBottom: '12px',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: theme.textMuted }}>
+                      Set {idx + 1}
+                    </span>
+                    <button
+                      onClick={() => { setExportColors([selectedColor, ...combo.colors]); setShowExport(true); }}
+                      style={{
+                        ...buttonStyle(),
+                        padding: '6px 12px',
+                        fontSize: '11px',
+                        border: `1px solid ${theme.border}`,
+                      }}
+                    >
+                      📥 Export
+                    </button>
+                  </div>
+
+                  {/* Swatches */}
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                    <div
+                      style={{
+                        width: '48px',
+                        height: '48px',
+                        borderRadius: '8px',
+                        backgroundColor: selectedColor.hex,
+                        cursor: 'pointer',
+                        boxShadow: `0 0 0 3px ${theme.bg}, 0 0 0 5px ${selectedColor.hex}`,
+                      }}
+                      onClick={() => copyToClipboard(selectedColor.hex, selectedColor.hex)}
+                      title={`${selectedColor.name} - Click to copy`}
+                    />
+                    {combo.colors.map(c => (
+                      <div
+                        key={c.hex}
+                        style={{
+                          width: '48px',
+                          height: '48px',
+                          borderRadius: '8px',
+                          backgroundColor: c.hex,
+                          cursor: 'pointer',
+                          transition: 'transform 0.1s ease',
+                        }}
+                        onClick={() => copyToClipboard(c.hex, c.hex)}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                        title={`${c.name} - Click to copy`}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Contrast ratios */}
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                    {combo.colors.map(c => {
+                      const ratio = getContrastRatio(selectedColor.rgb, c.rgb);
+                      const isGood = ratio >= 4.5;
+                      const isOk = ratio >= 3;
+                      return (
+                        <span
+                          key={c.hex}
+                          style={{
+                            fontSize: '10px',
+                            fontWeight: 600,
+                            padding: '3px 8px',
+                            borderRadius: '4px',
+                            backgroundColor: isGood ? '#22c55e' : isOk ? '#f59e0b' : '#6b7280',
+                            color: '#ffffff',
+                          }}
+                          title={`Contrast ratio: ${ratio.toFixed(2)}:1 - ${isGood ? 'Great for all text' : isOk ? 'OK for large text' : 'Low contrast'}`}
+                        >
+                          {ratio.toFixed(1)}:1
+                        </span>
+                      );
+                    })}
+                  </div>
+
+                  {/* Gradient buttons */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+                    {['LINEAR', 'RADIAL', 'ANGULAR', 'DIAMOND'].map(type => (
+                      <button
+                        key={type}
+                        onClick={() => parent.postMessage({ 
+                          pluginMessage: { 
+                            type: 'apply-gradient', 
+                            gradientType: type, 
+                            colors: [selectedColor, ...combo.colors].map(co => ({ hex: co.hex, name: co.name })) 
+                          } 
+                        }, '*')}
+                        style={{
+                          ...buttonStyle(),
+                          padding: '8px 4px',
+                          fontSize: '10px',
+                          border: `1px solid ${theme.border}`,
+                        }}
+                      >
+                        {type.slice(0, 3)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
-
-        <AnimatePresence>
-          {view === 'grid' && (
-            <motion.div 
-              className="grid grid-cols-4 gap-3"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              {filteredColors.map((color: Color) => (
-                <ColorCard 
-                  key={color.hex} 
-                  color={color} 
-                  onClick={handleColorClick}
-                />
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
+
+      {/* Export Modal */}
+      {showExport && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+            zIndex: 100,
+          }}
+          onClick={() => setShowExport(false)}
+        >
+          <div
+            style={{
+              backgroundColor: theme.cardBg,
+              borderRadius: '16px',
+              padding: '20px',
+              width: '100%',
+              maxWidth: '400px',
+              maxHeight: '80vh',
+              overflow: 'auto',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: theme.text }}>Export Palette</h3>
+              <button
+                onClick={() => setShowExport(false)}
+                style={{ ...iconButtonStyle, width: '32px', height: '32px', fontSize: '14px' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {[
+              { label: 'CSS', data: exportColors.map((c, i) => `--color-${i + 1}: ${c.hex};`).join('\n') },
+              { label: 'JSON', data: JSON.stringify(exportColors.map(c => ({ name: c.name, hex: c.hex })), null, 2) },
+            ].map(({ label, data }) => (
+              <div key={label} style={{ marginBottom: '16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: theme.textMuted }}>{label}</span>
+                  <button
+                    onClick={() => copyToClipboard(data, label)}
+                    style={{ ...buttonStyle(), padding: '6px 12px', fontSize: '11px', border: `1px solid ${theme.border}` }}
+                  >
+                    Copy
+                  </button>
+                </div>
+                <pre style={{
+                  backgroundColor: theme.inputBg,
+                  padding: '12px',
+                  borderRadius: '8px',
+                  fontSize: '11px',
+                  fontFamily: 'monospace',
+                  overflow: 'auto',
+                  maxHeight: '120px',
+                  margin: 0,
+                  color: theme.text,
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-all',
+                }}>
+                  {data}
+                </pre>
+              </div>
+            ))}
+
+            <button
+              onClick={() => setShowExport(false)}
+              style={{ ...buttonStyle(true), width: '100%', padding: '14px' }}
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-// Render the app
 const container = document.getElementById('react-page');
 if (container) {
-  const root = createRoot(container);
-  root.render(<App />);
-} else {
-  console.error('Container element not found');
+  createRoot(container).render(<App />);
 }
 
 export default App;
