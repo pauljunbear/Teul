@@ -37,15 +37,15 @@
   - [x] 2.5 Add neutral family data: Gray, Mauve, Slate, Sage, Olive, Sand (light + dark)
   - [x] 2.6 Create types for RadixColorFamily, RadixScale, NeutralFamily
 
-- [ ] 3.0 Build Configuration Modal UI
-  - [ ] 3.1 Create `ColorSystemModal.tsx` component with modal structure using existing Dialog component
-  - [ ] 3.2 Add scale method toggle: "Custom Scales" vs "Radix Match" with description tooltips
-  - [ ] 3.3 Build neutral family selector dropdown with auto-suggest indicator
-  - [ ] 3.4 Create color role assignment UI - display colors with drag/click to assign Primary, Secondary, Accent
-  - [ ] 3.5 Add output detail level picker: Minimal, Detailed, Presentation (with visual previews)
-  - [ ] 3.6 Implement light/dark mode preview toggle with live color swatch updates
-  - [ ] 3.7 Add "Generate" button that collects all config and sends to plugin code
-  - [ ] 3.8 Wire modal to open from main UI when user clicks "Generate Color System" on a combination
+- [x] 3.0 Build Configuration Modal UI
+  - [x] 3.1 Create `ColorSystemModal.tsx` component with modal structure using existing Dialog component
+  - [x] 3.2 Add scale method toggle: "Custom Scales" vs "Radix Match" with description tooltips
+  - [x] 3.3 Build neutral family selector dropdown with auto-suggest indicator
+  - [x] 3.4 Create color role assignment UI - display colors with drag/click to assign Primary, Secondary, Accent
+  - [x] 3.5 Add output detail level picker: Minimal, Detailed, Presentation (with visual previews)
+  - [x] 3.6 Implement light/dark mode preview toggle with live color swatch updates
+  - [x] 3.7 Add "Generate" button that collects all config and sends to plugin code
+  - [x] 3.8 Wire modal to open from main UI when user clicks "Generate Color System" on a combination
 
 - [ ] 4.0 Implement Figma Frame Generation
   - [ ] 4.1 Create `generateColorSystemFrames()` function in `code.ts` that receives config from UI

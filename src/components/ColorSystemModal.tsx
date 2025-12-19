@@ -1,0 +1,576 @@
+import * as React from 'react';
+import { useState, useMemo } from 'react';
+import { 
+  generateColorScale, 
+  generateColorScales,
+  hexToHsl,
+  getContrastingTextColor,
+  type ColorScale 
+} from '../lib/utils';
+import { 
+  findClosestRadixFamily, 
+  getNeutralForAccent, 
+  getNeutralScale,
+  radixColors,
+  neutralFamilies,
+  type NeutralName,
+  type RadixColorFamily
+} from '../lib/radixColors';
+
+// Types
+type ColorRole = 'primary' | 'secondary' | 'accent';
+type ScaleMethod = 'custom' | 'radix-match';
+type OutputDetailLevel = 'minimal' | 'detailed' | 'presentation';
+type ThemeMode = 'light' | 'dark';
+
+interface RoleAssignment {
+  hex: string;
+  name: string;
+  role: ColorRole | null;
+}
+
+interface ColorSystemConfig {
+  sourceColors: { hex: string; name: string }[];
+  roleAssignments: RoleAssignment[];
+  scaleMethod: ScaleMethod;
+  neutralFamily: NeutralName | 'auto';
+  detailLevel: OutputDetailLevel;
+  includeDarkMode: boolean;
+  systemName: string;
+}
+
+interface ColorSystemModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  colors: { hex: string; name: string }[];
+  combinationName: string;
+  isDark: boolean;
+  onGenerate: (config: ColorSystemConfig) => void;
+}
+
+// Get styles based on theme
+const getStyles = (isDark: boolean) => ({
+  bg: isDark ? '#1a1a1a' : '#ffffff',
+  cardBg: isDark ? '#262626' : '#ffffff',
+  text: isDark ? '#ffffff' : '#1a1a1a',
+  textMuted: isDark ? '#a3a3a3' : '#666666',
+  border: isDark ? '#404040' : '#e5e5e5',
+  inputBg: isDark ? '#333333' : '#f5f5f5',
+  btnBg: isDark ? '#333333' : '#f0f0f0',
+  btnHover: isDark ? '#404040' : '#e5e5e5',
+  btnActive: isDark ? '#ffffff' : '#1a1a1a',
+  btnActiveText: isDark ? '#1a1a1a' : '#ffffff',
+  accent: '#3b82f6',
+});
+
+export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
+  isOpen,
+  onClose,
+  colors,
+  combinationName,
+  isDark,
+  onGenerate,
+}) => {
+  const theme = getStyles(isDark);
+  
+  // State
+  const [scaleMethod, setScaleMethod] = useState<ScaleMethod>('custom');
+  const [neutralFamily, setNeutralFamily] = useState<NeutralName | 'auto'>('auto');
+  const [detailLevel, setDetailLevel] = useState<OutputDetailLevel>('detailed');
+  const [previewMode, setPreviewMode] = useState<ThemeMode>('light');
+  const [includeDarkMode, setIncludeDarkMode] = useState(true);
+  const [systemName, setSystemName] = useState(combinationName || 'My Color System');
+  
+  // Initialize role assignments from colors
+  const [roleAssignments, setRoleAssignments] = useState<RoleAssignment[]>(() => 
+    colors.map((c, i) => ({
+      hex: c.hex,
+      name: c.name,
+      role: i === 0 ? 'primary' : i === 1 ? 'secondary' : i === 2 ? 'accent' : null,
+    }))
+  );
+
+  // Auto-suggested neutral based on primary color
+  const suggestedNeutral = useMemo(() => {
+    const primary = roleAssignments.find(r => r.role === 'primary');
+    if (primary) {
+      return getNeutralForAccent(primary.hex);
+    }
+    return 'gray';
+  }, [roleAssignments]);
+
+  const effectiveNeutral = neutralFamily === 'auto' ? suggestedNeutral : neutralFamily;
+
+  // Generate preview scales
+  const previewScales = useMemo(() => {
+    const primary = roleAssignments.find(r => r.role === 'primary');
+    if (!primary) return null;
+
+    if (scaleMethod === 'custom') {
+      return generateColorScale(primary.hex, previewMode, 'Primary');
+    } else {
+      const family = findClosestRadixFamily(primary.hex);
+      return {
+        name: family.displayName,
+        baseHex: primary.hex,
+        steps: Object.entries(previewMode === 'light' ? family.light : family.dark).map(
+          ([step, hex]) => ({ step: parseInt(step), hex, oklch: { l: 0, c: 0, h: 0 }, usage: '' })
+        ),
+        mode: previewMode,
+      } as ColorScale;
+    }
+  }, [roleAssignments, scaleMethod, previewMode]);
+
+  // Handle role assignment
+  const assignRole = (colorHex: string, role: ColorRole | null) => {
+    setRoleAssignments(prev => {
+      // Remove this role from any other color
+      const updated = prev.map(r => ({
+        ...r,
+        role: r.role === role ? null : r.role,
+      }));
+      // Assign to the clicked color
+      return updated.map(r => 
+        r.hex === colorHex ? { ...r, role } : r
+      );
+    });
+  };
+
+  // Handle generate
+  const handleGenerate = () => {
+    onGenerate({
+      sourceColors: colors,
+      roleAssignments,
+      scaleMethod,
+      neutralFamily,
+      detailLevel,
+      includeDarkMode,
+      systemName,
+    });
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  const buttonStyle = (active = false): React.CSSProperties => ({
+    padding: '10px 16px',
+    borderRadius: '8px',
+    border: active ? 'none' : `1px solid ${theme.border}`,
+    cursor: 'pointer',
+    fontSize: '13px',
+    fontWeight: 600,
+    backgroundColor: active ? theme.btnActive : theme.btnBg,
+    color: active ? theme.btnActiveText : theme.text,
+    transition: 'all 0.15s ease',
+  });
+
+  const labelStyle: React.CSSProperties = {
+    fontSize: '12px',
+    fontWeight: 600,
+    color: theme.textMuted,
+    marginBottom: '8px',
+    display: 'block',
+  };
+
+  const sectionStyle: React.CSSProperties = {
+    marginBottom: '20px',
+  };
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '16px',
+        zIndex: 1000,
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          backgroundColor: theme.cardBg,
+          borderRadius: '16px',
+          width: '100%',
+          maxWidth: '480px',
+          maxHeight: '90vh',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div style={{
+          padding: '20px',
+          borderBottom: `1px solid ${theme.border}`,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}>
+          <div>
+            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: theme.text }}>
+              Generate Color System
+            </h2>
+            <p style={{ margin: '4px 0 0', fontSize: '12px', color: theme.textMuted }}>
+              Create a complete design system from your palette
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              border: `1px solid ${theme.border}`,
+              backgroundColor: theme.cardBg,
+              color: theme.text,
+              cursor: 'pointer',
+              fontSize: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Content - Scrollable */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+          {/* System Name */}
+          <div style={sectionStyle}>
+            <label style={labelStyle}>System Name</label>
+            <input
+              type="text"
+              value={systemName}
+              onChange={(e) => setSystemName(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '8px',
+                border: `1px solid ${theme.border}`,
+                backgroundColor: theme.inputBg,
+                color: theme.text,
+                fontSize: '14px',
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
+              placeholder="My Color System"
+            />
+          </div>
+
+          {/* Color Role Assignment */}
+          <div style={sectionStyle}>
+            <label style={labelStyle}>Assign Color Roles</label>
+            <p style={{ fontSize: '11px', color: theme.textMuted, margin: '0 0 12px' }}>
+              Click a role button to assign it to a color
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {roleAssignments.map((assignment) => (
+                <div
+                  key={assignment.hex}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '10px',
+                    backgroundColor: theme.inputBg,
+                    borderRadius: '8px',
+                  }}
+                >
+                  {/* Color swatch */}
+                  <div
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '6px',
+                      backgroundColor: assignment.hex,
+                      flexShrink: 0,
+                    }}
+                  />
+                  
+                  {/* Color info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: theme.text, marginBottom: '2px' }}>
+                      {assignment.name}
+                    </div>
+                    <div style={{ fontSize: '10px', color: theme.textMuted, fontFamily: 'monospace' }}>
+                      {assignment.hex.toUpperCase()}
+                    </div>
+                  </div>
+
+                  {/* Role buttons */}
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    {(['primary', 'secondary', 'accent'] as ColorRole[]).map((role) => (
+                      <button
+                        key={role}
+                        onClick={() => assignRole(assignment.hex, assignment.role === role ? null : role)}
+                        style={{
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          border: assignment.role === role ? 'none' : `1px solid ${theme.border}`,
+                          backgroundColor: assignment.role === role ? theme.accent : 'transparent',
+                          color: assignment.role === role ? '#ffffff' : theme.textMuted,
+                          fontSize: '9px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          textTransform: 'uppercase',
+                        }}
+                      >
+                        {role.slice(0, 3)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Scale Method */}
+          <div style={sectionStyle}>
+            <label style={labelStyle}>Scale Generation Method</label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={() => setScaleMethod('custom')}
+                style={{
+                  ...buttonStyle(scaleMethod === 'custom'),
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  padding: '12px',
+                }}
+              >
+                <span style={{ fontSize: '13px', fontWeight: 700 }}>Custom Scales</span>
+                <span style={{ fontSize: '10px', opacity: 0.7, marginTop: '4px' }}>
+                  Generate from your exact colors
+                </span>
+              </button>
+              <button
+                onClick={() => setScaleMethod('radix-match')}
+                style={{
+                  ...buttonStyle(scaleMethod === 'radix-match'),
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  padding: '12px',
+                }}
+              >
+                <span style={{ fontSize: '13px', fontWeight: 700 }}>Radix Match</span>
+                <span style={{ fontSize: '10px', opacity: 0.7, marginTop: '4px' }}>
+                  Use closest Radix UI scale
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* Neutral Family */}
+          <div style={sectionStyle}>
+            <label style={labelStyle}>Neutral Family</label>
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+              <button
+                onClick={() => setNeutralFamily('auto')}
+                style={{
+                  ...buttonStyle(neutralFamily === 'auto'),
+                  padding: '8px 12px',
+                  fontSize: '12px',
+                }}
+              >
+                Auto ({suggestedNeutral})
+              </button>
+              {neutralFamilies.map((nf) => (
+                <button
+                  key={nf}
+                  onClick={() => setNeutralFamily(nf)}
+                  style={{
+                    ...buttonStyle(neutralFamily === nf),
+                    padding: '8px 12px',
+                    fontSize: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  <span
+                    style={{
+                      width: '12px',
+                      height: '12px',
+                      borderRadius: '3px',
+                      backgroundColor: radixColors[nf].light[9],
+                    }}
+                  />
+                  {nf.charAt(0).toUpperCase() + nf.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Output Detail Level */}
+          <div style={sectionStyle}>
+            <label style={labelStyle}>Output Detail Level</label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {([
+                { id: 'minimal', label: 'Minimal', desc: 'Scales only' },
+                { id: 'detailed', label: 'Detailed', desc: 'Scales + labels' },
+                { id: 'presentation', label: 'Presentation', desc: 'Full framework' },
+              ] as const).map((level) => (
+                <button
+                  key={level.id}
+                  onClick={() => setDetailLevel(level.id)}
+                  style={{
+                    ...buttonStyle(detailLevel === level.id),
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    padding: '12px 8px',
+                  }}
+                >
+                  <span style={{ fontSize: '12px', fontWeight: 700 }}>{level.label}</span>
+                  <span style={{ fontSize: '9px', opacity: 0.7, marginTop: '2px' }}>
+                    {level.desc}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Theme Preview Toggle */}
+          <div style={sectionStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <label style={{ ...labelStyle, margin: 0 }}>Preview</label>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <button
+                  onClick={() => setPreviewMode('light')}
+                  style={{
+                    ...buttonStyle(previewMode === 'light'),
+                    padding: '6px 12px',
+                    fontSize: '11px',
+                  }}
+                >
+                  ☀️ Light
+                </button>
+                <button
+                  onClick={() => setPreviewMode('dark')}
+                  style={{
+                    ...buttonStyle(previewMode === 'dark'),
+                    padding: '6px 12px',
+                    fontSize: '11px',
+                  }}
+                >
+                  🌙 Dark
+                </button>
+              </div>
+            </div>
+
+            {/* Scale Preview */}
+            {previewScales && (
+              <div
+                style={{
+                  backgroundColor: previewMode === 'light' ? '#ffffff' : '#1a1a1a',
+                  borderRadius: '8px',
+                  padding: '12px',
+                  border: `1px solid ${theme.border}`,
+                }}
+              >
+                <div style={{ 
+                  fontSize: '10px', 
+                  fontWeight: 600, 
+                  color: previewMode === 'light' ? '#666' : '#aaa',
+                  marginBottom: '8px',
+                }}>
+                  {scaleMethod === 'radix-match' ? `Matched: ${previewScales.name}` : 'Custom Scale'}
+                </div>
+                <div style={{ display: 'flex', gap: '2px' }}>
+                  {previewScales.steps.map((step) => (
+                    <div
+                      key={step.step}
+                      style={{
+                        flex: 1,
+                        height: '32px',
+                        backgroundColor: step.hex,
+                        borderRadius: step.step === 1 ? '4px 0 0 4px' : step.step === 12 ? '0 4px 4px 0' : '0',
+                      }}
+                      title={`Step ${step.step}: ${step.hex}`}
+                    />
+                  ))}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
+                  <span style={{ fontSize: '8px', color: previewMode === 'light' ? '#999' : '#666' }}>1</span>
+                  <span style={{ fontSize: '8px', color: previewMode === 'light' ? '#999' : '#666' }}>12</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Include Dark Mode Toggle */}
+          <div style={sectionStyle}>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                cursor: 'pointer',
+                padding: '12px',
+                backgroundColor: theme.inputBg,
+                borderRadius: '8px',
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={includeDarkMode}
+                onChange={(e) => setIncludeDarkMode(e.target.checked)}
+                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+              />
+              <div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: theme.text }}>
+                  Include Dark Mode
+                </div>
+                <div style={{ fontSize: '11px', color: theme.textMuted }}>
+                  Generate both light and dark variants
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{
+          padding: '16px 20px',
+          borderTop: `1px solid ${theme.border}`,
+          display: 'flex',
+          gap: '12px',
+        }}>
+          <button
+            onClick={onClose}
+            style={{
+              ...buttonStyle(),
+              flex: 1,
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleGenerate}
+            style={{
+              ...buttonStyle(true),
+              flex: 2,
+              backgroundColor: theme.accent,
+              color: '#ffffff',
+            }}
+          >
+            🎨 Generate Color System
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ColorSystemModal;
+

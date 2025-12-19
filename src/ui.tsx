@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { createRoot } from 'react-dom/client';
 import { colorData } from './colorData';
 import { getContrastRatio, getContrastLevel, colorDistance, rgbToLab } from './lib/utils';
+import { ColorSystemModal } from './components/ColorSystemModal';
 
 interface Color {
   name: string;
@@ -171,6 +172,11 @@ const App: React.FC = () => {
   const [isDark, setIsDark] = useState(true);
   const [showExport, setShowExport] = useState(false);
   const [exportColors, setExportColors] = useState<Color[]>([]);
+  
+  // Color System Modal state
+  const [showColorSystem, setShowColorSystem] = useState(false);
+  const [colorSystemColors, setColorSystemColors] = useState<{ hex: string; name: string }[]>([]);
+  const [colorSystemName, setColorSystemName] = useState('');
 
   const theme = isDark ? styles.dark : styles.light;
 
@@ -496,17 +502,37 @@ const App: React.FC = () => {
                     <span style={{ fontSize: '12px', fontWeight: 600, color: theme.textMuted }}>
                       Set {idx + 1}
                     </span>
-                    <button
-                      onClick={() => { setExportColors([selectedColor, ...combo.colors]); setShowExport(true); }}
-                      style={{
-                        ...buttonStyle(),
-                        padding: '6px 12px',
-                        fontSize: '11px',
-                        border: `1px solid ${theme.border}`,
-                      }}
-                    >
-                      📥 Export
-                    </button>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button
+                        onClick={() => {
+                          const allColors = [selectedColor, ...combo.colors].map(c => ({ hex: c.hex, name: c.name }));
+                          setColorSystemColors(allColors);
+                          setColorSystemName(`${selectedColor.name} Palette`);
+                          setShowColorSystem(true);
+                        }}
+                        style={{
+                          ...buttonStyle(),
+                          padding: '6px 12px',
+                          fontSize: '11px',
+                          border: `1px solid ${theme.border}`,
+                          backgroundColor: '#3b82f6',
+                          color: '#ffffff',
+                        }}
+                      >
+                        🎨 System
+                      </button>
+                      <button
+                        onClick={() => { setExportColors([selectedColor, ...combo.colors]); setShowExport(true); }}
+                        style={{
+                          ...buttonStyle(),
+                          padding: '6px 12px',
+                          fontSize: '11px',
+                          border: `1px solid ${theme.border}`,
+                        }}
+                      >
+                        📥 Export
+                      </button>
+                    </div>
                   </div>
 
                   {/* Swatches */}
@@ -676,6 +702,24 @@ const App: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Color System Modal */}
+      <ColorSystemModal
+        isOpen={showColorSystem}
+        onClose={() => setShowColorSystem(false)}
+        colors={colorSystemColors}
+        combinationName={colorSystemName}
+        isDark={isDark}
+        onGenerate={(config) => {
+          // Send message to plugin code to generate frames
+          parent.postMessage({ 
+            pluginMessage: { 
+              type: 'generate-color-system',
+              config 
+            } 
+          }, '*');
+        }}
+      />
     </div>
   );
 };
