@@ -839,12 +839,14 @@ interface ColorSystemData {
     light: {
       primary?: ColorScaleData;
       secondary?: ColorScaleData;
+      tertiary?: ColorScaleData;
       accent?: ColorScaleData;
       neutral: ColorScaleData;
     };
     dark?: {
       primary?: ColorScaleData;
       secondary?: ColorScaleData;
+      tertiary?: ColorScaleData;
       accent?: ColorScaleData;
       neutral: ColorScaleData;
     };
@@ -852,6 +854,7 @@ interface ColorSystemData {
   usageProportions: {
     primary: number;
     secondary: number;
+    tertiary: number;
     accent: number;
     neutral: number;
   };
@@ -1146,8 +1149,8 @@ function createBWSwatches(size: number = 60): FrameNode {
 
 // Create usage proportion bar
 function createUsageProportionBar(
-  proportions: { primary: number; secondary: number; accent: number; neutral: number },
-  colors: { primary?: string; secondary?: string; accent?: string; neutral: string },
+  proportions: { primary: number; secondary: number; tertiary: number; accent: number; neutral: number },
+  colors: { primary?: string; secondary?: string; tertiary?: string; accent?: string; neutral: string },
   width: number = 400,
   mode: 'light' | 'dark' = 'light'
 ): FrameNode {
@@ -1175,11 +1178,12 @@ function createUsageProportionBar(
   barFrame.cornerRadius = 4;
   barFrame.clipsContent = true;
 
-  const total = proportions.primary + proportions.secondary + proportions.accent + proportions.neutral;
+  const total = proportions.primary + proportions.secondary + proportions.tertiary + proportions.accent + proportions.neutral;
 
   const segments = [
     { key: 'primary', color: colors.primary, proportion: proportions.primary },
     { key: 'secondary', color: colors.secondary, proportion: proportions.secondary },
+    { key: 'tertiary', color: colors.tertiary, proportion: proportions.tertiary },
     { key: 'accent', color: colors.accent, proportion: proportions.accent },
     { key: 'neutral', color: colors.neutral, proportion: proportions.neutral },
   ].filter(s => s.color && s.proportion > 0);
@@ -1232,6 +1236,352 @@ function createUsageProportionBar(
   return container;
 }
 
+// ============================================
+// Color Pairing Guide Functions
+// ============================================
+
+interface ColorInfo {
+  hex: string;
+  name: string;
+  role: string;
+  luminance: number;
+  saturation: number;
+  hue: number;
+}
+
+// Analyze a color for pairing recommendations
+function analyzeColor(hex: string, name: string, role: string): ColorInfo {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  
+  let h = 0, s = 0;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+      case g: h = ((b - r) / d + 2) / 6; break;
+      case b: h = ((r - g) / d + 4) / 6; break;
+    }
+  }
+  
+  return {
+    hex,
+    name,
+    role,
+    luminance: l,
+    saturation: s,
+    hue: h * 360,
+  };
+}
+
+// Get use case suggestion based on color properties
+function getColorUseCase(color: ColorInfo): string {
+  if (color.luminance > 0.7) return "Backgrounds";
+  if (color.luminance < 0.3) return "Text & Details";
+  if (color.saturation > 0.5) return "Accents & CTAs";
+  return "Supporting Elements";
+}
+
+// Generate pairing suggestions from colors
+function generatePairingSuggestions(colors: ColorInfo[]): { 
+  pairs: { colors: ColorInfo[]; name: string; description: string }[];
+  proportionStack: { color: ColorInfo; weight: number }[];
+} {
+  const pairs: { colors: ColorInfo[]; name: string; description: string }[] = [];
+  
+  if (colors.length < 2) {
+    return { pairs: [], proportionStack: colors.map(c => ({ color: c, weight: 1 })) };
+  }
+  
+  // Sort by luminance for contrast pairing
+  const byLuminance = [...colors].sort((a, b) => b.luminance - a.luminance);
+  
+  // High contrast pair (lightest + darkest)
+  if (colors.length >= 2) {
+    pairs.push({
+      colors: [byLuminance[0], byLuminance[byLuminance.length - 1]],
+      name: "High Contrast",
+      description: "Maximum visual impact, great for headlines and CTAs",
+    });
+  }
+  
+  // Adjacent pairs (harmonious)
+  if (colors.length >= 2) {
+    pairs.push({
+      colors: [colors[0], colors[1]],
+      name: "Harmonious Duo",
+      description: "Balanced and cohesive, ideal for branded content",
+    });
+  }
+  
+  // Trio (if 3+ colors)
+  if (colors.length >= 3) {
+    pairs.push({
+      colors: [colors[0], colors[1], colors[2]],
+      name: "Core Trio",
+      description: "Rich palette for illustrations and marketing",
+    });
+  }
+  
+  // Full palette
+  if (colors.length >= 4) {
+    pairs.push({
+      colors: colors.slice(0, 4),
+      name: "Full Palette",
+      description: "Complete expression for maximum visual variety",
+    });
+  }
+  
+  // Calculate proportion stack - more saturated/darker colors get less weight (accents)
+  const proportionStack = colors.map(c => {
+    let weight: number;
+    if (c.luminance > 0.65) weight = 40; // Light colors: backgrounds
+    else if (c.saturation > 0.6 && c.luminance < 0.5) weight = 10; // Saturated dark: accents
+    else if (c.saturation > 0.5) weight = 20; // Saturated: secondary
+    else weight = 30; // Mid-tones: primary elements
+    return { color: c, weight };
+  });
+  
+  // Normalize weights to sum to 100
+  const totalWeight = proportionStack.reduce((sum, p) => sum + p.weight, 0);
+  proportionStack.forEach(p => p.weight = Math.round((p.weight / totalWeight) * 100));
+  
+  return { pairs, proportionStack };
+}
+
+// Create the Color Pairing Guide visual section
+async function createColorPairingGuide(
+  scales: ColorSystemData['scales']['light'],
+  mode: 'light' | 'dark'
+): Promise<FrameNode> {
+  const textColor = mode === 'dark' ? { r: 0.95, g: 0.95, b: 0.95 } : { r: 0.1, g: 0.1, b: 0.1 };
+  const mutedColor = mode === 'dark' ? { r: 0.6, g: 0.6, b: 0.6 } : { r: 0.5, g: 0.5, b: 0.5 };
+  const bgColor = mode === 'dark' ? { r: 0.12, g: 0.12, b: 0.12 } : { r: 0.97, g: 0.97, b: 0.97 };
+
+  // Extract base colors (step 9) from scales
+  const scaleOrder = ['primary', 'secondary', 'tertiary', 'accent'] as const;
+  const colorInfos: ColorInfo[] = [];
+  
+  for (const key of scaleOrder) {
+    const scale = scales[key];
+    if (scale && scale.steps[8]) {
+      colorInfos.push(analyzeColor(scale.steps[8].hex, scale.name, scale.role));
+    }
+  }
+  
+  if (colorInfos.length === 0) {
+    const emptyFrame = figma.createFrame();
+    emptyFrame.name = "Color Pairing Guide";
+    emptyFrame.resize(100, 100);
+    return emptyFrame;
+  }
+  
+  const { pairs, proportionStack } = generatePairingSuggestions(colorInfos);
+
+  // Main container
+  const container = figma.createFrame();
+  container.name = "Color Pairing Guide";
+  container.layoutMode = 'VERTICAL';
+  container.primaryAxisSizingMode = 'AUTO';
+  container.counterAxisSizingMode = 'AUTO';
+  container.itemSpacing = 24;
+  container.fills = [];
+
+  // Section title
+  const sectionTitle = createText("HOW TO USE THIS PALETTE", 11, "Bold", mutedColor);
+  sectionTitle.letterSpacing = { value: 1.5, unit: "PIXELS" };
+  container.appendChild(sectionTitle);
+
+  // --- Proportion Stack (like Robinhood's Jazzy Colors) ---
+  const stackSection = figma.createFrame();
+  stackSection.name = "Visual Proportions";
+  stackSection.layoutMode = 'HORIZONTAL';
+  stackSection.primaryAxisSizingMode = 'AUTO';
+  stackSection.counterAxisSizingMode = 'AUTO';
+  stackSection.itemSpacing = 24;
+  stackSection.fills = [];
+
+  // Stack visualization
+  const stackFrame = figma.createFrame();
+  stackFrame.name = "Stack";
+  stackFrame.layoutMode = 'VERTICAL';
+  stackFrame.primaryAxisSizingMode = 'AUTO';
+  stackFrame.counterAxisSizingMode = 'AUTO';
+  stackFrame.itemSpacing = 2;
+  stackFrame.cornerRadius = 8;
+  stackFrame.clipsContent = true;
+  stackFrame.fills = [];
+
+  // Sort by weight descending for visual hierarchy
+  const sortedStack = [...proportionStack].sort((a, b) => b.weight - a.weight);
+  
+  for (const item of sortedStack) {
+    const height = Math.max(20, (item.weight / 100) * 160); // Scale to max 160px
+    const rect = figma.createRectangle();
+    rect.resize(100, height);
+    rect.fills = [{ type: 'SOLID', color: hexToFigmaRgb(item.color.hex) }];
+    rect.name = `${item.color.name} (${item.weight}%)`;
+    stackFrame.appendChild(rect);
+  }
+
+  stackSection.appendChild(stackFrame);
+
+  // Stack legend
+  const stackLegend = figma.createFrame();
+  stackLegend.name = "Stack Legend";
+  stackLegend.layoutMode = 'VERTICAL';
+  stackLegend.primaryAxisSizingMode = 'AUTO';
+  stackLegend.counterAxisSizingMode = 'AUTO';
+  stackLegend.itemSpacing = 8;
+  stackLegend.fills = [];
+
+  const proportionTitle = createText("Suggested Proportions", 12, "Semi Bold", textColor);
+  stackLegend.appendChild(proportionTitle);
+
+  for (const item of sortedStack) {
+    const row = figma.createFrame();
+    row.layoutMode = 'HORIZONTAL';
+    row.primaryAxisSizingMode = 'AUTO';
+    row.counterAxisSizingMode = 'AUTO';
+    row.itemSpacing = 8;
+    row.fills = [];
+    row.counterAxisAlignItems = 'CENTER';
+
+    const dot = createColorSwatch(item.color.hex, 12, 12, 6);
+    row.appendChild(dot);
+
+    const label = createText(`${item.color.name}: ${item.weight}%`, 11, "Regular", textColor);
+    row.appendChild(label);
+
+    const useCase = createText(`(${getColorUseCase(item.color)})`, 10, "Regular", mutedColor);
+    row.appendChild(useCase);
+
+    stackLegend.appendChild(row);
+  }
+
+  stackSection.appendChild(stackLegend);
+  container.appendChild(stackSection);
+
+  // --- Suggested Pairings ---
+  const pairingsSection = figma.createFrame();
+  pairingsSection.name = "Suggested Pairings";
+  pairingsSection.layoutMode = 'VERTICAL';
+  pairingsSection.primaryAxisSizingMode = 'AUTO';
+  pairingsSection.counterAxisSizingMode = 'AUTO';
+  pairingsSection.itemSpacing = 16;
+  pairingsSection.fills = [];
+
+  const pairingsTitle = createText("Color Combinations", 12, "Semi Bold", textColor);
+  pairingsSection.appendChild(pairingsTitle);
+
+  const pairingsGrid = figma.createFrame();
+  pairingsGrid.name = "Pairings Grid";
+  pairingsGrid.layoutMode = 'HORIZONTAL';
+  pairingsGrid.primaryAxisSizingMode = 'AUTO';
+  pairingsGrid.counterAxisSizingMode = 'AUTO';
+  pairingsGrid.itemSpacing = 16;
+  pairingsGrid.fills = [];
+
+  for (const pair of pairs) {
+    const pairCard = figma.createFrame();
+    pairCard.name = pair.name;
+    pairCard.layoutMode = 'VERTICAL';
+    pairCard.primaryAxisSizingMode = 'AUTO';
+    pairCard.counterAxisSizingMode = 'AUTO';
+    pairCard.itemSpacing = 8;
+    pairCard.paddingLeft = 12;
+    pairCard.paddingRight = 12;
+    pairCard.paddingTop = 12;
+    pairCard.paddingBottom = 12;
+    pairCard.cornerRadius = 8;
+    pairCard.fills = [{ type: 'SOLID', color: bgColor }];
+
+    // Color swatches row
+    const swatchesRow = figma.createFrame();
+    swatchesRow.name = "Swatches";
+    swatchesRow.layoutMode = 'HORIZONTAL';
+    swatchesRow.primaryAxisSizingMode = 'AUTO';
+    swatchesRow.counterAxisSizingMode = 'AUTO';
+    swatchesRow.itemSpacing = -8; // Overlap effect
+    swatchesRow.fills = [];
+
+    for (const color of pair.colors) {
+      const swatch = figma.createEllipse();
+      swatch.resize(32, 32);
+      swatch.fills = [{ type: 'SOLID', color: hexToFigmaRgb(color.hex) }];
+      swatch.strokes = [{ type: 'SOLID', color: mode === 'dark' ? { r: 0.2, g: 0.2, b: 0.2 } : { r: 1, g: 1, b: 1 } }];
+      swatch.strokeWeight = 2;
+      swatchesRow.appendChild(swatch);
+    }
+
+    pairCard.appendChild(swatchesRow);
+
+    // Pairing name
+    const pairName = createText(pair.name, 11, "Semi Bold", textColor);
+    pairCard.appendChild(pairName);
+
+    // Description
+    const pairDesc = createText(pair.description, 9, "Regular", mutedColor);
+    pairDesc.resize(140, pairDesc.height);
+    pairDesc.textAutoResize = 'HEIGHT';
+    pairCard.appendChild(pairDesc);
+
+    pairingsGrid.appendChild(pairCard);
+  }
+
+  pairingsSection.appendChild(pairingsGrid);
+  container.appendChild(pairingsSection);
+
+  // --- Use Case Suggestions ---
+  const useCaseSection = figma.createFrame();
+  useCaseSection.name = "Use Cases";
+  useCaseSection.layoutMode = 'VERTICAL';
+  useCaseSection.primaryAxisSizingMode = 'AUTO';
+  useCaseSection.counterAxisSizingMode = 'AUTO';
+  useCaseSection.itemSpacing = 12;
+  useCaseSection.fills = [];
+
+  const useCaseTitle = createText("Quick Reference", 12, "Semi Bold", textColor);
+  useCaseSection.appendChild(useCaseTitle);
+
+  const useCases = [
+    { label: "Marketing & Social", suggestion: "Use Full Palette or Core Trio for visual energy" },
+    { label: "Website Sections", suggestion: "Dominant color as background, others as accents" },
+    { label: "Illustrations", suggestion: "All colors work together — vary saturation for depth" },
+    { label: "UI Elements", suggestion: "High Contrast pair for buttons and interactive states" },
+  ];
+
+  for (const useCase of useCases) {
+    const row = figma.createFrame();
+    row.layoutMode = 'HORIZONTAL';
+    row.primaryAxisSizingMode = 'AUTO';
+    row.counterAxisSizingMode = 'AUTO';
+    row.itemSpacing = 8;
+    row.fills = [];
+
+    const bullet = createText("→", 10, "Regular", mutedColor);
+    row.appendChild(bullet);
+
+    const labelText = createText(`${useCase.label}:`, 10, "Semi Bold", textColor);
+    row.appendChild(labelText);
+
+    const suggestionText = createText(useCase.suggestion, 10, "Regular", mutedColor);
+    row.appendChild(suggestionText);
+
+    useCaseSection.appendChild(row);
+  }
+
+  container.appendChild(useCaseSection);
+
+  return container;
+}
+
 // Generate MINIMAL layout
 async function generateMinimalLayout(
   scales: ColorSystemData['scales']['light'],
@@ -1254,7 +1604,7 @@ async function generateMinimalLayout(
   }];
 
   // Add scales
-  const scaleOrder = ['primary', 'secondary', 'accent', 'neutral'] as const;
+  const scaleOrder = ['primary', 'secondary', 'tertiary', 'accent', 'neutral'] as const;
   for (const key of scaleOrder) {
     const scale = scales[key];
     if (scale) {
@@ -1292,6 +1642,7 @@ async function generateDetailedLayout(
   const colors = {
     primary: scales.primary?.steps[8]?.hex,
     secondary: scales.secondary?.steps[8]?.hex,
+    tertiary: scales.tertiary?.steps[8]?.hex,
     accent: scales.accent?.steps[8]?.hex,
     neutral: scales.neutral.steps[8].hex,
   };
@@ -1308,14 +1659,26 @@ async function generateDetailedLayout(
   frame.appendChild(divider);
 
   // Add scales with larger swatches
-  const scaleOrder = ['primary', 'secondary', 'accent', 'neutral'] as const;
-  for (const key of scaleOrder) {
+  const scaleOrder2 = ['primary', 'secondary', 'tertiary', 'accent', 'neutral'] as const;
+  for (const key of scaleOrder2) {
     const scale = scales[key];
     if (scale) {
       const row = await createScaleRow(scale, mode, true, 40);
       frame.appendChild(row);
     }
   }
+
+  // Add Color Pairing Guide
+  const pairingDivider = figma.createRectangle();
+  pairingDivider.resize(500, 1);
+  pairingDivider.fills = [{ 
+    type: 'SOLID', 
+    color: mode === 'dark' ? { r: 0.2, g: 0.2, b: 0.2 } : { r: 0.9, g: 0.9, b: 0.9 } 
+  }];
+  frame.appendChild(pairingDivider);
+
+  const pairingGuide = await createColorPairingGuide(scales, mode);
+  frame.appendChild(pairingGuide);
 
   return frame;
 }
@@ -1390,7 +1753,7 @@ async function generatePresentationLayout(
   primaryRow.appendChild(bw);
 
   // Main colors (step 9 of each scale)
-  const mainColors = ['primary', 'secondary', 'accent', 'neutral'] as const;
+  const mainColors = ['primary', 'secondary', 'tertiary', 'accent', 'neutral'] as const;
   for (const key of mainColors) {
     const scale = scales[key];
     if (scale && scale.steps[8]) {
@@ -1561,8 +1924,8 @@ async function generatePresentationLayout(
   extendedSection.appendChild(extendedTitle);
 
   // Add all scales
-  const scaleOrder = ['primary', 'secondary', 'accent', 'neutral'] as const;
-  for (const key of scaleOrder) {
+  const extendedScaleOrder = ['primary', 'secondary', 'tertiary', 'accent', 'neutral'] as const;
+  for (const key of extendedScaleOrder) {
     const scale = scales[key];
     if (scale) {
       const row = await createScaleRow(scale, mode, true, 48);
@@ -1571,6 +1934,10 @@ async function generatePresentationLayout(
   }
 
   frame.appendChild(extendedSection);
+
+  // Color Pairing Guide Section
+  const pairingGuide = await createColorPairingGuide(scales, mode);
+  frame.appendChild(pairingGuide);
 
   return frame;
 }
@@ -1662,12 +2029,14 @@ interface CreateStylesData {
     light: {
       primary?: CreateStylesScaleData;
       secondary?: CreateStylesScaleData;
+      tertiary?: CreateStylesScaleData;
       accent?: CreateStylesScaleData;
       neutral: CreateStylesScaleData;
     };
     dark?: {
       primary?: CreateStylesScaleData;
       secondary?: CreateStylesScaleData;
+      tertiary?: CreateStylesScaleData;
       accent?: CreateStylesScaleData;
       neutral: CreateStylesScaleData;
     };
@@ -1735,9 +2104,9 @@ async function createColorStyles(scalesData: CreateStylesData, systemName: strin
     scales: CreateStylesData['scales']['light'],
     modePath: string
   ) => {
-    const scaleOrder = ['primary', 'secondary', 'accent', 'neutral'] as const;
+    const styleScaleOrder = ['primary', 'secondary', 'tertiary', 'accent', 'neutral'] as const;
     
-    for (const key of scaleOrder) {
+    for (const key of styleScaleOrder) {
       const scale = scales[key];
       if (scale) {
         for (const step of scale.steps) {

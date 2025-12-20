@@ -31,6 +31,7 @@ interface ExportScale {
 interface ExportScales {
   primary?: ExportScale;
   secondary?: ExportScale;
+  tertiary?: ExportScale;
   accent?: ExportScale;
   neutral: ExportScale;
 }
@@ -57,7 +58,7 @@ function exportAsCSS(
   css += `:root {\n`;
   
   // Light mode variables
-  const scaleOrder = ['primary', 'secondary', 'accent', 'neutral'] as const;
+  const scaleOrder = ['primary', 'secondary', 'tertiary', 'accent', 'neutral'] as const;
   for (const key of scaleOrder) {
     const scale = scales[key];
     if (scale) {
@@ -100,7 +101,7 @@ function exportAsTailwind(
   
   const buildColorObject = (scalesData: ExportScales): Record<string, Record<string, string>> => {
     const colors: Record<string, Record<string, string>> = {};
-    const scaleOrder = ['primary', 'secondary', 'accent', 'neutral'] as const;
+    const scaleOrder = ['primary', 'secondary', 'tertiary', 'accent', 'neutral'] as const;
     
     for (const key of scaleOrder) {
       const scale = scalesData[key];
@@ -144,7 +145,7 @@ function exportAsJSON(
 ): string {
   const buildScaleObject = (scalesData: ExportScales) => {
     const result: Record<string, any> = {};
-    const scaleOrder = ['primary', 'secondary', 'accent', 'neutral'] as const;
+    const scaleOrder = ['primary', 'secondary', 'tertiary', 'accent', 'neutral'] as const;
     
     for (const key of scaleOrder) {
       const scale = scalesData[key];
@@ -194,7 +195,7 @@ function copyToClipboard(text: string, label: string) {
 }
 
 // Types
-type ColorRole = 'primary' | 'secondary' | 'accent';
+type ColorRole = 'primary' | 'secondary' | 'tertiary' | 'accent';
 type ScaleMethod = 'custom' | 'radix-match';
 type OutputDetailLevel = 'minimal' | 'detailed' | 'presentation';
 type ThemeMode = 'light' | 'dark';
@@ -269,7 +270,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
         colors.map((c, i) => ({
           hex: c.hex,
           name: c.name,
-          role: i === 0 ? 'primary' : i === 1 ? 'secondary' : i === 2 ? 'accent' : null,
+          role: i === 0 ? 'primary' : i === 1 ? 'secondary' : i === 2 ? 'tertiary' : i === 3 ? 'accent' : null,
         }))
       );
     }
@@ -337,6 +338,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
   const exportScales = useMemo(() => {
     const primary = roleAssignments.find(r => r.role === 'primary');
     const secondary = roleAssignments.find(r => r.role === 'secondary');
+    const tertiary = roleAssignments.find(r => r.role === 'tertiary');
     const accent = roleAssignments.find(r => r.role === 'accent');
     const neutralScale = radixColors[effectiveNeutral];
 
@@ -363,6 +365,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
     const light: ExportScales = {
       primary: buildScale(primary, 'Primary', 'light'),
       secondary: buildScale(secondary, 'Secondary', 'light'),
+      tertiary: buildScale(tertiary, 'Tertiary', 'light'),
       accent: buildScale(accent, 'Accent', 'light'),
       neutral: {
         name: effectiveNeutral.charAt(0).toUpperCase() + effectiveNeutral.slice(1),
@@ -374,6 +377,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
     const dark: ExportScales | undefined = includeDarkMode ? {
       primary: buildScale(primary, 'Primary', 'dark'),
       secondary: buildScale(secondary, 'Secondary', 'dark'),
+      tertiary: buildScale(tertiary, 'Tertiary', 'dark'),
       accent: buildScale(accent, 'Accent', 'dark'),
       neutral: {
         name: effectiveNeutral.charAt(0).toUpperCase() + effectiveNeutral.slice(1),
@@ -452,6 +456,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
     // Build scales data
     const primary = roleAssignments.find(r => r.role === 'primary');
     const secondary = roleAssignments.find(r => r.role === 'secondary');
+    const tertiary = roleAssignments.find(r => r.role === 'tertiary');
     const accent = roleAssignments.find(r => r.role === 'accent');
 
     // Get neutral scale
@@ -471,6 +476,9 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
     }
     if (secondary) {
       lightScales.secondary = generateScaleData(secondary.hex, 'Secondary', secondary.name, 'light');
+    }
+    if (tertiary) {
+      lightScales.tertiary = generateScaleData(tertiary.hex, 'Tertiary', tertiary.name, 'light');
     }
     if (accent) {
       lightScales.accent = generateScaleData(accent.hex, 'Accent', accent.name, 'light');
@@ -493,6 +501,9 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
       if (secondary) {
         darkScales.secondary = generateScaleData(secondary.hex, 'Secondary', secondary.name, 'dark');
       }
+      if (tertiary) {
+        darkScales.tertiary = generateScaleData(tertiary.hex, 'Tertiary', tertiary.name, 'dark');
+      }
       if (accent) {
         darkScales.accent = generateScaleData(accent.hex, 'Accent', accent.name, 'dark');
       }
@@ -500,14 +511,15 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
 
     // Calculate usage proportions based on assigned roles
     const usageProportions = {
-      primary: primary ? 40 : 0,
-      secondary: secondary ? 25 : 0,
-      accent: accent ? 15 : 0,
+      primary: primary ? 35 : 0,
+      secondary: secondary ? 20 : 0,
+      tertiary: tertiary ? 15 : 0,
+      accent: accent ? 10 : 0,
       neutral: 20,
     };
 
     // Adjust if some roles are missing
-    const total = usageProportions.primary + usageProportions.secondary + usageProportions.accent + usageProportions.neutral;
+    const total = usageProportions.primary + usageProportions.secondary + usageProportions.tertiary + usageProportions.accent + usageProportions.neutral;
     if (total < 100) {
       usageProportions.neutral += (100 - total);
     }
@@ -747,11 +759,12 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
 
                     {/* Role buttons */}
                     <div style={{ display: 'flex', gap: '4px' }}>
-                      {(['primary', 'secondary', 'accent'] as ColorRole[]).map((role) => {
+                      {(['primary', 'secondary', 'tertiary', 'accent'] as ColorRole[]).map((role) => {
                         const isSelected = assignment.role === role;
                         const roleColors: Record<ColorRole, string> = {
                           primary: '#3b82f6',
-                          secondary: '#8b5cf6', 
+                          secondary: '#8b5cf6',
+                          tertiary: '#10b981',
                           accent: '#f59e0b',
                         };
                         return (
