@@ -66,6 +66,7 @@ This feature bridges the gap between "I love this layout" and "I can systematica
 2.2. **Modular Grids:**
    - 4×4 unit grid
    - 6×8 unit grid
+   - 5×7 poster grid
    - Flexible module system
 
 2.3. **Web-Standard Grids:**
@@ -73,12 +74,19 @@ This feature bridges the gap between "I love this layout" and "I can systematica
    - 8-column
    - 16-column (dense)
 
-2.4. Each preset stores:
+2.4. **Baseline/Typography Grids:**
+   - 8px baseline (web standard)
+   - 12px baseline (print standard)
+   - 4px sub-grid (fine alignment)
+   - Custom baseline calculator (based on body text size)
+
+2.5. Each preset stores:
    - Column count
    - Gutter width (px or %)
    - Margin (px or %)
    - Row configuration (if modular)
-   - Baseline grid (optional)
+   - Baseline grid height (if typography grid)
+   - Baseline offset (for cap-height alignment)
    - Recommended aspect ratio
 
 ### FR3: Image Analysis Trigger
@@ -195,6 +203,39 @@ frame.layoutGrids = [
 11.3. Useful for comparing reference images against grids
 11.4. Adjustable opacity and color
 
+### FR12: Baseline Typography Grid
+
+12.1. **Baseline Grid Options:**
+   - Standard intervals: 4px, 8px, 12px, 16px
+   - Custom interval input
+   - Offset from top (for cap-height alignment)
+
+12.2. **Baseline Calculator:**
+   - Input: Base font size + line height
+   - Output: Recommended baseline grid value
+   - Example: 16px font × 1.5 line-height = 24px baseline
+
+12.3. **Combined Grids:**
+   - Apply column + baseline grid simultaneously
+   - Independent visibility toggles
+   - Different colors for column vs baseline (red/blue convention)
+
+12.4. **Typography Presets:**
+   - "Web Standard" (8px baseline, 16px body text)
+   - "Editorial Print" (12px baseline, 10pt body)
+   - "Large Format" (16px baseline, 18px body)
+
+### FR13: Grid Combination System
+
+13.1. Allow stacking multiple grid types:
+   - Column grid (vertical structure)
+   - Row/modular grid (horizontal structure)
+   - Baseline grid (typography alignment)
+
+13.2. Each layer independently configurable
+13.3. Combined export as single `layoutGrids` array
+13.4. Preset combinations (e.g., "6-column + 8px baseline")
+
 ## Non-Goals (Out of Scope)
 
 1. Typography baseline grid auto-detection from text in images
@@ -281,8 +322,9 @@ const base64Image = figma.base64Encode(imageBytes);
 ```
 
 ### AI Vision API Integration
-- **Recommended**: Claude Vision API or GPT-4 Vision
-- API key stored securely (user provides or plugin-managed)
+- **Provider**: Claude Vision API (Anthropic)
+- **API Key**: Read from project `.env` file (`ANTHROPIC_API_KEY`)
+- **Model**: `claude-3-5-sonnet-20241022` (or latest vision-capable model)
 - Structured prompt for consistent output:
 
 ```
@@ -329,21 +371,32 @@ Return a JSON object with:
 4. **Save Rate**: % of detected grids saved to user library
 5. **Repeat Usage**: Users returning to apply grids to new projects
 
+## Resolved Decisions
+
+1. **API Key Management**: ✅ Users provide their own API key (stored in `.env` file). No plugin-managed tier.
+
+2. **Development Priority**: ✅ Build both Grid Library and Image Analysis in parallel—they are independent features that complement each other.
+
+3. **AI Provider**: ✅ Claude Vision API (Anthropic) — API keys already configured in project `.env` file.
+
+4. **Plugin Integration**: ✅ Standalone tab/section within the existing Wado Sanzo Color plugin (not a separate plugin).
+
+5. **Grid Complexity**: ✅ Full system including:
+   - Column grids (basic)
+   - Modular grids (rows + columns)
+   - Baseline typography grids (for text alignment)
+
+6. **Offline Mode**: ✅ Grid library presets work fully offline; only AI image analysis requires API connection.
+
 ## Open Questions
 
-1. **API Key Management**: Should users provide their own API key, or should we provide a limited free tier?
-   - *Recommendation*: User provides own key for unlimited use, with option for plugin-provided key with rate limits
-
-2. **Offline Mode**: Should the grid library work offline (presets only, no analysis)?
-   - *Recommendation*: Yes, library presets are fully offline; analysis requires API
-
-3. **Grid Precision**: How should we handle grids that don't fit perfectly into the frame dimensions?
+1. **Grid Precision**: How should we handle grids that don't fit perfectly into the frame dimensions?
    - *Recommendation*: Provide "Fit" and "Exact" modes—Fit scales proportionally, Exact uses precise pixel values
 
-4. **Multi-Image Analysis**: For images with multiple distinct grid sections, how should we present options?
+2. **Multi-Image Analysis**: For images with multiple distinct grid sections, how should we present options?
    - *Recommendation*: Show up to 3 detected grid variations with confidence scores
 
-5. **Integration with Color System**: Should grid presets pair with color system outputs for complete brand toolkits?
+3. **Integration with Color System**: Should grid presets pair with color system outputs for complete brand toolkits?
    - *Recommendation*: Phase 2 feature—allow "Create Brand Kit" combining both
 
 ---
@@ -409,6 +462,74 @@ Return a JSON object with:
   "marginPercent": 6,
   "aspectRatio": "4:5",
   "category": "modular"
+}
+```
+
+### Web Standard Baseline
+```json
+{
+  "name": "Web Standard Baseline",
+  "baselineHeight": 8,
+  "offset": 0,
+  "color": { "r": 0.2, "g": 0.6, "b": 1, "a": 0.15 },
+  "category": "baseline"
+}
+```
+
+### Combined Editorial Grid
+```json
+{
+  "name": "Editorial Complete",
+  "columns": 6,
+  "gutterPercent": 2.5,
+  "marginPercent": 5,
+  "baselineHeight": 12,
+  "baselineOffset": 4,
+  "aspectRatio": "2:3",
+  "category": "combined"
+}
+```
+
+## Appendix: Baseline Grid Reference
+
+### Calculating Baseline Height
+```
+Baseline = Font Size × Line Height
+Example: 16px × 1.5 = 24px baseline
+```
+
+### Common Typography Scales
+
+| Context | Font Size | Line Height | Baseline |
+|---------|-----------|-------------|----------|
+| Web Body | 16px | 1.5 | 24px |
+| Web Small | 14px | 1.5 | 21px |
+| Print Body | 10pt | 1.4 | 14pt |
+| Large Display | 18px | 1.6 | 28.8px → 28px |
+
+### Baseline Grid in Figma
+
+Figma's `layoutGrids` supports baseline grids via the `GRID` pattern:
+
+```typescript
+{
+  pattern: 'GRID',
+  sectionSize: 8,  // baseline height in pixels
+  visible: true,
+  color: { r: 0, g: 0.6, b: 1, a: 0.1 }
+}
+```
+
+For horizontal baselines specifically:
+```typescript
+{
+  pattern: 'ROWS',
+  alignment: 'MIN',
+  gutterSize: 0,
+  count: 100,  // auto-fills based on frame height
+  sectionSize: 8,
+  offset: 0,
+  visible: true
 }
 ```
 

@@ -683,66 +683,101 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
           <div style={sectionStyle}>
             <label style={labelStyle}>Assign Color Roles</label>
             <p style={{ fontSize: '11px', color: theme.textMuted, margin: '0 0 12px' }}>
-              Click a role button to assign it to a color
+              Each role can only be assigned to one color. Click again to unassign.
+              <br />
+              <span style={{ opacity: 0.7 }}>Unassigned colors will not be included in the output.</span>
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {roleAssignments.map((assignment) => (
-                <div
-                  key={assignment.hex}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '10px',
-                    backgroundColor: theme.inputBg,
-                    borderRadius: '8px',
-                  }}
-                >
-                  {/* Color swatch */}
+              {roleAssignments.map((assignment) => {
+                const isUnassigned = assignment.role === null;
+                return (
                   <div
+                    key={assignment.hex}
                     style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '6px',
-                      backgroundColor: assignment.hex,
-                      flexShrink: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      padding: '10px',
+                      backgroundColor: theme.inputBg,
+                      borderRadius: '8px',
+                      opacity: isUnassigned ? 0.5 : 1,
+                      border: isUnassigned ? `1px dashed ${theme.border}` : '1px solid transparent',
+                      transition: 'opacity 0.2s, border 0.2s',
                     }}
-                  />
-                  
-                  {/* Color info */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: '12px', fontWeight: 600, color: theme.text, marginBottom: '2px' }}>
-                      {assignment.name}
+                  >
+                    {/* Color swatch */}
+                    <div
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        borderRadius: '6px',
+                        backgroundColor: assignment.hex,
+                        flexShrink: 0,
+                      }}
+                    />
+                    
+                    {/* Color info */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ 
+                        fontSize: '12px', 
+                        fontWeight: 600, 
+                        color: theme.text, 
+                        marginBottom: '2px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                      }}>
+                        {assignment.name}
+                        {isUnassigned && (
+                          <span style={{ 
+                            fontSize: '9px', 
+                            color: theme.textMuted, 
+                            fontWeight: 400,
+                            fontStyle: 'italic',
+                          }}>
+                            (not included)
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '10px', color: theme.textMuted, fontFamily: 'monospace' }}>
+                        {assignment.hex.toUpperCase()}
+                      </div>
                     </div>
-                    <div style={{ fontSize: '10px', color: theme.textMuted, fontFamily: 'monospace' }}>
-                      {assignment.hex.toUpperCase()}
-                    </div>
-                  </div>
 
-                  {/* Role buttons */}
-                  <div style={{ display: 'flex', gap: '4px' }}>
-                    {(['primary', 'secondary', 'accent'] as ColorRole[]).map((role) => (
-                      <button
-                        key={role}
-                        onClick={() => assignRole(assignment.hex, assignment.role === role ? null : role)}
-                        style={{
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          border: assignment.role === role ? 'none' : `1px solid ${theme.border}`,
-                          backgroundColor: assignment.role === role ? theme.accent : 'transparent',
-                          color: assignment.role === role ? '#ffffff' : theme.textMuted,
-                          fontSize: '9px',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          textTransform: 'uppercase',
-                        }}
-                      >
-                        {role.slice(0, 3)}
-                      </button>
-                    ))}
+                    {/* Role buttons */}
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      {(['primary', 'secondary', 'accent'] as ColorRole[]).map((role) => {
+                        const isSelected = assignment.role === role;
+                        const roleColors: Record<ColorRole, string> = {
+                          primary: '#3b82f6',
+                          secondary: '#8b5cf6', 
+                          accent: '#f59e0b',
+                        };
+                        return (
+                          <button
+                            key={role}
+                            onClick={() => assignRole(assignment.hex, isSelected ? null : role)}
+                            style={{
+                              padding: '4px 8px',
+                              borderRadius: '4px',
+                              border: isSelected ? 'none' : `1px solid ${theme.border}`,
+                              backgroundColor: isSelected ? roleColors[role] : 'transparent',
+                              color: isSelected ? '#ffffff' : theme.textMuted,
+                              fontSize: '9px',
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              textTransform: 'uppercase',
+                              transition: 'all 0.15s ease',
+                            }}
+                          >
+                            {role.slice(0, 3)}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
