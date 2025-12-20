@@ -212,7 +212,7 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
       <motion.div
         initial={{ y: 0 }}
         animate={{ 
-          y: showHeader ? 0 : -120,
+          y: showHeader ? 0 : -110,
           opacity: showHeader ? 1 : 0,
         }}
         transition={{ 
@@ -308,7 +308,7 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
             exit={{ opacity: 0, y: -10 }}
             style={{
               position: 'absolute',
-              top: showHeader ? 85 : 6,
+              top: showHeader ? 100 : 6,
               left: '50%',
               transform: 'translateX(-50%)',
               zIndex: 5,
@@ -339,7 +339,7 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
         style={{
           flex: 1,
           overflowY: 'auto',
-          paddingTop: '85px', // Space for compact fixed header
+          paddingTop: '105px', // Space for header (search + 2 rows of categories)
           paddingLeft: '8px',
           paddingRight: '8px',
           paddingBottom: '40px', // Extra space for last row
