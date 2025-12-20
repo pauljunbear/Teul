@@ -212,24 +212,24 @@ export const GridPresetCard: React.FC<GridPresetCardProps> = ({
     return parts.join(' × ') || (preset.config.baseline ? `${preset.config.baseline.height}px` : '')
   }
   
-  // Calculate preview height based on aspect ratio
+  // Calculate preview height based on aspect ratio - compact
   const getPreviewHeight = () => {
-    if (!preset.aspectRatio) return Math.round(cardWidth * 0.65)
+    if (!preset.aspectRatio) return Math.round(cardWidth * 0.55)
     
     // Parse aspect ratio
-    if (preset.aspectRatio.includes('√2')) return Math.round(cardWidth * 1.414)
-    if (preset.aspectRatio.includes('9:16')) return Math.round(cardWidth * (16/9))
-    if (preset.aspectRatio.includes('16:9')) return Math.round(cardWidth * (9/16))
-    if (preset.aspectRatio.includes('2:3')) return Math.round(cardWidth * 1.5)
-    if (preset.aspectRatio.includes('3:4')) return Math.round(cardWidth * (4/3))
-    if (preset.aspectRatio.includes('4:3')) return Math.round(cardWidth * 0.75)
-    if (preset.aspectRatio.includes('1:1')) return cardWidth
+    if (preset.aspectRatio.includes('√2')) return Math.round(cardWidth * 1.2)
+    if (preset.aspectRatio.includes('9:16')) return Math.round(cardWidth * 1.2)
+    if (preset.aspectRatio.includes('16:9')) return Math.round(cardWidth * 0.5)
+    if (preset.aspectRatio.includes('2:3')) return Math.round(cardWidth * 1.1)
+    if (preset.aspectRatio.includes('3:4')) return Math.round(cardWidth * 0.9)
+    if (preset.aspectRatio.includes('4:3')) return Math.round(cardWidth * 0.65)
+    if (preset.aspectRatio.includes('1:1')) return Math.round(cardWidth * 0.8)
     
-    return Math.round(cardWidth * 0.7) // Default
+    return Math.round(cardWidth * 0.6) // Default
   }
   
-  // Limit preview height for tall ratios
-  const previewHeight = Math.min(getPreviewHeight(), 120)
+  // Limit preview height for tall ratios - more compact
+  const previewHeight = Math.min(getPreviewHeight(), 85)
   
   return (
     <div
@@ -239,21 +239,21 @@ export const GridPresetCard: React.FC<GridPresetCardProps> = ({
       onMouseLeave={() => setIsHovered(false)}
       style={{
         backgroundColor: isSelected ? theme.cardBgSelected : (isHovered ? theme.cardBgHover : theme.cardBg),
-        border: `1.5px solid ${isSelected ? theme.borderSelected : (isHovered ? theme.text + '20' : theme.border)}`,
-        borderRadius: '10px',
-        padding: '10px',
+        border: `1px solid ${isSelected ? theme.borderSelected : (isHovered ? theme.text + '20' : theme.border)}`,
+        borderRadius: '8px',
+        padding: '6px',
         cursor: 'pointer',
         transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-        transform: isHovered ? 'translateY(-2px) scale(1.01)' : 'translateY(0) scale(1)',
+        transform: isHovered ? 'translateY(-1px)' : 'translateY(0)',
         boxShadow: isHovered 
-          ? '0 8px 24px rgba(0,0,0,0.15)' 
-          : (isSelected ? '0 2px 8px rgba(59,130,246,0.2)' : 'none'),
+          ? '0 4px 12px rgba(0,0,0,0.12)' 
+          : (isSelected ? '0 2px 6px rgba(59,130,246,0.15)' : 'none'),
       }}
     >
-      {/* Preview Thumbnail - fills card width */}
+      {/* Preview Thumbnail - compact */}
       <div style={{
-        marginBottom: '8px',
-        borderRadius: '6px',
+        marginBottom: '5px',
+        borderRadius: '4px',
         overflow: 'hidden',
         backgroundColor: isDark ? '#1e1e1e' : '#e8e8e8',
       }}>
@@ -265,17 +265,17 @@ export const GridPresetCard: React.FC<GridPresetCardProps> = ({
         />
       </div>
       
-      {/* Title + Summary Row */}
+      {/* Title + Summary Row - tighter */}
       <div style={{
         display: 'flex',
         alignItems: 'baseline',
         justifyContent: 'space-between',
-        gap: '6px',
-        marginBottom: '6px',
+        gap: '4px',
+        marginBottom: '3px',
       }}>
         <h4 style={{
           margin: 0,
-          fontSize: '11px',
+          fontSize: '10px',
           fontWeight: 600,
           color: theme.text,
           flex: 1,
@@ -286,7 +286,7 @@ export const GridPresetCard: React.FC<GridPresetCardProps> = ({
           {preset.name}
         </h4>
         <span style={{
-          fontSize: '9px',
+          fontSize: '8px',
           color: theme.textMuted,
           fontFamily: 'monospace',
           flexShrink: 0,
@@ -299,15 +299,15 @@ export const GridPresetCard: React.FC<GridPresetCardProps> = ({
       <div style={{
         display: 'flex',
         flexWrap: 'wrap',
-        gap: '3px',
-        minHeight: '18px',
+        gap: '2px',
+        minHeight: '14px',
       }}>
         {preset.tags.slice(0, 2).map(tag => (
           <span
             key={tag}
             style={{
-              fontSize: '8px',
-              padding: '2px 5px',
+              fontSize: '7px',
+              padding: '1px 4px',
               borderRadius: '3px',
               backgroundColor: theme.tagBg,
               color: theme.tagText,
@@ -319,8 +319,8 @@ export const GridPresetCard: React.FC<GridPresetCardProps> = ({
         {preset.aspectRatio && (
           <span
             style={{
-              fontSize: '8px',
-              padding: '2px 5px',
+              fontSize: '7px',
+              padding: '1px 4px',
               borderRadius: '3px',
               backgroundColor: isDark ? '#2d4a3e' : '#d4edda',
               color: isDark ? '#7dd3a0' : '#155724',
@@ -335,8 +335,8 @@ export const GridPresetCard: React.FC<GridPresetCardProps> = ({
       {/* Apply Button - slide in from bottom */}
       <div style={{
         overflow: 'hidden',
-        maxHeight: isHovered || isSelected ? '40px' : '0px',
-        marginTop: isHovered || isSelected ? '8px' : '0px',
+        maxHeight: isHovered || isSelected ? '28px' : '0px',
+        marginTop: isHovered || isSelected ? '5px' : '0px',
         transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
       }}>
         <button
@@ -346,12 +346,12 @@ export const GridPresetCard: React.FC<GridPresetCardProps> = ({
           }}
           style={{
             width: '100%',
-            padding: '7px 10px',
+            padding: '5px 8px',
             border: 'none',
-            borderRadius: '5px',
+            borderRadius: '4px',
             backgroundColor: '#3b82f6',
             color: '#ffffff',
-            fontSize: '10px',
+            fontSize: '9px',
             fontWeight: 600,
             cursor: 'pointer',
             transition: 'background-color 0.15s ease',

@@ -339,10 +339,10 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
         style={{
           flex: 1,
           overflowY: 'auto',
-          paddingTop: '90px', // Space for compact fixed header
-          paddingLeft: '10px',
-          paddingRight: '10px',
-          paddingBottom: '10px',
+          paddingTop: '85px', // Space for compact fixed header
+          paddingLeft: '8px',
+          paddingRight: '8px',
+          paddingBottom: '8px',
         }}
       >
         {filteredPresets.length > 0 ? (
@@ -350,7 +350,7 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: '8px',
+              gap: '6px',
             }}
             initial="hidden"
             animate="visible"
