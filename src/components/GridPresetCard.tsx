@@ -187,80 +187,95 @@ export const GridPresetCard: React.FC<GridPresetCardProps> = ({
 }) => {
   const theme = isDark ? styles.dark : styles.light
   const [isHovered, setIsHovered] = React.useState(false)
+  const cardRef = React.useRef<HTMLDivElement>(null)
+  const [cardWidth, setCardWidth] = React.useState(140)
   
-  // Get grid summary
+  // Measure card width for responsive SVG
+  React.useEffect(() => {
+    if (cardRef.current) {
+      const observer = new ResizeObserver(entries => {
+        for (const entry of entries) {
+          // Card width minus padding (12px * 2) minus border (2px * 2)
+          setCardWidth(entry.contentRect.width)
+        }
+      })
+      observer.observe(cardRef.current)
+      return () => observer.disconnect()
+    }
+  }, [])
+  
+  // Get grid summary - more compact
   const getGridSummary = () => {
     const parts: string[] = []
-    
-    if (preset.config.columns) {
-      parts.push(`${preset.config.columns.count} col`)
-    }
-    if (preset.config.rows) {
-      parts.push(`${preset.config.rows.count} row`)
-    }
-    if (preset.config.baseline) {
-      parts.push(`${preset.config.baseline.height}px baseline`)
-    }
-    
-    return parts.join(' • ')
+    if (preset.config.columns) parts.push(`${preset.config.columns.count} col`)
+    if (preset.config.rows) parts.push(`${preset.config.rows.count} row`)
+    return parts.join(' × ') || (preset.config.baseline ? `${preset.config.baseline.height}px` : '')
   }
   
-  // Get grid type icon
-  const getGridIcon = () => {
-    if (preset.config.rows && preset.config.columns) {
-      return '🔲' // Modular
-    }
-    if (preset.config.baseline && !preset.config.columns) {
-      return '📏' // Baseline only
-    }
-    if (preset.config.columns && preset.config.baseline) {
-      return '🎯' // Combined
-    }
-    return '▤' // Column only
+  // Calculate preview height based on aspect ratio
+  const getPreviewHeight = () => {
+    if (!preset.aspectRatio) return Math.round(cardWidth * 0.65)
+    
+    // Parse aspect ratio
+    if (preset.aspectRatio.includes('√2')) return Math.round(cardWidth * 1.414)
+    if (preset.aspectRatio.includes('9:16')) return Math.round(cardWidth * (16/9))
+    if (preset.aspectRatio.includes('16:9')) return Math.round(cardWidth * (9/16))
+    if (preset.aspectRatio.includes('2:3')) return Math.round(cardWidth * 1.5)
+    if (preset.aspectRatio.includes('3:4')) return Math.round(cardWidth * (4/3))
+    if (preset.aspectRatio.includes('4:3')) return Math.round(cardWidth * 0.75)
+    if (preset.aspectRatio.includes('1:1')) return cardWidth
+    
+    return Math.round(cardWidth * 0.7) // Default
   }
+  
+  // Limit preview height for tall ratios
+  const previewHeight = Math.min(getPreviewHeight(), 120)
   
   return (
     <div
+      ref={cardRef}
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
         backgroundColor: isSelected ? theme.cardBgSelected : (isHovered ? theme.cardBgHover : theme.cardBg),
-        border: `2px solid ${isSelected ? theme.borderSelected : theme.border}`,
-        borderRadius: '12px',
-        padding: '12px',
+        border: `1.5px solid ${isSelected ? theme.borderSelected : (isHovered ? theme.text + '20' : theme.border)}`,
+        borderRadius: '10px',
+        padding: '10px',
         cursor: 'pointer',
-        transition: 'all 0.15s ease',
-        transform: isHovered ? 'translateY(-2px)' : 'translateY(0)',
-        boxShadow: isHovered ? '0 4px 12px rgba(0,0,0,0.15)' : '0 1px 3px rgba(0,0,0,0.1)',
+        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+        transform: isHovered ? 'translateY(-2px) scale(1.01)' : 'translateY(0) scale(1)',
+        boxShadow: isHovered 
+          ? '0 8px 24px rgba(0,0,0,0.15)' 
+          : (isSelected ? '0 2px 8px rgba(59,130,246,0.2)' : 'none'),
       }}
     >
-      {/* Preview Thumbnail */}
+      {/* Preview Thumbnail - fills card width */}
       <div style={{
-        marginBottom: '10px',
+        marginBottom: '8px',
         borderRadius: '6px',
         overflow: 'hidden',
-        border: `1px solid ${theme.border}`,
+        backgroundColor: isDark ? '#1e1e1e' : '#e8e8e8',
       }}>
         <GridPreviewSVG 
           config={preset.config} 
-          width={120} 
-          height={80} 
+          width={cardWidth} 
+          height={previewHeight} 
           isDark={isDark}
         />
       </div>
       
-      {/* Title Row */}
+      {/* Title + Summary Row */}
       <div style={{
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'baseline',
+        justifyContent: 'space-between',
         gap: '6px',
-        marginBottom: '4px',
+        marginBottom: '6px',
       }}>
-        <span style={{ fontSize: '14px' }}>{getGridIcon()}</span>
         <h4 style={{
           margin: 0,
-          fontSize: '12px',
+          fontSize: '11px',
           fontWeight: 600,
           color: theme.text,
           flex: 1,
@@ -270,32 +285,30 @@ export const GridPresetCard: React.FC<GridPresetCardProps> = ({
         }}>
           {preset.name}
         </h4>
+        <span style={{
+          fontSize: '9px',
+          color: theme.textMuted,
+          fontFamily: 'monospace',
+          flexShrink: 0,
+        }}>
+          {getGridSummary()}
+        </span>
       </div>
       
-      {/* Grid Summary */}
-      <p style={{
-        margin: '0 0 8px 0',
-        fontSize: '10px',
-        color: theme.textMuted,
-        fontFamily: 'monospace',
-      }}>
-        {getGridSummary()}
-      </p>
-      
-      {/* Tags (show first 2) */}
+      {/* Tags Row - minimal */}
       <div style={{
         display: 'flex',
         flexWrap: 'wrap',
-        gap: '4px',
-        marginBottom: '10px',
+        gap: '3px',
+        minHeight: '18px',
       }}>
         {preset.tags.slice(0, 2).map(tag => (
           <span
             key={tag}
             style={{
-              fontSize: '9px',
-              padding: '2px 6px',
-              borderRadius: '4px',
+              fontSize: '8px',
+              padding: '2px 5px',
+              borderRadius: '3px',
               backgroundColor: theme.tagBg,
               color: theme.tagText,
             }}
@@ -306,11 +319,12 @@ export const GridPresetCard: React.FC<GridPresetCardProps> = ({
         {preset.aspectRatio && (
           <span
             style={{
-              fontSize: '9px',
-              padding: '2px 6px',
-              borderRadius: '4px',
-              backgroundColor: isDark ? '#2d4a3e' : '#e6f4ea',
-              color: isDark ? '#7dd3a0' : '#137333',
+              fontSize: '8px',
+              padding: '2px 5px',
+              borderRadius: '3px',
+              backgroundColor: isDark ? '#2d4a3e' : '#d4edda',
+              color: isDark ? '#7dd3a0' : '#155724',
+              fontWeight: 600,
             }}
           >
             {preset.aspectRatio}
@@ -318,8 +332,13 @@ export const GridPresetCard: React.FC<GridPresetCardProps> = ({
         )}
       </div>
       
-      {/* Apply Button (show on hover or selected) */}
-      {(isHovered || isSelected) && (
+      {/* Apply Button - slide in from bottom */}
+      <div style={{
+        overflow: 'hidden',
+        maxHeight: isHovered || isSelected ? '40px' : '0px',
+        marginTop: isHovered || isSelected ? '8px' : '0px',
+        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+      }}>
         <button
           onClick={(e) => {
             e.stopPropagation()
@@ -327,26 +346,22 @@ export const GridPresetCard: React.FC<GridPresetCardProps> = ({
           }}
           style={{
             width: '100%',
-            padding: '8px 12px',
+            padding: '7px 10px',
             border: 'none',
-            borderRadius: '6px',
-            backgroundColor: theme.btnBg,
-            color: theme.btnText,
-            fontSize: '11px',
+            borderRadius: '5px',
+            backgroundColor: '#3b82f6',
+            color: '#ffffff',
+            fontSize: '10px',
             fontWeight: 600,
             cursor: 'pointer',
-            transition: 'all 0.15s ease',
+            transition: 'background-color 0.15s ease',
           }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = theme.btnBgHover
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = theme.btnBg
-          }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3b82f6'}
         >
-          Apply to Selection
+          Apply
         </button>
-      )}
+      </div>
     </div>
   )
 }

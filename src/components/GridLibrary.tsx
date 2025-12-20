@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { GridPresetCard } from './GridPresetCard'
 import { SaveGridModal } from './SaveGridModal'
 import { 
@@ -16,6 +17,27 @@ import {
   scaleGridForFrameSize,
 } from '../lib/figmaGrids'
 import type { GridPreset, GridCategory } from '../types/grid'
+
+// Hook for scroll direction detection
+function useScrollDirection() {
+  const [scrollDirection, setScrollDirection] = React.useState<'up' | 'down' | null>(null)
+  const [lastScrollY, setLastScrollY] = React.useState(0)
+  const [isAtTop, setIsAtTop] = React.useState(true)
+  
+  const updateScrollDirection = React.useCallback((scrollY: number) => {
+    setIsAtTop(scrollY < 10)
+    
+    if (scrollY > lastScrollY && scrollY > 50) {
+      setScrollDirection('down')
+    } else if (scrollY < lastScrollY) {
+      setScrollDirection('up')
+    }
+    
+    setLastScrollY(scrollY)
+  }, [lastScrollY])
+  
+  return { scrollDirection, isAtTop, updateScrollDirection }
+}
 
 interface GridLibraryProps {
   isDark: boolean
@@ -48,6 +70,8 @@ const styles = {
 
 export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
   const theme = isDark ? styles.dark : styles.light
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null)
+  const { scrollDirection, isAtTop, updateScrollDirection } = useScrollDirection()
   
   const [selectedCategory, setSelectedCategory] = React.useState<GridCategory | 'all'>('all')
   const [searchQuery, setSearchQuery] = React.useState('')
@@ -60,6 +84,14 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
     name?: string
   } | null>(null)
   const [showSaveModal, setShowSaveModal] = React.useState(false)
+  
+  // Track scroll for header hide/show
+  const handleScroll = React.useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    updateScrollDirection(e.currentTarget.scrollTop)
+  }, [updateScrollDirection])
+  
+  // Show header when search has focus or at top
+  const showHeader = isAtTop || scrollDirection === 'up'
   
   // Get filtered presets
   const filteredPresets = React.useMemo(() => {
@@ -174,150 +206,216 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
       display: 'flex',
       flexDirection: 'column',
       backgroundColor: theme.bg,
+      position: 'relative',
     }}>
-      {/* Search Bar */}
-      <div style={{ padding: '12px 16px', borderBottom: `1px solid ${theme.border}` }}>
-        <input
-          type="text"
-          placeholder="Search grids..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '10px 14px',
-            borderRadius: '8px',
-            border: `1px solid ${theme.border}`,
-            backgroundColor: theme.inputBg,
-            color: theme.text,
-            fontSize: '13px',
-            outline: 'none',
-            boxSizing: 'border-box',
-          }}
-        />
-      </div>
+      {/* Animated Header - hides on scroll down */}
+      <motion.div
+        initial={{ y: 0 }}
+        animate={{ 
+          y: showHeader ? 0 : -150,
+          opacity: showHeader ? 1 : 0,
+        }}
+        transition={{ 
+          type: 'spring', 
+          stiffness: 300, 
+          damping: 30,
+        }}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 10,
+          backgroundColor: theme.bg,
+          borderBottom: `1px solid ${theme.border}`,
+          boxShadow: !isAtTop ? '0 2px 10px rgba(0,0,0,0.1)' : 'none',
+        }}
+      >
+        {/* Search + Categories unified */}
+        <div style={{ padding: '12px 16px 8px' }}>
+          <input
+            type="text"
+            placeholder="Search grids..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '10px 14px',
+              borderRadius: '8px',
+              border: `1px solid ${theme.border}`,
+              backgroundColor: theme.inputBg,
+              color: theme.text,
+              fontSize: '13px',
+              outline: 'none',
+              boxSizing: 'border-box',
+            }}
+          />
+        </div>
+        
+        {/* Category Pills */}
+        <div style={{ padding: '4px 16px 12px' }}>
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '5px',
+          }}>
+            {GRID_CATEGORIES.map(cat => {
+              const count = getPresetCountByCategory(cat.id)
+              const isActive = selectedCategory === cat.id
+              
+              return (
+                <motion.button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '5px 9px',
+                    borderRadius: '12px',
+                    border: isActive ? 'none' : `1px solid ${isDark ? '#333' : '#ddd'}`,
+                    cursor: 'pointer',
+                    fontSize: '10px',
+                    fontWeight: isActive ? 600 : 500,
+                    whiteSpace: 'nowrap',
+                    transition: 'background-color 0.15s ease, color 0.15s ease',
+                    backgroundColor: isActive ? theme.categoryActive : 'transparent',
+                    color: isActive ? theme.categoryActiveText : theme.textMuted,
+                  }}
+                >
+                  <span style={{ fontSize: '10px' }}>{cat.icon}</span>
+                  <span>{cat.name}</span>
+                  <span style={{
+                    fontSize: '9px',
+                    opacity: 0.5,
+                  }}>
+                    {count}
+                  </span>
+                </motion.button>
+              )
+            })}
+          </div>
+        </div>
+      </motion.div>
       
-      {/* Category Pills - wrapping layout */}
-      <div style={{
-        padding: '12px 16px',
-        borderBottom: `1px solid ${theme.border}`,
-      }}>
-        <div style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '6px',
-        }}>
-          {GRID_CATEGORIES.map(cat => {
-            const count = getPresetCountByCategory(cat.id)
-            const isActive = selectedCategory === cat.id
-            
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  padding: '5px 10px',
-                  borderRadius: '14px',
-                  border: isActive ? 'none' : `1px solid ${theme.border}`,
-                  cursor: 'pointer',
-                  fontSize: '10px',
-                  fontWeight: 600,
-                  whiteSpace: 'nowrap',
-                  transition: 'all 0.15s ease',
-                  backgroundColor: isActive ? theme.categoryActive : 'transparent',
-                  color: isActive ? theme.categoryActiveText : theme.textMuted,
+      {/* Selection Status - compact floating pill */}
+      <AnimatePresence>
+        {selectionInfo && !selectionInfo.hasSelection && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            style={{
+              position: 'absolute',
+              top: showHeader ? 115 : 8,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 5,
+              padding: '6px 12px',
+              borderRadius: '16px',
+              backgroundColor: isDark ? '#3a2e1e' : '#fef3e6',
+              border: `1px solid ${isDark ? '#5a4a2a' : '#fcd34d'}`,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+              transition: 'top 0.3s ease',
+            }}
+          >
+            <p style={{
+              margin: 0,
+              fontSize: '10px',
+              fontWeight: 500,
+              color: isDark ? '#fbbf24' : '#b45309',
+            }}>
+              ⚠ Select a frame to apply grids
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Grid Cards - with scroll tracking */}
+      <div 
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          paddingTop: '120px', // Space for fixed header
+          paddingLeft: '12px',
+          paddingRight: '12px',
+          paddingBottom: '12px',
+        }}
+      >
+        {filteredPresets.length > 0 ? (
+          <motion.div 
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '10px',
+            }}
+            initial="hidden"
+            animate="visible"
+            variants={{
+              visible: {
+                transition: {
+                  staggerChildren: 0.03,
+                },
+              },
+            }}
+          >
+            {filteredPresets.map((preset, index) => (
+              <motion.div
+                key={preset.id}
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0 },
+                }}
+                transition={{ 
+                  type: 'spring',
+                  stiffness: 400,
+                  damping: 25,
                 }}
               >
-                <span style={{ fontSize: '11px' }}>{cat.icon}</span>
-                <span>{cat.name}</span>
-                <span style={{
-                  fontSize: '9px',
-                  opacity: 0.6,
-                }}>
-                  {count}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-      </div>
-      
-      {/* Selection Status */}
-      {selectionInfo && (
-        <div style={{
-          padding: '8px 16px',
-          backgroundColor: selectionInfo.hasSelection 
-            ? (isDark ? '#1e3a2f' : '#e6f4ea')
-            : (isDark ? '#3a2e1e' : '#fef3e6'),
-          borderBottom: `1px solid ${theme.border}`,
-        }}>
-          <p style={{
-            margin: 0,
-            fontSize: '11px',
-            color: selectionInfo.hasSelection
-              ? (isDark ? '#7dd3a0' : '#137333')
-              : (isDark ? '#fbbf24' : '#b45309'),
-          }}>
-            {selectionInfo.hasSelection 
-              ? `✓ Selected: ${selectionInfo.name} (${selectionInfo.width}×${selectionInfo.height})`
-              : '⚠ Select a frame to apply grids'
-            }
-          </p>
-        </div>
-      )}
-      
-      {/* Grid Cards */}
-      <div style={{
-        flex: 1,
-        overflowY: 'auto',
-        padding: '16px',
-      }}>
-        {filteredPresets.length > 0 ? (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: '12px',
-          }}>
-            {filteredPresets.map(preset => (
-              <GridPresetCard
-                key={preset.id}
-                preset={preset}
-                isSelected={selectedPreset?.id === preset.id}
-                onClick={() => setSelectedPreset(preset)}
-                onApply={() => {
-                  if (selectionInfo?.hasSelection) {
-                    handleApplyGrid(preset)
-                  } else {
-                    // Don't auto-create frame - warn user instead
-                    parent.postMessage({ 
-                      pluginMessage: { 
-                        type: 'notify', 
-                        text: 'Please select a frame first, or use "Create Frame" button' 
-                      } 
-                    }, '*')
-                    setSelectedPreset(preset)
-                  }
-                }}
-                isDark={isDark}
-              />
+                <GridPresetCard
+                  preset={preset}
+                  isSelected={selectedPreset?.id === preset.id}
+                  onClick={() => setSelectedPreset(preset)}
+                  onApply={() => {
+                    if (selectionInfo?.hasSelection) {
+                      handleApplyGrid(preset)
+                    } else {
+                      parent.postMessage({ 
+                        pluginMessage: { 
+                          type: 'notify', 
+                          text: 'Select a frame first, or use "Create Frame"' 
+                        } 
+                      }, '*')
+                      setSelectedPreset(preset)
+                    }
+                  }}
+                  isDark={isDark}
+                />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         ) : (
-          <div style={{
-            textAlign: 'center',
-            padding: '40px 20px',
-            color: theme.textMuted,
-          }}>
-            <div style={{ fontSize: '48px', marginBottom: '12px', opacity: 0.3 }}>📐</div>
-            <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            style={{
+              textAlign: 'center',
+              padding: '40px 20px',
+              color: theme.textMuted,
+            }}
+          >
+            <div style={{ fontSize: '40px', marginBottom: '12px', opacity: 0.3 }}>📐</div>
+            <p style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
               No grids found
             </p>
-            <p style={{ fontSize: '12px', opacity: 0.7 }}>
-              Try adjusting your search or category filter
+            <p style={{ fontSize: '11px', opacity: 0.6 }}>
+              Try adjusting your search
             </p>
-          </div>
+          </motion.div>
         )}
       </div>
       
