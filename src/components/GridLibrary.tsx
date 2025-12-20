@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { GridPresetCard } from './GridPresetCard'
+import { SaveGridModal } from './SaveGridModal'
 import { 
   GRID_PRESETS, 
   GRID_CATEGORIES, 
@@ -58,6 +59,7 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
     height?: number
     name?: string
   } | null>(null)
+  const [showSaveModal, setShowSaveModal] = React.useState(false)
   
   // Get filtered presets
   const filteredPresets = React.useMemo(() => {
@@ -408,8 +410,48 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
                 + New Frame
               </button>
             )}
+            
+            <button
+              onClick={() => setShowSaveModal(true)}
+              title="Save to My Grids"
+              style={{
+                padding: '10px 16px',
+                border: `1px solid ${theme.border}`,
+                borderRadius: '8px',
+                backgroundColor: 'transparent',
+                color: theme.text,
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              💾
+            </button>
           </div>
         </div>
+      )}
+      
+      {/* Save Grid Modal */}
+      {showSaveModal && selectedPreset && (
+        <SaveGridModal
+          config={selectedPreset.config}
+          suggestedName={`${selectedPreset.name} (Copy)`}
+          source={selectedPreset.name}
+          aspectRatio={selectedPreset.aspectRatio}
+          isDark={isDark}
+          onClose={() => setShowSaveModal(false)}
+          onSave={() => {
+            setShowSaveModal(false)
+            // Notify user
+            parent.postMessage({
+              pluginMessage: {
+                type: 'notify',
+                text: `Saved "${selectedPreset.name}" to My Grids`
+              }
+            }, '*')
+          }}
+        />
       )}
     </div>
   )

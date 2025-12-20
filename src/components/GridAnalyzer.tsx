@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { GridPreview } from './GridPreview'
 import { GridControls } from './GridControls'
+import { SaveGridModal } from './SaveGridModal'
 import { 
   analyzeGridWithClaude, 
   detectedGridToConfig,
@@ -82,6 +83,7 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
   })
   const [originalConfig, setOriginalConfig] = React.useState<GridConfig | null>(null)
   const [detectedGrid, setDetectedGrid] = React.useState<DetectedGrid | null>(null)
+  const [showSaveModal, setShowSaveModal] = React.useState(false)
   
   // Load API key on mount
   React.useEffect(() => {
@@ -806,6 +808,22 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
               + New Frame
             </button>
             <button
+              onClick={() => setShowSaveModal(true)}
+              title="Save to My Grids"
+              style={{
+                padding: '12px 16px',
+                borderRadius: '8px',
+                border: `1px solid ${theme.border}`,
+                backgroundColor: 'transparent',
+                color: theme.text,
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              💾
+            </button>
+            <button
               onClick={() => {
                 setImageData(null)
                 setRawImageData(null)
@@ -851,6 +869,28 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
             <span>New Frame with Reference Image</span>
           </button>
         </div>
+      )}
+      
+      {/* Save Grid Modal */}
+      {showSaveModal && (
+        <SaveGridModal
+          config={gridConfig}
+          suggestedName={imageName ? `${imageName} Grid` : 'Analyzed Grid'}
+          source="Analyzed"
+          detectedData={detectedGrid || undefined}
+          aspectRatio={imageWidth && imageHeight ? `${imageWidth}:${imageHeight}` : undefined}
+          isDark={isDark}
+          onClose={() => setShowSaveModal(false)}
+          onSave={() => {
+            setShowSaveModal(false)
+            parent.postMessage({
+              pluginMessage: {
+                type: 'notify',
+                text: 'Grid saved to My Grids'
+              }
+            }, '*')
+          }}
+        />
       )}
     </div>
   )

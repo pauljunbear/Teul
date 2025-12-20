@@ -12,7 +12,10 @@
 - `src/lib/gridPresets.ts` - Swiss grid preset definitions and data ✅
 - `src/lib/gridAnalysis.ts` - Claude Vision API integration for grid detection ✅
 - `src/lib/gridUtils.ts` - Grid calculation and conversion utilities ✅
-- `src/lib/figmaGrids.ts` - Figma layoutGrids API helpers
+- `src/lib/figmaGrids.ts` - Figma layoutGrids API helpers ✅
+- `src/lib/gridStorage.ts` - User saved grids storage service ✅
+- `src/components/MyGrids.tsx` - User's saved grids list component ✅
+- `src/components/SaveGridModal.tsx` - Modal for saving grids to My Grids ✅
 - `src/types/grid.ts` - TypeScript types for grid system ✅
 - `src/code.ts` - Figma plugin backend (grid creation commands) ✅
 - `src/ui.tsx` - Main UI with Colors/Grids tab switcher ✅
@@ -81,15 +84,15 @@
   - [x] 6.7 Create preset combinations: "6-column + 8px baseline", "12-column + 8px baseline", "4-column + 12px baseline", "4×4 modular + 8px baseline"
   - [x] 6.8 Update GridPreview to render baseline grid lines (horizontal, different color)
 
-- [ ] 7.0 Build User Grid Library (My Grids)
-  - [ ] 7.1 Design saved grid data schema with name, category, description, tags, grid config
-  - [ ] 7.2 Implement save functionality using figma.clientStorage.setAsync
-  - [ ] 7.3 Create "Save Grid" modal: name input, category dropdown, description textarea, tags input
-  - [ ] 7.4 Create MyGrids component: list of saved grids with edit/delete actions
-  - [ ] 7.5 Implement grid editing: update name, category, description of saved grids
-  - [ ] 7.6 Implement grid deletion with confirmation dialog
-  - [ ] 7.7 Add export functionality: download saved grids as JSON file
-  - [ ] 7.8 Add import functionality: upload JSON file to restore grids
+- [x] 7.0 Build User Grid Library (My Grids)
+  - [x] 7.1 Design saved grid data schema with name, category, description, tags, grid config (SavedGrid type)
+  - [x] 7.2 Implement save functionality using localStorage in `src/lib/gridStorage.ts`
+  - [x] 7.3 Create "Save Grid" modal: name input, category dropdown, description textarea, tags input
+  - [x] 7.4 Create MyGrids component: grid card view with search, apply, create frame, edit/delete actions
+  - [x] 7.5 Implement grid editing: update name, description, tags via EditModal
+  - [x] 7.6 Implement grid deletion with DeleteModal confirmation dialog
+  - [x] 7.7 Add export functionality: downloadGridsAsJSON() to download saved grids
+  - [x] 7.8 Add import functionality: importGridsFromFile() to restore grids from JSON
 
 - [ ] 8.0 Polish & Integration
   - [ ] 8.1 Style GridSystemTab to match existing plugin aesthetic (colors, typography, spacing)

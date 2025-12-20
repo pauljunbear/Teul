@@ -2,20 +2,8 @@ import * as React from 'react'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs'
 import { GridLibrary } from './GridLibrary'
 import { GridAnalyzer } from './GridAnalyzer'
-
-const MyGrids: React.FC<{ isDark: boolean }> = ({ isDark }) => (
-  <div style={{
-    padding: '24px',
-    textAlign: 'center',
-    color: isDark ? '#a3a3a3' : '#666666',
-  }}>
-    <div style={{ fontSize: '32px', marginBottom: '12px' }}>💾</div>
-    <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>My Grids</p>
-    <p style={{ fontSize: '12px', opacity: 0.7 }}>
-      Your saved custom grids
-    </p>
-  </div>
-)
+import { MyGrids } from './MyGrids'
+import { getSavedGridCount } from '../lib/gridStorage'
 
 interface GridSystemTabProps {
   isDark: boolean
@@ -50,7 +38,23 @@ const styles = {
 
 export const GridSystemTab: React.FC<GridSystemTabProps> = ({ isDark }) => {
   const [activeTab, setActiveTab] = React.useState('library')
+  const [savedGridCount, setSavedGridCount] = React.useState(0)
   const theme = isDark ? styles.dark : styles.light
+  
+  // Update saved grid count when tab changes
+  React.useEffect(() => {
+    setSavedGridCount(getSavedGridCount())
+  }, [activeTab])
+  
+  // Listen for storage changes
+  React.useEffect(() => {
+    const handleStorageChange = () => {
+      setSavedGridCount(getSavedGridCount())
+    }
+    
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [])
   
   return (
     <div style={{
@@ -73,9 +77,9 @@ export const GridSystemTab: React.FC<GridSystemTabProps> = ({ isDark }) => {
           borderRadius: '8px',
         }}>
           {[
-            { id: 'library', label: 'Library', icon: '📐' },
-            { id: 'analyze', label: 'Analyze', icon: '🔍' },
-            { id: 'my-grids', label: 'My Grids', icon: '💾' },
+            { id: 'library', label: 'Library', icon: '📐', count: undefined },
+            { id: 'analyze', label: 'Analyze', icon: '🔍', count: undefined },
+            { id: 'my-grids', label: 'My Grids', icon: '💾', count: savedGridCount || undefined },
           ].map(tab => (
             <button
               key={tab.id}
@@ -100,6 +104,20 @@ export const GridSystemTab: React.FC<GridSystemTabProps> = ({ isDark }) => {
             >
               <span style={{ fontSize: '14px' }}>{tab.icon}</span>
               {tab.label}
+              {tab.count !== undefined && tab.count > 0 && (
+                <span style={{
+                  padding: '2px 6px',
+                  borderRadius: '10px',
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  backgroundColor: activeTab === tab.id 
+                    ? (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)')
+                    : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'),
+                  color: activeTab === tab.id ? theme.tabActiveText : theme.tabInactiveText,
+                }}>
+                  {tab.count}
+                </span>
+              )}
             </button>
           ))}
         </div>
