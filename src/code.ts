@@ -494,9 +494,11 @@ async function createScaleRow(
     swatchFrame.name = `Step ${step.step}`;
     swatchFrame.layoutMode = 'VERTICAL';
     swatchFrame.primaryAxisSizingMode = 'AUTO';
-    swatchFrame.counterAxisSizingMode = 'AUTO';
+    swatchFrame.counterAxisSizingMode = 'FIXED';
+    swatchFrame.resize(swatchSize, swatchFrame.height);
     swatchFrame.itemSpacing = 2;
     swatchFrame.fills = [];
+    swatchFrame.primaryAxisAlignItems = 'CENTER';
 
     const swatch = createColorSwatch(
       step.hex,
@@ -513,6 +515,7 @@ async function createScaleRow(
         "Regular",
         mode === 'dark' ? { r: 0.6, g: 0.6, b: 0.6 } : { r: 0.5, g: 0.5, b: 0.5 }
       );
+      hexLabel.textAlignHorizontal = 'CENTER';
       swatchFrame.appendChild(hexLabel);
     }
 
@@ -535,9 +538,11 @@ async function createScaleRow(
       const labelFrame = figma.createFrame();
       labelFrame.resize(swatchSize, 14);
       labelFrame.fills = [];
-      labelFrame.layoutMode = 'HORIZONTAL';
+      labelFrame.layoutMode = 'VERTICAL';
       labelFrame.primaryAxisAlignItems = 'CENTER';
       labelFrame.counterAxisAlignItems = 'CENTER';
+      labelFrame.primaryAxisSizingMode = 'FIXED';
+      labelFrame.counterAxisSizingMode = 'FIXED';
 
       const semantic = SEMANTIC_LABELS[i];
       const label = createText(
@@ -546,6 +551,7 @@ async function createScaleRow(
         "Regular",
         mode === 'dark' ? { r: 0.5, g: 0.5, b: 0.5 } : { r: 0.6, g: 0.6, b: 0.6 }
       );
+      label.textAlignHorizontal = 'CENTER';
       labelFrame.appendChild(label);
       labelsContainer.appendChild(labelFrame);
     }
@@ -570,15 +576,18 @@ async function createScaleRow(
       const badgeFrame = figma.createFrame();
       badgeFrame.resize(swatchSize, 14);
       badgeFrame.fills = [];
-      badgeFrame.layoutMode = 'HORIZONTAL';
+      badgeFrame.layoutMode = 'VERTICAL';
       badgeFrame.primaryAxisAlignItems = 'CENTER';
       badgeFrame.counterAxisAlignItems = 'CENTER';
+      badgeFrame.primaryAxisSizingMode = 'FIXED';
+      badgeFrame.counterAxisSizingMode = 'FIXED';
 
       // Only show accessibility for text steps (11, 12) and solid (9)
       if (i === 9 || i === 11 || i === 12) {
         const contrast = calculateContrastRatio(scale.steps[i - 1].hex, bgColor);
         const { rating, color } = getAccessibilityRating(contrast);
         const badge = createText(rating, 6, "Medium", color);
+        badge.textAlignHorizontal = 'CENTER';
         badgeFrame.appendChild(badge);
       }
 
