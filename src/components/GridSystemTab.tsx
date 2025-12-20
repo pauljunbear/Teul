@@ -179,7 +179,7 @@ export const GridSystemTab: React.FC<GridSystemTabProps> = ({ isDark }) => {
         {/* Tab Content */}
         <div style={{
           flex: 1,
-          overflow: 'hidden',
+          overflow: 'auto',
           backgroundColor: theme.bg,
         }}>
           {activeTab === 'library' && <GridLibrary isDark={isDark} />}

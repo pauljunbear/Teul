@@ -342,7 +342,7 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
           paddingTop: '85px', // Space for compact fixed header
           paddingLeft: '8px',
           paddingRight: '8px',
-          paddingBottom: '8px',
+          paddingBottom: '40px', // Extra space for last row
         }}
       >
         {filteredPresets.length > 0 ? (
