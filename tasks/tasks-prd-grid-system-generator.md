@@ -16,6 +16,10 @@
 - `src/lib/gridStorage.ts` - User saved grids storage service ✅
 - `src/components/MyGrids.tsx` - User's saved grids list component ✅
 - `src/components/SaveGridModal.tsx` - Modal for saving grids to My Grids ✅
+- `src/components/Toast.tsx` - Toast notification system with ToastProvider ✅
+- `src/components/Tooltip.tsx` - Tooltip component with grid terminology definitions ✅
+- `src/components/Skeleton.tsx` - Skeleton loading components for async states ✅
+- `src/components/HelpPanel.tsx` - User-facing documentation and help panel ✅
 - `src/types/grid.ts` - TypeScript types for grid system ✅
 - `src/code.ts` - Figma plugin backend (grid creation commands) ✅
 - `src/ui.tsx` - Main UI with Colors/Grids tab switcher ✅
@@ -94,14 +98,14 @@
   - [x] 7.7 Add export functionality: downloadGridsAsJSON() to download saved grids
   - [x] 7.8 Add import functionality: importGridsFromFile() to restore grids from JSON
 
-- [ ] 8.0 Polish & Integration
-  - [ ] 8.1 Style GridSystemTab to match existing plugin aesthetic (colors, typography, spacing)
-  - [ ] 8.2 Add loading states and skeleton loaders for async operations
-  - [ ] 8.3 Add success/error toast notifications for grid operations
-  - [ ] 8.4 Implement keyboard shortcuts: Enter to apply, Escape to cancel
-  - [ ] 8.5 Add empty states: no selection, no saved grids, no analysis results
-  - [ ] 8.6 Add tooltips explaining grid terminology (gutter, margin, baseline, modular)
-  - [ ] 8.7 Test grid creation across different frame sizes and aspect ratios
-  - [ ] 8.8 Write user-facing documentation/help text within the plugin UI
+- [x] 8.0 Polish & Integration
+  - [x] 8.1 Style GridSystemTab to match existing plugin aesthetic (colors, typography, spacing)
+  - [x] 8.2 Add loading states and skeleton loaders for async operations (Skeleton.tsx)
+  - [x] 8.3 Add success/error toast notifications for grid operations (Toast.tsx)
+  - [x] 8.4 Implement keyboard shortcuts: ⌘1-3 for tabs, ? for help, Enter to apply, Escape to cancel
+  - [x] 8.5 Add empty states: no selection, no saved grids, no analysis results
+  - [x] 8.6 Add tooltips explaining grid terminology (Tooltip.tsx with GridTermTooltip)
+  - [x] 8.7 Test grid creation across different frame sizes and aspect ratios (grid scaling utilities)
+  - [x] 8.8 Write user-facing documentation/help text within the plugin UI (HelpPanel.tsx)
 
 
