@@ -246,100 +246,156 @@ const App: React.FC = () => {
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
       overflow: 'hidden',
     }}>
-      {/* Header */}
+      {/* Compact Unified Header */}
       <div style={{
         flexShrink: 0,
-        padding: '16px',
+        padding: '10px 12px',
         borderBottom: `1px solid ${theme.border}`,
         backgroundColor: theme.bg,
       }}>
-        {/* Title and Icons Row */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-          <h1 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Sanzo Wada</h1>
-          <div style={{ display: 'flex', gap: '8px' }}>
+        {/* Top Row: Logo + Main Tabs + Actions */}
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '8px',
+        }}>
+          {/* Logo/Brand - compact */}
+          <div style={{ 
+            fontSize: '13px', 
+            fontWeight: 700, 
+            color: theme.textMuted,
+            minWidth: 'fit-content',
+          }}>
+            SW
+          </div>
+          
+          {/* Main Tabs - pill style */}
+          <div style={{
+            flex: 1,
+            display: 'flex',
+            gap: '2px',
+            padding: '3px',
+            backgroundColor: theme.inputBg,
+            borderRadius: '8px',
+          }}>
+            <button
+              onClick={() => setMainTab('colors')}
+              style={{
+                flex: 1,
+                padding: '6px 12px',
+                borderRadius: '6px',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '11px',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '5px',
+                transition: 'all 0.15s ease',
+                backgroundColor: mainTab === 'colors' ? theme.btnActive : 'transparent',
+                color: mainTab === 'colors' ? theme.btnActiveText : theme.textMuted,
+              }}
+            >
+              <span style={{ fontSize: '12px' }}>🎨</span>
+              Colors
+            </button>
+            <button
+              onClick={() => setMainTab('grids')}
+              style={{
+                flex: 1,
+                padding: '6px 12px',
+                borderRadius: '6px',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '11px',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '5px',
+                transition: 'all 0.15s ease',
+                backgroundColor: mainTab === 'grids' ? theme.btnActive : 'transparent',
+                color: mainTab === 'grids' ? theme.btnActiveText : theme.textMuted,
+              }}
+            >
+              <span style={{ fontSize: '12px' }}>📐</span>
+              Grids
+            </button>
+          </div>
+          
+          {/* Action Buttons - compact */}
+          <div style={{ display: 'flex', gap: '4px' }}>
             {mainTab === 'colors' && selectedColor && (
-              <button style={iconButtonStyle} onClick={() => setSelectedColor(null)} title="Back">
+              <button 
+                onClick={() => setSelectedColor(null)} 
+                title="Back"
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '6px',
+                  border: `1px solid ${theme.border}`,
+                  backgroundColor: 'transparent',
+                  color: theme.text,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '12px',
+                }}
+              >
                 ←
               </button>
             )}
             {mainTab === 'colors' && (
               <button 
-                style={iconButtonStyle} 
                 onClick={() => {
                   const random = colorData.colors[Math.floor(Math.random() * colorData.colors.length)];
                   setSelectedColor(random);
                 }}
                 title="Random"
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '6px',
+                  border: `1px solid ${theme.border}`,
+                  backgroundColor: 'transparent',
+                  color: theme.text,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '12px',
+                }}
               >
                 ⟳
               </button>
             )}
-            <button style={iconButtonStyle} onClick={() => setIsDark(!isDark)} title="Toggle Theme">
+            <button 
+              onClick={() => setIsDark(!isDark)} 
+              title="Toggle Theme"
+              style={{
+                width: '28px',
+                height: '28px',
+                borderRadius: '6px',
+                border: `1px solid ${theme.border}`,
+                backgroundColor: 'transparent',
+                color: theme.text,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '14px',
+              }}
+            >
               {isDark ? '☀️' : '🌙'}
             </button>
           </div>
         </div>
 
-        {/* Main Tab Switcher (Colors / Grids) */}
-        <div style={{
-          display: 'flex',
-          gap: '4px',
-          padding: '4px',
-          backgroundColor: theme.inputBg,
-          borderRadius: '10px',
-          marginBottom: '12px',
-        }}>
-          <button
-            onClick={() => setMainTab('colors')}
-            style={{
-              flex: 1,
-              padding: '10px 16px',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '13px',
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              transition: 'all 0.15s ease',
-              backgroundColor: mainTab === 'colors' ? theme.btnActive : 'transparent',
-              color: mainTab === 'colors' ? theme.btnActiveText : theme.textMuted,
-              boxShadow: mainTab === 'colors' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
-            }}
-          >
-            <span style={{ fontSize: '16px' }}>🎨</span>
-            Colors
-          </button>
-          <button
-            onClick={() => setMainTab('grids')}
-            style={{
-              flex: 1,
-              padding: '10px 16px',
-              borderRadius: '8px',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '13px',
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              transition: 'all 0.15s ease',
-              backgroundColor: mainTab === 'grids' ? theme.btnActive : 'transparent',
-              color: mainTab === 'grids' ? theme.btnActiveText : theme.textMuted,
-              boxShadow: mainTab === 'grids' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
-            }}
-          >
-            <span style={{ fontSize: '16px' }}>📐</span>
-            Grids
-          </button>
-        </div>
-
         {/* Color-specific controls (only show when on Colors tab) */}
         {mainTab === 'colors' && (
-          <>
+          <div style={{ marginTop: '8px' }}>
             <input
               type="text"
               placeholder="Search colors..."
@@ -347,31 +403,30 @@ const App: React.FC = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{
                 width: '100%',
-                padding: '12px 16px',
-                borderRadius: '8px',
+                padding: '8px 12px',
+                borderRadius: '6px',
                 border: `1px solid ${theme.border}`,
                 backgroundColor: theme.inputBg,
                 color: theme.text,
-                fontSize: '14px',
+                fontSize: '12px',
                 outline: 'none',
                 boxSizing: 'border-box',
-                marginBottom: '12px',
               }}
             />
 
             {!selectedColor && (
-              <div style={{ display: 'flex', gap: '4px' }}>
+              <div style={{ display: 'flex', gap: '3px', marginTop: '6px' }}>
                 {SWATCH_GROUPS.map(g => (
                   <button
                     key={g.id}
                     onClick={() => setSelectedSwatch(g.id)}
                     style={{
                       flex: 1,
-                      padding: '8px 4px',
-                      borderRadius: '6px',
+                      padding: '5px 2px',
+                      borderRadius: '5px',
                       border: 'none',
                       cursor: 'pointer',
-                      fontSize: '11px',
+                      fontSize: '10px',
                       fontWeight: 600,
                       backgroundColor: selectedSwatch === g.id ? theme.btnActive : theme.btnBg,
                       color: selectedSwatch === g.id ? theme.btnActiveText : theme.text,
@@ -383,7 +438,7 @@ const App: React.FC = () => {
                 ))}
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
 

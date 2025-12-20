@@ -96,63 +96,55 @@ export const GridSystemTab: React.FC<GridSystemTabProps> = ({ isDark }) => {
         backgroundColor: theme.bg,
         position: 'relative',
       }}>
-        {/* Tab Navigation */}
+        {/* Compact Sub-Navigation */}
         <div style={{
           flexShrink: 0,
-          padding: '12px 16px',
-          borderBottom: `1px solid ${theme.border}`,
+          padding: '6px 12px',
+          backgroundColor: theme.bg,
         }}>
           <div style={{
             display: 'flex',
-            gap: '8px',
+            gap: '6px',
             alignItems: 'center',
           }}>
+            {/* Sub-tabs - text links style */}
             <div style={{
               flex: 1,
               display: 'flex',
-              gap: '4px',
-              padding: '4px',
-              backgroundColor: theme.tabBg,
-              borderRadius: '8px',
+              gap: '2px',
             }}>
               {[
-                { id: 'library', label: 'Library', icon: '📐', count: undefined },
-                { id: 'analyze', label: 'Analyze', icon: '🔍', count: undefined },
-                { id: 'my-grids', label: 'My Grids', icon: '💾', count: savedGridCount || undefined },
+                { id: 'library', label: 'Library', count: undefined },
+                { id: 'analyze', label: 'Analyze', count: undefined },
+                { id: 'my-grids', label: 'Saved', count: savedGridCount || undefined },
               ].map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   style={{
-                    flex: 1,
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px',
-                    padding: '8px 12px',
+                    gap: '4px',
+                    padding: '5px 10px',
                     border: 'none',
-                    borderRadius: '6px',
+                    borderRadius: '5px',
                     cursor: 'pointer',
-                    fontSize: '12px',
-                    fontWeight: 600,
+                    fontSize: '11px',
+                    fontWeight: activeTab === tab.id ? 600 : 500,
                     transition: 'all 0.15s ease',
-                    backgroundColor: activeTab === tab.id ? theme.tabActive : theme.tabInactive,
+                    backgroundColor: activeTab === tab.id ? theme.tabActive : 'transparent',
                     color: activeTab === tab.id ? theme.tabActiveText : theme.tabInactiveText,
-                    boxShadow: activeTab === tab.id ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
                   }}
                 >
-                  <span style={{ fontSize: '14px' }}>{tab.icon}</span>
                   {tab.label}
                   {tab.count !== undefined && tab.count > 0 && (
                     <span style={{
-                      padding: '2px 6px',
-                      borderRadius: '10px',
-                      fontSize: '10px',
-                      fontWeight: 700,
-                      backgroundColor: activeTab === tab.id 
-                        ? (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)')
-                        : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'),
-                      color: activeTab === tab.id ? theme.tabActiveText : theme.tabInactiveText,
+                      padding: '1px 5px',
+                      borderRadius: '8px',
+                      fontSize: '9px',
+                      fontWeight: 600,
+                      backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
+                      color: theme.tabInactiveText,
                     }}>
                       {tab.count}
                     </span>
@@ -161,8 +153,26 @@ export const GridSystemTab: React.FC<GridSystemTabProps> = ({ isDark }) => {
               ))}
             </div>
             
-            {/* Help Button */}
-            <HelpButton onClick={() => setShowHelp(true)} isDark={isDark} />
+            {/* Help Button - smaller */}
+            <button
+              onClick={() => setShowHelp(true)}
+              style={{
+                width: '24px',
+                height: '24px',
+                borderRadius: '5px',
+                border: `1px solid ${theme.border}`,
+                backgroundColor: 'transparent',
+                color: theme.tabInactiveText,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '11px',
+              }}
+              title="Help (F1)"
+            >
+              ?
+            </button>
           </div>
         </div>
 

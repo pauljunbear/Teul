@@ -212,7 +212,7 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
       <motion.div
         initial={{ y: 0 }}
         animate={{ 
-          y: showHeader ? 0 : -150,
+          y: showHeader ? 0 : -120,
           opacity: showHeader ? 1 : 0,
         }}
         transition={{ 
@@ -227,12 +227,11 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
           right: 0,
           zIndex: 10,
           backgroundColor: theme.bg,
-          borderBottom: `1px solid ${theme.border}`,
-          boxShadow: !isAtTop ? '0 2px 10px rgba(0,0,0,0.1)' : 'none',
+          boxShadow: !isAtTop ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
         }}
       >
         {/* Search + Categories unified */}
-        <div style={{ padding: '12px 16px 8px' }}>
+        <div style={{ padding: '8px 12px 6px' }}>
           <input
             type="text"
             placeholder="Search grids..."
@@ -240,24 +239,24 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
               width: '100%',
-              padding: '10px 14px',
-              borderRadius: '8px',
+              padding: '8px 12px',
+              borderRadius: '6px',
               border: `1px solid ${theme.border}`,
               backgroundColor: theme.inputBg,
               color: theme.text,
-              fontSize: '13px',
+              fontSize: '12px',
               outline: 'none',
               boxSizing: 'border-box',
             }}
           />
         </div>
         
-        {/* Category Pills */}
-        <div style={{ padding: '4px 16px 12px' }}>
+        {/* Category Pills - more compact */}
+        <div style={{ padding: '2px 12px 8px' }}>
           <div style={{
             display: 'flex',
             flexWrap: 'wrap',
-            gap: '5px',
+            gap: '4px',
           }}>
             {GRID_CATEGORIES.map(cat => {
               const count = getPresetCountByCategory(cat.id)
@@ -272,12 +271,12 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '4px',
-                    padding: '5px 9px',
-                    borderRadius: '12px',
+                    gap: '3px',
+                    padding: '4px 7px',
+                    borderRadius: '10px',
                     border: isActive ? 'none' : `1px solid ${isDark ? '#333' : '#ddd'}`,
                     cursor: 'pointer',
-                    fontSize: '10px',
+                    fontSize: '9px',
                     fontWeight: isActive ? 600 : 500,
                     whiteSpace: 'nowrap',
                     transition: 'background-color 0.15s ease, color 0.15s ease',
@@ -285,10 +284,10 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
                     color: isActive ? theme.categoryActiveText : theme.textMuted,
                   }}
                 >
-                  <span style={{ fontSize: '10px' }}>{cat.icon}</span>
+                  <span style={{ fontSize: '9px' }}>{cat.icon}</span>
                   <span>{cat.name}</span>
                   <span style={{
-                    fontSize: '9px',
+                    fontSize: '8px',
                     opacity: 0.5,
                   }}>
                     {count}
@@ -309,25 +308,25 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
             exit={{ opacity: 0, y: -10 }}
             style={{
               position: 'absolute',
-              top: showHeader ? 115 : 8,
+              top: showHeader ? 85 : 6,
               left: '50%',
               transform: 'translateX(-50%)',
               zIndex: 5,
-              padding: '6px 12px',
-              borderRadius: '16px',
+              padding: '4px 10px',
+              borderRadius: '12px',
               backgroundColor: isDark ? '#3a2e1e' : '#fef3e6',
               border: `1px solid ${isDark ? '#5a4a2a' : '#fcd34d'}`,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
               transition: 'top 0.3s ease',
             }}
           >
             <p style={{
               margin: 0,
-              fontSize: '10px',
+              fontSize: '9px',
               fontWeight: 500,
               color: isDark ? '#fbbf24' : '#b45309',
             }}>
-              ⚠ Select a frame to apply grids
+              ⚠ Select a frame to apply
             </p>
           </motion.div>
         )}
@@ -340,10 +339,10 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
         style={{
           flex: 1,
           overflowY: 'auto',
-          paddingTop: '120px', // Space for fixed header
-          paddingLeft: '12px',
-          paddingRight: '12px',
-          paddingBottom: '12px',
+          paddingTop: '90px', // Space for compact fixed header
+          paddingLeft: '10px',
+          paddingRight: '10px',
+          paddingBottom: '10px',
         }}
       >
         {filteredPresets.length > 0 ? (
@@ -351,7 +350,7 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: '10px',
+              gap: '8px',
             }}
             initial="hidden"
             animate="visible"
