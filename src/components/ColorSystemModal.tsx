@@ -799,30 +799,32 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
               >
                 Auto ({suggestedNeutral})
               </button>
-              {neutralFamilies.map((nf) => (
-                <button
-                  key={nf}
-                  onClick={() => setNeutralFamily(nf)}
-                  style={{
-                    ...buttonStyle(neutralFamily === nf),
-                    padding: '8px 12px',
-                    fontSize: '12px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                  }}
-                >
-                  <span
+              {neutralFamilies.map((nf) => {
+                const scale = radixColors[nf].light;
+                return (
+                  <button
+                    key={nf}
+                    onClick={() => setNeutralFamily(nf)}
                     style={{
-                      width: '12px',
-                      height: '12px',
-                      borderRadius: '3px',
-                      backgroundColor: radixColors[nf].light[9],
+                      ...buttonStyle(neutralFamily === nf),
+                      padding: '8px 12px',
+                      fontSize: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
                     }}
-                  />
-                  {nf.charAt(0).toUpperCase() + nf.slice(1)}
-                </button>
-              ))}
+                  >
+                    {/* Mini gradient strip showing the neutral family's tint */}
+                    <div style={{ display: 'flex', borderRadius: '3px', overflow: 'hidden' }}>
+                      <span style={{ width: '8px', height: '16px', backgroundColor: scale[3] }} />
+                      <span style={{ width: '8px', height: '16px', backgroundColor: scale[6] }} />
+                      <span style={{ width: '8px', height: '16px', backgroundColor: scale[9] }} />
+                      <span style={{ width: '8px', height: '16px', backgroundColor: scale[11] }} />
+                    </div>
+                    {nf.charAt(0).toUpperCase() + nf.slice(1)}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
