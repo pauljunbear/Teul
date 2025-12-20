@@ -60,6 +60,7 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
   
   // API Key
   const [apiKey, setApiKey] = React.useState<string>('')
+  const [showApiKeyInput, setShowApiKeyInput] = React.useState(false)
   
   // Analysis result
   const [result, setResult] = React.useState<AnalysisResult | null>(null)
@@ -73,7 +74,11 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
       return
     }
     const storedKey = loadApiKey()
-    if (storedKey) setApiKey(storedKey)
+    if (storedKey) {
+      setApiKey(storedKey)
+    } else {
+      setShowApiKeyInput(true)
+    }
   }, [])
   
   // Listen for messages from Figma
@@ -156,10 +161,11 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
     parent.postMessage({ pluginMessage: { type: 'export-image-for-analysis' } }, '*')
   }
   
-  // Save API key
+  // Save API key and hide input
   const handleSaveKey = () => {
     if (apiKey.trim()) {
       saveApiKey(apiKey.trim())
+      setShowApiKeyInput(false)
     }
   }
   
@@ -313,8 +319,8 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
         overflowY: 'auto',
         padding: '16px',
       }}>
-        {/* API Key Input */}
-        {!apiKey && (
+        {/* API Key Section */}
+        {showApiKeyInput ? (
           <div style={{
             padding: '16px',
             backgroundColor: theme.cardBg,
@@ -370,6 +376,34 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
             <p style={{ margin: '8px 0 0', fontSize: '10px', color: theme.textMuted }}>
               Get your key at console.anthropic.com
             </p>
+          </div>
+        ) : apiKey && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '10px 12px',
+            backgroundColor: theme.successBg,
+            borderRadius: '6px',
+            marginBottom: '16px',
+          }}>
+            <span style={{ fontSize: '12px', color: theme.successText }}>
+              ✓ API key saved
+            </span>
+            <button
+              onClick={() => setShowApiKeyInput(true)}
+              style={{
+                padding: '4px 8px',
+                borderRadius: '4px',
+                border: 'none',
+                backgroundColor: 'transparent',
+                color: theme.successText,
+                fontSize: '11px',
+                cursor: 'pointer',
+              }}
+            >
+              Edit
+            </button>
           </div>
         )}
         
