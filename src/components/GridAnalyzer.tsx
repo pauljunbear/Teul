@@ -85,8 +85,16 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
   const [detectedGrid, setDetectedGrid] = React.useState<DetectedGrid | null>(null)
   const [showSaveModal, setShowSaveModal] = React.useState(false)
   
-  // Load API key on mount
+  // Load API key on mount - check env first, then localStorage
   React.useEffect(() => {
+    // Check for env variable first (set at build time)
+    const envKey = (typeof process !== 'undefined' && process.env?.ANTHROPIC_API_KEY) || ''
+    if (envKey) {
+      setApiKey(envKey)
+      return
+    }
+    
+    // Fall back to localStorage
     const storedKey = loadApiKey()
     if (storedKey) {
       setApiKey(storedKey)

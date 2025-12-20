@@ -7,3 +7,8 @@ out/
 dist/
 code.js
 .DS_Store
+
+# Environment files
+.env
+.env.local
+.env*.local

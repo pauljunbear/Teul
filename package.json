@@ -31,6 +31,7 @@
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "css-loader": "^6.8.1",
+    "dotenv": "^17.2.3",
     "html-webpack-plugin": "^5.5.3",
     "json-loader": "^0.5.7",
     "postcss-loader": "^8.1.1",
