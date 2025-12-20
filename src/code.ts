@@ -260,7 +260,7 @@ figma.ui.onmessage = async (msg) => {
       // Color rectangle
       const rect = figma.createRectangle();
       rect.resize(80, 60);
-      rect.cornerRadius = 8;
+      rect.cornerRadius = 4;
       rect.fills = [{ type: 'SOLID', color: hexToFigmaRgb(color.hex) }];
       swatch.appendChild(rect);
       
@@ -361,6 +361,55 @@ interface ColorSystemData {
   };
 }
 
+// Semantic labels for each step (following Radix UI conventions)
+const SEMANTIC_LABELS: Record<number, { short: string; full: string }> = {
+  1:  { short: 'App BG',         full: 'App Background' },
+  2:  { short: 'Subtle BG',      full: 'Subtle Background' },
+  3:  { short: 'Element BG',     full: 'UI Element Background' },
+  4:  { short: 'Hovered',        full: 'Hovered Element BG' },
+  5:  { short: 'Active',         full: 'Active/Selected Element BG' },
+  6:  { short: 'Subtle Border',  full: 'Subtle Border' },
+  7:  { short: 'Border',         full: 'Border' },
+  8:  { short: 'Focus Ring',     full: 'Border Focus/Hover' },
+  9:  { short: 'Solid',          full: 'Solid Background' },
+  10: { short: 'Solid Hover',    full: 'Solid Hover' },
+  11: { short: 'Text Low',       full: 'Low Contrast Text' },
+  12: { short: 'Text High',      full: 'High Contrast Text' },
+};
+
+// Calculate relative luminance
+function getRelativeLuminance(hex: string): number {
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  
+  const toLinear = (c: number) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  
+  return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+}
+
+// Calculate contrast ratio between two hex colors
+function calculateContrastRatio(hex1: string, hex2: string): number {
+  const l1 = getRelativeLuminance(hex1);
+  const l2 = getRelativeLuminance(hex2);
+  const lighter = Math.max(l1, l2);
+  const darker = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+// Get accessibility rating
+function getAccessibilityRating(contrast: number): { rating: string; color: RGB } {
+  if (contrast >= 7) {
+    return { rating: 'AAA', color: { r: 0.13, g: 0.55, b: 0.13 } };
+  } else if (contrast >= 4.5) {
+    return { rating: 'AA', color: { r: 0.2, g: 0.6, b: 0.86 } };
+  } else if (contrast >= 3) {
+    return { rating: 'AA Large', color: { r: 0.9, g: 0.65, b: 0.15 } };
+  } else {
+    return { rating: 'Fail', color: { r: 0.8, g: 0.2, b: 0.2 } };
+  }
+}
+
 // Font loading helper
 async function loadFonts() {
   await figma.loadFontAsync({ family: "Inter", style: "Regular" });
@@ -453,7 +502,7 @@ async function createScaleRow(
       step.hex,
       swatchSize,
       swatchSize,
-      step.step === 1 ? 4 : step.step === 12 ? 4 : 0
+      4 // Consistent border-radius
     );
     swatchFrame.appendChild(swatch);
 
@@ -472,35 +521,71 @@ async function createScaleRow(
 
   row.appendChild(swatchesContainer);
 
-  // Step numbers
+  // Semantic labels row
   if (showLabels) {
-    const numbersContainer = figma.createFrame();
-    numbersContainer.name = "Step Numbers";
-    numbersContainer.layoutMode = 'HORIZONTAL';
-    numbersContainer.primaryAxisSizingMode = 'AUTO';
-    numbersContainer.counterAxisSizingMode = 'AUTO';
-    numbersContainer.itemSpacing = 2;
-    numbersContainer.fills = [];
+    const labelsContainer = figma.createFrame();
+    labelsContainer.name = "Semantic Labels";
+    labelsContainer.layoutMode = 'HORIZONTAL';
+    labelsContainer.primaryAxisSizingMode = 'AUTO';
+    labelsContainer.counterAxisSizingMode = 'AUTO';
+    labelsContainer.itemSpacing = 2;
+    labelsContainer.fills = [];
 
     for (let i = 1; i <= 12; i++) {
-      const numFrame = figma.createFrame();
-      numFrame.resize(swatchSize, 12);
-      numFrame.fills = [];
-      numFrame.layoutMode = 'HORIZONTAL';
-      numFrame.primaryAxisAlignItems = 'CENTER';
-      numFrame.counterAxisAlignItems = 'CENTER';
+      const labelFrame = figma.createFrame();
+      labelFrame.resize(swatchSize, 14);
+      labelFrame.fills = [];
+      labelFrame.layoutMode = 'HORIZONTAL';
+      labelFrame.primaryAxisAlignItems = 'CENTER';
+      labelFrame.counterAxisAlignItems = 'CENTER';
 
-      const num = createText(
-        i.toString(),
-        8,
+      const semantic = SEMANTIC_LABELS[i];
+      const label = createText(
+        semantic.short,
+        6,
         "Regular",
         mode === 'dark' ? { r: 0.5, g: 0.5, b: 0.5 } : { r: 0.6, g: 0.6, b: 0.6 }
       );
-      numFrame.appendChild(num);
-      numbersContainer.appendChild(numFrame);
+      labelFrame.appendChild(label);
+      labelsContainer.appendChild(labelFrame);
     }
 
-    row.appendChild(numbersContainer);
+    row.appendChild(labelsContainer);
+  }
+
+  // Accessibility badges for text steps (11 and 12)
+  if (showLabels && scale.steps.length >= 12) {
+    const accessibilityRow = figma.createFrame();
+    accessibilityRow.name = "Accessibility";
+    accessibilityRow.layoutMode = 'HORIZONTAL';
+    accessibilityRow.primaryAxisSizingMode = 'AUTO';
+    accessibilityRow.counterAxisSizingMode = 'AUTO';
+    accessibilityRow.itemSpacing = 2;
+    accessibilityRow.fills = [];
+
+    // Calculate contrast of text colors (11, 12) against app background (1)
+    const bgColor = scale.steps[0].hex; // Step 1 - app background
+    
+    for (let i = 1; i <= 12; i++) {
+      const badgeFrame = figma.createFrame();
+      badgeFrame.resize(swatchSize, 14);
+      badgeFrame.fills = [];
+      badgeFrame.layoutMode = 'HORIZONTAL';
+      badgeFrame.primaryAxisAlignItems = 'CENTER';
+      badgeFrame.counterAxisAlignItems = 'CENTER';
+
+      // Only show accessibility for text steps (11, 12) and solid (9)
+      if (i === 9 || i === 11 || i === 12) {
+        const contrast = calculateContrastRatio(scale.steps[i - 1].hex, bgColor);
+        const { rating, color } = getAccessibilityRating(contrast);
+        const badge = createText(rating, 6, "Medium", color);
+        badgeFrame.appendChild(badge);
+      }
+
+      accessibilityRow.appendChild(badgeFrame);
+    }
+
+    row.appendChild(accessibilityRow);
   }
 
   return row;
@@ -525,7 +610,7 @@ function createBWSwatches(size: number = 60): FrameNode {
   blackFrame.itemSpacing = 4;
   blackFrame.fills = [];
 
-  const blackSwatch = createColorSwatch('#000000', size, size, 8);
+  const blackSwatch = createColorSwatch('#000000', size, size, 4);
   blackFrame.appendChild(blackSwatch);
 
   const blackLabel = createText("Black", 10, "Medium", { r: 0.3, g: 0.3, b: 0.3 });
@@ -540,7 +625,7 @@ function createBWSwatches(size: number = 60): FrameNode {
   whiteFrame.itemSpacing = 4;
   whiteFrame.fills = [];
 
-  const whiteSwatch = createColorSwatch('#FFFFFF', size, size, 8);
+  const whiteSwatch = createColorSwatch('#FFFFFF', size, size, 4);
   whiteSwatch.strokes = [{ type: 'SOLID', color: { r: 0.9, g: 0.9, b: 0.9 } }];
   whiteSwatch.strokeWeight = 1;
   whiteFrame.appendChild(whiteSwatch);
@@ -812,7 +897,7 @@ async function generatePresentationLayout(
       colorFrame.itemSpacing = 4;
       colorFrame.fills = [];
 
-      const swatch = createColorSwatch(scale.steps[8].hex, 80, 80, 8);
+      const swatch = createColorSwatch(scale.steps[8].hex, 80, 80, 4);
       colorFrame.appendChild(swatch);
 
       const label = createText(scale.role, 10, "Medium", mutedColor);
@@ -838,6 +923,125 @@ async function generatePresentationLayout(
   const proportionBar = createUsageProportionBar(proportions, colors, 600, mode);
   frame.appendChild(proportionBar);
 
+  // Semantic Categories Section
+  const semanticSection = figma.createFrame();
+  semanticSection.name = "Semantic Categories";
+  semanticSection.layoutMode = 'VERTICAL';
+  semanticSection.primaryAxisSizingMode = 'AUTO';
+  semanticSection.counterAxisSizingMode = 'AUTO';
+  semanticSection.itemSpacing = 24;
+  semanticSection.fills = [];
+
+  const semanticTitle = createText("SEMANTIC USAGE GUIDE", 11, "Bold", mutedColor);
+  semanticTitle.letterSpacing = { value: 1.5, unit: "PIXELS" };
+  semanticSection.appendChild(semanticTitle);
+
+  // Define semantic groups
+  const semanticGroups = [
+    { name: "BACKGROUNDS", steps: [1, 2, 3, 4, 5], description: "App backgrounds, UI elements, hover & active states" },
+    { name: "BORDERS", steps: [6, 7, 8], description: "Subtle borders, default borders, focus rings" },
+    { name: "INTERACTIVE", steps: [9, 10], description: "Buttons, badges, solid backgrounds" },
+    { name: "TEXT", steps: [11, 12], description: "Secondary and primary text colors" },
+  ];
+
+  for (const group of semanticGroups) {
+    const groupFrame = figma.createFrame();
+    groupFrame.name = group.name;
+    groupFrame.layoutMode = 'VERTICAL';
+    groupFrame.primaryAxisSizingMode = 'AUTO';
+    groupFrame.counterAxisSizingMode = 'AUTO';
+    groupFrame.itemSpacing = 8;
+    groupFrame.fills = [];
+
+    // Group title
+    const groupTitleRow = figma.createFrame();
+    groupTitleRow.layoutMode = 'HORIZONTAL';
+    groupTitleRow.primaryAxisSizingMode = 'AUTO';
+    groupTitleRow.counterAxisSizingMode = 'AUTO';
+    groupTitleRow.itemSpacing = 12;
+    groupTitleRow.fills = [];
+
+    const groupTitle = createText(group.name, 10, "Bold", textColor);
+    groupTitle.letterSpacing = { value: 1, unit: "PIXELS" };
+    groupTitleRow.appendChild(groupTitle);
+
+    const groupDesc = createText(group.description, 9, "Regular", mutedColor);
+    groupTitleRow.appendChild(groupDesc);
+    groupFrame.appendChild(groupTitleRow);
+
+    // Swatches for each role in this group
+    const roleSwatches = figma.createFrame();
+    roleSwatches.layoutMode = 'HORIZONTAL';
+    roleSwatches.primaryAxisSizingMode = 'AUTO';
+    roleSwatches.counterAxisSizingMode = 'AUTO';
+    roleSwatches.itemSpacing = 16;
+    roleSwatches.fills = [];
+
+    const roles = ['primary', 'secondary', 'accent', 'neutral'] as const;
+    for (const roleKey of roles) {
+      const scale = scales[roleKey];
+      if (!scale) continue;
+
+      const roleColumn = figma.createFrame();
+      roleColumn.layoutMode = 'VERTICAL';
+      roleColumn.primaryAxisSizingMode = 'AUTO';
+      roleColumn.counterAxisSizingMode = 'AUTO';
+      roleColumn.itemSpacing = 4;
+      roleColumn.fills = [];
+
+      // Role label
+      const roleLabel = createText(roleKey.toUpperCase(), 7, "Medium", mutedColor);
+      roleColumn.appendChild(roleLabel);
+
+      // Swatches row for this role
+      const swatchRow = figma.createFrame();
+      swatchRow.layoutMode = 'HORIZONTAL';
+      swatchRow.primaryAxisSizingMode = 'AUTO';
+      swatchRow.counterAxisSizingMode = 'AUTO';
+      swatchRow.itemSpacing = 2;
+      swatchRow.fills = [];
+
+      for (const stepNum of group.steps) {
+        const step = scale.steps[stepNum - 1];
+        if (!step) continue;
+
+        const swatchContainer = figma.createFrame();
+        swatchContainer.layoutMode = 'VERTICAL';
+        swatchContainer.primaryAxisSizingMode = 'AUTO';
+        swatchContainer.counterAxisSizingMode = 'AUTO';
+        swatchContainer.itemSpacing = 2;
+        swatchContainer.fills = [];
+
+        const swatch = createColorSwatch(step.hex, 32, 32, 4);
+        swatchContainer.appendChild(swatch);
+
+        // Step label
+        const semantic = SEMANTIC_LABELS[stepNum];
+        const stepLabel = createText(semantic.short, 5, "Regular", mutedColor);
+        swatchContainer.appendChild(stepLabel);
+
+        // Accessibility badge for text colors
+        if (stepNum === 11 || stepNum === 12) {
+          const bgColor = scale.steps[0].hex;
+          const contrast = calculateContrastRatio(step.hex, bgColor);
+          const { rating, color } = getAccessibilityRating(contrast);
+          const badge = createText(rating, 5, "Medium", color);
+          swatchContainer.appendChild(badge);
+        }
+
+        swatchRow.appendChild(swatchContainer);
+      }
+
+      roleColumn.appendChild(swatchRow);
+      roleSwatches.appendChild(roleColumn);
+    }
+
+    groupFrame.appendChild(roleSwatches);
+    semanticSection.appendChild(groupFrame);
+  }
+
+  frame.appendChild(semanticSection);
+
   // Extended Palette Section
   const extendedSection = figma.createFrame();
   extendedSection.name = "Extended Palette";
@@ -847,12 +1051,12 @@ async function generatePresentationLayout(
   extendedSection.itemSpacing = 16;
   extendedSection.fills = [];
 
-  const extendedTitle = createText("EXTENDED PALETTE", 11, "Bold", mutedColor);
+  const extendedTitle = createText("FULL COLOR SCALES", 11, "Bold", mutedColor);
   extendedTitle.letterSpacing = { value: 1.5, unit: "PIXELS" };
   extendedSection.appendChild(extendedTitle);
 
   // Add all scales
-  const scaleOrder = ['neutral', 'primary', 'secondary', 'accent'] as const;
+  const scaleOrder = ['primary', 'secondary', 'accent', 'neutral'] as const;
   for (const key of scaleOrder) {
     const scale = scales[key];
     if (scale) {
