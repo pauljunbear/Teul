@@ -13,7 +13,8 @@
     "allowedDomains": [
       "https://unpkg.com",
       "https://*.unpkg.com",
-      "https://api.anthropic.com"
+      "https://api.anthropic.com",
+      "https://corsproxy.io"
     ]
   }
 }

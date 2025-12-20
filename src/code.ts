@@ -92,13 +92,18 @@ figma.ui.onmessage = async (msg) => {
   }
 
   // ============================================
-  // Claude Vision API Call (routed through main thread for CORS)
+  // Claude Vision API Call (using CORS proxy for browser compatibility)
   // ============================================
   if (msg.type === 'analyze-grid-with-claude') {
     const { imageData, width, height, apiKey } = msg;
     
+    // Anthropic API doesn't support CORS, so we use a proxy
+    // Note: For production, consider setting up your own proxy
+    const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
+    const CORS_PROXY = 'https://corsproxy.io/?';
+    
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await fetch(CORS_PROXY + encodeURIComponent(ANTHROPIC_URL), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
