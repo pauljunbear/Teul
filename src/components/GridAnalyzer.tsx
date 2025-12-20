@@ -247,15 +247,16 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
     parent.postMessage({ pluginMessage: message }, '*')
   }
   
-  // Create new frame
+  // Create new frame with same dimensions as analyzed image
   const handleCreateFrame = () => {
     const config = resultToGridConfig()
+    // Use actual analyzed image dimensions
     const width = imageWidth || 800
     const height = imageHeight || 1000
     
     const message = buildCreateGridFrameMessage({
       config,
-      frameName: `Analyzed ${result?.columns.count || 4}-Column Grid`,
+      frameName: `${result?.columns.count || 4}-col Grid (${width}×${height})`,
       width,
       height,
       positionNearSelection: true,
@@ -527,37 +528,38 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
             <div style={{
               display: 'flex',
               justifyContent: 'center',
-              marginBottom: '20px',
+              marginBottom: '10px',
             }}>
               {renderGridPreview()}
             </div>
             
             {/* Grid Info Card */}
             <div style={{
-              padding: '16px',
+              padding: '10px 12px',
               backgroundColor: theme.cardBg,
-              borderRadius: '8px',
-              marginBottom: '16px',
+              borderRadius: '6px',
+              marginBottom: '10px',
               border: `1px solid ${theme.border}`,
             }}>
               <div style={{ 
                 display: 'flex', 
                 justifyContent: 'space-between', 
                 alignItems: 'center',
-                marginBottom: '12px',
+                marginBottom: '6px',
               }}>
-                <h4 style={{ 
-                  margin: 0, 
-                  fontSize: '14px', 
+                <span style={{ 
+                  fontSize: '11px', 
                   fontWeight: 600, 
-                  color: theme.text 
+                  color: theme.textMuted,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
                 }}>
                   Suggested Grid
-                </h4>
+                </span>
                 <span style={{
-                  padding: '4px 10px',
-                  borderRadius: '12px',
-                  fontSize: '11px',
+                  padding: '2px 8px',
+                  borderRadius: '10px',
+                  fontSize: '10px',
                   fontWeight: 600,
                   backgroundColor: result.confidence >= 70 
                     ? theme.successBg 
@@ -570,49 +572,42 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
                     ? theme.warningText 
                     : theme.errorText,
                 }}>
-                  {result.confidence}% confidence
+                  {result.confidence}%
                 </span>
               </div>
               
-              {/* Grid Stats */}
+              {/* Grid Stats - Inline */}
               <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '12px',
-                marginBottom: '12px',
+                display: 'flex',
+                gap: '16px',
+                marginBottom: '8px',
               }}>
-                <div>
-                  <div style={{ fontSize: '10px', color: theme.textMuted, marginBottom: '2px' }}>
-                    COLUMNS
-                  </div>
-                  <div style={{ fontSize: '18px', fontWeight: 700, color: theme.text }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                  <span style={{ fontSize: '16px', fontWeight: 700, color: theme.text }}>
                     {result.columns.count}
-                  </div>
+                  </span>
+                  <span style={{ fontSize: '10px', color: theme.textMuted }}>col</span>
                 </div>
-                <div>
-                  <div style={{ fontSize: '10px', color: theme.textMuted, marginBottom: '2px' }}>
-                    GUTTER
-                  </div>
-                  <div style={{ fontSize: '18px', fontWeight: 700, color: theme.text }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                  <span style={{ fontSize: '16px', fontWeight: 700, color: theme.text }}>
                     {result.columns.gutter}%
-                  </div>
+                  </span>
+                  <span style={{ fontSize: '10px', color: theme.textMuted }}>gutter</span>
                 </div>
-                <div>
-                  <div style={{ fontSize: '10px', color: theme.textMuted, marginBottom: '2px' }}>
-                    MARGIN
-                  </div>
-                  <div style={{ fontSize: '18px', fontWeight: 700, color: theme.text }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                  <span style={{ fontSize: '16px', fontWeight: 700, color: theme.text }}>
                     {result.columns.margin}%
-                  </div>
+                  </span>
+                  <span style={{ fontSize: '10px', color: theme.textMuted }}>margin</span>
                 </div>
               </div>
               
               {/* Description */}
               <p style={{
                 margin: 0,
-                fontSize: '12px',
+                fontSize: '11px',
                 color: theme.textMuted,
-                lineHeight: 1.5,
+                lineHeight: 1.4,
                 fontStyle: 'italic',
               }}>
                 "{result.description}"
@@ -624,15 +619,15 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
               onClick={handleAnalyze}
               style={{
                 width: '100%',
-                padding: '10px',
-                borderRadius: '6px',
+                padding: '6px',
+                borderRadius: '4px',
                 border: `1px solid ${theme.border}`,
                 backgroundColor: 'transparent',
                 color: theme.textMuted,
-                fontSize: '12px',
+                fontSize: '11px',
                 fontWeight: 500,
                 cursor: 'pointer',
-                marginBottom: '16px',
+                marginBottom: '10px',
               }}
             >
               ↻ Re-analyze
@@ -644,53 +639,53 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
       {/* Action Buttons - Fixed at Bottom */}
       {result && (
         <div style={{
-          padding: '12px 16px',
+          padding: '8px 12px',
           borderTop: `1px solid ${theme.border}`,
           backgroundColor: theme.bg,
           display: 'flex',
-          gap: '8px',
+          gap: '6px',
         }}>
           <button
             onClick={handleApply}
             style={{
               flex: 2,
-              padding: '12px',
-              borderRadius: '8px',
+              padding: '8px 12px',
+              borderRadius: '6px',
               border: 'none',
               backgroundColor: '#3b82f6',
               color: '#fff',
-              fontSize: '13px',
+              fontSize: '11px',
               fontWeight: 600,
               cursor: 'pointer',
             }}
           >
-            ✓ Apply to Selection
+            Apply
           </button>
           <button
             onClick={handleCreateFrame}
             style={{
               flex: 1,
-              padding: '12px',
-              borderRadius: '8px',
+              padding: '8px 12px',
+              borderRadius: '6px',
               border: `1px solid ${theme.border}`,
               backgroundColor: theme.cardBg,
               color: theme.text,
-              fontSize: '13px',
+              fontSize: '11px',
               fontWeight: 600,
               cursor: 'pointer',
             }}
           >
-            + New Frame
+            + Frame
           </button>
           <button
             onClick={() => setShowSaveModal(true)}
             style={{
-              padding: '12px',
-              borderRadius: '8px',
+              padding: '8px 10px',
+              borderRadius: '6px',
               border: `1px solid ${theme.border}`,
               backgroundColor: theme.cardBg,
               color: theme.text,
-              fontSize: '16px',
+              fontSize: '12px',
               cursor: 'pointer',
             }}
             title="Save to My Grids"
