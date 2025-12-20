@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { SaveGridModal } from './SaveGridModal'
+import { buildApplyGridMessage, buildCreateGridFrameMessage } from '../lib/figmaGrids'
 import type { GridConfig } from '../types/grid'
 
 interface GridAnalyzerProps {
@@ -184,7 +185,7 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
     }
   }
   
-  // Convert result to GridConfig
+  // Convert result to GridConfig (internal format)
   const resultToGridConfig = (): GridConfig => {
     if (!result) {
       return {
@@ -233,27 +234,34 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
   // Apply to selection
   const handleApply = () => {
     const config = resultToGridConfig()
-    parent.postMessage({
-      pluginMessage: {
-        type: 'apply-grid',
-        config,
-        replaceExisting: true,
-      }
-    }, '*')
+    const width = imageWidth || 800
+    const height = imageHeight || 1000
+    
+    const message = buildApplyGridMessage({
+      config,
+      width,
+      height,
+      replaceExisting: true,
+    })
+    
+    parent.postMessage({ pluginMessage: message }, '*')
   }
   
   // Create new frame
   const handleCreateFrame = () => {
     const config = resultToGridConfig()
-    parent.postMessage({
-      pluginMessage: {
-        type: 'create-grid-frame',
-        config,
-        width: imageWidth || 800,
-        height: imageHeight || 1000,
-        name: `Grid ${result?.columns.count || 4}-col`,
-      }
-    }, '*')
+    const width = imageWidth || 800
+    const height = imageHeight || 1000
+    
+    const message = buildCreateGridFrameMessage({
+      config,
+      frameName: `Analyzed ${result?.columns.count || 4}-Column Grid`,
+      width,
+      height,
+      positionNearSelection: true,
+    })
+    
+    parent.postMessage({ pluginMessage: message }, '*')
   }
   
   // Render grid preview SVG
