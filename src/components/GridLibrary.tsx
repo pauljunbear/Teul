@@ -196,16 +196,15 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
         />
       </div>
       
-      {/* Category Pills */}
+      {/* Category Pills - wrapping layout */}
       <div style={{
         padding: '12px 16px',
         borderBottom: `1px solid ${theme.border}`,
-        overflowX: 'auto',
       }}>
         <div style={{
           display: 'flex',
+          flexWrap: 'wrap',
           gap: '6px',
-          minWidth: 'max-content',
         }}>
           {GRID_CATEGORIES.map(cat => {
             const count = getPresetCountByCategory(cat.id)
@@ -218,25 +217,24 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '6px',
-                  padding: '6px 12px',
-                  borderRadius: '16px',
-                  border: 'none',
+                  gap: '4px',
+                  padding: '5px 10px',
+                  borderRadius: '14px',
+                  border: isActive ? 'none' : `1px solid ${theme.border}`,
                   cursor: 'pointer',
-                  fontSize: '11px',
+                  fontSize: '10px',
                   fontWeight: 600,
                   whiteSpace: 'nowrap',
                   transition: 'all 0.15s ease',
-                  backgroundColor: isActive ? theme.categoryActive : theme.categoryBg,
+                  backgroundColor: isActive ? theme.categoryActive : 'transparent',
                   color: isActive ? theme.categoryActiveText : theme.textMuted,
                 }}
               >
-                <span>{cat.icon}</span>
+                <span style={{ fontSize: '11px' }}>{cat.icon}</span>
                 <span>{cat.name}</span>
                 <span style={{
-                  fontSize: '10px',
-                  opacity: 0.7,
-                  marginLeft: '2px',
+                  fontSize: '9px',
+                  opacity: 0.6,
                 }}>
                   {count}
                 </span>
@@ -292,7 +290,14 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
                   if (selectionInfo?.hasSelection) {
                     handleApplyGrid(preset)
                   } else {
-                    handleCreateFrame(preset)
+                    // Don't auto-create frame - warn user instead
+                    parent.postMessage({ 
+                      pluginMessage: { 
+                        type: 'notify', 
+                        text: 'Please select a frame first, or use "Create Frame" button' 
+                      } 
+                    }, '*')
+                    setSelectedPreset(preset)
                   }
                 }}
                 isDark={isDark}
@@ -330,7 +335,7 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
             alignItems: 'flex-start',
             marginBottom: '12px',
           }}>
-            <div>
+            <div style={{ flex: 1, marginRight: '12px' }}>
               <h3 style={{
                 margin: '0 0 4px 0',
                 fontSize: '14px',
@@ -358,12 +363,14 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
                 color: theme.textMuted,
                 cursor: 'pointer',
                 fontSize: '16px',
+                flexShrink: 0,
               }}
             >
               ✕
             </button>
           </div>
           
+          {/* Action buttons - always show both Apply and Create */}
           <div style={{
             display: 'flex',
             gap: '8px',
@@ -373,48 +380,32 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
                 if (selectionInfo?.hasSelection) {
                   handleApplyGrid(selectedPreset)
                 } else {
-                  handleCreateFrame(selectedPreset)
+                  parent.postMessage({ 
+                    pluginMessage: { type: 'notify', text: 'Select a frame first' } 
+                  }, '*')
                 }
               }}
+              disabled={!selectionInfo?.hasSelection}
               style={{
                 flex: 1,
                 padding: '10px 16px',
                 border: 'none',
                 borderRadius: '8px',
-                backgroundColor: '#3b82f6',
-                color: '#ffffff',
+                backgroundColor: selectionInfo?.hasSelection ? '#3b82f6' : (isDark ? '#404040' : '#d4d4d4'),
+                color: selectionInfo?.hasSelection ? '#ffffff' : (isDark ? '#666' : '#999'),
                 fontSize: '12px',
                 fontWeight: 600,
-                cursor: 'pointer',
+                cursor: selectionInfo?.hasSelection ? 'pointer' : 'not-allowed',
                 transition: 'all 0.15s ease',
               }}
             >
-              {selectionInfo?.hasSelection ? '✓ Apply to Selection' : '+ Create New Frame'}
+              ✓ Apply
             </button>
             
-            {selectionInfo?.hasSelection && (
-              <button
-                onClick={() => handleCreateFrame(selectedPreset)}
-                style={{
-                  padding: '10px 16px',
-                  border: `1px solid ${theme.border}`,
-                  borderRadius: '8px',
-                  backgroundColor: 'transparent',
-                  color: theme.text,
-                  fontSize: '12px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                + New Frame
-              </button>
-            )}
-            
             <button
-              onClick={() => setShowSaveModal(true)}
-              title="Save to My Grids"
+              onClick={() => handleCreateFrame(selectedPreset)}
               style={{
+                flex: 1,
                 padding: '10px 16px',
                 border: `1px solid ${theme.border}`,
                 borderRadius: '8px',
@@ -424,6 +415,25 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
                 fontWeight: 600,
                 cursor: 'pointer',
                 transition: 'all 0.15s ease',
+              }}
+            >
+              + New Frame
+            </button>
+            
+            <button
+              onClick={() => setShowSaveModal(true)}
+              title="Save to My Grids"
+              style={{
+                padding: '10px 14px',
+                border: `1px solid ${theme.border}`,
+                borderRadius: '8px',
+                backgroundColor: 'transparent',
+                color: theme.text,
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+                flexShrink: 0,
               }}
             >
               💾

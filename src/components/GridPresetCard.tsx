@@ -24,16 +24,26 @@ interface GridPreviewSVGProps {
 const GridPreviewSVG: React.FC<GridPreviewSVGProps> = ({ config, width, height, isDark }) => {
   const bgColor = isDark ? '#2a2a2a' : '#f5f5f5'
   
-  // Calculate column positions
+  // Calculate column positions - fill entire width properly
   const renderColumns = (columns: ColumnGridConfig) => {
-    const marginPercent = columns.marginUnit === 'percent' ? columns.margin : (columns.margin / width) * 100
-    const gutterPercent = columns.gutterUnit === 'percent' ? columns.gutterSize : (columns.gutterSize / width) * 100
+    // Convert margin to pixels
+    const marginPx = columns.marginUnit === 'percent' 
+      ? (columns.margin / 100) * width 
+      : columns.margin * (width / 200) // Scale for preview
     
-    const marginPx = (marginPercent / 100) * width
-    const gutterPx = (gutterPercent / 100) * width
+    // Convert gutter to pixels
+    const gutterPx = columns.gutterUnit === 'percent' 
+      ? (columns.gutterSize / 100) * width 
+      : columns.gutterSize * (width / 200) // Scale for preview
+    
+    // Available width after both margins
     const availableWidth = width - (marginPx * 2)
-    const totalGutterWidth = gutterPx * (columns.count - 1)
-    const columnWidth = (availableWidth - totalGutterWidth) / columns.count
+    
+    // Total gutter width (n-1 gutters)
+    const totalGutterWidth = Math.max(0, gutterPx * (columns.count - 1))
+    
+    // Each column width
+    const columnWidth = Math.max(1, (availableWidth - totalGutterWidth) / columns.count)
     
     const rects: React.ReactNode[] = []
     let x = marginPx
@@ -46,7 +56,7 @@ const GridPreviewSVG: React.FC<GridPreviewSVGProps> = ({ config, width, height, 
           y={0}
           width={columnWidth}
           height={height}
-          fill={gridColorToCSS({ ...columns.color, a: 0.3 })}
+          fill={gridColorToCSS({ ...columns.color, a: 0.35 })}
         />
       )
       x += columnWidth + gutterPx

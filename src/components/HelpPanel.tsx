@@ -94,7 +94,25 @@ const HELP_SECTIONS = [
       },
       {
         term: 'Swiss Style',
-        definition: 'Design approach emphasizing mathematical grids, clean typography, and asymmetric balance.',
+        definition: 'Design approach emphasizing mathematical grids, clean typography, and asymmetric balance. Pioneered by Josef Müller-Brockmann.',
+      },
+    ],
+  },
+  {
+    id: 'inspiration',
+    title: '📚 Grid Inspiration',
+    content: [
+      {
+        heading: 'Müller-Brockmann\'s "Grid Systems"',
+        text: 'Our Classic Swiss grids are inspired by Josef Müller-Brockmann\'s seminal 1981 book "Grid Systems in Graphic Design." This book established the mathematical principles behind Swiss design.',
+      },
+      {
+        heading: 'International Typographic Style',
+        text: 'The Swiss/International style emerged in the 1950s-60s, emphasizing clean layouts, sans-serif typography, and systematic grid-based design.',
+      },
+      {
+        heading: 'Modern Applications',
+        text: 'These classic proportions translate perfectly to digital design. The 4, 6, 8, and 12-column systems remain foundational for web and UI design today.',
       },
     ],
   },
