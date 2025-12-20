@@ -15,6 +15,34 @@ interface ColorMessage {
   rgb?: number[];
 }
 
+// ============================================
+// Grid System Types (inline for plugin backend)
+// ============================================
+
+interface GridColor {
+  r: number;
+  g: number;
+  b: number;
+  a: number;
+}
+
+interface FigmaGridConfig {
+  pattern: 'COLUMNS' | 'ROWS' | 'GRID';
+  alignment: 'MIN' | 'CENTER' | 'MAX' | 'STRETCH';
+  gutterSize: number;
+  count: number;
+  sectionSize?: number;
+  offset: number;
+  visible: boolean;
+  color: GridColor;
+}
+
+interface GridConfigMessage {
+  columns?: FigmaGridConfig;
+  rows?: FigmaGridConfig;
+  baseline?: FigmaGridConfig;
+}
+
 // Helper to convert hex to Figma RGB
 function hexToFigmaRgb(hex: string): RGB {
   const cleanHex = hex.replace('#', '');
@@ -321,6 +349,337 @@ figma.ui.onmessage = async (msg) => {
     } catch (error) {
       console.error('Error creating color styles:', error);
       figma.notify('Failed to create color styles');
+    }
+  }
+
+  // ============================================
+  // Grid System Message Handlers
+  // ============================================
+
+  // Get selection info for grid operations
+  if (msg.type === 'get-selection-for-grid') {
+    const selection = figma.currentPage.selection;
+    
+    if (selection.length === 0) {
+      figma.ui.postMessage({
+        type: 'selection-info',
+        hasSelection: false,
+        isImage: false,
+        isFrame: false,
+      });
+      return;
+    }
+
+    const node = selection[0];
+    const isFrame = node.type === 'FRAME' || node.type === 'COMPONENT' || node.type === 'INSTANCE';
+    const isImage = node.type === 'RECTANGLE' && 
+      'fills' in node && 
+      Array.isArray(node.fills) && 
+      node.fills.some((f: Paint) => f.type === 'IMAGE');
+
+    figma.ui.postMessage({
+      type: 'selection-info',
+      hasSelection: true,
+      isImage,
+      isFrame,
+      width: node.width,
+      height: node.height,
+      name: node.name,
+    });
+  }
+
+  // Export image for grid analysis
+  if (msg.type === 'export-image-for-analysis') {
+    const selection = figma.currentPage.selection;
+    
+    if (selection.length === 0) {
+      figma.ui.postMessage({
+        type: 'image-exported',
+        success: false,
+        error: 'No selection',
+      });
+      return;
+    }
+
+    try {
+      const node = selection[0];
+      const imageBytes = await node.exportAsync({
+        format: 'PNG',
+        constraint: { type: 'SCALE', value: 1 }
+      });
+      
+      // Convert to base64
+      const base64 = figma.base64Encode(imageBytes);
+      
+      figma.ui.postMessage({
+        type: 'image-exported',
+        success: true,
+        imageData: base64,
+        width: node.width,
+        height: node.height,
+      });
+    } catch (error) {
+      figma.ui.postMessage({
+        type: 'image-exported',
+        success: false,
+        error: 'Failed to export image',
+      });
+    }
+  }
+
+  // Create a new frame with grid applied
+  if (msg.type === 'create-grid-frame') {
+    try {
+      const { 
+        config, 
+        frameName, 
+        width, 
+        height, 
+        includeImage, 
+        imageData,
+        positionNearSelection = true 
+      } = msg;
+      
+      const frame = figma.createFrame();
+      frame.name = frameName || 'Grid Frame';
+      frame.resize(width, height);
+      
+      // Apply layout grids
+      const layoutGrids: LayoutGrid[] = [];
+      
+      if (config.columns) {
+        layoutGrids.push({
+          pattern: config.columns.pattern,
+          alignment: config.columns.alignment,
+          gutterSize: config.columns.gutterSize,
+          count: config.columns.count,
+          offset: config.columns.offset,
+          visible: config.columns.visible,
+          color: config.columns.color,
+        } as LayoutGrid);
+      }
+      
+      if (config.rows) {
+        layoutGrids.push({
+          pattern: config.rows.pattern,
+          alignment: config.rows.alignment,
+          gutterSize: config.rows.gutterSize,
+          count: config.rows.count,
+          offset: config.rows.offset,
+          visible: config.rows.visible,
+          color: config.rows.color,
+        } as LayoutGrid);
+      }
+      
+      if (config.baseline) {
+        layoutGrids.push({
+          pattern: 'GRID',
+          sectionSize: config.baseline.sectionSize || 8,
+          visible: config.baseline.visible,
+          color: config.baseline.color,
+        } as LayoutGrid);
+      }
+      
+      frame.layoutGrids = layoutGrids;
+      
+      // Include original image as reference layer if requested
+      if (includeImage && imageData) {
+        try {
+          // Decode base64 to Uint8Array
+          const binaryString = atob(imageData);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          
+          // Create image hash
+          const imageHash = figma.createImage(bytes).hash;
+          
+          // Create rectangle with image fill
+          const imageRect = figma.createRectangle();
+          imageRect.name = "Reference Image";
+          imageRect.resize(width, height);
+          imageRect.x = 0;
+          imageRect.y = 0;
+          imageRect.fills = [{
+            type: 'IMAGE',
+            scaleMode: 'FILL',
+            imageHash: imageHash,
+          }];
+          imageRect.opacity = 0.5; // Semi-transparent for reference
+          imageRect.locked = true; // Lock to prevent accidental edits
+          
+          frame.appendChild(imageRect);
+        } catch (imgError) {
+          console.error('Failed to add reference image:', imgError);
+          // Continue without the image
+        }
+      }
+      
+      // Position near selection or in viewport center
+      const selection = figma.currentPage.selection;
+      if (positionNearSelection && selection.length > 0) {
+        const bounds = selection[0];
+        
+        // Calculate position to the right of selection with spacing
+        const spacing = 48;
+        frame.x = bounds.x + bounds.width + spacing;
+        frame.y = bounds.y;
+        
+        // Check if frame would go off-canvas (beyond reasonable bounds)
+        // If so, position below instead
+        const maxX = 100000; // Figma's practical limit
+        if (frame.x + frame.width > maxX) {
+          frame.x = bounds.x;
+          frame.y = bounds.y + bounds.height + spacing;
+        }
+      } else {
+        frame.x = figma.viewport.center.x - width / 2;
+        frame.y = figma.viewport.center.y - height / 2;
+      }
+      
+      figma.currentPage.selection = [frame];
+      figma.viewport.scrollAndZoomIntoView([frame]);
+      
+      // Build notification message
+      const gridInfo: string[] = [];
+      if (config.columns?.count) gridInfo.push(`${config.columns.count} columns`);
+      if (config.rows?.count) gridInfo.push(`${config.rows.count} rows`);
+      if (config.baseline) gridInfo.push('baseline grid');
+      
+      const infoStr = gridInfo.length > 0 ? ` (${gridInfo.join(', ')})` : '';
+      figma.notify(`Created: ${frameName}${infoStr}`);
+    } catch (error) {
+      console.error('Error creating grid frame:', error);
+      figma.notify('Failed to create grid frame');
+    }
+  }
+
+  // Apply grid to existing frame
+  if (msg.type === 'apply-grid') {
+    const selection = figma.currentPage.selection;
+    
+    if (selection.length === 0) {
+      figma.notify('Please select a frame first');
+      return;
+    }
+
+    const node = selection[0];
+    
+    if (!('layoutGrids' in node)) {
+      figma.notify('Selected element cannot have layout grids');
+      return;
+    }
+
+    try {
+      const { config, replaceExisting = true, scaledToFit = false } = msg;
+      const frame = node as FrameNode;
+      
+      // Build new layout grids
+      const newGrids: LayoutGrid[] = [];
+      
+      if (config.columns) {
+        newGrids.push({
+          pattern: config.columns.pattern,
+          alignment: config.columns.alignment,
+          gutterSize: config.columns.gutterSize,
+          count: config.columns.count,
+          offset: config.columns.offset,
+          visible: config.columns.visible,
+          color: config.columns.color,
+        } as LayoutGrid);
+      }
+      
+      if (config.rows) {
+        newGrids.push({
+          pattern: config.rows.pattern,
+          alignment: config.rows.alignment,
+          gutterSize: config.rows.gutterSize,
+          count: config.rows.count,
+          offset: config.rows.offset,
+          visible: config.rows.visible,
+          color: config.rows.color,
+        } as LayoutGrid);
+      }
+      
+      if (config.baseline) {
+        newGrids.push({
+          pattern: 'GRID',
+          sectionSize: config.baseline.sectionSize || 8,
+          visible: config.baseline.visible,
+          color: config.baseline.color,
+        } as LayoutGrid);
+      }
+      
+      // Apply grids
+      const previousCount = frame.layoutGrids.length;
+      
+      if (replaceExisting) {
+        frame.layoutGrids = newGrids;
+      } else {
+        frame.layoutGrids = [...frame.layoutGrids, ...newGrids];
+      }
+      
+      // Build notification message
+      const gridInfo: string[] = [];
+      if (config.columns?.count) gridInfo.push(`${config.columns.count}col`);
+      if (config.rows?.count) gridInfo.push(`${config.rows.count}row`);
+      if (config.baseline) gridInfo.push('baseline');
+      
+      const action = replaceExisting 
+        ? (previousCount > 0 ? 'Replaced' : 'Applied')
+        : 'Added';
+      
+      const infoStr = gridInfo.length > 0 ? ` (${gridInfo.join(', ')})` : '';
+      const scaleNote = scaledToFit ? ' [scaled]' : '';
+      
+      figma.notify(`${action} grid on "${frame.name}"${infoStr}${scaleNote}`);
+      
+      // Send success message back to UI
+      figma.ui.postMessage({
+        type: 'grid-applied',
+        success: true,
+        frameName: frame.name,
+        frameWidth: frame.width,
+        frameHeight: frame.height,
+      });
+    } catch (error) {
+      console.error('Error applying grid:', error);
+      figma.notify('Failed to apply grid');
+      
+      figma.ui.postMessage({
+        type: 'grid-applied',
+        success: false,
+        error: 'Failed to apply grid',
+      });
+    }
+  }
+  
+  // Clear all grids from selection
+  if (msg.type === 'clear-grids') {
+    const selection = figma.currentPage.selection;
+    
+    if (selection.length === 0) {
+      figma.notify('Please select a frame first');
+      return;
+    }
+
+    const node = selection[0];
+    
+    if (!('layoutGrids' in node)) {
+      figma.notify('Selected element cannot have layout grids');
+      return;
+    }
+
+    try {
+      const frame = node as FrameNode;
+      const previousCount = frame.layoutGrids.length;
+      frame.layoutGrids = [];
+      
+      figma.notify(`Cleared ${previousCount} grid${previousCount !== 1 ? 's' : ''} from "${frame.name}"`);
+    } catch (error) {
+      console.error('Error clearing grids:', error);
+      figma.notify('Failed to clear grids');
     }
   }
 };

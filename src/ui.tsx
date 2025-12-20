@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client';
 import { colorData } from './colorData';
 import { getContrastRatio, getContrastLevel, colorDistance, rgbToLab } from './lib/utils';
 import { ColorSystemModal } from './components/ColorSystemModal';
+import { GridSystemTab } from './components/GridSystemTab';
 
 interface Color {
   name: string;
@@ -177,6 +178,9 @@ const App: React.FC = () => {
   const [showColorSystem, setShowColorSystem] = useState(false);
   const [colorSystemColors, setColorSystemColors] = useState<{ hex: string; name: string }[]>([]);
   const [colorSystemName, setColorSystemName] = useState('');
+  
+  // Main navigation state (Colors vs Grids)
+  const [mainTab, setMainTab] = useState<'colors' | 'grids'>('colors');
 
   const theme = isDark ? styles.dark : styles.light;
 
@@ -249,78 +253,145 @@ const App: React.FC = () => {
         borderBottom: `1px solid ${theme.border}`,
         backgroundColor: theme.bg,
       }}>
+        {/* Title and Icons Row */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-          <h1 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Sanzo Wada Colors</h1>
+          <h1 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>Sanzo Wada</h1>
           <div style={{ display: 'flex', gap: '8px' }}>
-            {selectedColor && (
+            {mainTab === 'colors' && selectedColor && (
               <button style={iconButtonStyle} onClick={() => setSelectedColor(null)} title="Back">
                 ←
               </button>
             )}
-            <button 
-              style={iconButtonStyle} 
-              onClick={() => {
-                const random = colorData.colors[Math.floor(Math.random() * colorData.colors.length)];
-                setSelectedColor(random);
-              }}
-              title="Random"
-            >
-              ⟳
-            </button>
+            {mainTab === 'colors' && (
+              <button 
+                style={iconButtonStyle} 
+                onClick={() => {
+                  const random = colorData.colors[Math.floor(Math.random() * colorData.colors.length)];
+                  setSelectedColor(random);
+                }}
+                title="Random"
+              >
+                ⟳
+              </button>
+            )}
             <button style={iconButtonStyle} onClick={() => setIsDark(!isDark)} title="Toggle Theme">
               {isDark ? '☀️' : '🌙'}
             </button>
           </div>
         </div>
 
-        <input
-          type="text"
-          placeholder="Search colors..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '12px 16px',
-            borderRadius: '8px',
-            border: `1px solid ${theme.border}`,
-            backgroundColor: theme.inputBg,
-            color: theme.text,
-            fontSize: '14px',
-            outline: 'none',
-            boxSizing: 'border-box',
-            marginBottom: '12px',
-          }}
-        />
+        {/* Main Tab Switcher (Colors / Grids) */}
+        <div style={{
+          display: 'flex',
+          gap: '4px',
+          padding: '4px',
+          backgroundColor: theme.inputBg,
+          borderRadius: '10px',
+          marginBottom: '12px',
+        }}>
+          <button
+            onClick={() => setMainTab('colors')}
+            style={{
+              flex: 1,
+              padding: '10px 16px',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              transition: 'all 0.15s ease',
+              backgroundColor: mainTab === 'colors' ? theme.btnActive : 'transparent',
+              color: mainTab === 'colors' ? theme.btnActiveText : theme.textMuted,
+              boxShadow: mainTab === 'colors' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
+            }}
+          >
+            <span style={{ fontSize: '16px' }}>🎨</span>
+            Colors
+          </button>
+          <button
+            onClick={() => setMainTab('grids')}
+            style={{
+              flex: 1,
+              padding: '10px 16px',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              transition: 'all 0.15s ease',
+              backgroundColor: mainTab === 'grids' ? theme.btnActive : 'transparent',
+              color: mainTab === 'grids' ? theme.btnActiveText : theme.textMuted,
+              boxShadow: mainTab === 'grids' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
+            }}
+          >
+            <span style={{ fontSize: '16px' }}>📐</span>
+            Grids
+          </button>
+        </div>
 
-        {!selectedColor && (
-          <div style={{ display: 'flex', gap: '4px' }}>
-            {SWATCH_GROUPS.map(g => (
-              <button
-                key={g.id}
-                onClick={() => setSelectedSwatch(g.id)}
-                style={{
-                  flex: 1,
-                  padding: '8px 4px',
-                  borderRadius: '6px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  backgroundColor: selectedSwatch === g.id ? theme.btnActive : theme.btnBg,
-                  color: selectedSwatch === g.id ? theme.btnActiveText : theme.text,
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                {g.name}
-              </button>
-            ))}
-          </div>
+        {/* Color-specific controls (only show when on Colors tab) */}
+        {mainTab === 'colors' && (
+          <>
+            <input
+              type="text"
+              placeholder="Search colors..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                borderRadius: '8px',
+                border: `1px solid ${theme.border}`,
+                backgroundColor: theme.inputBg,
+                color: theme.text,
+                fontSize: '14px',
+                outline: 'none',
+                boxSizing: 'border-box',
+                marginBottom: '12px',
+              }}
+            />
+
+            {!selectedColor && (
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {SWATCH_GROUPS.map(g => (
+                  <button
+                    key={g.id}
+                    onClick={() => setSelectedSwatch(g.id)}
+                    style={{
+                      flex: 1,
+                      padding: '8px 4px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      backgroundColor: selectedSwatch === g.id ? theme.btnActive : theme.btnBg,
+                      color: selectedSwatch === g.id ? theme.btnActiveText : theme.text,
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    {g.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
 
       {/* Content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
-        {!selectedColor ? (
+      <div style={{ flex: 1, overflowY: 'auto', padding: mainTab === 'grids' ? '0' : '16px' }}>
+        {mainTab === 'grids' ? (
+          <GridSystemTab isDark={isDark} />
+        ) : !selectedColor ? (
           // Color Grid
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
             {filteredColors.map(color => {
