@@ -330,8 +330,8 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
         overflowY: 'auto',
         padding: '16px',
       }}>
-        {/* API Key Configuration */}
-        {showApiKeyInput && (
+        {/* API Key Configuration - show when no key or explicitly requested */}
+        {(showApiKeyInput || !apiKey) && (
           <div style={{
             padding: '16px',
             backgroundColor: theme.warningBg,
