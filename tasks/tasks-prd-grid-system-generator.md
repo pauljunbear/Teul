@@ -71,15 +71,15 @@
   - [x] 5.6 Add option to include original image inside created frame (as reference layer)
   - [x] 5.7 Position new frames adjacent to the original selection
 
-- [ ] 6.0 Add Baseline Typography Grids
-  - [ ] 6.1 Add baseline grid presets to gridPresets.ts: 4px, 8px, 12px, 16px intervals
-  - [ ] 6.2 Create BaselineGridControls component: interval input, offset input, color picker
-  - [ ] 6.3 Implement baseline calculator: font size + line height → recommended baseline value
-  - [ ] 6.4 Add typography preset selector: Web Standard (8px), Editorial Print (12px), Large Format (16px)
-  - [ ] 6.5 Implement combined grid support: column + baseline as separate layoutGrid entries
-  - [ ] 6.6 Add independent visibility toggles for column grid vs baseline grid
-  - [ ] 6.7 Create preset combinations: "6-column + 8px baseline", "4-column + 12px baseline"
-  - [ ] 6.8 Update GridPreview to render baseline grid lines (horizontal, different color)
+- [x] 6.0 Add Baseline Typography Grids
+  - [x] 6.1 Add baseline grid presets to gridPresets.ts: 4px, 8px, 12px, 16px, 24px intervals
+  - [x] 6.2 Create BaselineGridControls component: interval input, offset input, color picker
+  - [x] 6.3 Implement baseline calculator: font size + line height → recommended baseline value
+  - [x] 6.4 Add typography preset selector: Web Small/Body/Large, Print Body/Large, Display
+  - [x] 6.5 Implement combined grid support: column + baseline as separate layoutGrid entries
+  - [x] 6.6 Add independent visibility toggles for column grid vs baseline grid
+  - [x] 6.7 Create preset combinations: "6-column + 8px baseline", "12-column + 8px baseline", "4-column + 12px baseline", "4×4 modular + 8px baseline"
+  - [x] 6.8 Update GridPreview to render baseline grid lines (horizontal, different color)
 
 - [ ] 7.0 Build User Grid Library (My Grids)
   - [ ] 7.1 Design saved grid data schema with name, category, description, tags, grid config

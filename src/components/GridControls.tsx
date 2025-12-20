@@ -8,7 +8,12 @@ import type {
   GridUnit,
   GridAlignment
 } from '../types/grid'
-import { gridColorToCSS, cssToGridColor } from '../lib/gridUtils'
+import { 
+  gridColorToCSS, 
+  cssToGridColor, 
+  calculateBaselineFromTypography,
+  getTypographySuggestions 
+} from '../lib/gridUtils'
 
 interface GridControlsProps {
   /** Current grid configuration */
@@ -290,6 +295,198 @@ const OpacitySlider: React.FC<OpacitySliderProps> = ({ value, onChange, isDark }
           cursor: 'pointer',
         }}
       />
+    </div>
+  )
+}
+
+// ============================================
+// Typography Presets
+// ============================================
+
+const TYPOGRAPHY_PRESETS = [
+  { name: 'Web Small', fontSize: 14, lineHeight: 1.5, baseline: 8 },
+  { name: 'Web Body', fontSize: 16, lineHeight: 1.5, baseline: 8 },
+  { name: 'Web Large', fontSize: 18, lineHeight: 1.5, baseline: 12 },
+  { name: 'Print Body', fontSize: 10, lineHeight: 1.4, baseline: 12 },
+  { name: 'Print Large', fontSize: 12, lineHeight: 1.4, baseline: 16 },
+  { name: 'Display', fontSize: 24, lineHeight: 1.3, baseline: 24 },
+]
+
+// ============================================
+// Baseline Calculator Component
+// ============================================
+
+interface BaselineCalculatorProps {
+  currentBaseline: number
+  onBaselineChange: (value: number) => void
+  isDark: boolean
+}
+
+const BaselineCalculator: React.FC<BaselineCalculatorProps> = ({
+  currentBaseline,
+  onBaselineChange,
+  isDark,
+}) => {
+  const theme = isDark ? styles.dark : styles.light
+  const [fontSize, setFontSize] = React.useState(16)
+  const [lineHeight, setLineHeight] = React.useState(1.5)
+  const [isExpanded, setIsExpanded] = React.useState(false)
+  
+  const calculatedBaseline = calculateBaselineFromTypography(fontSize, lineHeight)
+  const suggestions = getTypographySuggestions(currentBaseline)
+  
+  return (
+    <div style={{
+      border: `1px solid ${theme.border}`,
+      borderRadius: '6px',
+      overflow: 'hidden',
+    }}>
+      {/* Header - clickable to expand */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        style={{
+          width: '100%',
+          padding: '8px 10px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          border: 'none',
+          backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+          color: theme.text,
+          cursor: 'pointer',
+          fontSize: '11px',
+          fontWeight: 500,
+        }}
+      >
+        <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ fontSize: '12px' }}>🧮</span>
+          Typography Calculator
+        </span>
+        <span style={{ 
+          transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+          transition: 'transform 0.15s ease',
+          fontSize: '10px',
+        }}>
+          ▼
+        </span>
+      </button>
+      
+      {isExpanded && (
+        <div style={{
+          padding: '10px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px',
+          borderTop: `1px solid ${theme.border}`,
+        }}>
+          {/* Input fields */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+              <label style={{
+                fontSize: '9px',
+                fontWeight: 600,
+                color: theme.textMuted,
+                textTransform: 'uppercase',
+              }}>
+                Font Size
+              </label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <input
+                  type="number"
+                  value={fontSize}
+                  onChange={(e) => setFontSize(Math.max(8, Math.min(72, parseInt(e.target.value) || 16)))}
+                  min={8}
+                  max={72}
+                  style={{
+                    width: '100%',
+                    padding: '5px 8px',
+                    borderRadius: '4px',
+                    border: `1px solid ${theme.border}`,
+                    backgroundColor: theme.inputBg,
+                    color: theme.text,
+                    fontSize: '11px',
+                    outline: 'none',
+                  }}
+                />
+                <span style={{ fontSize: '9px', color: theme.textMuted }}>px</span>
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+              <label style={{
+                fontSize: '9px',
+                fontWeight: 600,
+                color: theme.textMuted,
+                textTransform: 'uppercase',
+              }}>
+                Line Height
+              </label>
+              <input
+                type="number"
+                value={lineHeight}
+                onChange={(e) => setLineHeight(Math.max(1, Math.min(3, parseFloat(e.target.value) || 1.5)))}
+                min={1}
+                max={3}
+                step={0.1}
+                style={{
+                  width: '100%',
+                  padding: '5px 8px',
+                  borderRadius: '4px',
+                  border: `1px solid ${theme.border}`,
+                  backgroundColor: theme.inputBg,
+                  color: theme.text,
+                  fontSize: '11px',
+                  outline: 'none',
+                }}
+              />
+            </div>
+          </div>
+          
+          {/* Calculated result */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '8px 10px',
+            backgroundColor: isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)',
+            borderRadius: '4px',
+          }}>
+            <span style={{ fontSize: '10px', color: theme.text }}>
+              Recommended: <strong>{calculatedBaseline}px</strong>
+            </span>
+            <button
+              onClick={() => onBaselineChange(calculatedBaseline)}
+              style={{
+                padding: '4px 10px',
+                borderRadius: '4px',
+                border: 'none',
+                backgroundColor: '#3b82f6',
+                color: '#ffffff',
+                fontSize: '10px',
+                fontWeight: 600,
+                cursor: 'pointer',
+              }}
+            >
+              Apply
+            </button>
+          </div>
+          
+          {/* Typography suggestions based on current baseline */}
+          <div style={{
+            padding: '8px',
+            backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+            borderRadius: '4px',
+            fontSize: '9px',
+            color: theme.textMuted,
+          }}>
+            <div style={{ marginBottom: '4px', fontWeight: 600 }}>
+              Suggested typography for {currentBaseline}px baseline:
+            </div>
+            <div>Body: {suggestions.bodySize}px / {suggestions.bodyLineHeight}</div>
+            <div>Headings: {suggestions.headingSizes.join(', ')}px</div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -665,7 +862,7 @@ export const GridControls: React.FC<GridControlsProps> = ({
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
               }}>
-                Presets
+                Quick Presets
               </label>
               <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
                 {[4, 8, 12, 16, 24].map(h => (
@@ -692,6 +889,58 @@ export const GridControls: React.FC<GridControlsProps> = ({
                 ))}
               </div>
             </div>
+            
+            {/* Typography Presets */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <label style={{
+                fontSize: '10px',
+                fontWeight: 600,
+                color: theme.textMuted,
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}>
+                Typography Presets
+              </label>
+              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                {TYPOGRAPHY_PRESETS.map(preset => (
+                  <button
+                    key={preset.name}
+                    onClick={() => updateBaseline({ height: preset.baseline })}
+                    title={`${preset.fontSize}px / ${preset.lineHeight} → ${preset.baseline}px baseline`}
+                    style={{
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      border: config.baseline?.height === preset.baseline 
+                        ? '1px solid #3b82f6' 
+                        : `1px solid ${theme.border}`,
+                      backgroundColor: config.baseline?.height === preset.baseline 
+                        ? (isDark ? '#1e3a5f' : '#e6f0ff')
+                        : 'transparent',
+                      color: theme.text,
+                      fontSize: '10px',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '2px',
+                    }}
+                  >
+                    <span>{preset.name}</span>
+                    <span style={{ fontSize: '8px', color: theme.textMuted }}>
+                      {preset.fontSize}px
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Typography Calculator */}
+            <BaselineCalculator
+              currentBaseline={config.baseline.height}
+              onBaselineChange={(h) => updateBaseline({ height: h })}
+              isDark={isDark}
+            />
             
             <ColorPicker
               label="Color"
