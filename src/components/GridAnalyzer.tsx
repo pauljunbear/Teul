@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { SaveGridModal } from './SaveGridModal'
-import { saveApiKey, loadApiKey } from '../lib/gridAnalysis'
 import type { GridConfig } from '../types/grid'
 
 interface GridAnalyzerProps {
@@ -66,19 +65,17 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
   const [result, setResult] = React.useState<AnalysisResult | null>(null)
   const [showSaveModal, setShowSaveModal] = React.useState(false)
   
-  // Load API key on mount
+  // Load API key on mount via figma.clientStorage
   React.useEffect(() => {
+    // Check for env variable first (set at build time)
     const envKey = (typeof process !== 'undefined' && process.env?.ANTHROPIC_API_KEY) || ''
     if (envKey) {
       setApiKey(envKey)
       return
     }
-    const storedKey = loadApiKey()
-    if (storedKey) {
-      setApiKey(storedKey)
-    } else {
-      setShowApiKeyInput(true)
-    }
+    
+    // Request stored key from figma.clientStorage via code.ts
+    parent.postMessage({ pluginMessage: { type: 'load-api-key' } }, '*')
   }, [])
   
   // Listen for messages from Figma
@@ -137,6 +134,23 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
           setError(msg.error || 'Analysis failed')
         }
       }
+      
+      // Handle API key loaded from storage
+      if (msg?.type === 'api-key-loaded') {
+        if (msg.apiKey) {
+          setApiKey(msg.apiKey)
+          setShowApiKeyInput(false)
+        } else {
+          setShowApiKeyInput(true)
+        }
+      }
+      
+      // Handle API key saved confirmation
+      if (msg?.type === 'api-key-saved') {
+        if (msg.success) {
+          setShowApiKeyInput(false)
+        }
+      }
     }
     
     window.addEventListener('message', handleMessage)
@@ -161,11 +175,12 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
     parent.postMessage({ pluginMessage: { type: 'export-image-for-analysis' } }, '*')
   }
   
-  // Save API key and hide input
+  // Save API key via figma.clientStorage
   const handleSaveKey = () => {
     if (apiKey.trim()) {
-      saveApiKey(apiKey.trim())
-      setShowApiKeyInput(false)
+      parent.postMessage({ 
+        pluginMessage: { type: 'save-api-key', apiKey: apiKey.trim() } 
+      }, '*')
     }
   }
   

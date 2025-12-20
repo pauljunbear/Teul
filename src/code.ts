@@ -69,6 +69,29 @@ function getSelectedNodesWithStrokes(): (SceneNode & { strokes: Paint[] })[] {
 
 figma.ui.onmessage = async (msg) => {
   // ============================================
+  // API Key Storage (using figma.clientStorage for persistence)
+  // ============================================
+  if (msg.type === 'save-api-key') {
+    try {
+      await figma.clientStorage.setAsync('anthropic_api_key', msg.apiKey);
+      figma.ui.postMessage({ type: 'api-key-saved', success: true });
+    } catch (error) {
+      figma.ui.postMessage({ type: 'api-key-saved', success: false });
+    }
+    return;
+  }
+  
+  if (msg.type === 'load-api-key') {
+    try {
+      const apiKey = await figma.clientStorage.getAsync('anthropic_api_key');
+      figma.ui.postMessage({ type: 'api-key-loaded', apiKey: apiKey || '' });
+    } catch (error) {
+      figma.ui.postMessage({ type: 'api-key-loaded', apiKey: '' });
+    }
+    return;
+  }
+
+  // ============================================
   // Claude Vision API Call (routed through main thread for CORS)
   // ============================================
   if (msg.type === 'analyze-grid-with-claude') {
