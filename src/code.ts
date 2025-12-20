@@ -68,6 +68,114 @@ function getSelectedNodesWithStrokes(): (SceneNode & { strokes: Paint[] })[] {
 }
 
 figma.ui.onmessage = async (msg) => {
+  // ============================================
+  // Claude Vision API Call (routed through main thread for CORS)
+  // ============================================
+  if (msg.type === 'analyze-grid-with-claude') {
+    const { imageData, width, height, apiKey } = msg;
+    
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1024,
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'image',
+                  source: {
+                    type: 'base64',
+                    media_type: 'image/png',
+                    data: imageData,
+                  },
+                },
+                {
+                  type: 'text',
+                  text: `Analyze this design/artwork and suggest a grid system that could recreate its layout structure.
+
+Look at how the content is organized - the placement of text, images, and whitespace. What underlying grid would help recreate this layout?
+
+Respond with ONLY a JSON object (no markdown, no explanation):
+{
+  "gridType": "column" | "modular",
+  "columns": {
+    "count": number (1-12),
+    "gutter": number (percentage, 1-10),
+    "margin": number (percentage, 2-15)
+  },
+  "rows": {
+    "count": number (0 if no clear rows, 1-8 if modular),
+    "gutter": number (percentage)
+  },
+  "confidence": number (0-100),
+  "description": "Brief explanation of why this grid fits the layout"
+}`,
+                },
+              ],
+            },
+          ],
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        figma.ui.postMessage({
+          type: 'claude-analysis-result',
+          success: false,
+          error: response.status === 401 
+            ? 'Invalid API key' 
+            : `API error: ${response.status}`,
+        });
+        return;
+      }
+      
+      const data = await response.json();
+      const content = data.content?.[0]?.text || '';
+      
+      // Parse JSON from response
+      let gridResult;
+      try {
+        // Try to extract JSON from the response
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          gridResult = JSON.parse(jsonMatch[0]);
+        } else {
+          throw new Error('No JSON found');
+        }
+      } catch {
+        gridResult = {
+          gridType: 'column',
+          columns: { count: 4, gutter: 3, margin: 5 },
+          rows: { count: 0, gutter: 3 },
+          confidence: 50,
+          description: 'Default grid suggestion',
+        };
+      }
+      
+      figma.ui.postMessage({
+        type: 'claude-analysis-result',
+        success: true,
+        result: gridResult,
+      });
+      
+    } catch (error: any) {
+      figma.ui.postMessage({
+        type: 'claude-analysis-result',
+        success: false,
+        error: error.message || 'Network error',
+      });
+    }
+    return;
+  }
+
   // Apply solid fill to selection
   if (msg.type === 'apply-fill') {
     const nodes = getSelectedNodesWithFills();

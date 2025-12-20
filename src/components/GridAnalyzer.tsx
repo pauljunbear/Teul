@@ -1,24 +1,18 @@
 import * as React from 'react'
-import { GridPreview } from './GridPreview'
-import { GridControls } from './GridControls'
 import { SaveGridModal } from './SaveGridModal'
-import { 
-  analyzeGridWithClaude, 
-  detectedGridToConfig,
-  saveApiKey, 
-  loadApiKey, 
-  hasApiKey,
-  clearApiKey 
-} from '../lib/gridAnalysis'
-import {
-  buildCreateGridFrameMessage,
-  buildApplyGridMessage,
-  detectedGridToFrameName,
-} from '../lib/figmaGrids'
-import type { GridConfig, DetectedGrid } from '../types/grid'
+import { saveApiKey, loadApiKey } from '../lib/gridAnalysis'
+import type { GridConfig } from '../types/grid'
 
 interface GridAnalyzerProps {
   isDark: boolean
+}
+
+interface AnalysisResult {
+  gridType: 'column' | 'modular'
+  columns: { count: number; gutter: number; margin: number }
+  rows: { count: number; gutter: number }
+  confidence: number
+  description: string
 }
 
 const styles = {
@@ -28,6 +22,7 @@ const styles = {
     textMuted: '#666666',
     border: '#e5e5e5',
     inputBg: '#f5f5f5',
+    cardBg: '#f8f8f8',
     successBg: '#e6f4ea',
     successText: '#137333',
     warningBg: '#fef3e6',
@@ -41,6 +36,7 @@ const styles = {
     textMuted: '#a3a3a3',
     border: '#404040',
     inputBg: '#2a2a2a',
+    cardBg: '#262626',
     successBg: '#1e3a2f',
     successText: '#7dd3a0',
     warningBg: '#3a2e1e',
@@ -57,51 +53,30 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
   const [isAnalyzing, setIsAnalyzing] = React.useState(false)
   const [hasImage, setHasImage] = React.useState(false)
   const [imageData, setImageData] = React.useState<string | null>(null)
-  const [rawImageData, setRawImageData] = React.useState<string | null>(null) // Base64 without prefix
+  const [rawImageData, setRawImageData] = React.useState<string | null>(null)
   const [imageWidth, setImageWidth] = React.useState(0)
   const [imageHeight, setImageHeight] = React.useState(0)
-  const [imageName, setImageName] = React.useState('')
   const [error, setError] = React.useState<string | null>(null)
   
-  // API Key state
+  // API Key
   const [apiKey, setApiKey] = React.useState<string>('')
-  const [showApiKeyInput, setShowApiKeyInput] = React.useState(false)
-  const [apiKeyError, setApiKeyError] = React.useState<string | null>(null)
   
-  // Grid configuration
-  const [gridConfig, setGridConfig] = React.useState<GridConfig>({
-    columns: {
-      count: 4,
-      gutterSize: 3,
-      gutterUnit: 'percent',
-      margin: 5,
-      marginUnit: 'percent',
-      alignment: 'STRETCH',
-      visible: true,
-      color: { r: 1, g: 0.2, b: 0.2, a: 0.15 },
-    },
-  })
-  const [originalConfig, setOriginalConfig] = React.useState<GridConfig | null>(null)
-  const [detectedGrid, setDetectedGrid] = React.useState<DetectedGrid | null>(null)
+  // Analysis result
+  const [result, setResult] = React.useState<AnalysisResult | null>(null)
   const [showSaveModal, setShowSaveModal] = React.useState(false)
   
-  // Load API key on mount - check env first, then localStorage
+  // Load API key on mount
   React.useEffect(() => {
-    // Check for env variable first (set at build time)
     const envKey = (typeof process !== 'undefined' && process.env?.ANTHROPIC_API_KEY) || ''
     if (envKey) {
       setApiKey(envKey)
       return
     }
-    
-    // Fall back to localStorage
     const storedKey = loadApiKey()
-    if (storedKey) {
-      setApiKey(storedKey)
-    }
+    if (storedKey) setApiKey(storedKey)
   }, [])
   
-  // Check for selection on mount
+  // Listen for messages from Figma
   React.useEffect(() => {
     const checkSelection = () => {
       parent.postMessage({ pluginMessage: { type: 'get-selection-for-grid' } }, '*')
@@ -116,7 +91,6 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
         setHasImage(msg.isImage || msg.isFrame)
         if (msg.width) setImageWidth(msg.width)
         if (msg.height) setImageHeight(msg.height)
-        if (msg.name) setImageName(msg.name)
       }
       
       if (msg?.type === 'image-exported') {
@@ -127,17 +101,35 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
           setImageHeight(msg.height)
           setError(null)
           
-          // Now trigger AI analysis if we have an API key
+          // Trigger analysis via code.ts (avoids CORS)
           if (apiKey) {
-            runAnalysis(msg.imageData, msg.width, msg.height)
+            parent.postMessage({
+              pluginMessage: {
+                type: 'analyze-grid-with-claude',
+                imageData: msg.imageData,
+                width: msg.width,
+                height: msg.height,
+                apiKey,
+              }
+            }, '*')
           } else {
             setIsAnalyzing(false)
-            setShowApiKeyInput(true)
-            setApiKeyError('Please enter your Anthropic API key to analyze grids')
+            setError('Please enter your Anthropic API key')
           }
         } else {
           setIsAnalyzing(false)
           setError(msg.error || 'Failed to export image')
+        }
+      }
+      
+      // Handle Claude analysis result
+      if (msg?.type === 'claude-analysis-result') {
+        setIsAnalyzing(false)
+        if (msg.success && msg.result) {
+          setResult(msg.result)
+          setError(null)
+        } else {
+          setError(msg.error || 'Analysis failed')
         }
       }
     }
@@ -151,151 +143,148 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
     }
   }, [apiKey])
   
-  // Run Claude Vision analysis
-  const runAnalysis = async (base64Data: string, width: number, height: number) => {
-    setIsAnalyzing(true)
-    setError(null)
-    setApiKeyError(null)
+  // Start analysis
+  const handleAnalyze = () => {
+    if (!apiKey) {
+      setError('Please enter your API key first')
+      return
+    }
     
-    try {
-      const result = await analyzeGridWithClaude({
-        imageData: base64Data,
-        width,
-        height,
-        apiKey,
-      })
-      
-      if (result.success && result.grid) {
-        setDetectedGrid(result.grid)
-        
-        // Convert detected grid to config
-        const newConfig = detectedGridToConfig(result.grid)
-        setGridConfig(newConfig)
-        setOriginalConfig(newConfig)
-        
-        setError(null)
-      } else {
-        setError(result.error || 'Analysis failed')
-        
-        // If API key error, show the input
-        if (result.error?.includes('API key')) {
-          setShowApiKeyInput(true)
-          setApiKeyError(result.error)
-        }
-        
-        // Set a default config for manual mode
-        setDetectedGrid({
-          gridType: 'none',
-          columns: null,
-          gutterPercent: null,
-          marginLeftPercent: 5,
-          marginRightPercent: 5,
-          marginTopPercent: 5,
-          marginBottomPercent: 5,
-          rows: null,
-          rowGutterPercent: null,
-          aspectRatio: `${width}:${height}`,
-          symmetry: 'symmetric',
-          confidence: 0,
-          notes: result.error || 'Analysis failed - use manual controls',
-          sourceWidth: width,
-          sourceHeight: height,
-        })
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Analysis failed')
-    } finally {
-      setIsAnalyzing(false)
-    }
-  }
-  
-  // Save API key and retry analysis
-  const handleSaveApiKey = () => {
-    if (apiKey.trim()) {
-      saveApiKey(apiKey.trim())
-      setShowApiKeyInput(false)
-      setApiKeyError(null)
-      
-      // If we have image data, retry analysis
-      if (rawImageData && imageWidth && imageHeight) {
-        runAnalysis(rawImageData, imageWidth, imageHeight)
-      }
-    }
-  }
-  
-  // Load image for analysis
-  const handleLoadImage = () => {
     setIsAnalyzing(true)
     setError(null)
-    setDetectedGrid(null)
+    setResult(null)
     parent.postMessage({ pluginMessage: { type: 'export-image-for-analysis' } }, '*')
   }
   
-  // Retry analysis with current image
-  const handleRetryAnalysis = () => {
-    if (rawImageData && imageWidth && imageHeight) {
-      runAnalysis(rawImageData, imageWidth, imageHeight)
+  // Save API key
+  const handleSaveKey = () => {
+    if (apiKey.trim()) {
+      saveApiKey(apiKey.trim())
     }
   }
   
-  // Apply grid to selection
-  const handleApplyGrid = () => {
-    const width = imageWidth || 800
-    const height = imageHeight || 600
-    
-    const message = buildApplyGridMessage({
-      config: gridConfig,
-      width,
-      height,
-      replaceExisting: true,
-    })
-    
-    parent.postMessage({ pluginMessage: message }, '*')
-  }
-  
-  // Create new frame with grid
-  const handleCreateFrame = (includeImage: boolean = false) => {
-    const width = imageWidth || 800
-    const height = imageHeight || 600
-    
-    // Generate frame name based on detected grid
-    const frameName = detectedGrid 
-      ? detectedGridToFrameName(detectedGrid, imageName)
-      : `Grid - ${imageName || 'Custom'}`
-    
-    const message = buildCreateGridFrameMessage({
-      config: gridConfig,
-      frameName,
-      width,
-      height,
-      includeImage: includeImage && !!rawImageData,
-      imageData: includeImage ? rawImageData || undefined : undefined,
-      positionNearSelection: true,
-    })
-    
-    parent.postMessage({ pluginMessage: message }, '*')
-  }
-  
-  // Reset to original
-  const handleReset = () => {
-    if (originalConfig) {
-      setGridConfig(originalConfig)
+  // Convert result to GridConfig
+  const resultToGridConfig = (): GridConfig => {
+    if (!result) {
+      return {
+        columns: {
+          count: 4,
+          gutterSize: 3,
+          gutterUnit: 'percent',
+          margin: 5,
+          marginUnit: 'percent',
+          alignment: 'STRETCH',
+          visible: true,
+          color: { r: 1, g: 0.2, b: 0.2, a: 0.1 },
+        }
+      }
     }
+    
+    const config: GridConfig = {
+      columns: {
+        count: result.columns.count,
+        gutterSize: result.columns.gutter,
+        gutterUnit: 'percent',
+        margin: result.columns.margin,
+        marginUnit: 'percent',
+        alignment: 'STRETCH',
+        visible: true,
+        color: { r: 1, g: 0.2, b: 0.2, a: 0.1 },
+      }
+    }
+    
+    if (result.gridType === 'modular' && result.rows.count > 0) {
+      config.rows = {
+        count: result.rows.count,
+        gutterSize: result.rows.gutter,
+        gutterUnit: 'percent',
+        margin: result.columns.margin,
+        marginUnit: 'percent',
+        alignment: 'STRETCH',
+        visible: true,
+        color: { r: 0.2, g: 0.5, b: 1, a: 0.1 },
+      }
+    }
+    
+    return config
   }
   
-  // Check if config has changed
-  const hasChanges = originalConfig && JSON.stringify(gridConfig) !== JSON.stringify(originalConfig)
+  // Apply to selection
+  const handleApply = () => {
+    const config = resultToGridConfig()
+    parent.postMessage({
+      pluginMessage: {
+        type: 'apply-grid',
+        config,
+        replaceExisting: true,
+      }
+    }, '*')
+  }
   
-  // Calculate preview dimensions (fit within available space)
-  const maxPreviewWidth = 280
-  const maxPreviewHeight = 200
-  const aspectRatio = imageWidth && imageHeight ? imageWidth / imageHeight : 4/3
-  let previewWidth = maxPreviewWidth
-  let previewHeight = previewWidth / aspectRatio
+  // Create new frame
+  const handleCreateFrame = () => {
+    const config = resultToGridConfig()
+    parent.postMessage({
+      pluginMessage: {
+        type: 'create-grid-frame',
+        config,
+        width: imageWidth || 800,
+        height: imageHeight || 1000,
+        name: `Grid ${result?.columns.count || 4}-col`,
+      }
+    }, '*')
+  }
   
-  if (previewHeight > maxPreviewHeight) {
-    previewHeight = maxPreviewHeight
-    previewWidth = previewHeight * aspectRatio
+  // Render grid preview SVG
+  const renderGridPreview = () => {
+    if (!result || !imageData) return null
+    
+    const previewWidth = 280
+    const previewHeight = (imageHeight / imageWidth) * previewWidth
+    const marginPx = (result.columns.margin / 100) * previewWidth
+    const availableWidth = previewWidth - (marginPx * 2)
+    const gutterPx = (result.columns.gutter / 100) * previewWidth
+    const totalGutters = gutterPx * (result.columns.count - 1)
+    const colWidth = (availableWidth - totalGutters) / result.columns.count
+    
+    const columns = []
+    let x = marginPx
+    for (let i = 0; i < result.columns.count; i++) {
+      columns.push(
+        <rect
+          key={i}
+          x={x}
+          y={0}
+          width={colWidth}
+          height={previewHeight}
+          fill="rgba(239, 68, 68, 0.2)"
+          stroke="rgba(239, 68, 68, 0.4)"
+          strokeWidth={0.5}
+        />
+      )
+      x += colWidth + gutterPx
+    }
+    
+    return (
+      <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden' }}>
+        <img 
+          src={imageData} 
+          alt="Analyzed" 
+          style={{ 
+            width: previewWidth, 
+            height: previewHeight,
+            display: 'block',
+          }} 
+        />
+        <svg
+          style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
+          width={previewWidth}
+          height={previewHeight}
+        >
+          {columns}
+        </svg>
+      </div>
+    )
   }
   
   return (
@@ -305,24 +294,18 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
       flexDirection: 'column',
       backgroundColor: theme.bg,
     }}>
-      {/* Header Status */}
-      <div style={{
-        padding: '12px 16px',
-        backgroundColor: hasImage ? theme.successBg : theme.warningBg,
-        borderBottom: `1px solid ${theme.border}`,
-      }}>
-        <p style={{
-          margin: 0,
+      {/* Status Bar */}
+      {!hasImage && (
+        <div style={{
+          padding: '10px 16px',
+          backgroundColor: theme.warningBg,
+          color: theme.warningText,
           fontSize: '12px',
           fontWeight: 500,
-          color: hasImage ? theme.successText : theme.warningText,
         }}>
-          {hasImage 
-            ? `✓ ${imageName || 'Element selected'} (${imageWidth}×${imageHeight})`
-            : '⚠ Select an image or frame to analyze'
-          }
-        </p>
-      </div>
+          ⚠ Select an image or frame to analyze
+        </div>
+      )}
       
       {/* Main Content */}
       <div style={{
@@ -330,40 +313,26 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
         overflowY: 'auto',
         padding: '16px',
       }}>
-        {/* API Key Configuration - show when no key or explicitly requested */}
-        {(showApiKeyInput || !apiKey) && (
+        {/* API Key Input */}
+        {!apiKey && (
           <div style={{
             padding: '16px',
-            backgroundColor: theme.warningBg,
-            borderBottom: `1px solid ${theme.border}`,
+            backgroundColor: theme.cardBg,
+            borderRadius: '8px',
+            marginBottom: '16px',
+            border: `1px solid ${theme.border}`,
           }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
               gap: '8px',
-              marginBottom: '8px',
+              marginBottom: '12px',
             }}>
               <span style={{ fontSize: '16px' }}>🔑</span>
-              <h4 style={{
-                margin: 0,
-                fontSize: '13px',
-                fontWeight: 600,
-                color: theme.text,
-              }}>
-                Anthropic API Key Required
+              <h4 style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: theme.text }}>
+                Anthropic API Key
               </h4>
             </div>
-            
-            {apiKeyError && (
-              <p style={{
-                margin: '0 0 12px 0',
-                fontSize: '11px',
-                color: theme.warningText,
-              }}>
-                {apiKeyError}
-              </p>
-            )}
-            
             <div style={{ display: 'flex', gap: '8px' }}>
               <input
                 type="password"
@@ -372,7 +341,7 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
                 onChange={(e) => setApiKey(e.target.value)}
                 style={{
                   flex: 1,
-                  padding: '8px 12px',
+                  padding: '10px 12px',
                   borderRadius: '6px',
                   border: `1px solid ${theme.border}`,
                   backgroundColor: theme.inputBg,
@@ -382,522 +351,306 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
                 }}
               />
               <button
-                onClick={handleSaveApiKey}
+                onClick={handleSaveKey}
                 disabled={!apiKey.trim()}
                 style={{
-                  padding: '8px 16px',
+                  padding: '10px 16px',
                   borderRadius: '6px',
                   border: 'none',
                   backgroundColor: apiKey.trim() ? '#3b82f6' : theme.border,
-                  color: apiKey.trim() ? '#ffffff' : theme.textMuted,
+                  color: apiKey.trim() ? '#fff' : theme.textMuted,
                   fontSize: '12px',
                   fontWeight: 600,
                   cursor: apiKey.trim() ? 'pointer' : 'not-allowed',
                 }}
               >
-                Save & Analyze
+                Save
               </button>
             </div>
-            
-            <p style={{
-              margin: '8px 0 0 0',
-              fontSize: '10px',
-              color: theme.textMuted,
-            }}>
-              Your key is stored locally in your browser. Get one at{' '}
-              <a 
-                href="https://console.anthropic.com/settings/keys" 
-                target="_blank"
-                style={{ color: '#3b82f6' }}
-              >
-                console.anthropic.com
-              </a>
+            <p style={{ margin: '8px 0 0', fontSize: '10px', color: theme.textMuted }}>
+              Get your key at console.anthropic.com
             </p>
           </div>
         )}
         
-        {!imageData ? (
-          // Initial state - no image loaded
+        {/* No Result State */}
+        {!result && !isAnalyzing && (
           <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '40px 20px',
             textAlign: 'center',
+            padding: '40px 20px',
           }}>
             <div style={{
-              width: '80px',
-              height: '80px',
+              width: '64px',
+              height: '64px',
               borderRadius: '16px',
-              backgroundColor: theme.inputBg,
+              backgroundColor: theme.cardBg,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginBottom: '16px',
-              fontSize: '32px',
+              margin: '0 auto 16px',
+              fontSize: '28px',
             }}>
               🔍
             </div>
-            
-            <h3 style={{
-              margin: '0 0 8px 0',
-              fontSize: '16px',
-              fontWeight: 600,
-              color: theme.text,
+            <h3 style={{ 
+              margin: '0 0 8px', 
+              fontSize: '16px', 
+              fontWeight: 600, 
+              color: theme.text 
             }}>
               Analyze Grid Structure
             </h3>
-            
-            <p style={{
-              margin: '0 0 20px 0',
-              fontSize: '13px',
+            <p style={{ 
+              margin: '0 0 20px', 
+              fontSize: '13px', 
               color: theme.textMuted,
               lineHeight: 1.5,
             }}>
-              Select an image or poster on your canvas, then click analyze to detect its underlying grid system using AI.
+              Select an image or poster, then click analyze to detect its underlying grid system.
             </p>
-            
-            {/* API Key Status */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              marginBottom: '16px',
-              padding: '6px 12px',
-              borderRadius: '16px',
-              backgroundColor: apiKey ? theme.successBg : theme.warningBg,
-              fontSize: '11px',
-              color: apiKey ? theme.successText : theme.warningText,
-            }}>
-              {apiKey ? '✓ API key configured' : '⚠ API key needed'}
-              {apiKey && (
-                <button
-                  onClick={() => {
-                    clearApiKey()
-                    setApiKey('')
-                  }}
-                  style={{
-                    padding: '2px 6px',
-                    marginLeft: '4px',
-                    borderRadius: '4px',
-                    border: 'none',
-                    backgroundColor: 'transparent',
-                    color: theme.textMuted,
-                    fontSize: '10px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-            
             <button
-              onClick={() => {
-                if (!apiKey) {
-                  setShowApiKeyInput(true)
-                } else {
-                  handleLoadImage()
-                }
-              }}
-              disabled={!hasImage || isAnalyzing}
+              onClick={handleAnalyze}
+              disabled={!hasImage || !apiKey || isAnalyzing}
               style={{
                 padding: '12px 24px',
                 borderRadius: '8px',
                 border: 'none',
-                backgroundColor: hasImage ? '#3b82f6' : theme.border,
-                color: hasImage ? '#ffffff' : theme.textMuted,
-                fontSize: '13px',
+                backgroundColor: (hasImage && apiKey) ? '#3b82f6' : theme.border,
+                color: (hasImage && apiKey) ? '#fff' : theme.textMuted,
+                fontSize: '14px',
                 fontWeight: 600,
-                cursor: hasImage ? 'pointer' : 'not-allowed',
-                opacity: isAnalyzing ? 0.7 : 1,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
+                cursor: (hasImage && apiKey) ? 'pointer' : 'not-allowed',
               }}
             >
-              {isAnalyzing ? (
-                <>
-                  <span style={{ 
-                    display: 'inline-block',
-                    animation: 'spin 1s linear infinite',
-                  }}>⟳</span>
-                  Analyzing with Claude...
-                </>
-              ) : (
-                <>🔍 Load & Analyze</>
-              )}
+              🔍 Analyze Image
             </button>
-            
-            {error && (
-              <p style={{
-                marginTop: '16px',
-                padding: '10px 16px',
-                backgroundColor: theme.errorBg,
-                borderRadius: '8px',
-                fontSize: '12px',
-                color: theme.errorText,
-              }}>
-                {error}
-              </p>
-            )}
-            
-            <style>{`
-              @keyframes spin {
-                from { transform: rotate(0deg); }
-                to { transform: rotate(360deg); }
-              }
-            `}</style>
           </div>
-        ) : (
-          // Image loaded - show preview and controls
+        )}
+        
+        {/* Loading State */}
+        {isAnalyzing && (
           <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '16px',
+            textAlign: 'center',
+            padding: '60px 20px',
           }}>
-            {/* Preview */}
+            <div style={{
+              width: '48px',
+              height: '48px',
+              border: `3px solid ${theme.border}`,
+              borderTopColor: '#3b82f6',
+              borderRadius: '50%',
+              margin: '0 auto 16px',
+              animation: 'spin 1s linear infinite',
+            }} />
+            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            <p style={{ margin: 0, fontSize: '14px', color: theme.textMuted }}>
+              Analyzing grid structure...
+            </p>
+          </div>
+        )}
+        
+        {/* Error State */}
+        {error && (
+          <div style={{
+            padding: '12px 16px',
+            backgroundColor: theme.errorBg,
+            borderRadius: '8px',
+            marginBottom: '16px',
+          }}>
+            <p style={{ margin: 0, fontSize: '12px', color: theme.errorText }}>
+              <strong>Error:</strong> {error}
+            </p>
+          </div>
+        )}
+        
+        {/* Result */}
+        {result && !isAnalyzing && (
+          <div>
+            {/* Preview with Grid Overlay */}
             <div style={{
               display: 'flex',
               justifyContent: 'center',
-              padding: '16px',
-              backgroundColor: theme.inputBg,
-              borderRadius: '12px',
+              marginBottom: '20px',
             }}>
-              <GridPreview
-                config={gridConfig}
-                width={previewWidth}
-                height={previewHeight}
-                backgroundImage={imageData}
-                isDark={isDark}
-                showLabels={true}
-              />
+              {renderGridPreview()}
             </div>
             
-            {/* Detection Results */}
-            {detectedGrid && (
-              <div style={{
-                padding: '12px 16px',
-                backgroundColor: detectedGrid.confidence >= 70 
-                  ? theme.successBg 
-                  : detectedGrid.confidence >= 40 
+            {/* Grid Info Card */}
+            <div style={{
+              padding: '16px',
+              backgroundColor: theme.cardBg,
+              borderRadius: '8px',
+              marginBottom: '16px',
+              border: `1px solid ${theme.border}`,
+            }}>
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                marginBottom: '12px',
+              }}>
+                <h4 style={{ 
+                  margin: 0, 
+                  fontSize: '14px', 
+                  fontWeight: 600, 
+                  color: theme.text 
+                }}>
+                  Suggested Grid
+                </h4>
+                <span style={{
+                  padding: '4px 10px',
+                  borderRadius: '12px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  backgroundColor: result.confidence >= 70 
+                    ? theme.successBg 
+                    : result.confidence >= 40 
                     ? theme.warningBg 
                     : theme.errorBg,
-                borderRadius: '8px',
-              }}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: '8px',
+                  color: result.confidence >= 70 
+                    ? theme.successText 
+                    : result.confidence >= 40 
+                    ? theme.warningText 
+                    : theme.errorText,
                 }}>
-                  <span style={{
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    color: detectedGrid.confidence >= 70 
-                      ? theme.successText 
-                      : detectedGrid.confidence >= 40 
-                        ? theme.warningText 
-                        : theme.errorText,
-                  }}>
-                    {detectedGrid.gridType === 'none' 
-                      ? '⚠ No Clear Grid Detected' 
-                      : detectedGrid.confidence >= 70 
-                        ? '✓ Grid Detected' 
-                        : detectedGrid.confidence >= 40 
-                          ? '⚡ Possible Grid Found'
-                          : '? Low Confidence'}
-                  </span>
-                  
-                  {/* Confidence Badge */}
-                  <span style={{
-                    padding: '2px 8px',
-                    borderRadius: '10px',
-                    fontSize: '10px',
-                    fontWeight: 600,
-                    backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.5)',
-                    color: detectedGrid.confidence >= 70 
-                      ? theme.successText 
-                      : detectedGrid.confidence >= 40 
-                        ? theme.warningText 
-                        : theme.errorText,
-                  }}>
-                    {detectedGrid.confidence}% confidence
-                  </span>
-                </div>
-                
-                {/* Grid Info */}
-                <div style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '8px',
-                  marginBottom: '8px',
-                }}>
-                  {detectedGrid.gridType !== 'none' && (
-                    <>
-                      <span style={{
-                        padding: '2px 8px',
-                        borderRadius: '4px',
-                        fontSize: '10px',
-                        backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-                        color: theme.text,
-                      }}>
-                        {detectedGrid.gridType === 'modular' ? '🔲' : detectedGrid.gridType === 'column' ? '▤' : '📄'}{' '}
-                        {detectedGrid.gridType}
-                      </span>
-                      
-                      {detectedGrid.columns && (
-                        <span style={{
-                          padding: '2px 8px',
-                          borderRadius: '4px',
-                          fontSize: '10px',
-                          backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-                          color: theme.text,
-                        }}>
-                          {detectedGrid.columns} columns
-                        </span>
-                      )}
-                      
-                      {detectedGrid.rows && (
-                        <span style={{
-                          padding: '2px 8px',
-                          borderRadius: '4px',
-                          fontSize: '10px',
-                          backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-                          color: theme.text,
-                        }}>
-                          {detectedGrid.rows} rows
-                        </span>
-                      )}
-                      
-                      <span style={{
-                        padding: '2px 8px',
-                        borderRadius: '4px',
-                        fontSize: '10px',
-                        backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-                        color: theme.text,
-                      }}>
-                        {detectedGrid.symmetry}
-                      </span>
-                    </>
-                  )}
-                </div>
-                
-                {/* AI Notes */}
-                {detectedGrid.notes && (
-                  <p style={{
-                    margin: 0,
-                    fontSize: '11px',
-                    color: theme.textMuted,
-                    fontStyle: 'italic',
-                  }}>
-                    "{detectedGrid.notes}"
-                  </p>
-                )}
-                
-                {/* Retry Button */}
-                {detectedGrid.confidence < 70 && (
-                  <button
-                    onClick={handleRetryAnalysis}
-                    disabled={isAnalyzing}
-                    style={{
-                      marginTop: '8px',
-                      padding: '6px 12px',
-                      borderRadius: '4px',
-                      border: `1px solid ${theme.border}`,
-                      backgroundColor: 'transparent',
-                      color: theme.textMuted,
-                      fontSize: '10px',
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                    }}
-                  >
-                    ↻ Re-analyze
-                  </button>
-                )}
+                  {result.confidence}% confidence
+                </span>
               </div>
-            )}
-            
-            {/* Loading State */}
-            {isAnalyzing && (
+              
+              {/* Grid Stats */}
               <div style={{
-                padding: '16px',
-                backgroundColor: theme.inputBg,
-                borderRadius: '8px',
-                textAlign: 'center',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '12px',
+                marginBottom: '12px',
               }}>
-                <div style={{
-                  fontSize: '24px',
-                  marginBottom: '8px',
-                  animation: 'spin 1s linear infinite',
-                  display: 'inline-block',
-                }}>
-                  ⟳
+                <div>
+                  <div style={{ fontSize: '10px', color: theme.textMuted, marginBottom: '2px' }}>
+                    COLUMNS
+                  </div>
+                  <div style={{ fontSize: '18px', fontWeight: 700, color: theme.text }}>
+                    {result.columns.count}
+                  </div>
                 </div>
-                <p style={{
-                  margin: 0,
-                  fontSize: '12px',
-                  color: theme.textMuted,
-                }}>
-                  Claude is analyzing the grid structure...
-                </p>
+                <div>
+                  <div style={{ fontSize: '10px', color: theme.textMuted, marginBottom: '2px' }}>
+                    GUTTER
+                  </div>
+                  <div style={{ fontSize: '18px', fontWeight: 700, color: theme.text }}>
+                    {result.columns.gutter}%
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '10px', color: theme.textMuted, marginBottom: '2px' }}>
+                    MARGIN
+                  </div>
+                  <div style={{ fontSize: '18px', fontWeight: 700, color: theme.text }}>
+                    {result.columns.margin}%
+                  </div>
+                </div>
               </div>
-            )}
-            
-            {/* Error Display */}
-            {error && !isAnalyzing && (
-              <div style={{
-                padding: '12px 16px',
-                backgroundColor: theme.errorBg,
-                borderRadius: '8px',
+              
+              {/* Description */}
+              <p style={{
+                margin: 0,
                 fontSize: '12px',
-                color: theme.errorText,
+                color: theme.textMuted,
+                lineHeight: 1.5,
+                fontStyle: 'italic',
               }}>
-                <strong>Error:</strong> {error}
-              </div>
-            )}
+                "{result.description}"
+              </p>
+            </div>
             
-            {/* Grid Controls */}
-            <GridControls
-              config={gridConfig}
-              onChange={setGridConfig}
-              onReset={handleReset}
-              hasChanges={hasChanges || false}
-              frameWidth={imageWidth || 800}
-              frameHeight={imageHeight || 600}
-              isDark={isDark}
-            />
-          </div>
-        )}
-      </div>
-      
-      {/* Footer Actions */}
-      {imageData && (
-        <div style={{
-          flexShrink: 0,
-          padding: '16px',
-          borderTop: `1px solid ${theme.border}`,
-        }}>
-          <div style={{
-            display: 'flex',
-            gap: '8px',
-            marginBottom: '8px',
-          }}>
+            {/* Re-analyze button */}
             <button
-              onClick={handleApplyGrid}
+              onClick={handleAnalyze}
               style={{
-                flex: 1,
-                padding: '12px 16px',
-                borderRadius: '8px',
-                border: 'none',
-                backgroundColor: '#3b82f6',
-                color: '#ffffff',
-                fontSize: '12px',
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              ✓ Apply to Selection
-            </button>
-            <button
-              onClick={() => handleCreateFrame(false)}
-              style={{
-                padding: '12px 16px',
-                borderRadius: '8px',
-                border: `1px solid ${theme.border}`,
-                backgroundColor: 'transparent',
-                color: theme.text,
-                fontSize: '12px',
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              + New Frame
-            </button>
-            <button
-              onClick={() => setShowSaveModal(true)}
-              title="Save to My Grids"
-              style={{
-                padding: '12px 16px',
-                borderRadius: '8px',
-                border: `1px solid ${theme.border}`,
-                backgroundColor: 'transparent',
-                color: theme.text,
-                fontSize: '12px',
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              💾
-            </button>
-            <button
-              onClick={() => {
-                setImageData(null)
-                setRawImageData(null)
-                setDetectedGrid(null)
-              }}
-              style={{
-                padding: '12px 16px',
-                borderRadius: '8px',
+                width: '100%',
+                padding: '10px',
+                borderRadius: '6px',
                 border: `1px solid ${theme.border}`,
                 backgroundColor: 'transparent',
                 color: theme.textMuted,
                 fontSize: '12px',
-                fontWeight: 600,
+                fontWeight: 500,
                 cursor: 'pointer',
+                marginBottom: '16px',
               }}
-              title="Clear and start over"
             >
-              ✕
+              ↻ Re-analyze
             </button>
           </div>
-          
-          {/* Include Image Option */}
+        )}
+      </div>
+      
+      {/* Action Buttons - Fixed at Bottom */}
+      {result && (
+        <div style={{
+          padding: '12px 16px',
+          borderTop: `1px solid ${theme.border}`,
+          backgroundColor: theme.bg,
+          display: 'flex',
+          gap: '8px',
+        }}>
           <button
-            onClick={() => handleCreateFrame(true)}
+            onClick={handleApply}
             style={{
-              width: '100%',
-              padding: '10px 16px',
+              flex: 2,
+              padding: '12px',
+              borderRadius: '8px',
+              border: 'none',
+              backgroundColor: '#3b82f6',
+              color: '#fff',
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            ✓ Apply to Selection
+          </button>
+          <button
+            onClick={handleCreateFrame}
+            style={{
+              flex: 1,
+              padding: '12px',
               borderRadius: '8px',
               border: `1px solid ${theme.border}`,
-              backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
-              color: theme.textMuted,
-              fontSize: '11px',
-              fontWeight: 500,
+              backgroundColor: theme.cardBg,
+              color: theme.text,
+              fontSize: '13px',
+              fontWeight: 600,
               cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
             }}
-            title="Create a new frame with the original image as a semi-transparent reference layer"
           >
-            <span>🖼</span>
-            <span>New Frame with Reference Image</span>
+            + New Frame
+          </button>
+          <button
+            onClick={() => setShowSaveModal(true)}
+            style={{
+              padding: '12px',
+              borderRadius: '8px',
+              border: `1px solid ${theme.border}`,
+              backgroundColor: theme.cardBg,
+              color: theme.text,
+              fontSize: '16px',
+              cursor: 'pointer',
+            }}
+            title="Save to My Grids"
+          >
+            💾
           </button>
         </div>
       )}
       
-      {/* Save Grid Modal */}
+      {/* Save Modal */}
       {showSaveModal && (
         <SaveGridModal
-          config={gridConfig}
-          suggestedName={imageName ? `${imageName} Grid` : 'Analyzed Grid'}
+          config={resultToGridConfig()}
+          suggestedName={`Analyzed ${result?.columns.count || 4}-Column Grid`}
           source="Analyzed"
-          detectedData={detectedGrid || undefined}
-          aspectRatio={imageWidth && imageHeight ? `${imageWidth}:${imageHeight}` : undefined}
           isDark={isDark}
           onClose={() => setShowSaveModal(false)}
-          onSave={() => {
-            setShowSaveModal(false)
-            parent.postMessage({
-              pluginMessage: {
-                type: 'notify',
-                text: 'Grid saved to My Grids'
-              }
-            }, '*')
-          }}
         />
       )}
     </div>
@@ -905,4 +658,3 @@ export const GridAnalyzer: React.FC<GridAnalyzerProps> = ({ isDark }) => {
 }
 
 export default GridAnalyzer
-
