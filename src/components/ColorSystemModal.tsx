@@ -528,6 +528,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
       systemName,
       detailLevel,
       includeDarkMode,
+      scaleMethod,
       scales: {
         light: lightScales,
         dark: darkScales,

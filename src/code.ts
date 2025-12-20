@@ -339,6 +339,7 @@ interface ColorSystemData {
   systemName: string;
   detailLevel: 'minimal' | 'detailed' | 'presentation';
   includeDarkMode: boolean;
+  scaleMethod: 'custom' | 'radix';
   scales: {
     light: {
       primary?: ColorScaleData;
@@ -1083,12 +1084,13 @@ async function generatePresentationLayout(
 async function generateColorSystemFrames(config: any, scalesData: ColorSystemData) {
   await loadFonts();
 
-  const { detailLevel, includeDarkMode, systemName } = scalesData;
+  const { detailLevel, includeDarkMode, systemName, scaleMethod } = scalesData;
   const { light: lightScales, dark: darkScales } = scalesData.scales;
 
   // Create parent container
   const container = figma.createFrame();
-  container.name = `Color System - ${systemName}`;
+  const methodLabel = scaleMethod === 'custom' ? 'Custom Scales' : 'Radix Matched';
+  container.name = `Color System - ${systemName} (${methodLabel})`;
   container.layoutMode = 'HORIZONTAL';
   container.primaryAxisSizingMode = 'AUTO';
   container.counterAxisSizingMode = 'AUTO';
