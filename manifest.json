@@ -12,7 +12,8 @@
   "networkAccess": {
     "allowedDomains": [
       "https://unpkg.com",
-      "https://*.unpkg.com"
+      "https://*.unpkg.com",
+      "https://api.anthropic.com"
     ]
   }
 }
