@@ -8,7 +8,11 @@ A Figma plugin that pairs timeless color theory with Swiss design principles.
 ## What It Does
 
 ### Colors
-Access 348 colors and 159 harmonious combinations from Sanzo Wada's 1934 book *A Dictionary of Color Combinations*. These palettes have stood the test of time—used by textile designers, artists, and graphic designers for nearly a century.
+Access historic color palettes from two classic sources:
+
+**Sanzo Wada** — 348 colors and 159 harmonious combinations from the 1934 book *A Dictionary of Color Combinations*. These palettes have stood the test of time—used by textile designers, artists, and graphic designers for nearly a century.
+
+**Werner's Nomenclature of Colours** — 110 colors from Patrick Syme's 1814 guide, originally created for naturalists to describe specimens. Each color includes examples from the animal, vegetable, and mineral kingdoms.
 
 - Browse by hue family (reds, yellows, greens, blues, purples, neutrals)
 - See which colors pair well together based on Wada's original combinations
@@ -17,10 +21,9 @@ Access 348 colors and 159 harmonious combinations from Sanzo Wada's 1934 book *A
 - Export as CSS variables or JSON
 
 ### Grids
-Apply classic Swiss-style grid systems to your frames, or analyze any image to extract its underlying structure.
+Apply classic Swiss-style grid systems to your frames.
 
 - Library of Müller-Brockmann-inspired presets (4-column, 6-column, modular, baseline)
-- AI-powered grid detection from reference images
 - Save and reuse custom grids across projects
 
 ## Why It's Useful
@@ -69,7 +72,17 @@ Import the plugin in Figma: **Plugins → Development → Import plugin from man
 
 ## Credits
 
-Color data from Sanzo Wada's *A Dictionary of Color Combinations* (配色辞典, 1934), digitized by [Dain M. Blodorn Kim](https://sanzo-wada.dmbk.io/).
+This plugin was built using data and tools from these generous sources:
+
+### Color Data
+
+**Sanzo Wada** — Color data from *A Dictionary of Color Combinations* (配色辞典, 1934), digitized by [Dain M. Blodorn Kim](https://sanzo-wada.dmbk.io/).
+
+**Werner's Nomenclature of Colours** — Based on the 1814 book by Patrick Syme (extending Abraham Gottlob Werner's original classification), digitized by [Nicholas Rougeux](https://www.c82.net/werner/).
+
+### Color System Generation
+
+**Radix UI Colors** — The color system generator uses [Radix Colors](https://www.radix-ui.com/colors) as the foundation for creating accessible, harmonious 12-step color scales. Radix's carefully designed scales ensure consistent contrast ratios and work seamlessly across light and dark modes.
 
 ## License
 
