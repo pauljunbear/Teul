@@ -1,33 +1,48 @@
 # Teul
 
-**Design foundations, timeless.**
+**Timeless design foundations.**
 
-A Figma plugin for historic color palettes and Swiss-style grid systems.
+<img width="600" alt="Color system output showing light and dark mode palettes with semantic usage guides" src="https://github.com/user-attachments/assets/5e5d8bfb-141c-4cb9-8ba2-0a6c9d7c41cc" />
 
-<img width="300" alt="Color palette view" src="https://github.com/user-attachments/assets/5e5d8bfb-141c-4cb9-8ba2-0a6c9d7c41cc" />
-<img width="300" alt="Combination detail view" src="https://github.com/user-attachments/assets/b6f0d328-c52a-471f-b009-663407724e89" />
+## What is Teul?
+
+**틀 (Teul)** is the Korean word for *frame*, *mold*, or *pattern*—a foundational structure that shapes what comes next. In Taekwondo, the forms are called *Tul*. In design, it's the framework that gives your work structure.
+
+Teul brings together three worlds:
+
+- **Sanzo Wada's color theory** — 348 colors and 159 combinations from 1930s Japan, refined through decades of use by textile designers and artists
+- **Werner's Nomenclature of Colours** — 110 colors from 1814, each grounded in observations from nature's animal, vegetable, and mineral kingdoms  
+- **Radix color scales** — Modern, accessible 12-step color systems designed for digital interfaces
+
+The result: historic color wisdom, made practical for modern design. Pick colors that have stood the test of time, then generate complete, accessible color systems ready for production.
+
+<img width="800" alt="Complete color system with semantic usage guide, full scales, and color combinations" src="https://github.com/user-attachments/assets/your-new-screenshot-id" />
 
 ## Features
 
-### 🎨 Color Palettes
+### 🎨 Historic Color Palettes
 
-Two historic color collections, digitized and ready to use:
+Browse two carefully digitized color collections:
 
-**Sanzo Wada** — 348 colors and 159 harmonious combinations from *A Dictionary of Color Combinations* (1934). These palettes have been trusted by textile designers, artists, and graphic designers for nearly a century.
+**Sanzo Wada** — From *A Dictionary of Color Combinations* (配色辞典, 1934). These aren't algorithm-generated palettes—they're curated combinations from a designer who spent his career studying color relationships.
 
-**Werner's Nomenclature of Colours** — 110 colors from Patrick Syme's 1814 guide, originally created for naturalists. Each color includes examples from the animal, vegetable, and mineral kingdoms.
+**Werner's Nomenclature** — Each of the 110 colors includes real-world examples: "the breast of the black-headed Gull," "the back of the Christmas Rose," "Carrara Marble." Colors grounded in observation, not abstraction.
 
-- Browse by hue family
-- See which colors pair well together
-- Apply colors directly to shapes, text, and frames
-- Generate complete 12-step color systems
-- Export as CSS variables, Tailwind config, or JSON
+### ⚡ Color System Generator
 
-### 📐 Grid Systems
+Turn any palette into a complete design system:
 
-Classic Swiss-style grids inspired by Josef Müller-Brockmann:
+- **12-step scales** for each color role (primary, secondary, tertiary, accent, neutral)
+- **Semantic tokens** — backgrounds, borders, interactive states, text colors
+- **Light and dark modes** generated automatically
+- **Usage proportions** — guidance on how to balance your palette
+- **Export options** — CSS variables, Tailwind config, JSON
 
-- 4-column, 6-column, 8-column, and 12-column presets
+### 📐 Swiss-Style Grids
+
+Classic grid systems inspired by Josef Müller-Brockmann:
+
+- 4, 6, 8, and 12-column presets
 - Modular grids with rows and columns
 - Baseline grids for typography
 - Save and reuse custom configurations
@@ -41,29 +56,24 @@ Classic Swiss-style grids inspired by Josef Müller-Brockmann:
 
 ## Quick Start
 
-**Apply a color:**
-1. Select any shape or text
-2. Open Teul
-3. Click a color to see its combinations
-4. Click "Apply Fill" or "Apply Stroke"
-
 **Generate a color system:**
-1. Find a color combination you like
-2. Click the "System" button
-3. Assign roles (primary, secondary, accent, neutral)
-4. Generate organized frames with all color values
+1. Browse Wada or Werner colors
+2. Find a combination you like
+3. Click "System" to open the generator
+4. Assign roles and generate
+5. Export to your codebase or create Figma frames
 
 **Apply a grid:**
 1. Select a frame
-2. Switch to the Grids tab
-3. Pick a preset from the library
-4. Click "Apply Grid"
+2. Switch to Grids tab
+3. Pick a preset
+4. Apply
 
 ## Development
 
 ```bash
-git clone https://github.com/pauljunbear/teul.git
-cd teul
+git clone https://github.com/pauljunbear/Teul.git
+cd Teul
 npm install
 npm run dev
 ```
@@ -74,13 +84,13 @@ Import in Figma: **Plugins → Development → Import plugin from manifest**
 
 ### Color Data
 
-**Sanzo Wada** — *A Dictionary of Color Combinations* (配色辞典, 1934), digitized by [Dain M. Blodorn Kim](https://sanzo-wada.dmbk.io/).
+**Sanzo Wada** — *A Dictionary of Color Combinations* (1934), digitized by [Dain M. Blodorn Kim](https://sanzo-wada.dmbk.io/).
 
 **Werner's Nomenclature of Colours** — Patrick Syme's 1814 guide, digitized by [Nicholas Rougeux](https://www.c82.net/werner/).
 
 ### Color System Generation
 
-**Radix UI Colors** — The color system generator builds on [Radix Colors](https://www.radix-ui.com/colors) for accessible, harmonious 12-step scales.
+**Radix UI Colors** — Accessible 12-step color scales from [Radix](https://www.radix-ui.com/colors).
 
 ## License
 
