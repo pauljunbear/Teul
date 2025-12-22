@@ -1,7 +1,7 @@
 {
-  "name": "wado-sanzo-color",
+  "name": "teul",
   "version": "1.0.0",
-  "description": "Wado Sanzo Color Plugin for Figma",
+  "description": "Teul — Design foundations for Figma. Historic color palettes and Swiss-style grids.",
   "main": "code.js",
   "scripts": {
     "build": "webpack --mode=production",

@@ -180,7 +180,7 @@ const App: React.FC = () => {
   const [colorSystemColors, setColorSystemColors] = useState<{ hex: string; name: string }[]>([]);
   const [colorSystemName, setColorSystemName] = useState('');
   
-  // Main navigation state (Sanzo Colors vs Werner's Colors vs Grids)
+  // Main navigation state (Wada Colors vs Werner's Colors vs Grids)
   const [mainTab, setMainTab] = useState<'colors' | 'werner' | 'grids'>('colors');
 
   const theme = isDark ? styles.dark : styles.light;
@@ -299,7 +299,7 @@ const App: React.FC = () => {
               }}
             >
               <span style={{ fontSize: '11px' }}>🎨</span>
-              Sanzo
+              Wada
             </button>
             <button
               onClick={() => setMainTab('werner')}
@@ -376,7 +376,7 @@ const App: React.FC = () => {
                   const random = colorData.colors[Math.floor(Math.random() * colorData.colors.length)];
                   setSelectedColor(random);
                 }}
-                title="Random Sanzo Color"
+                title="Random Wada Color"
                 style={{
                   width: '28px',
                   height: '28px',

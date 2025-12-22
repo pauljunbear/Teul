@@ -53,7 +53,7 @@ function exportAsCSS(
 ): string {
   const prefix = systemName.toLowerCase().replace(/\s+/g, '-');
   let css = `/* ${systemName} Color System */\n`;
-  css += `/* Generated with Wado Sanzo Colors */\n\n`;
+  css += `/* Generated with Teul */\n\n`;
   
   css += `:root {\n`;
   
@@ -118,7 +118,7 @@ function exportAsTailwind(
   const lightColors = buildColorObject(scales);
   
   let config = `// ${systemName} - Tailwind CSS Config\n`;
-  config += `// Generated with Wado Sanzo Colors\n\n`;
+  config += `// Generated with Teul\n\n`;
   config += `module.exports = {\n`;
   config += `  theme: {\n`;
   config += `    extend: {\n`;
@@ -166,7 +166,7 @@ function exportAsJSON(
   const data: Record<string, any> = {
     name: systemName,
     generatedAt: new Date().toISOString(),
-    generator: 'Wado Sanzo Colors',
+    generator: 'Teul',
     light: buildScaleObject(scales),
   };
 

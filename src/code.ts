@@ -121,21 +121,21 @@ figma.ui.onmessage = async (msg) => {
       
       // Check if style already exists
       const existingStyles = await figma.getLocalPaintStylesAsync();
-      const existingStyle = existingStyles.find(s => s.name === `Sanzo/${msg.name}`);
+      const existingStyle = existingStyles.find(s => s.name === `Teul/${msg.name}`);
       
       if (existingStyle) {
-        figma.notify(`Style "Sanzo/${msg.name}" already exists`);
+        figma.notify(`Style "Teul/${msg.name}" already exists`);
         return;
       }
       
       const style = figma.createPaintStyle();
-      style.name = `Sanzo/${msg.name}`;
+      style.name = `Teul/${msg.name}`;
       style.paints = [{
         type: 'SOLID',
         color: color
       }];
       
-      figma.notify(`Created style: Sanzo/${msg.name}`);
+      figma.notify(`Created style: Teul/${msg.name}`);
     } catch (error) {
       figma.notify('Failed to create style');
       console.error(error);
@@ -259,7 +259,7 @@ figma.ui.onmessage = async (msg) => {
   // Create palette frame
   if (msg.type === 'create-palette') {
     const colors: ColorMessage[] = msg.colors;
-    const paletteName = msg.name || 'Sanzo Palette';
+    const paletteName = msg.name || 'Teul Palette';
     
     // Create frame
     const frame = figma.createFrame();

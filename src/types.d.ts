@@ -31,7 +31,7 @@ interface RoleAssignment {
 
 /** Configuration for generating a color system */
 interface ColorSystemConfig {
-  /** The source colors from Wado Sanzo combination */
+  /** The source colors from Sanzo Wada combination */
   sourceColors: string[]
   /** How roles are assigned to source colors */
   roleAssignments: RoleAssignment[]

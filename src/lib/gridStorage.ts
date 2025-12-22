@@ -7,7 +7,7 @@
 import type { SavedGrid, GridConfig, GridCategory } from '../types/grid'
 
 // Storage key for saved grids
-const STORAGE_KEY = 'wado-sanzo-saved-grids'
+const STORAGE_KEY = 'teul-saved-grids'
 const STORAGE_VERSION = 1
 
 // ============================================
@@ -180,7 +180,7 @@ export function exportGridsToJSON(grids?: SavedGrid[]): string {
   const data = grids || loadSavedGrids()
   
   const exportData = {
-    type: 'wado-sanzo-grids',
+    type: 'teul-grids',
     version: STORAGE_VERSION,
     exportedAt: new Date().toISOString(),
     grids: data,
@@ -199,7 +199,7 @@ export function downloadGridsAsJSON(grids?: SavedGrid[], filename?: string): voi
   
   const a = document.createElement('a')
   a.href = url
-  a.download = filename || `wado-sanzo-grids-${new Date().toISOString().split('T')[0]}.json`
+  a.download = filename || `teul-grids-${new Date().toISOString().split('T')[0]}.json`
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
@@ -219,7 +219,7 @@ export function importGridsFromJSON(jsonString: string): {
     const data = JSON.parse(jsonString)
     
     // Validate structure
-    if (data.type !== 'wado-sanzo-grids') {
+    if (data.type !== 'teul-grids') {
       return { success: false, error: 'Invalid file format' }
     }
     

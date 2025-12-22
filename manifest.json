@@ -1,5 +1,5 @@
 {
-  "name": "Wado Sanzo Color",
+  "name": "Teul",
   "id": "1289773781827405726",
   "api": "1.0.0",
   "main": "dist/code.js",
@@ -12,9 +12,7 @@
   "networkAccess": {
     "allowedDomains": [
       "https://unpkg.com",
-      "https://*.unpkg.com",
-      "https://api.anthropic.com",
-      "https://corsproxy.io"
+      "https://*.unpkg.com"
     ]
   }
 }
