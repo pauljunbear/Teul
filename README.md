@@ -2,7 +2,7 @@
 
 **Timeless design foundations.**
 
-<img width="600" alt="Color system output showing light and dark mode palettes with semantic usage guides" src="https://github.com/user-attachments/assets/5e5d8bfb-141c-4cb9-8ba2-0a6c9d7c41cc" />
+<img width="2790" height="1704" alt="CleanShot 2025-12-22 at 18 38 29@2x" src="https://github.com/user-attachments/assets/c113f18a-76b2-4af8-bda9-1a195b91df7c" />
 
 ## What is Teul?
 
@@ -16,7 +16,7 @@ Teul brings together three worlds:
 
 The result: historic color wisdom, made practical for modern design. Pick colors that have stood the test of time, then generate complete, accessible color systems ready for production.
 
-<img width="800" alt="Complete color system with semantic usage guide, full scales, and color combinations" src="https://github.com/user-attachments/assets/your-new-screenshot-id" />
+<img width="3888" height="2382" alt="CleanShot 2025-12-22 at 18 35 31@2x" src="https://github.com/user-attachments/assets/e1b04881-c29b-4691-8c9e-7867724328ff" />
 
 ## Features
 
