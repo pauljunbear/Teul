@@ -823,7 +823,7 @@ export const MyGrids: React.FC<MyGridsProps> = ({ isDark }) => {
             }}>
               {searchQuery 
                 ? 'Try a different search term'
-                : 'Save grids from the Library or Analyzer tabs to build your collection.'
+                : 'Save grids from the Library tab to build your collection.'
               }
             </p>
             

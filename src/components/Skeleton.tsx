@@ -109,32 +109,6 @@ export const GridLibrarySkeleton: React.FC<{ count?: number; isDark?: boolean }>
 }
 
 // ============================================
-// Grid Analyzer Skeleton
-// ============================================
-
-export const GridAnalyzerSkeleton: React.FC<{ isDark?: boolean }> = ({ isDark = true }) => {
-  return (
-    <div style={{ padding: '16px' }}>
-      {/* Image upload area */}
-      <Skeleton width="100%" height={200} borderRadius={12} isDark={isDark} />
-      
-      {/* Action buttons */}
-      <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-        <Skeleton width="100%" height={44} borderRadius={8} isDark={isDark} />
-      </div>
-      
-      {/* Results section */}
-      <div style={{ marginTop: '24px' }}>
-        <Skeleton width="30%" height={14} isDark={isDark} />
-        <div style={{ marginTop: '12px' }}>
-          <Skeleton width="100%" height={120} borderRadius={8} isDark={isDark} />
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ============================================
 // My Grids Skeleton
 // ============================================
 

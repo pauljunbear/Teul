@@ -49,11 +49,7 @@ const HELP_SECTIONS = [
         text: 'Browse pre-built grid presets organized by category. Click a preset to see its details, then Apply to your selection or Create a new frame.',
       },
       {
-        heading: 'Analyze Tab',
-        text: 'Select an image in Figma, click "Get Selection", then "Analyze with AI" to detect its grid structure. Adjust the results and apply.',
-      },
-      {
-        heading: 'My Grids Tab',
+        heading: 'Saved Tab',
         text: 'Save custom grids for reuse. Export/import grids as JSON to share with your team.',
       },
     ],
@@ -123,26 +119,8 @@ const HELP_SECTIONS = [
       'Use % for gutters/margins when designing responsive layouts.',
       'Combine column grids with baseline grids for perfect typography.',
       'Start with a classic 4 or 6-column grid, then customize as needed.',
-      'Save analyzed grids to My Grids for quick reuse.',
+      'Save grids to My Grids for quick reuse.',
       'Export your grid library as JSON backup before major Figma updates.',
-    ],
-  },
-  {
-    id: 'ai-analysis',
-    title: '🤖 AI Analysis',
-    content: [
-      {
-        heading: 'How It Works',
-        text: 'Claude Vision analyzes your image to detect underlying grid structures, including columns, gutters, margins, and layout patterns.',
-      },
-      {
-        heading: 'Best Results',
-        text: 'Works best on designs with clear vertical alignment, consistent spacing, and visible content blocks. Abstract or organic layouts may not be detected.',
-      },
-      {
-        heading: 'API Key',
-        text: 'Requires your own Anthropic API key. Enter it once and it\'s securely stored in your browser.',
-      },
     ],
   },
 ]

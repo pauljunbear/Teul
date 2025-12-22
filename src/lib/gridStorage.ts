@@ -4,7 +4,7 @@
 // Manages user's saved grids using localStorage (UI side)
 // and communicates with code.ts for Figma clientStorage
 
-import type { SavedGrid, GridConfig, GridCategory, DetectedGrid } from '../types/grid'
+import type { SavedGrid, GridConfig, GridCategory } from '../types/grid'
 
 // Storage key for saved grids
 const STORAGE_KEY = 'wado-sanzo-saved-grids'
@@ -93,7 +93,6 @@ export function createSavedGrid(params: {
   tags?: string[]
   config: GridConfig
   source?: string
-  detectedData?: DetectedGrid
   aspectRatio?: string
 }): SavedGrid {
   return {
@@ -107,7 +106,6 @@ export function createSavedGrid(params: {
     isCustom: true,
     createdAt: Date.now(),
     source: params.source,
-    detectedData: params.detectedData,
   }
 }
 

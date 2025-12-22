@@ -12,7 +12,6 @@ import type {
   FigmaLayoutGrid,
   GridColor,
   GridPreset,
-  DetectedGrid,
 } from '../types/grid'
 import { toPixels, scaleGrid } from './gridUtils'
 
@@ -180,21 +179,6 @@ export function presetToFrameName(preset: GridPreset): string {
     columns: preset.config.columns?.count,
     rows: preset.config.rows?.count,
     isModular: !!(preset.config.columns && preset.config.rows),
-  })
-}
-
-/**
- * Generate frame name from a DetectedGrid
- */
-export function detectedGridToFrameName(
-  detected: DetectedGrid,
-  sourceName?: string
-): string {
-  return generateGridFrameName({
-    source: sourceName || 'Analyzed',
-    columns: detected.columns ?? undefined,
-    rows: detected.rows ?? undefined,
-    isModular: !!(detected.columns && detected.rows),
   })
 }
 

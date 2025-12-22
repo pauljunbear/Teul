@@ -8,7 +8,6 @@ import type {
   RowGridConfig,
   BaselineGridConfig,
   GridUnit,
-  DetectedGrid,
   FigmaLayoutGrid,
   GridColor,
   DEFAULT_COLUMN_COLOR,
@@ -345,55 +344,6 @@ export function getTypographySuggestions(baseline: number): {
     bodyLineHeight: lineHeight,
     headingSizes,
   }
-}
-
-// ============================================
-// DetectedGrid to GridConfig Conversion
-// ============================================
-
-/**
- * Convert a detected grid to a usable GridConfig
- * @param detected - Detected grid from AI analysis
- * @param frameWidth - Target frame width
- * @param frameHeight - Target frame height
- * @returns GridConfig ready for use
- */
-export function detectedToGridConfig(
-  detected: DetectedGrid,
-  frameWidth: number,
-  frameHeight: number
-): GridConfig {
-  const config: GridConfig = {}
-  
-  // Convert columns if detected
-  if (detected.columns && detected.columns > 0) {
-    config.columns = {
-      count: detected.columns,
-      gutterSize: detected.gutterPercent ?? 2,
-      gutterUnit: 'percent',
-      margin: (detected.marginLeftPercent + detected.marginRightPercent) / 2,
-      marginUnit: 'percent',
-      alignment: detected.symmetry === 'symmetric' ? 'STRETCH' : 'MIN',
-      visible: true,
-      color: { r: 1, g: 0.2, b: 0.2, a: 0.1 },
-    }
-  }
-  
-  // Convert rows if detected (modular grid)
-  if (detected.rows && detected.rows > 0) {
-    config.rows = {
-      count: detected.rows,
-      gutterSize: detected.rowGutterPercent ?? 2,
-      gutterUnit: 'percent',
-      margin: (detected.marginTopPercent + detected.marginBottomPercent) / 2,
-      marginUnit: 'percent',
-      alignment: 'STRETCH',
-      visible: true,
-      color: { r: 0.2, g: 0.4, b: 1, a: 0.1 },
-    }
-  }
-  
-  return config
 }
 
 // ============================================

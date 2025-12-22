@@ -1,5 +1,5 @@
 import * as React from 'react'
-import type { GridConfig, GridCategory, DetectedGrid, SavedGrid } from '../types/grid'
+import type { GridConfig, GridCategory, SavedGrid } from '../types/grid'
 import { GridMiniPreview } from './GridPreview'
 import { createSavedGrid, addSavedGrid } from '../lib/gridStorage'
 
@@ -8,10 +8,8 @@ interface SaveGridModalProps {
   config: GridConfig
   /** Pre-fill name suggestion */
   suggestedName?: string
-  /** Source of the grid (e.g., "Swiss 4-Column" or "Analyzed") */
+  /** Source of the grid (e.g., "Swiss 4-Column") */
   source?: string
-  /** Detected grid data if from analysis */
-  detectedData?: DetectedGrid
   /** Suggested aspect ratio */
   aspectRatio?: string
   /** Dark mode */
@@ -58,7 +56,6 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
   config,
   suggestedName = '',
   source,
-  detectedData,
   aspectRatio,
   isDark,
   onClose,
@@ -108,7 +105,6 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
         tags: tags.split(',').map(t => t.trim()).filter(Boolean),
         config,
         source,
-        detectedData,
         aspectRatio,
       })
       

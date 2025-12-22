@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs'
 import { GridLibrary } from './GridLibrary'
-import { GridAnalyzer } from './GridAnalyzer'
 import { MyGrids } from './MyGrids'
 import { getSavedGridCount } from '../lib/gridStorage'
 import { HelpPanel, HelpButton } from './HelpPanel'
@@ -68,15 +67,12 @@ export const GridSystemTab: React.FC<GridSystemTabProps> = ({ isDark }) => {
         setShowHelp(true)
       }
       
-      // Tab navigation with Cmd/Ctrl + 1/2/3
+      // Tab navigation with Cmd/Ctrl + 1/2
       if ((e.metaKey || e.ctrlKey) && !e.shiftKey) {
         if (e.key === '1') {
           e.preventDefault()
           setActiveTab('library')
         } else if (e.key === '2') {
-          e.preventDefault()
-          setActiveTab('analyze')
-        } else if (e.key === '3') {
           e.preventDefault()
           setActiveTab('my-grids')
         }
@@ -115,7 +111,6 @@ export const GridSystemTab: React.FC<GridSystemTabProps> = ({ isDark }) => {
             }}>
               {[
                 { id: 'library', label: 'Library', count: undefined },
-                { id: 'analyze', label: 'Analyze', count: undefined },
                 { id: 'my-grids', label: 'Saved', count: savedGridCount || undefined },
               ].map(tab => (
                 <button
@@ -183,7 +178,6 @@ export const GridSystemTab: React.FC<GridSystemTabProps> = ({ isDark }) => {
           backgroundColor: theme.bg,
         }}>
           {activeTab === 'library' && <GridLibrary isDark={isDark} />}
-          {activeTab === 'analyze' && <GridAnalyzer isDark={isDark} />}
           {activeTab === 'my-grids' && <MyGrids isDark={isDark} />}
         </div>
         

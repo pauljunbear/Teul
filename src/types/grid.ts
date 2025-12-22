@@ -133,74 +133,14 @@ export interface GridPreset {
 }
 
 // ============================================
-// Detected Grid (from AI analysis)
-// ============================================
-
-export interface DetectedGrid {
-  /** Type of grid detected */
-  gridType: GridPattern
-  /** Detected column count */
-  columns: number | null
-  /** Gutter as percentage of total width */
-  gutterPercent: number | null
-  /** Left margin as percentage */
-  marginLeftPercent: number
-  /** Right margin as percentage */
-  marginRightPercent: number
-  /** Top margin as percentage */
-  marginTopPercent: number
-  /** Bottom margin as percentage */
-  marginBottomPercent: number
-  /** Detected row count (for modular grids) */
-  rows: number | null
-  /** Row gutter as percentage of total height */
-  rowGutterPercent: number | null
-  /** Detected or calculated aspect ratio */
-  aspectRatio: string
-  /** Symmetry of the detected grid */
-  symmetry: GridSymmetry
-  /** Confidence score (0-100) */
-  confidence: number
-  /** AI notes about the detection */
-  notes: string
-  /** Source image dimensions */
-  sourceWidth: number
-  sourceHeight: number
-}
-
-// ============================================
 // Saved Grid (user's custom grid)
 // ============================================
 
 export interface SavedGrid extends GridPreset {
   /** Override: custom grids are always custom */
   isCustom: true
-  /** Source of the grid (preset name or "analyzed") */
+  /** Source of the grid (preset name) */
   source?: string
-  /** Original detected grid data if from analysis */
-  detectedData?: DetectedGrid
-}
-
-// ============================================
-// Grid Analysis Request/Response
-// ============================================
-
-export interface GridAnalysisRequest {
-  /** Base64-encoded image data */
-  imageData: string
-  /** Image width in pixels */
-  width: number
-  /** Image height in pixels */
-  height: number
-}
-
-export interface GridAnalysisResponse {
-  /** Whether analysis was successful */
-  success: boolean
-  /** Detected grid data */
-  grid?: DetectedGrid
-  /** Error message if failed */
-  error?: string
 }
 
 // ============================================
@@ -238,41 +178,9 @@ export interface ApplyGridMessage {
   replaceExisting: boolean
 }
 
-export interface GetSelectionMessage {
-  type: 'get-selection-for-grid'
-}
-
-export interface SelectionInfoMessage {
-  type: 'selection-info'
-  hasSelection: boolean
-  isImage: boolean
-  isFrame: boolean
-  width?: number
-  height?: number
-  name?: string
-  imageBytes?: string  // Base64-encoded
-}
-
-export interface ExportImageForAnalysisMessage {
-  type: 'export-image-for-analysis'
-}
-
-export interface ImageExportedMessage {
-  type: 'image-exported'
-  success: boolean
-  imageData?: string  // Base64-encoded PNG
-  width?: number
-  height?: number
-  error?: string
-}
-
 export type GridPluginMessage = 
   | CreateGridFrameMessage
   | ApplyGridMessage
-  | GetSelectionMessage
-  | SelectionInfoMessage
-  | ExportImageForAnalysisMessage
-  | ImageExportedMessage
 
 // ============================================
 // Grid Library State
@@ -285,28 +193,6 @@ export interface GridLibraryState {
   searchQuery: string
   /** Currently selected preset for preview */
   selectedPreset: GridPreset | null
-}
-
-// ============================================
-// Grid Analyzer State
-// ============================================
-
-export interface GridAnalyzerState {
-  /** Whether we have a valid image selected */
-  hasImage: boolean
-  /** Whether analysis is in progress */
-  isAnalyzing: boolean
-  /** Detected grid (if analysis complete) */
-  detectedGrid: DetectedGrid | null
-  /** User-adjusted grid values */
-  adjustedGrid: DetectedGrid | null
-  /** Error message if analysis failed */
-  error: string | null
-  /** Preview image data (base64) */
-  previewImage: string | null
-  /** Preview dimensions */
-  previewWidth: number
-  previewHeight: number
 }
 
 // ============================================
