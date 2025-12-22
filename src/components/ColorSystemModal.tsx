@@ -204,6 +204,8 @@ interface RoleAssignment {
   hex: string;
   name: string;
   role: ColorRole | null;
+  // For multi-select mode (Werner colors with many related colors)
+  roles?: ColorRole[];
 }
 
 interface ColorSystemConfig {
@@ -260,8 +262,18 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
   const [showExport, setShowExport] = useState(false);
   const [exportFormat, setExportFormat] = useState<'css' | 'tailwind' | 'json'>('css');
   
+  // Multi-select mode: allows multiple colors per role (useful for Werner colors with many related colors)
+  const [multiSelectMode, setMultiSelectMode] = useState(false);
+  
   // Initialize role assignments from colors
   const [roleAssignments, setRoleAssignments] = useState<RoleAssignment[]>([]);
+
+  // Auto-enable multi-select mode when there are more than 4 colors
+  React.useEffect(() => {
+    if (colors && colors.length > 4) {
+      setMultiSelectMode(true);
+    }
+  }, [colors]);
 
   // Update role assignments when colors change (e.g., when modal opens with new colors)
   React.useEffect(() => {
@@ -271,6 +283,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
           hex: c.hex,
           name: c.name,
           role: i === 0 ? 'primary' : i === 1 ? 'secondary' : i === 2 ? 'tertiary' : i === 3 ? 'accent' : null,
+          roles: i === 0 ? ['primary'] : i === 1 ? ['secondary'] : i === 2 ? ['tertiary'] : i === 3 ? ['accent'] : [],
         }))
       );
     }
@@ -334,12 +347,21 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
     }
   }, [roleAssignments, scaleMethod]);
 
+  // Get all colors assigned to a specific role (supports multi-select mode)
+  const getColorsForRole = (role: ColorRole): RoleAssignment[] => {
+    if (multiSelectMode) {
+      return roleAssignments.filter(r => r.roles?.includes(role));
+    }
+    const found = roleAssignments.find(r => r.role === role);
+    return found ? [found] : [];
+  };
+
   // Compute full scales for export
   const exportScales = useMemo(() => {
-    const primary = roleAssignments.find(r => r.role === 'primary');
-    const secondary = roleAssignments.find(r => r.role === 'secondary');
-    const tertiary = roleAssignments.find(r => r.role === 'tertiary');
-    const accent = roleAssignments.find(r => r.role === 'accent');
+    const primaries = getColorsForRole('primary');
+    const secondaries = getColorsForRole('secondary');
+    const tertiaries = getColorsForRole('tertiary');
+    const accents = getColorsForRole('accent');
     const neutralScale = radixColors[effectiveNeutral];
 
     const buildScale = (assignment: RoleAssignment | undefined, role: string, mode: 'light' | 'dark'): ExportScale | undefined => {
@@ -362,11 +384,13 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
       }
     };
 
+    // For multi-select, use first color of each role for the main export
+    // Additional colors will be exported separately
     const light: ExportScales = {
-      primary: buildScale(primary, 'Primary', 'light'),
-      secondary: buildScale(secondary, 'Secondary', 'light'),
-      tertiary: buildScale(tertiary, 'Tertiary', 'light'),
-      accent: buildScale(accent, 'Accent', 'light'),
+      primary: buildScale(primaries[0], 'Primary', 'light'),
+      secondary: buildScale(secondaries[0], 'Secondary', 'light'),
+      tertiary: buildScale(tertiaries[0], 'Tertiary', 'light'),
+      accent: buildScale(accents[0], 'Accent', 'light'),
       neutral: {
         name: effectiveNeutral.charAt(0).toUpperCase() + effectiveNeutral.slice(1),
         role: 'Neutral',
@@ -375,10 +399,10 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
     };
 
     const dark: ExportScales | undefined = includeDarkMode ? {
-      primary: buildScale(primary, 'Primary', 'dark'),
-      secondary: buildScale(secondary, 'Secondary', 'dark'),
-      tertiary: buildScale(tertiary, 'Tertiary', 'dark'),
-      accent: buildScale(accent, 'Accent', 'dark'),
+      primary: buildScale(primaries[0], 'Primary', 'dark'),
+      secondary: buildScale(secondaries[0], 'Secondary', 'dark'),
+      tertiary: buildScale(tertiaries[0], 'Tertiary', 'dark'),
+      accent: buildScale(accents[0], 'Accent', 'dark'),
       neutral: {
         name: effectiveNeutral.charAt(0).toUpperCase() + effectiveNeutral.slice(1),
         role: 'Neutral',
@@ -387,7 +411,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
     } : undefined;
 
     return { light, dark };
-  }, [roleAssignments, scaleMethod, effectiveNeutral, includeDarkMode]);
+  }, [roleAssignments, scaleMethod, effectiveNeutral, includeDarkMode, multiSelectMode]);
 
   // Generate export content
   const exportContent = useMemo(() => {
@@ -405,17 +429,47 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
 
   // Handle role assignment
   const assignRole = (colorHex: string, role: ColorRole | null) => {
-    setRoleAssignments(prev => {
-      // Remove this role from any other color
-      const updated = prev.map(r => ({
-        ...r,
-        role: r.role === role ? null : r.role,
-      }));
-      // Assign to the clicked color
-      return updated.map(r => 
-        r.hex === colorHex ? { ...r, role } : r
-      );
-    });
+    if (multiSelectMode) {
+      // Multi-select mode: toggle the role for this color (multiple colors can have same role)
+      setRoleAssignments(prev => {
+        return prev.map(r => {
+          if (r.hex === colorHex) {
+            const currentRoles = r.roles || [];
+            if (role === null) {
+              // Clear all roles
+              return { ...r, role: null, roles: [] };
+            }
+            const hasRole = currentRoles.includes(role);
+            const newRoles = hasRole 
+              ? currentRoles.filter(cr => cr !== role) 
+              : [...currentRoles, role];
+            // Update legacy 'role' field to first role or null
+            return { ...r, role: newRoles[0] || null, roles: newRoles };
+          }
+          return r;
+        });
+      });
+    } else {
+      // Single-select mode: only one color per role
+      setRoleAssignments(prev => {
+        // Remove this role from any other color
+        const updated = prev.map(r => ({
+          ...r,
+          role: r.role === role ? null : r.role,
+          roles: r.roles?.filter(cr => cr !== role) || [],
+        }));
+        // Assign to the clicked color
+        return updated.map(r => {
+          if (r.hex === colorHex) {
+            if (role === null) {
+              return { ...r, role: null, roles: [] };
+            }
+            return { ...r, role, roles: [role] };
+          }
+          return r;
+        });
+      });
+    }
   };
 
   // Convert Radix scale to array format
@@ -453,11 +507,11 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
 
   // Handle generate
   const handleGenerate = () => {
-    // Build scales data
-    const primary = roleAssignments.find(r => r.role === 'primary');
-    const secondary = roleAssignments.find(r => r.role === 'secondary');
-    const tertiary = roleAssignments.find(r => r.role === 'tertiary');
-    const accent = roleAssignments.find(r => r.role === 'accent');
+    // Get colors for each role (supports multiple colors per role in multi-select mode)
+    const primaries = getColorsForRole('primary');
+    const secondaries = getColorsForRole('secondary');
+    const tertiaries = getColorsForRole('tertiary');
+    const accents = getColorsForRole('accent');
 
     // Get neutral scale
     const neutralScale = radixColors[effectiveNeutral];
@@ -471,17 +525,37 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
       },
     };
 
-    if (primary) {
-      lightScales.primary = generateScaleData(primary.hex, 'Primary', primary.name, 'light');
+    // Add primary scales (support multiple)
+    if (primaries.length > 0) {
+      lightScales.primary = generateScaleData(primaries[0].hex, 'Primary', primaries[0].name, 'light');
+      // Add additional primaries with numbered keys
+      primaries.slice(1).forEach((p, i) => {
+        lightScales[`primary${i + 2}`] = generateScaleData(p.hex, `Primary ${i + 2}`, p.name, 'light');
+      });
     }
-    if (secondary) {
-      lightScales.secondary = generateScaleData(secondary.hex, 'Secondary', secondary.name, 'light');
+    
+    // Add secondary scales (support multiple)
+    if (secondaries.length > 0) {
+      lightScales.secondary = generateScaleData(secondaries[0].hex, 'Secondary', secondaries[0].name, 'light');
+      secondaries.slice(1).forEach((s, i) => {
+        lightScales[`secondary${i + 2}`] = generateScaleData(s.hex, `Secondary ${i + 2}`, s.name, 'light');
+      });
     }
-    if (tertiary) {
-      lightScales.tertiary = generateScaleData(tertiary.hex, 'Tertiary', tertiary.name, 'light');
+    
+    // Add tertiary scales (support multiple)
+    if (tertiaries.length > 0) {
+      lightScales.tertiary = generateScaleData(tertiaries[0].hex, 'Tertiary', tertiaries[0].name, 'light');
+      tertiaries.slice(1).forEach((t, i) => {
+        lightScales[`tertiary${i + 2}`] = generateScaleData(t.hex, `Tertiary ${i + 2}`, t.name, 'light');
+      });
     }
-    if (accent) {
-      lightScales.accent = generateScaleData(accent.hex, 'Accent', accent.name, 'light');
+    
+    // Add accent scales (support multiple)
+    if (accents.length > 0) {
+      lightScales.accent = generateScaleData(accents[0].hex, 'Accent', accents[0].name, 'light');
+      accents.slice(1).forEach((a, i) => {
+        lightScales[`accent${i + 2}`] = generateScaleData(a.hex, `Accent ${i + 2}`, a.name, 'light');
+      });
     }
 
     // Build dark mode scales if needed
@@ -495,31 +569,48 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
         },
       };
 
-      if (primary) {
-        darkScales.primary = generateScaleData(primary.hex, 'Primary', primary.name, 'dark');
+      if (primaries.length > 0) {
+        darkScales.primary = generateScaleData(primaries[0].hex, 'Primary', primaries[0].name, 'dark');
+        primaries.slice(1).forEach((p, i) => {
+          darkScales[`primary${i + 2}`] = generateScaleData(p.hex, `Primary ${i + 2}`, p.name, 'dark');
+        });
       }
-      if (secondary) {
-        darkScales.secondary = generateScaleData(secondary.hex, 'Secondary', secondary.name, 'dark');
+      if (secondaries.length > 0) {
+        darkScales.secondary = generateScaleData(secondaries[0].hex, 'Secondary', secondaries[0].name, 'dark');
+        secondaries.slice(1).forEach((s, i) => {
+          darkScales[`secondary${i + 2}`] = generateScaleData(s.hex, `Secondary ${i + 2}`, s.name, 'dark');
+        });
       }
-      if (tertiary) {
-        darkScales.tertiary = generateScaleData(tertiary.hex, 'Tertiary', tertiary.name, 'dark');
+      if (tertiaries.length > 0) {
+        darkScales.tertiary = generateScaleData(tertiaries[0].hex, 'Tertiary', tertiaries[0].name, 'dark');
+        tertiaries.slice(1).forEach((t, i) => {
+          darkScales[`tertiary${i + 2}`] = generateScaleData(t.hex, `Tertiary ${i + 2}`, t.name, 'dark');
+        });
       }
-      if (accent) {
-        darkScales.accent = generateScaleData(accent.hex, 'Accent', accent.name, 'dark');
+      if (accents.length > 0) {
+        darkScales.accent = generateScaleData(accents[0].hex, 'Accent', accents[0].name, 'dark');
+        accents.slice(1).forEach((a, i) => {
+          darkScales[`accent${i + 2}`] = generateScaleData(a.hex, `Accent ${i + 2}`, a.name, 'dark');
+        });
       }
     }
 
     // Calculate usage proportions based on assigned roles
+    const totalAssigned = primaries.length + secondaries.length + tertiaries.length + accents.length;
     const usageProportions = {
-      primary: primary ? 35 : 0,
-      secondary: secondary ? 20 : 0,
-      tertiary: tertiary ? 15 : 0,
-      accent: accent ? 10 : 0,
+      primary: primaries.length > 0 ? Math.round(35 / primaries.length) : 0,
+      secondary: secondaries.length > 0 ? Math.round(20 / secondaries.length) : 0,
+      tertiary: tertiaries.length > 0 ? Math.round(15 / tertiaries.length) : 0,
+      accent: accents.length > 0 ? Math.round(10 / accents.length) : 0,
       neutral: 20,
     };
 
     // Adjust if some roles are missing
-    const total = usageProportions.primary + usageProportions.secondary + usageProportions.tertiary + usageProportions.accent + usageProportions.neutral;
+    const total = (usageProportions.primary * primaries.length) + 
+                  (usageProportions.secondary * secondaries.length) + 
+                  (usageProportions.tertiary * tertiaries.length) + 
+                  (usageProportions.accent * accents.length) + 
+                  usageProportions.neutral;
     if (total < 100) {
       usageProportions.neutral += (100 - total);
     }
@@ -541,11 +632,19 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
       detailLevel,
       includeDarkMode,
       scaleMethod,
+      multiSelectMode,
       scales: {
         light: lightScales,
         dark: darkScales,
       },
       usageProportions,
+      // Include counts for multi-select mode
+      colorCounts: {
+        primary: primaries.length,
+        secondary: secondaries.length,
+        tertiary: tertiaries.length,
+        accent: accents.length,
+      },
     };
 
     // Send frame generation message
@@ -692,17 +791,54 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
             />
           </div>
 
+          {/* Multi-select Mode Toggle (show only when more than 4 colors) */}
+          {colors.length > 4 && (
+            <div style={sectionStyle}>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  cursor: 'pointer',
+                  padding: '12px',
+                  backgroundColor: multiSelectMode ? `${theme.accent}15` : theme.inputBg,
+                  borderRadius: '8px',
+                  border: multiSelectMode ? `2px solid ${theme.accent}` : `1px solid transparent`,
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={multiSelectMode}
+                  onChange={(e) => setMultiSelectMode(e.target.checked)}
+                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                />
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: theme.text }}>
+                    Multi-Select Mode
+                  </div>
+                  <div style={{ fontSize: '11px', color: theme.textMuted }}>
+                    Allow multiple colors per role (recommended for palettes with 5+ colors)
+                  </div>
+                </div>
+              </label>
+            </div>
+          )}
+
           {/* Color Role Assignment */}
           <div style={sectionStyle}>
             <label style={labelStyle}>Assign Color Roles</label>
             <p style={{ fontSize: '11px', color: theme.textMuted, margin: '0 0 12px' }}>
-              Each role can only be assigned to one color. Click again to unassign.
+              {multiSelectMode 
+                ? 'Click roles to toggle. Multiple colors can share the same role.'
+                : 'Each role can only be assigned to one color. Click again to unassign.'
+              }
               <br />
               <span style={{ opacity: 0.7 }}>Unassigned colors will not be included in the output.</span>
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {roleAssignments.map((assignment) => {
-                const isUnassigned = assignment.role === null;
+                const activeRoles = multiSelectMode ? (assignment.roles || []) : (assignment.role ? [assignment.role] : []);
+                const isUnassigned = activeRoles.length === 0;
                 return (
                   <div
                     key={assignment.hex}
@@ -760,7 +896,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
                     {/* Role buttons */}
                     <div style={{ display: 'flex', gap: '4px' }}>
                       {(['primary', 'secondary', 'tertiary', 'accent'] as ColorRole[]).map((role) => {
-                        const isSelected = assignment.role === role;
+                        const isSelected = activeRoles.includes(role);
                         const roleColors: Record<ColorRole, string> = {
                           primary: '#3b82f6',
                           secondary: '#8b5cf6',
@@ -770,7 +906,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
                         return (
                           <button
                             key={role}
-                            onClick={() => assignRole(assignment.hex, isSelected ? null : role)}
+                            onClick={() => assignRole(assignment.hex, isSelected && !multiSelectMode ? null : role)}
                             style={{
                               padding: '4px 8px',
                               borderRadius: '4px',

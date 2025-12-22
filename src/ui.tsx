@@ -7,6 +7,7 @@ import { colorData } from './colorData';
 import { getContrastRatio, getContrastLevel, colorDistance, rgbToLab } from './lib/utils';
 import { ColorSystemModal } from './components/ColorSystemModal';
 import { GridSystemTab } from './components/GridSystemTab';
+import { WernerColorsTab } from './components/WernerColorsTab';
 
 interface Color {
   name: string;
@@ -179,8 +180,8 @@ const App: React.FC = () => {
   const [colorSystemColors, setColorSystemColors] = useState<{ hex: string; name: string }[]>([]);
   const [colorSystemName, setColorSystemName] = useState('');
   
-  // Main navigation state (Colors vs Grids)
-  const [mainTab, setMainTab] = useState<'colors' | 'grids'>('colors');
+  // Main navigation state (Sanzo Colors vs Werner's Colors vs Grids)
+  const [mainTab, setMainTab] = useState<'colors' | 'werner' | 'grids'>('colors');
 
   const theme = isDark ? styles.dark : styles.light;
 
@@ -282,44 +283,66 @@ const App: React.FC = () => {
               onClick={() => setMainTab('colors')}
               style={{
                 flex: 1,
-                padding: '6px 12px',
+                padding: '6px 8px',
                 borderRadius: '6px',
                 border: 'none',
                 cursor: 'pointer',
-                fontSize: '11px',
+                fontSize: '10px',
                 fontWeight: 600,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '5px',
+                gap: '4px',
                 transition: 'all 0.15s ease',
                 backgroundColor: mainTab === 'colors' ? theme.btnActive : 'transparent',
                 color: mainTab === 'colors' ? theme.btnActiveText : theme.textMuted,
               }}
             >
-              <span style={{ fontSize: '12px' }}>🎨</span>
-              Colors
+              <span style={{ fontSize: '11px' }}>🎨</span>
+              Sanzo
+            </button>
+            <button
+              onClick={() => setMainTab('werner')}
+              style={{
+                flex: 1,
+                padding: '6px 8px',
+                borderRadius: '6px',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '10px',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '4px',
+                transition: 'all 0.15s ease',
+                backgroundColor: mainTab === 'werner' ? theme.btnActive : 'transparent',
+                color: mainTab === 'werner' ? theme.btnActiveText : theme.textMuted,
+              }}
+            >
+              <span style={{ fontSize: '11px' }}>📜</span>
+              Werner
             </button>
             <button
               onClick={() => setMainTab('grids')}
               style={{
                 flex: 1,
-                padding: '6px 12px',
+                padding: '6px 8px',
                 borderRadius: '6px',
                 border: 'none',
                 cursor: 'pointer',
-                fontSize: '11px',
+                fontSize: '10px',
                 fontWeight: 600,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '5px',
+                gap: '4px',
                 transition: 'all 0.15s ease',
                 backgroundColor: mainTab === 'grids' ? theme.btnActive : 'transparent',
                 color: mainTab === 'grids' ? theme.btnActiveText : theme.textMuted,
               }}
             >
-              <span style={{ fontSize: '12px' }}>📐</span>
+              <span style={{ fontSize: '11px' }}>📐</span>
               Grids
             </button>
           </div>
@@ -353,7 +376,7 @@ const App: React.FC = () => {
                   const random = colorData.colors[Math.floor(Math.random() * colorData.colors.length)];
                   setSelectedColor(random);
                 }}
-                title="Random"
+                title="Random Sanzo Color"
                 style={{
                   width: '28px',
                   height: '28px',
@@ -443,9 +466,11 @@ const App: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: mainTab === 'grids' ? '0' : '16px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: (mainTab === 'grids' || mainTab === 'werner') ? '0' : '16px' }}>
         {mainTab === 'grids' ? (
           <GridSystemTab isDark={isDark} />
+        ) : mainTab === 'werner' ? (
+          <WernerColorsTab isDark={isDark} />
         ) : !selectedColor ? (
           // Color Grid
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
