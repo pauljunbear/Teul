@@ -2,6 +2,7 @@ import * as React from 'react';
 import { useState, useMemo } from 'react';
 import { wernerColors, WERNER_GROUPS, WernerColor, getRelatedColors } from '../wernerColorData';
 import { ColorSystemModal } from './ColorSystemModal';
+import { AboutPanel, WERNER_ABOUT_CONTENT } from './AboutPanel';
 
 interface WernerColorsTabProps {
   isDark: boolean;
@@ -67,6 +68,9 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
   const [showColorSystem, setShowColorSystem] = useState(false);
   const [colorSystemColors, setColorSystemColors] = useState<{ hex: string; name: string }[]>([]);
   const [colorSystemName, setColorSystemName] = useState('');
+  
+  // About panel state
+  const [showAbout, setShowAbout] = useState(false);
 
   const theme = isDark ? styles.dark : styles.light;
 
@@ -106,23 +110,46 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Search and filters */}
       <div style={{ padding: '12px', borderBottom: `1px solid ${theme.border}` }}>
-        <input
-          type="text"
-          placeholder="Search Werner's colors..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '8px 12px',
-            borderRadius: '6px',
-            border: `1px solid ${theme.border}`,
-            backgroundColor: theme.inputBg,
-            color: theme.text,
-            fontSize: '12px',
-            outline: 'none',
-            boxSizing: 'border-box',
-          }}
-        />
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <input
+            type="text"
+            placeholder="Search Werner's colors..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              flex: 1,
+              padding: '8px 12px',
+              borderRadius: '6px',
+              border: `1px solid ${theme.border}`,
+              backgroundColor: theme.inputBg,
+              color: theme.text,
+              fontSize: '12px',
+              outline: 'none',
+              boxSizing: 'border-box',
+            }}
+          />
+          <button
+            onClick={() => setShowAbout(true)}
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '6px',
+              border: `1px solid ${theme.border}`,
+              backgroundColor: 'transparent',
+              color: theme.textMuted,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '13px',
+              fontWeight: 600,
+              flexShrink: 0,
+            }}
+            title="About Werner's Colors"
+          >
+            ?
+          </button>
+        </div>
 
         {!selectedColor && (
           <div style={{ 
@@ -648,6 +675,14 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
         onGenerate={() => {
           // Modal handles sending the message with computed scales
         }}
+      />
+      
+      {/* About Panel */}
+      <AboutPanel
+        isOpen={showAbout}
+        onClose={() => setShowAbout(false)}
+        isDark={isDark}
+        {...WERNER_ABOUT_CONTENT}
       />
     </div>
   );

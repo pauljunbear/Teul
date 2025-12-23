@@ -8,6 +8,7 @@ import { getContrastRatio, getContrastLevel, colorDistance, rgbToLab } from './l
 import { ColorSystemModal } from './components/ColorSystemModal';
 import { GridSystemTab } from './components/GridSystemTab';
 import { WernerColorsTab } from './components/WernerColorsTab';
+import { AboutPanel, WADA_ABOUT_CONTENT } from './components/AboutPanel';
 
 interface Color {
   name: string;
@@ -179,6 +180,9 @@ const App: React.FC = () => {
   const [showColorSystem, setShowColorSystem] = useState(false);
   const [colorSystemColors, setColorSystemColors] = useState<{ hex: string; name: string }[]>([]);
   const [colorSystemName, setColorSystemName] = useState('');
+  
+  // About panel state
+  const [showAbout, setShowAbout] = useState(false);
   
   // Main navigation state (Wada Colors vs Werner's Colors vs Grids)
   const [mainTab, setMainTab] = useState<'colors' | 'werner' | 'grids'>('colors');
@@ -419,23 +423,46 @@ const App: React.FC = () => {
         {/* Color-specific controls (only show when on Colors tab) */}
         {mainTab === 'colors' && (
           <div style={{ marginTop: '8px' }}>
-            <input
-              type="text"
-              placeholder="Search colors..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '8px 12px',
-                borderRadius: '6px',
-                border: `1px solid ${theme.border}`,
-                backgroundColor: theme.inputBg,
-                color: theme.text,
-                fontSize: '12px',
-                outline: 'none',
-                boxSizing: 'border-box',
-              }}
-            />
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <input
+                type="text"
+                placeholder="Search colors..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  border: `1px solid ${theme.border}`,
+                  backgroundColor: theme.inputBg,
+                  color: theme.text,
+                  fontSize: '12px',
+                  outline: 'none',
+                  boxSizing: 'border-box',
+                }}
+              />
+              <button
+                onClick={() => setShowAbout(true)}
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '6px',
+                  border: `1px solid ${theme.border}`,
+                  backgroundColor: 'transparent',
+                  color: theme.textMuted,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  flexShrink: 0,
+                }}
+                title="About Sanzo Wada Colors"
+              >
+                ?
+              </button>
+            </div>
 
             {!selectedColor && (
               <div style={{ display: 'flex', gap: '3px', marginTop: '6px' }}>
@@ -864,6 +891,14 @@ const App: React.FC = () => {
         onGenerate={() => {
           // Modal handles sending the message with computed scales
         }}
+      />
+      
+      {/* About Panel for Wada Colors */}
+      <AboutPanel
+        isOpen={showAbout}
+        onClose={() => setShowAbout(false)}
+        isDark={isDark}
+        {...WADA_ABOUT_CONTENT}
       />
     </div>
   );
