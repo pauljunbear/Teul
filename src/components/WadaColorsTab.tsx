@@ -282,6 +282,7 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({ isDark }) => {
             <button
               onClick={() => setSelectedColor(null)}
               title="Back"
+              aria-label="Go back to color list"
               style={{
                 width: '32px',
                 height: '32px',
@@ -307,6 +308,7 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({ isDark }) => {
               setSelectedColor(random);
             }}
             title="Random Wada Color"
+            aria-label="Show random Wada color"
             style={{
               width: '32px',
               height: '32px',
@@ -342,6 +344,7 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({ isDark }) => {
               flexShrink: 0,
             }}
             title="About Sanzo Wada Colors"
+            aria-label="Learn about Sanzo Wada and his color dictionary"
           >
             ?
           </button>

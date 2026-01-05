@@ -143,6 +143,7 @@ const App: React.FC = () => {
           <button
             onClick={handleToggleDark}
             title="Toggle Theme"
+            aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
             style={{
               width: '28px',
               height: '28px',

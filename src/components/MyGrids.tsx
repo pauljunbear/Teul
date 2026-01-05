@@ -212,6 +212,7 @@ const GridCard: React.FC<GridCardProps> = ({
               cursor: 'pointer',
             }}
             title="Create new frame"
+            aria-label="Create new frame with this grid"
           >
             +
           </button>
@@ -235,6 +236,7 @@ const GridCard: React.FC<GridCardProps> = ({
               onEdit();
             }}
             title="Edit"
+            aria-label="Edit grid settings"
             style={{
               width: '24px',
               height: '24px',
@@ -257,6 +259,7 @@ const GridCard: React.FC<GridCardProps> = ({
               onDuplicate();
             }}
             title="Duplicate"
+            aria-label="Duplicate this grid"
             style={{
               width: '24px',
               height: '24px',
@@ -279,6 +282,7 @@ const GridCard: React.FC<GridCardProps> = ({
               onDelete();
             }}
             title="Delete"
+            aria-label="Delete this grid"
             style={{
               width: '24px',
               height: '24px',
