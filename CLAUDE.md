@@ -3,6 +3,7 @@
 ## Project Overview
 
 Teul (틀) is a Figma plugin combining historic color palettes with modern design tools:
+
 - **Sanzo Wada** - 348 colors, 159 combinations from 1930s Japan
 - **Werner's Nomenclature** - 110 colors from 1814 with nature references
 - **Radix Scales** - Modern 12-step accessible color systems
@@ -10,16 +11,24 @@ Teul (틀) is a Figma plugin combining historic color palettes with modern desig
 
 ## Quick Reference
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Development mode with watch |
-| `npm run build` | Production build |
+| Command                 | Description                 |
+| ----------------------- | --------------------------- |
+| `npm run dev`           | Development mode with watch |
+| `npm run build`         | Production build            |
+| `npm run lint`          | Run ESLint                  |
+| `npm run lint:fix`      | Run ESLint with auto-fix    |
+| `npm run format`        | Format with Prettier        |
+| `npm run typecheck`     | TypeScript type checking    |
+| `npm run test`          | Run tests in watch mode     |
+| `npm run test:run`      | Run tests once              |
+| `npm run test:coverage` | Run tests with coverage     |
 
 **Figma reload:** After build, in Figma: Plugins → Development → Teul → Run
 
 ## Architecture
 
 **Two-process model:**
+
 - `src/code.ts` - Figma plugin backend (runs in Figma's sandbox)
 - `src/ui.tsx` - React UI (runs in iframe)
 - Communication via `parent.postMessage()` and `figma.ui.onmessage`
@@ -52,18 +61,19 @@ src/
 
 ## Key Files by Task
 
-| Task | Files |
-|------|-------|
+| Task                | Files                                              |
+| ------------------- | -------------------------------------------------- |
 | Add color operation | `src/code.ts` (backend), `src/ui.tsx` (UI handler) |
-| Add UI component | `src/components/`, import in `ui.tsx` |
-| Modify color math | `src/lib/utils.ts` |
-| Add grid preset | `src/lib/gridPresets.ts` |
-| Change Radix colors | `src/lib/radixColors.ts` |
-| Modify color data | `src/colors.json`, `src/wernerColors.json` |
+| Add UI component    | `src/components/`, import in `ui.tsx`              |
+| Modify color math   | `src/lib/utils.ts`                                 |
+| Add grid preset     | `src/lib/gridPresets.ts`                           |
+| Change Radix colors | `src/lib/radixColors.ts`                           |
+| Modify color data   | `src/colors.json`, `src/wernerColors.json`         |
 
 ## Coding Conventions
 
 ### React Components
+
 - Functional components with hooks
 - Props interface defined inline or in types/
 - Theme passed as `isDark` prop
@@ -73,15 +83,18 @@ src/
 
 ```typescript
 // Backend (code.ts)
-figma.ui.onmessage = async (msg) => {
-  if (msg.type === 'apply-fill') { /* ... */ }
-}
+figma.ui.onmessage = async msg => {
+  if (msg.type === 'apply-fill') {
+    /* ... */
+  }
+};
 
 // Frontend
-parent.postMessage({ pluginMessage: { type: 'apply-fill', hex, name } }, '*')
+parent.postMessage({ pluginMessage: { type: 'apply-fill', hex, name } }, '*');
 ```
 
 ### Color Functions (lib/utils.ts)
+
 - `hexToRgb()`, `rgbToHex()` - Basic conversion
 - `getContrastRatio()` - WCAG contrast
 - `generateColorScale()` - 12-step scale from base color
@@ -95,13 +108,25 @@ parent.postMessage({ pluginMessage: { type: 'apply-fill', hex, name } }, '*')
 - Framer Motion, Lucide icons
 - Webpack 5.89.0
 
+## Testing
+
+- **Framework:** Vitest (fast, native TypeScript support)
+- **Test location:** `src/lib/__tests__/`
+- **Coverage:** Color math functions in `utils.ts` (72 tests)
+- Run `npm run test:run` before committing
+
+## Code Quality
+
+- **ESLint:** Flat config in `eslint.config.js`
+- **Prettier:** Config in `.prettierrc`
+- **Pre-commit hooks:** Husky + lint-staged runs ESLint and Prettier on staged files
+- **CI:** GitHub Actions runs lint, typecheck, tests, and build on every PR
+
 ## Things to Know
 
-1. **No tests** - Testing framework not yet configured
-2. **No linting** - No ESLint/Prettier setup
-3. **Figma types** in `@figma/plugin-typings`
-4. **Async font loading** required before creating text nodes
-5. **Color data is read-only** - Don't modify JSON structure without understanding downstream effects
+1. **Figma types** in `@figma/plugin-typings`
+2. **Async font loading** required before creating text nodes
+3. **Color data is read-only** - Don't modify JSON structure without understanding downstream effects
 
 ## Common Gotchas
 
