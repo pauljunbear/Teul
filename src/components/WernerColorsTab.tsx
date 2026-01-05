@@ -32,7 +32,7 @@ const styles = {
     btnHover: '#404040',
     btnActive: '#ffffff',
     btnActiveText: '#1a1a1a',
-  }
+  },
 };
 
 const getTextColor = (hex: string): string => {
@@ -63,12 +63,12 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedColor, setSelectedColor] = useState<WernerColor | null>(null);
   const [selectedGroup, setSelectedGroup] = useState(-1);
-  
+
   // Color System Modal state
   const [showColorSystem, setShowColorSystem] = useState(false);
   const [colorSystemColors, setColorSystemColors] = useState<{ hex: string; name: string }[]>([]);
   const [colorSystemName, setColorSystemName] = useState('');
-  
+
   // About panel state
   const [showAbout, setShowAbout] = useState(false);
 
@@ -79,18 +79,19 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
     if (selectedGroup >= 0) colors = colors.filter(c => c.groupId === selectedGroup);
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      colors = colors.filter(c => 
-        c.name.toLowerCase().includes(term) || 
-        c.hex.toLowerCase().includes(term) ||
-        c.group.toLowerCase().includes(term) ||
-        c.description.toLowerCase().includes(term)
+      colors = colors.filter(
+        c =>
+          c.name.toLowerCase().includes(term) ||
+          c.hex.toLowerCase().includes(term) ||
+          c.group.toLowerCase().includes(term) ||
+          c.description.toLowerCase().includes(term)
       );
     }
     return colors;
   }, [searchTerm, selectedGroup]);
 
-  const relatedColors = useMemo(() => 
-    selectedColor ? getRelatedColors(selectedColor) : [], 
+  const relatedColors = useMemo(
+    () => (selectedColor ? getRelatedColors(selectedColor) : []),
     [selectedColor]
   );
 
@@ -115,7 +116,7 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
             type="text"
             placeholder="Search Werner's colors..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={e => setSearchTerm(e.target.value)}
             style={{
               flex: 1,
               padding: '8px 12px',
@@ -152,13 +153,15 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
         </div>
 
         {!selectedColor && (
-          <div style={{ 
-            display: 'flex', 
-            gap: '3px', 
-            marginTop: '8px', 
-            flexWrap: 'wrap',
-            justifyContent: 'center'
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: '3px',
+              marginTop: '8px',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+            }}
+          >
             {WERNER_GROUPS.slice(0, 6).map(g => (
               <button
                 key={g.id}
@@ -183,13 +186,15 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
           </div>
         )}
         {!selectedColor && (
-          <div style={{ 
-            display: 'flex', 
-            gap: '3px', 
-            marginTop: '3px', 
-            flexWrap: 'wrap',
-            justifyContent: 'center'
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: '3px',
+              marginTop: '3px',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+            }}
+          >
             {WERNER_GROUPS.slice(6).map(g => (
               <button
                 key={g.id}
@@ -258,50 +263,64 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
                     transition: 'transform 0.15s ease',
                     position: 'relative',
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.03)'}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                  onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.03)')}
+                  onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
                 >
                   {color.characteristic && (
-                    <span style={{
-                      position: 'absolute',
-                      top: '6px',
-                      right: '6px',
-                      fontSize: '8px',
-                      backgroundColor: 'rgba(0,0,0,0.2)',
-                      color: textColor,
-                      padding: '2px 5px',
-                      borderRadius: '4px',
-                      fontWeight: 700,
-                    }}>
+                    <span
+                      style={{
+                        position: 'absolute',
+                        top: '6px',
+                        right: '6px',
+                        fontSize: '8px',
+                        backgroundColor: 'rgba(0,0,0,0.2)',
+                        color: textColor,
+                        padding: '2px 5px',
+                        borderRadius: '4px',
+                        fontWeight: 700,
+                      }}
+                    >
                       ★
                     </span>
                   )}
-                  <div style={{ 
-                    fontWeight: 700, 
-                    fontSize: '10px', 
-                    color: textColor, 
-                    marginBottom: '2px', 
-                    lineHeight: 1.2 
-                  }}>
+                  <div
+                    style={{
+                      fontWeight: 700,
+                      fontSize: '10px',
+                      color: textColor,
+                      marginBottom: '2px',
+                      lineHeight: 1.2,
+                    }}
+                  >
                     {color.name}
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ 
-                      fontSize: '8px', 
-                      color: textColor, 
-                      opacity: 0.8, 
-                      fontFamily: 'monospace' 
-                    }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: '8px',
+                        color: textColor,
+                        opacity: 0.8,
+                        fontFamily: 'monospace',
+                      }}
+                    >
                       {color.hex.toUpperCase()}
                     </span>
-                    <span style={{
-                      fontSize: '8px',
-                      color: textColor,
-                      backgroundColor: 'rgba(0,0,0,0.15)',
-                      padding: '1px 4px',
-                      borderRadius: '6px',
-                      fontWeight: 600,
-                    }}>
+                    <span
+                      style={{
+                        fontSize: '8px',
+                        color: textColor,
+                        backgroundColor: 'rgba(0,0,0,0.15)',
+                        padding: '1px 4px',
+                        borderRadius: '6px',
+                        fontWeight: 600,
+                      }}
+                    >
                       {color.relatedColors.length}
                     </span>
                   </div>
@@ -309,7 +328,14 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
               );
             })}
             {filteredColors.length === 0 && (
-              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: theme.textMuted }}>
+              <div
+                style={{
+                  gridColumn: '1 / -1',
+                  textAlign: 'center',
+                  padding: '40px',
+                  color: theme.textMuted,
+                }}
+              >
                 No colors found
               </div>
             )}
@@ -318,51 +344,67 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
           // Detail View
           <div>
             {/* Hero */}
-            <div style={{
-              backgroundColor: selectedColor.hex,
-              borderRadius: '16px',
-              padding: '24px',
-              marginBottom: '16px',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+            <div
+              style={{
+                backgroundColor: selectedColor.hex,
+                borderRadius: '16px',
+                padding: '24px',
+                marginBottom: '16px',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  justifyContent: 'space-between',
+                }}
+              >
                 <div>
-                  <span style={{
-                    fontSize: '10px',
-                    color: getTextColor(selectedColor.hex),
-                    opacity: 0.7,
-                    fontWeight: 600,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                  }}>
+                  <span
+                    style={{
+                      fontSize: '10px',
+                      color: getTextColor(selectedColor.hex),
+                      opacity: 0.7,
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                    }}
+                  >
                     {selectedColor.group}
                   </span>
-                  <h2 style={{
-                    fontSize: '22px',
-                    fontWeight: 800,
-                    color: getTextColor(selectedColor.hex),
-                    margin: '4px 0 8px 0',
-                  }}>
+                  <h2
+                    style={{
+                      fontSize: '22px',
+                      fontWeight: 800,
+                      color: getTextColor(selectedColor.hex),
+                      margin: '4px 0 8px 0',
+                    }}
+                  >
                     {selectedColor.name}
                   </h2>
-                  <p style={{
-                    fontSize: '13px',
-                    color: getTextColor(selectedColor.hex),
-                    opacity: 0.9,
-                    margin: 0,
-                    fontFamily: 'monospace',
-                  }}>
+                  <p
+                    style={{
+                      fontSize: '13px',
+                      color: getTextColor(selectedColor.hex),
+                      opacity: 0.9,
+                      margin: 0,
+                      fontFamily: 'monospace',
+                    }}
+                  >
                     {selectedColor.hex.toUpperCase()}
                   </p>
                 </div>
                 {selectedColor.characteristic && (
-                  <span style={{
-                    fontSize: '10px',
-                    backgroundColor: 'rgba(255,255,255,0.2)',
-                    color: getTextColor(selectedColor.hex),
-                    padding: '4px 8px',
-                    borderRadius: '6px',
-                    fontWeight: 700,
-                  }}>
+                  <span
+                    style={{
+                      fontSize: '10px',
+                      backgroundColor: 'rgba(255,255,255,0.2)',
+                      color: getTextColor(selectedColor.hex),
+                      padding: '4px 8px',
+                      borderRadius: '6px',
+                      fontWeight: 700,
+                    }}
+                  >
                     ★ Characteristic
                   </span>
                 )}
@@ -370,94 +412,115 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
             </div>
 
             {/* Description */}
-            <div style={{
-              backgroundColor: theme.cardBg,
-              border: `1px solid ${theme.border}`,
-              borderRadius: '12px',
-              padding: '14px',
-              marginBottom: '12px',
-            }}>
-              <div style={{ 
-                fontSize: '10px', 
-                color: theme.textMuted, 
-                marginBottom: '6px', 
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-              }}>
+            <div
+              style={{
+                backgroundColor: theme.cardBg,
+                border: `1px solid ${theme.border}`,
+                borderRadius: '12px',
+                padding: '14px',
+                marginBottom: '12px',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '10px',
+                  color: theme.textMuted,
+                  marginBottom: '6px',
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}
+              >
                 Description
               </div>
-              <p style={{ 
-                fontSize: '12px', 
-                color: theme.text, 
-                margin: 0, 
-                lineHeight: 1.5,
-                fontStyle: 'italic',
-              }}>
-                "{selectedColor.description}"
+              <p
+                style={{
+                  fontSize: '12px',
+                  color: theme.text,
+                  margin: 0,
+                  lineHeight: 1.5,
+                  fontStyle: 'italic',
+                }}
+              >
+                &ldquo;{selectedColor.description}&rdquo;
               </p>
             </div>
 
             {/* Natural Examples */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: '8px',
-              marginBottom: '12px',
-            }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '8px',
+                marginBottom: '12px',
+              }}
+            >
               {[
                 { label: '🦁 Animal', value: selectedColor.animal },
                 { label: '🌿 Vegetable', value: selectedColor.vegetable },
                 { label: '💎 Mineral', value: selectedColor.mineral },
-              ].filter(item => item.value).map(item => (
-                <div
-                  key={item.label}
-                  style={{
-                    backgroundColor: theme.cardBg,
-                    border: `1px solid ${theme.border}`,
-                    borderRadius: '8px',
-                    padding: '10px',
-                  }}
-                >
-                  <div style={{ 
-                    fontSize: '9px', 
-                    color: theme.textMuted, 
-                    marginBottom: '4px', 
-                    fontWeight: 600 
-                  }}>
-                    {item.label}
+              ]
+                .filter(item => item.value)
+                .map(item => (
+                  <div
+                    key={item.label}
+                    style={{
+                      backgroundColor: theme.cardBg,
+                      border: `1px solid ${theme.border}`,
+                      borderRadius: '8px',
+                      padding: '10px',
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: '9px',
+                        color: theme.textMuted,
+                        marginBottom: '4px',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {item.label}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: '10px',
+                        color: theme.text,
+                        lineHeight: 1.3,
+                      }}
+                    >
+                      {item.value}
+                    </div>
                   </div>
-                  <div style={{ 
-                    fontSize: '10px', 
-                    color: theme.text,
-                    lineHeight: 1.3,
-                  }}>
-                    {item.value}
-                  </div>
-                </div>
-              ))}
+                ))}
             </div>
 
             {/* Actions */}
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(2, 1fr)', 
-              gap: '8px', 
-              marginBottom: '16px' 
-            }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '8px',
+                marginBottom: '16px',
+              }}
+            >
               <button
-                onClick={() => parent.postMessage({ 
-                  pluginMessage: { 
-                    type: 'apply-fill', 
-                    name: selectedColor.name,
-                    hex: selectedColor.hex,
-                    rgb: [
-                      parseInt(selectedColor.hex.slice(1, 3), 16),
-                      parseInt(selectedColor.hex.slice(3, 5), 16),
-                      parseInt(selectedColor.hex.slice(5, 7), 16),
-                    ]
-                  } 
-                }, '*')}
+                onClick={() =>
+                  parent.postMessage(
+                    {
+                      pluginMessage: {
+                        type: 'apply-fill',
+                        name: selectedColor.name,
+                        hex: selectedColor.hex,
+                        rgb: [
+                          parseInt(selectedColor.hex.slice(1, 3), 16),
+                          parseInt(selectedColor.hex.slice(3, 5), 16),
+                          parseInt(selectedColor.hex.slice(5, 7), 16),
+                        ],
+                      },
+                    },
+                    '*'
+                  )
+                }
                 style={{
                   ...buttonStyle(true),
                   padding: '12px',
@@ -470,18 +533,23 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
                 🎨 Apply Fill
               </button>
               <button
-                onClick={() => parent.postMessage({ 
-                  pluginMessage: { 
-                    type: 'apply-stroke', 
-                    name: selectedColor.name,
-                    hex: selectedColor.hex,
-                    rgb: [
-                      parseInt(selectedColor.hex.slice(1, 3), 16),
-                      parseInt(selectedColor.hex.slice(3, 5), 16),
-                      parseInt(selectedColor.hex.slice(5, 7), 16),
-                    ]
-                  } 
-                }, '*')}
+                onClick={() =>
+                  parent.postMessage(
+                    {
+                      pluginMessage: {
+                        type: 'apply-stroke',
+                        name: selectedColor.name,
+                        hex: selectedColor.hex,
+                        rgb: [
+                          parseInt(selectedColor.hex.slice(1, 3), 16),
+                          parseInt(selectedColor.hex.slice(3, 5), 16),
+                          parseInt(selectedColor.hex.slice(5, 7), 16),
+                        ],
+                      },
+                    },
+                    '*'
+                  )
+                }
                 style={{
                   ...buttonStyle(),
                   padding: '12px',
@@ -491,18 +559,23 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
                 ✏️ Apply Stroke
               </button>
               <button
-                onClick={() => parent.postMessage({ 
-                  pluginMessage: { 
-                    type: 'create-style', 
-                    name: `Werner/${selectedColor.group}/${selectedColor.name}`,
-                    hex: selectedColor.hex,
-                    rgb: [
-                      parseInt(selectedColor.hex.slice(1, 3), 16),
-                      parseInt(selectedColor.hex.slice(3, 5), 16),
-                      parseInt(selectedColor.hex.slice(5, 7), 16),
-                    ]
-                  } 
-                }, '*')}
+                onClick={() =>
+                  parent.postMessage(
+                    {
+                      pluginMessage: {
+                        type: 'create-style',
+                        name: `Werner/${selectedColor.group}/${selectedColor.name}`,
+                        hex: selectedColor.hex,
+                        rgb: [
+                          parseInt(selectedColor.hex.slice(1, 3), 16),
+                          parseInt(selectedColor.hex.slice(3, 5), 16),
+                          parseInt(selectedColor.hex.slice(5, 7), 16),
+                        ],
+                      },
+                    },
+                    '*'
+                  )
+                }
                 style={{
                   ...buttonStyle(),
                   padding: '12px',
@@ -528,7 +601,7 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
               onClick={() => {
                 const allColors = [
                   { hex: selectedColor.hex, name: selectedColor.name },
-                  ...relatedColors.map(c => ({ hex: c.hex, name: c.name }))
+                  ...relatedColors.map(c => ({ hex: c.hex, name: c.name })),
                 ];
                 setColorSystemColors(allColors);
                 setColorSystemName(`Werner/${selectedColor.name}`);
@@ -554,30 +627,36 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
             {/* Related Colors */}
             {relatedColors.length > 0 && (
               <>
-                <h3 style={{ 
-                  fontSize: '12px', 
-                  fontWeight: 700, 
-                  color: theme.textMuted, 
-                  marginBottom: '10px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                }}>
+                <h3
+                  style={{
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: theme.textMuted,
+                    marginBottom: '10px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                  }}
+                >
                   {relatedColors.length} Related Colors
                 </h3>
 
-                <div style={{
-                  backgroundColor: theme.cardBg,
-                  border: `1px solid ${theme.border}`,
-                  borderRadius: '12px',
-                  padding: '14px',
-                }}>
+                <div
+                  style={{
+                    backgroundColor: theme.cardBg,
+                    border: `1px solid ${theme.border}`,
+                    borderRadius: '12px',
+                    padding: '14px',
+                  }}
+                >
                   {/* Swatches */}
-                  <div style={{ 
-                    display: 'flex', 
-                    gap: '8px', 
-                    marginBottom: '12px', 
-                    flexWrap: 'wrap' 
-                  }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '8px',
+                      marginBottom: '12px',
+                      flexWrap: 'wrap',
+                    }}
+                  >
                     <div
                       style={{
                         width: '44px',
@@ -604,19 +683,21 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
                           flexShrink: 0,
                         }}
                         onClick={() => setSelectedColor(c)}
-                        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-                        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                        onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.1)')}
+                        onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
                         title={`${c.name} - Click to view`}
                       />
                     ))}
                   </div>
 
                   {/* Related color names */}
-                  <div style={{ 
-                    display: 'flex', 
-                    gap: '6px', 
-                    flexWrap: 'wrap' 
-                  }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '6px',
+                      flexWrap: 'wrap',
+                    }}
+                  >
                     {relatedColors.map(c => (
                       <span
                         key={c.id}
@@ -631,8 +712,8 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
                           cursor: 'pointer',
                           transition: 'background-color 0.15s ease',
                         }}
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = theme.btnHover}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = theme.inputBg}
+                        onMouseEnter={e => (e.currentTarget.style.backgroundColor = theme.btnHover)}
+                        onMouseLeave={e => (e.currentTarget.style.backgroundColor = theme.inputBg)}
                       >
                         {c.name}
                       </span>
@@ -643,20 +724,24 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
             )}
 
             {/* Credits */}
-            <div style={{
-              marginTop: '16px',
-              padding: '12px',
-              backgroundColor: theme.inputBg,
-              borderRadius: '8px',
-              textAlign: 'center',
-            }}>
-              <p style={{ 
-                fontSize: '9px', 
-                color: theme.textMuted, 
-                margin: 0,
-                lineHeight: 1.4,
-              }}>
-                From Werner's Nomenclature of Colours (1814)
+            <div
+              style={{
+                marginTop: '16px',
+                padding: '12px',
+                backgroundColor: theme.inputBg,
+                borderRadius: '8px',
+                textAlign: 'center',
+              }}
+            >
+              <p
+                style={{
+                  fontSize: '9px',
+                  color: theme.textMuted,
+                  margin: 0,
+                  lineHeight: 1.4,
+                }}
+              >
+                From Werner&apos;s Nomenclature of Colours (1814)
                 <br />
                 Digitized by Nicholas Rougeux
               </p>
@@ -676,7 +761,7 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
           // Modal handles sending the message with computed scales
         }}
       />
-      
+
       {/* About Panel */}
       <AboutPanel
         isOpen={showAbout}
@@ -689,4 +774,3 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
 };
 
 export default WernerColorsTab;
-

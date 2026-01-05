@@ -1,13 +1,12 @@
-import * as React from 'react'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs'
-import { GridLibrary } from './GridLibrary'
-import { MyGrids } from './MyGrids'
-import { getSavedGridCount } from '../lib/gridStorage'
-import { HelpPanel, HelpButton } from './HelpPanel'
-import { ToastProvider, ToastContainer } from './Toast'
+import * as React from 'react';
+import { GridLibrary } from './GridLibrary';
+import { MyGrids } from './MyGrids';
+import { getSavedGridCount } from '../lib/gridStorage';
+import { HelpPanel } from './HelpPanel';
+import { ToastProvider, ToastContainer } from './Toast';
 
 interface GridSystemTabProps {
-  isDark: boolean
+  isDark: boolean;
 }
 
 const styles = {
@@ -34,81 +33,89 @@ const styles = {
     tabActiveText: '#ffffff',
     tabInactive: 'transparent',
     tabInactiveText: '#a3a3a3',
-  }
-}
+  },
+};
 
 export const GridSystemTab: React.FC<GridSystemTabProps> = ({ isDark }) => {
-  const [activeTab, setActiveTab] = React.useState('library')
-  const [savedGridCount, setSavedGridCount] = React.useState(0)
-  const [showHelp, setShowHelp] = React.useState(false)
-  const theme = isDark ? styles.dark : styles.light
-  
+  const [activeTab, setActiveTab] = React.useState('library');
+  const [savedGridCount, setSavedGridCount] = React.useState(0);
+  const [showHelp, setShowHelp] = React.useState(false);
+  const theme = isDark ? styles.dark : styles.light;
+
   // Update saved grid count when tab changes
   React.useEffect(() => {
-    setSavedGridCount(getSavedGridCount())
-  }, [activeTab])
-  
+    setSavedGridCount(getSavedGridCount());
+  }, [activeTab]);
+
   // Listen for storage changes
   React.useEffect(() => {
     const handleStorageChange = () => {
-      setSavedGridCount(getSavedGridCount())
-    }
-    
-    window.addEventListener('storage', handleStorageChange)
-    return () => window.removeEventListener('storage', handleStorageChange)
-  }, [])
-  
+      setSavedGridCount(getSavedGridCount());
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   // Keyboard shortcuts
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // ? or F1 for help
       if ((e.key === '?' && !e.metaKey && !e.ctrlKey) || e.key === 'F1') {
-        e.preventDefault()
-        setShowHelp(true)
+        e.preventDefault();
+        setShowHelp(true);
       }
-      
+
       // Tab navigation with Cmd/Ctrl + 1/2
       if ((e.metaKey || e.ctrlKey) && !e.shiftKey) {
         if (e.key === '1') {
-          e.preventDefault()
-          setActiveTab('library')
+          e.preventDefault();
+          setActiveTab('library');
         } else if (e.key === '2') {
-          e.preventDefault()
-          setActiveTab('my-grids')
+          e.preventDefault();
+          setActiveTab('my-grids');
         }
       }
-    }
-    
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [])
-  
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
     <ToastProvider>
-      <div style={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        backgroundColor: theme.bg,
-        position: 'relative',
-      }}>
-        {/* Compact Sub-Navigation */}
-        <div style={{
-          flexShrink: 0,
-          padding: '6px 12px',
+      <div
+        style={{
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
           backgroundColor: theme.bg,
-        }}>
-          <div style={{
-            display: 'flex',
-            gap: '6px',
-            alignItems: 'center',
-          }}>
-            {/* Sub-tabs - text links style */}
-            <div style={{
-              flex: 1,
+          position: 'relative',
+        }}
+      >
+        {/* Compact Sub-Navigation */}
+        <div
+          style={{
+            flexShrink: 0,
+            padding: '6px 12px',
+            backgroundColor: theme.bg,
+          }}
+        >
+          <div
+            style={{
               display: 'flex',
-              gap: '2px',
-            }}>
+              gap: '6px',
+              alignItems: 'center',
+            }}
+          >
+            {/* Sub-tabs - text links style */}
+            <div
+              style={{
+                flex: 1,
+                display: 'flex',
+                gap: '2px',
+              }}
+            >
               {[
                 { id: 'library', label: 'Library', count: undefined },
                 { id: 'my-grids', label: 'Saved', count: savedGridCount || undefined },
@@ -133,21 +140,23 @@ export const GridSystemTab: React.FC<GridSystemTabProps> = ({ isDark }) => {
                 >
                   {tab.label}
                   {tab.count !== undefined && tab.count > 0 && (
-                    <span style={{
-                      padding: '1px 5px',
-                      borderRadius: '8px',
-                      fontSize: '9px',
-                      fontWeight: 600,
-                      backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
-                      color: theme.tabInactiveText,
-                    }}>
+                    <span
+                      style={{
+                        padding: '1px 5px',
+                        borderRadius: '8px',
+                        fontSize: '9px',
+                        fontWeight: 600,
+                        backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
+                        color: theme.tabInactiveText,
+                      }}
+                    >
                       {tab.count}
                     </span>
                   )}
                 </button>
               ))}
             </div>
-            
+
             {/* Help Button - smaller */}
             <button
               onClick={() => setShowHelp(true)}
@@ -172,28 +181,25 @@ export const GridSystemTab: React.FC<GridSystemTabProps> = ({ isDark }) => {
         </div>
 
         {/* Tab Content */}
-        <div style={{
-          flex: 1,
-          overflow: 'auto',
-          backgroundColor: theme.bg,
-        }}>
+        <div
+          style={{
+            flex: 1,
+            overflow: 'auto',
+            backgroundColor: theme.bg,
+          }}
+        >
           {activeTab === 'library' && <GridLibrary isDark={isDark} />}
           {activeTab === 'my-grids' && <MyGrids isDark={isDark} />}
         </div>
-        
+
         {/* Help Panel */}
-        <HelpPanel
-          isOpen={showHelp}
-          onClose={() => setShowHelp(false)}
-          isDark={isDark}
-        />
-        
+        <HelpPanel isOpen={showHelp} onClose={() => setShowHelp(false)} isDark={isDark} />
+
         {/* Toast Notifications */}
         <ToastContainer isDark={isDark} />
       </div>
     </ToastProvider>
-  )
-}
+  );
+};
 
-export default GridSystemTab
-
+export default GridSystemTab;

@@ -1,21 +1,13 @@
 import * as React from 'react';
 import { useState, useMemo, useCallback } from 'react';
-import { 
-  generateColorScale, 
-  generateColorScales,
-  hexToHsl,
-  getContrastingTextColor,
-  type ColorScale 
-} from '../lib/utils';
-import { 
-  findClosestRadixFamily, 
-  getNeutralForAccent, 
-  getNeutralScale,
+import { generateColorScale, type ColorScale } from '../lib/utils';
+import {
+  findClosestRadixFamily,
+  getNeutralForAccent,
   radixColors,
   neutralFamilies,
   type NeutralName,
-  type RadixColorFamily,
-  type RadixScale
+  type RadixScale,
 } from '../lib/radixColors';
 
 // ============================================
@@ -39,24 +31,34 @@ interface ExportScales {
 // Convert step number to CSS variable name suffix
 function stepToVarSuffix(step: number): string {
   const mapping: Record<number, string> = {
-    1: '50', 2: '100', 3: '200', 4: '300', 5: '400', 6: '500',
-    7: '600', 8: '700', 9: '800', 10: '900', 11: '950', 12: '1000',
+    1: '50',
+    2: '100',
+    3: '200',
+    4: '300',
+    5: '400',
+    6: '500',
+    7: '600',
+    8: '700',
+    9: '800',
+    10: '900',
+    11: '950',
+    12: '1000',
   };
   return mapping[step] || step.toString();
 }
 
 // Export as CSS custom properties
 function exportAsCSS(
-  scales: ExportScales, 
+  scales: ExportScales,
   darkScales: ExportScales | undefined,
   systemName: string
 ): string {
   const prefix = systemName.toLowerCase().replace(/\s+/g, '-');
   let css = `/* ${systemName} Color System */\n`;
   css += `/* Generated with Teul */\n\n`;
-  
+
   css += `:root {\n`;
-  
+
   // Light mode variables
   const scaleOrder = ['primary', 'secondary', 'tertiary', 'accent', 'neutral'] as const;
   for (const key of scaleOrder) {
@@ -97,12 +99,10 @@ function exportAsTailwind(
   darkScales: ExportScales | undefined,
   systemName: string
 ): string {
-  const prefix = systemName.toLowerCase().replace(/\s+/g, '-');
-  
   const buildColorObject = (scalesData: ExportScales): Record<string, Record<string, string>> => {
     const colors: Record<string, Record<string, string>> = {};
     const scaleOrder = ['primary', 'secondary', 'tertiary', 'accent', 'neutral'] as const;
-    
+
     for (const key of scaleOrder) {
       const scale = scalesData[key];
       if (scale) {
@@ -116,13 +116,17 @@ function exportAsTailwind(
   };
 
   const lightColors = buildColorObject(scales);
-  
+
   let config = `// ${systemName} - Tailwind CSS Config\n`;
   config += `// Generated with Teul\n\n`;
   config += `module.exports = {\n`;
   config += `  theme: {\n`;
   config += `    extend: {\n`;
-  config += `      colors: ${JSON.stringify(lightColors, null, 8).replace(/"/g, "'").split('\n').map((line, i) => i === 0 ? line : '      ' + line).join('\n')},\n`;
+  config += `      colors: ${JSON.stringify(lightColors, null, 8)
+    .replace(/"/g, "'")
+    .split('\n')
+    .map((line, i) => (i === 0 ? line : '      ' + line))
+    .join('\n')},\n`;
   config += `    },\n`;
   config += `  },\n`;
   config += `};\n`;
@@ -137,33 +141,51 @@ function exportAsTailwind(
   return config;
 }
 
+// Types for JSON export
+interface ExportScaleData {
+  name: string;
+  role: string;
+  colors: Record<string, string>;
+}
+
+interface ExportJSONData {
+  name: string;
+  generatedAt: string;
+  generator: string;
+  light: Record<string, ExportScaleData>;
+  dark?: Record<string, ExportScaleData>;
+}
+
 // Export as JSON
 function exportAsJSON(
   scales: ExportScales,
   darkScales: ExportScales | undefined,
   systemName: string
 ): string {
-  const buildScaleObject = (scalesData: ExportScales) => {
-    const result: Record<string, any> = {};
+  const buildScaleObject = (scalesData: ExportScales): Record<string, ExportScaleData> => {
+    const result: Record<string, ExportScaleData> = {};
     const scaleOrder = ['primary', 'secondary', 'tertiary', 'accent', 'neutral'] as const;
-    
+
     for (const key of scaleOrder) {
       const scale = scalesData[key];
       if (scale) {
         result[key] = {
           name: scale.name,
           role: scale.role,
-          colors: scale.steps.reduce((acc, step) => {
-            acc[stepToVarSuffix(step.step)] = step.hex;
-            return acc;
-          }, {} as Record<string, string>),
+          colors: scale.steps.reduce(
+            (acc, step) => {
+              acc[stepToVarSuffix(step.step)] = step.hex;
+              return acc;
+            },
+            {} as Record<string, string>
+          ),
         };
       }
     }
     return result;
   };
 
-  const data: Record<string, any> = {
+  const data: ExportJSONData = {
     name: systemName,
     generatedAt: new Date().toISOString(),
     generator: 'Teul',
@@ -187,7 +209,10 @@ function copyToClipboard(text: string, label: string) {
   textarea.select();
   try {
     document.execCommand('copy');
-    parent.postMessage({ pluginMessage: { type: 'notify', text: `Copied ${label} to clipboard` } }, '*');
+    parent.postMessage(
+      { pluginMessage: { type: 'notify', text: `Copied ${label} to clipboard` } },
+      '*'
+    );
   } catch {
     parent.postMessage({ pluginMessage: { type: 'notify', text: 'Copy failed' } }, '*');
   }
@@ -198,7 +223,6 @@ function copyToClipboard(text: string, label: string) {
 type ColorRole = 'primary' | 'secondary' | 'tertiary' | 'accent';
 type ScaleMethod = 'custom' | 'radix-match';
 type OutputDetailLevel = 'minimal' | 'detailed' | 'presentation';
-type ThemeMode = 'light' | 'dark';
 
 interface RoleAssignment {
   hex: string;
@@ -251,7 +275,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
   onGenerate,
 }) => {
   const theme = getStyles(isDark);
-  
+
   // State
   const [scaleMethod, setScaleMethod] = useState<ScaleMethod>('custom');
   const [neutralFamily, setNeutralFamily] = useState<NeutralName | 'auto'>('auto');
@@ -261,10 +285,10 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
   const [systemName, setSystemName] = useState(combinationName || 'My Color System');
   const [showExport, setShowExport] = useState(false);
   const [exportFormat, setExportFormat] = useState<'css' | 'tailwind' | 'json'>('css');
-  
+
   // Multi-select mode: allows multiple colors per role (useful for Werner colors with many related colors)
   const [multiSelectMode, setMultiSelectMode] = useState(false);
-  
+
   // Initialize role assignments from colors
   const [roleAssignments, setRoleAssignments] = useState<RoleAssignment[]>([]);
 
@@ -282,8 +306,26 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
         colors.map((c, i) => ({
           hex: c.hex,
           name: c.name,
-          role: i === 0 ? 'primary' : i === 1 ? 'secondary' : i === 2 ? 'tertiary' : i === 3 ? 'accent' : null,
-          roles: i === 0 ? ['primary'] : i === 1 ? ['secondary'] : i === 2 ? ['tertiary'] : i === 3 ? ['accent'] : [],
+          role:
+            i === 0
+              ? 'primary'
+              : i === 1
+                ? 'secondary'
+                : i === 2
+                  ? 'tertiary'
+                  : i === 3
+                    ? 'accent'
+                    : null,
+          roles:
+            i === 0
+              ? ['primary']
+              : i === 1
+                ? ['secondary']
+                : i === 2
+                  ? ['tertiary']
+                  : i === 3
+                    ? ['accent']
+                    : [],
         }))
       );
     }
@@ -319,9 +361,12 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
       return {
         name: family.displayName,
         baseHex: primary.hex,
-        steps: Object.entries(family.light).map(
-          ([step, hex]) => ({ step: parseInt(step), hex, oklch: { l: 0, c: 0, h: 0 }, usage: '' })
-        ),
+        steps: Object.entries(family.light).map(([step, hex]) => ({
+          step: parseInt(step),
+          hex,
+          oklch: { l: 0, c: 0, h: 0 },
+          usage: '',
+        })),
         mode: 'light' as const,
       } as ColorScale;
     }
@@ -339,22 +384,28 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
       return {
         name: family.displayName,
         baseHex: primary.hex,
-        steps: Object.entries(family.dark).map(
-          ([step, hex]) => ({ step: parseInt(step), hex, oklch: { l: 0, c: 0, h: 0 }, usage: '' })
-        ),
+        steps: Object.entries(family.dark).map(([step, hex]) => ({
+          step: parseInt(step),
+          hex,
+          oklch: { l: 0, c: 0, h: 0 },
+          usage: '',
+        })),
         mode: 'dark' as const,
       } as ColorScale;
     }
   }, [roleAssignments, scaleMethod]);
 
   // Get all colors assigned to a specific role (supports multi-select mode)
-  const getColorsForRole = (role: ColorRole): RoleAssignment[] => {
-    if (multiSelectMode) {
-      return roleAssignments.filter(r => r.roles?.includes(role));
-    }
-    const found = roleAssignments.find(r => r.role === role);
-    return found ? [found] : [];
-  };
+  const getColorsForRole = useCallback(
+    (role: ColorRole): RoleAssignment[] => {
+      if (multiSelectMode) {
+        return roleAssignments.filter(r => r.roles?.includes(role));
+      }
+      const found = roleAssignments.find(r => r.role === role);
+      return found ? [found] : [];
+    },
+    [multiSelectMode, roleAssignments]
+  );
 
   // Compute full scales for export
   const exportScales = useMemo(() => {
@@ -364,7 +415,11 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
     const accents = getColorsForRole('accent');
     const neutralScale = radixColors[effectiveNeutral];
 
-    const buildScale = (assignment: RoleAssignment | undefined, role: string, mode: 'light' | 'dark'): ExportScale | undefined => {
+    const buildScale = (
+      assignment: RoleAssignment | undefined,
+      role: string,
+      mode: 'light' | 'dark'
+    ): ExportScale | undefined => {
       if (!assignment) return undefined;
       if (scaleMethod === 'custom') {
         const scale = generateColorScale(assignment.hex, mode, assignment.name);
@@ -394,24 +449,32 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
       neutral: {
         name: effectiveNeutral.charAt(0).toUpperCase() + effectiveNeutral.slice(1),
         role: 'Neutral',
-        steps: Object.entries(neutralScale.light).map(([step, hex]) => ({ step: parseInt(step), hex })),
+        steps: Object.entries(neutralScale.light).map(([step, hex]) => ({
+          step: parseInt(step),
+          hex,
+        })),
       },
     };
 
-    const dark: ExportScales | undefined = includeDarkMode ? {
-      primary: buildScale(primaries[0], 'Primary', 'dark'),
-      secondary: buildScale(secondaries[0], 'Secondary', 'dark'),
-      tertiary: buildScale(tertiaries[0], 'Tertiary', 'dark'),
-      accent: buildScale(accents[0], 'Accent', 'dark'),
-      neutral: {
-        name: effectiveNeutral.charAt(0).toUpperCase() + effectiveNeutral.slice(1),
-        role: 'Neutral',
-        steps: Object.entries(neutralScale.dark).map(([step, hex]) => ({ step: parseInt(step), hex })),
-      },
-    } : undefined;
+    const dark: ExportScales | undefined = includeDarkMode
+      ? {
+          primary: buildScale(primaries[0], 'Primary', 'dark'),
+          secondary: buildScale(secondaries[0], 'Secondary', 'dark'),
+          tertiary: buildScale(tertiaries[0], 'Tertiary', 'dark'),
+          accent: buildScale(accents[0], 'Accent', 'dark'),
+          neutral: {
+            name: effectiveNeutral.charAt(0).toUpperCase() + effectiveNeutral.slice(1),
+            role: 'Neutral',
+            steps: Object.entries(neutralScale.dark).map(([step, hex]) => ({
+              step: parseInt(step),
+              hex,
+            })),
+          },
+        }
+      : undefined;
 
     return { light, dark };
-  }, [roleAssignments, scaleMethod, effectiveNeutral, includeDarkMode, multiSelectMode]);
+  }, [getColorsForRole, scaleMethod, effectiveNeutral, includeDarkMode]);
 
   // Generate export content
   const exportContent = useMemo(() => {
@@ -440,8 +503,8 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
               return { ...r, role: null, roles: [] };
             }
             const hasRole = currentRoles.includes(role);
-            const newRoles = hasRole 
-              ? currentRoles.filter(cr => cr !== role) 
+            const newRoles = hasRole
+              ? currentRoles.filter(cr => cr !== role)
               : [...currentRoles, role];
             // Update legacy 'role' field to first role or null
             return { ...r, role: newRoles[0] || null, roles: newRoles };
@@ -481,29 +544,27 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
   };
 
   // Generate scale data for a color
-  const generateScaleData = useCallback((
-    hex: string,
-    role: string,
-    name: string,
-    mode: 'light' | 'dark'
-  ) => {
-    if (scaleMethod === 'custom') {
-      const scale = generateColorScale(hex, mode, name);
-      return {
-        name,
-        role,
-        steps: scale.steps.map(s => ({ step: s.step, hex: s.hex })),
-      };
-    } else {
-      const family = findClosestRadixFamily(hex);
-      const radixScale = mode === 'light' ? family.light : family.dark;
-      return {
-        name: family.displayName,
-        role,
-        steps: radixScaleToSteps(radixScale),
-      };
-    }
-  }, [scaleMethod]);
+  const generateScaleData = useCallback(
+    (hex: string, role: string, name: string, mode: 'light' | 'dark') => {
+      if (scaleMethod === 'custom') {
+        const scale = generateColorScale(hex, mode, name);
+        return {
+          name,
+          role,
+          steps: scale.steps.map(s => ({ step: s.step, hex: s.hex })),
+        };
+      } else {
+        const family = findClosestRadixFamily(hex);
+        const radixScale = mode === 'light' ? family.light : family.dark;
+        return {
+          name: family.displayName,
+          role,
+          steps: radixScaleToSteps(radixScale),
+        };
+      }
+    },
+    [scaleMethod]
+  );
 
   // Handle generate
   const handleGenerate = () => {
@@ -517,7 +578,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
     const neutralScale = radixColors[effectiveNeutral];
 
     // Build light mode scales
-    const lightScales: any = {
+    const lightScales: Record<string, ExportScale> = {
       neutral: {
         name: effectiveNeutral.charAt(0).toUpperCase() + effectiveNeutral.slice(1),
         role: 'Neutral',
@@ -527,39 +588,74 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
 
     // Add primary scales (support multiple)
     if (primaries.length > 0) {
-      lightScales.primary = generateScaleData(primaries[0].hex, 'Primary', primaries[0].name, 'light');
+      lightScales.primary = generateScaleData(
+        primaries[0].hex,
+        'Primary',
+        primaries[0].name,
+        'light'
+      );
       // Add additional primaries with numbered keys
       primaries.slice(1).forEach((p, i) => {
-        lightScales[`primary${i + 2}`] = generateScaleData(p.hex, `Primary ${i + 2}`, p.name, 'light');
+        lightScales[`primary${i + 2}`] = generateScaleData(
+          p.hex,
+          `Primary ${i + 2}`,
+          p.name,
+          'light'
+        );
       });
     }
-    
+
     // Add secondary scales (support multiple)
     if (secondaries.length > 0) {
-      lightScales.secondary = generateScaleData(secondaries[0].hex, 'Secondary', secondaries[0].name, 'light');
+      lightScales.secondary = generateScaleData(
+        secondaries[0].hex,
+        'Secondary',
+        secondaries[0].name,
+        'light'
+      );
       secondaries.slice(1).forEach((s, i) => {
-        lightScales[`secondary${i + 2}`] = generateScaleData(s.hex, `Secondary ${i + 2}`, s.name, 'light');
+        lightScales[`secondary${i + 2}`] = generateScaleData(
+          s.hex,
+          `Secondary ${i + 2}`,
+          s.name,
+          'light'
+        );
       });
     }
-    
+
     // Add tertiary scales (support multiple)
     if (tertiaries.length > 0) {
-      lightScales.tertiary = generateScaleData(tertiaries[0].hex, 'Tertiary', tertiaries[0].name, 'light');
+      lightScales.tertiary = generateScaleData(
+        tertiaries[0].hex,
+        'Tertiary',
+        tertiaries[0].name,
+        'light'
+      );
       tertiaries.slice(1).forEach((t, i) => {
-        lightScales[`tertiary${i + 2}`] = generateScaleData(t.hex, `Tertiary ${i + 2}`, t.name, 'light');
+        lightScales[`tertiary${i + 2}`] = generateScaleData(
+          t.hex,
+          `Tertiary ${i + 2}`,
+          t.name,
+          'light'
+        );
       });
     }
-    
+
     // Add accent scales (support multiple)
     if (accents.length > 0) {
       lightScales.accent = generateScaleData(accents[0].hex, 'Accent', accents[0].name, 'light');
       accents.slice(1).forEach((a, i) => {
-        lightScales[`accent${i + 2}`] = generateScaleData(a.hex, `Accent ${i + 2}`, a.name, 'light');
+        lightScales[`accent${i + 2}`] = generateScaleData(
+          a.hex,
+          `Accent ${i + 2}`,
+          a.name,
+          'light'
+        );
       });
     }
 
     // Build dark mode scales if needed
-    let darkScales: any = undefined;
+    let darkScales: Record<string, ExportScale> | undefined = undefined;
     if (includeDarkMode) {
       darkScales = {
         neutral: {
@@ -570,33 +666,67 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
       };
 
       if (primaries.length > 0) {
-        darkScales.primary = generateScaleData(primaries[0].hex, 'Primary', primaries[0].name, 'dark');
+        darkScales.primary = generateScaleData(
+          primaries[0].hex,
+          'Primary',
+          primaries[0].name,
+          'dark'
+        );
         primaries.slice(1).forEach((p, i) => {
-          darkScales[`primary${i + 2}`] = generateScaleData(p.hex, `Primary ${i + 2}`, p.name, 'dark');
+          darkScales![`primary${i + 2}`] = generateScaleData(
+            p.hex,
+            `Primary ${i + 2}`,
+            p.name,
+            'dark'
+          );
         });
       }
       if (secondaries.length > 0) {
-        darkScales.secondary = generateScaleData(secondaries[0].hex, 'Secondary', secondaries[0].name, 'dark');
+        darkScales.secondary = generateScaleData(
+          secondaries[0].hex,
+          'Secondary',
+          secondaries[0].name,
+          'dark'
+        );
         secondaries.slice(1).forEach((s, i) => {
-          darkScales[`secondary${i + 2}`] = generateScaleData(s.hex, `Secondary ${i + 2}`, s.name, 'dark');
+          darkScales![`secondary${i + 2}`] = generateScaleData(
+            s.hex,
+            `Secondary ${i + 2}`,
+            s.name,
+            'dark'
+          );
         });
       }
       if (tertiaries.length > 0) {
-        darkScales.tertiary = generateScaleData(tertiaries[0].hex, 'Tertiary', tertiaries[0].name, 'dark');
+        darkScales.tertiary = generateScaleData(
+          tertiaries[0].hex,
+          'Tertiary',
+          tertiaries[0].name,
+          'dark'
+        );
         tertiaries.slice(1).forEach((t, i) => {
-          darkScales[`tertiary${i + 2}`] = generateScaleData(t.hex, `Tertiary ${i + 2}`, t.name, 'dark');
+          darkScales![`tertiary${i + 2}`] = generateScaleData(
+            t.hex,
+            `Tertiary ${i + 2}`,
+            t.name,
+            'dark'
+          );
         });
       }
       if (accents.length > 0) {
         darkScales.accent = generateScaleData(accents[0].hex, 'Accent', accents[0].name, 'dark');
         accents.slice(1).forEach((a, i) => {
-          darkScales[`accent${i + 2}`] = generateScaleData(a.hex, `Accent ${i + 2}`, a.name, 'dark');
+          darkScales![`accent${i + 2}`] = generateScaleData(
+            a.hex,
+            `Accent ${i + 2}`,
+            a.name,
+            'dark'
+          );
         });
       }
     }
 
     // Calculate usage proportions based on assigned roles
-    const totalAssigned = primaries.length + secondaries.length + tertiaries.length + accents.length;
     const usageProportions = {
       primary: primaries.length > 0 ? Math.round(35 / primaries.length) : 0,
       secondary: secondaries.length > 0 ? Math.round(20 / secondaries.length) : 0,
@@ -606,13 +736,14 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
     };
 
     // Adjust if some roles are missing
-    const total = (usageProportions.primary * primaries.length) + 
-                  (usageProportions.secondary * secondaries.length) + 
-                  (usageProportions.tertiary * tertiaries.length) + 
-                  (usageProportions.accent * accents.length) + 
-                  usageProportions.neutral;
+    const total =
+      usageProportions.primary * primaries.length +
+      usageProportions.secondary * secondaries.length +
+      usageProportions.tertiary * tertiaries.length +
+      usageProportions.accent * accents.length +
+      usageProportions.neutral;
     if (total < 100) {
-      usageProportions.neutral += (100 - total);
+      usageProportions.neutral += 100 - total;
     }
 
     // Send to plugin
@@ -648,31 +779,37 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
     };
 
     // Send frame generation message
-    parent.postMessage({
-      pluginMessage: {
-        type: 'generate-color-system',
-        config: {
-          sourceColors: colors,
-          roleAssignments,
-          scaleMethod,
-          neutralFamily,
-          detailLevel,
-          includeDarkMode,
-          systemName,
+    parent.postMessage(
+      {
+        pluginMessage: {
+          type: 'generate-color-system',
+          config: {
+            sourceColors: colors,
+            roleAssignments,
+            scaleMethod,
+            neutralFamily,
+            detailLevel,
+            includeDarkMode,
+            systemName,
+          },
+          scales: scalesPayload,
         },
-        scales: scalesPayload,
       },
-    }, '*');
+      '*'
+    );
 
     // Also create Figma color styles if requested
     if (createStyles) {
-      parent.postMessage({
-        pluginMessage: {
-          type: 'create-color-styles',
-          scales: scalesPayload,
-          systemName,
+      parent.postMessage(
+        {
+          pluginMessage: {
+            type: 'create-color-styles',
+            scales: scalesPayload,
+            systemName,
+          },
         },
-      }, '*');
+        '*'
+      );
     }
 
     onClose();
@@ -732,13 +869,15 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div style={{
-          padding: '20px',
-          borderBottom: `1px solid ${theme.border}`,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}>
+        <div
+          style={{
+            padding: '20px',
+            borderBottom: `1px solid ${theme.border}`,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <div>
             <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: theme.text }}>
               Generate Color System
@@ -775,7 +914,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
             <input
               type="text"
               value={systemName}
-              onChange={(e) => setSystemName(e.target.value)}
+              onChange={e => setSystemName(e.target.value)}
               style={{
                 width: '100%',
                 padding: '12px',
@@ -809,7 +948,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
                 <input
                   type="checkbox"
                   checked={multiSelectMode}
-                  onChange={(e) => setMultiSelectMode(e.target.checked)}
+                  onChange={e => setMultiSelectMode(e.target.checked)}
                   style={{ width: '18px', height: '18px', cursor: 'pointer' }}
                 />
                 <div>
@@ -828,16 +967,21 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
           <div style={sectionStyle}>
             <label style={labelStyle}>Assign Color Roles</label>
             <p style={{ fontSize: '11px', color: theme.textMuted, margin: '0 0 12px' }}>
-              {multiSelectMode 
+              {multiSelectMode
                 ? 'Click roles to toggle. Multiple colors can share the same role.'
-                : 'Each role can only be assigned to one color. Click again to unassign.'
-              }
+                : 'Each role can only be assigned to one color. Click again to unassign.'}
               <br />
-              <span style={{ opacity: 0.7 }}>Unassigned colors will not be included in the output.</span>
+              <span style={{ opacity: 0.7 }}>
+                Unassigned colors will not be included in the output.
+              </span>
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {roleAssignments.map((assignment) => {
-                const activeRoles = multiSelectMode ? (assignment.roles || []) : (assignment.role ? [assignment.role] : []);
+              {roleAssignments.map(assignment => {
+                const activeRoles = multiSelectMode
+                  ? assignment.roles || []
+                  : assignment.role
+                    ? [assignment.role]
+                    : [];
                 const isUnassigned = activeRoles.length === 0;
                 return (
                   <div
@@ -864,38 +1008,48 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
                         flexShrink: 0,
                       }}
                     />
-                    
+
                     {/* Color info */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ 
-                        fontSize: '12px', 
-                        fontWeight: 600, 
-                        color: theme.text, 
-                        marginBottom: '2px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                      }}>
+                      <div
+                        style={{
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          color: theme.text,
+                          marginBottom: '2px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                        }}
+                      >
                         {assignment.name}
                         {isUnassigned && (
-                          <span style={{ 
-                            fontSize: '9px', 
-                            color: theme.textMuted, 
-                            fontWeight: 400,
-                            fontStyle: 'italic',
-                          }}>
+                          <span
+                            style={{
+                              fontSize: '9px',
+                              color: theme.textMuted,
+                              fontWeight: 400,
+                              fontStyle: 'italic',
+                            }}
+                          >
                             (not included)
                           </span>
                         )}
                       </div>
-                      <div style={{ fontSize: '10px', color: theme.textMuted, fontFamily: 'monospace' }}>
+                      <div
+                        style={{
+                          fontSize: '10px',
+                          color: theme.textMuted,
+                          fontFamily: 'monospace',
+                        }}
+                      >
                         {assignment.hex.toUpperCase()}
                       </div>
                     </div>
 
                     {/* Role buttons */}
                     <div style={{ display: 'flex', gap: '4px' }}>
-                      {(['primary', 'secondary', 'tertiary', 'accent'] as ColorRole[]).map((role) => {
+                      {(['primary', 'secondary', 'tertiary', 'accent'] as ColorRole[]).map(role => {
                         const isSelected = activeRoles.includes(role);
                         const roleColors: Record<ColorRole, string> = {
                           primary: '#3b82f6',
@@ -906,7 +1060,12 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
                         return (
                           <button
                             key={role}
-                            onClick={() => assignRole(assignment.hex, isSelected && !multiSelectMode ? null : role)}
+                            onClick={() =>
+                              assignRole(
+                                assignment.hex,
+                                isSelected && !multiSelectMode ? null : role
+                              )
+                            }
                             style={{
                               padding: '4px 8px',
                               borderRadius: '4px',
@@ -984,7 +1143,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
               >
                 Auto ({suggestedNeutral})
               </button>
-              {neutralFamilies.map((nf) => {
+              {neutralFamilies.map(nf => {
                 const scale = radixColors[nf].light;
                 return (
                   <button
@@ -1017,11 +1176,13 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
           <div style={sectionStyle}>
             <label style={labelStyle}>Output Detail Level</label>
             <div style={{ display: 'flex', gap: '8px' }}>
-              {([
-                { id: 'minimal', label: 'Minimal', desc: 'Scales only' },
-                { id: 'detailed', label: 'Detailed', desc: 'Scales + labels' },
-                { id: 'presentation', label: 'Presentation', desc: 'Full framework' },
-              ] as const).map((level) => (
+              {(
+                [
+                  { id: 'minimal', label: 'Minimal', desc: 'Scales only' },
+                  { id: 'detailed', label: 'Detailed', desc: 'Scales + labels' },
+                  { id: 'presentation', label: 'Presentation', desc: 'Full framework' },
+                ] as const
+              ).map(level => (
                 <button
                   key={level.id}
                   onClick={() => setDetailLevel(level.id)}
@@ -1047,7 +1208,9 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
           <div style={sectionStyle}>
             <label style={labelStyle}>Scale Preview</label>
             <p style={{ fontSize: '11px', color: theme.textMuted, margin: '0 0 12px' }}>
-              {scaleMethod === 'radix-match' ? 'Matched to closest Radix scale' : 'Custom generated scale'}
+              {scaleMethod === 'radix-match'
+                ? 'Matched to closest Radix scale'
+                : 'Custom generated scale'}
             </p>
 
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -1061,34 +1224,43 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
                   border: `1px solid ${theme.border}`,
                 }}
               >
-                <div style={{ 
-                  fontSize: '9px', 
-                  fontWeight: 600, 
-                  color: '#888',
-                  marginBottom: '6px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}>
+                <div
+                  style={{
+                    fontSize: '9px',
+                    fontWeight: 600,
+                    color: '#888',
+                    marginBottom: '6px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                >
                   ☀️ Light
                 </div>
                 {previewScales && (
                   <>
                     <div style={{ display: 'flex', gap: '1px' }}>
-                      {previewScales.steps.map((step) => (
+                      {previewScales.steps.map(step => (
                         <div
                           key={step.step}
                           style={{
                             flex: 1,
                             height: '24px',
                             backgroundColor: step.hex,
-                            borderRadius: step.step === 1 ? '3px 0 0 3px' : step.step === 12 ? '0 3px 3px 0' : '0',
+                            borderRadius:
+                              step.step === 1
+                                ? '3px 0 0 3px'
+                                : step.step === 12
+                                  ? '0 3px 3px 0'
+                                  : '0',
                           }}
                           title={`Step ${step.step}: ${step.hex}`}
                         />
                       ))}
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px' }}>
+                    <div
+                      style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px' }}
+                    >
                       <span style={{ fontSize: '7px', color: '#aaa' }}>1</span>
                       <span style={{ fontSize: '7px', color: '#aaa' }}>12</span>
                     </div>
@@ -1107,34 +1279,47 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
                     border: `1px solid ${theme.border}`,
                   }}
                 >
-                  <div style={{ 
-                    fontSize: '9px', 
-                    fontWeight: 600, 
-                    color: '#888',
-                    marginBottom: '6px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                  }}>
+                  <div
+                    style={{
+                      fontSize: '9px',
+                      fontWeight: 600,
+                      color: '#888',
+                      marginBottom: '6px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                  >
                     🌙 Dark
                   </div>
                   {darkPreviewScales && (
                     <>
                       <div style={{ display: 'flex', gap: '1px' }}>
-                        {darkPreviewScales.steps.map((step) => (
+                        {darkPreviewScales.steps.map(step => (
                           <div
                             key={step.step}
                             style={{
                               flex: 1,
                               height: '24px',
                               backgroundColor: step.hex,
-                              borderRadius: step.step === 1 ? '3px 0 0 3px' : step.step === 12 ? '0 3px 3px 0' : '0',
+                              borderRadius:
+                                step.step === 1
+                                  ? '3px 0 0 3px'
+                                  : step.step === 12
+                                    ? '0 3px 3px 0'
+                                    : '0',
                             }}
                             title={`Step ${step.step}: ${step.hex}`}
                           />
                         ))}
                       </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          marginTop: '2px',
+                        }}
+                      >
                         <span style={{ fontSize: '7px', color: '#666' }}>1</span>
                         <span style={{ fontSize: '7px', color: '#666' }}>12</span>
                       </div>
@@ -1161,7 +1346,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
               <input
                 type="checkbox"
                 checked={includeDarkMode}
-                onChange={(e) => setIncludeDarkMode(e.target.checked)}
+                onChange={e => setIncludeDarkMode(e.target.checked)}
                 style={{ width: '18px', height: '18px', cursor: 'pointer' }}
               />
               <div>
@@ -1192,7 +1377,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
               <input
                 type="checkbox"
                 checked={createStyles}
-                onChange={(e) => setCreateStyles(e.target.checked)}
+                onChange={e => setCreateStyles(e.target.checked)}
                 style={{ width: '18px', height: '18px', cursor: 'pointer' }}
               />
               <div>
@@ -1233,11 +1418,13 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
               <div style={{ marginTop: '12px' }}>
                 {/* Format selector */}
                 <div style={{ display: 'flex', gap: '6px', marginBottom: '12px' }}>
-                  {([
-                    { id: 'css', label: 'CSS' },
-                    { id: 'tailwind', label: 'Tailwind' },
-                    { id: 'json', label: 'JSON' },
-                  ] as const).map((format) => (
+                  {(
+                    [
+                      { id: 'css', label: 'CSS' },
+                      { id: 'tailwind', label: 'Tailwind' },
+                      { id: 'json', label: 'JSON' },
+                    ] as const
+                  ).map(format => (
                     <button
                       key={format.id}
                       onClick={() => setExportFormat(format.id)}
@@ -1298,12 +1485,14 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div style={{
-          padding: '16px 20px',
-          borderTop: `1px solid ${theme.border}`,
-          display: 'flex',
-          gap: '12px',
-        }}>
+        <div
+          style={{
+            padding: '16px 20px',
+            borderTop: `1px solid ${theme.border}`,
+            display: 'flex',
+            gap: '12px',
+          }}
+        >
           <button
             onClick={onClose}
             style={{
@@ -1331,4 +1520,3 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
 };
 
 export default ColorSystemModal;
-

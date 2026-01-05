@@ -1,24 +1,24 @@
-import * as React from 'react'
-import type { SavedGrid, GridCategory } from '../types/grid'
-import { GridMiniPreview } from './GridPreview'
-import { 
-  loadSavedGrids, 
-  deleteSavedGrid, 
+import * as React from 'react';
+import type { SavedGrid } from '../types/grid';
+import { GridMiniPreview } from './GridPreview';
+import {
+  loadSavedGrids,
+  deleteSavedGrid,
   updateSavedGrid,
   duplicateSavedGrid,
   downloadGridsAsJSON,
   importGridsFromFile,
   searchSavedGrids,
-} from '../lib/gridStorage'
-import { 
-  buildApplyGridMessage, 
+} from '../lib/gridStorage';
+import {
+  buildApplyGridMessage,
   buildCreateGridFrameMessage,
-  getPresetFrameDimensions 
-} from '../lib/figmaGrids'
+  getPresetFrameDimensions,
+} from '../lib/figmaGrids';
 
 interface MyGridsProps {
-  isDark: boolean
-  onSaveGrid?: (grid: SavedGrid) => void
+  isDark: boolean;
+  onSaveGrid?: (grid: SavedGrid) => void;
 }
 
 const styles = {
@@ -47,23 +47,23 @@ const styles = {
     dangerText: '#fca5a5',
     successBg: '#052e16',
     successText: '#86efac',
-  }
-}
+  },
+};
 
 // ============================================
 // Grid Card Component
 // ============================================
 
 interface GridCardProps {
-  grid: SavedGrid
-  isDark: boolean
-  onApply: () => void
-  onCreateFrame: () => void
-  onEdit: () => void
-  onDuplicate: () => void
-  onDelete: () => void
-  isSelected?: boolean
-  onClick?: () => void
+  grid: SavedGrid;
+  isDark: boolean;
+  onApply: () => void;
+  onCreateFrame: () => void;
+  onEdit: () => void;
+  onDuplicate: () => void;
+  onDelete: () => void;
+  isSelected?: boolean;
+  onClick?: () => void;
 }
 
 const GridCard: React.FC<GridCardProps> = ({
@@ -77,9 +77,9 @@ const GridCard: React.FC<GridCardProps> = ({
   isSelected,
   onClick,
 }) => {
-  const theme = isDark ? styles.dark : styles.light
-  const [showActions, setShowActions] = React.useState(false)
-  
+  const theme = isDark ? styles.dark : styles.light;
+  const [showActions, setShowActions] = React.useState(false);
+
   return (
     <div
       onClick={onClick}
@@ -96,50 +96,58 @@ const GridCard: React.FC<GridCardProps> = ({
       }}
     >
       {/* Preview */}
-      <div style={{
-        marginBottom: '10px',
-        borderRadius: '6px',
-        overflow: 'hidden',
-        display: 'flex',
-        justifyContent: 'center',
-        backgroundColor: isDark ? '#1e1e1e' : '#f0f0f0',
-        padding: '8px',
-      }}>
+      <div
+        style={{
+          marginBottom: '10px',
+          borderRadius: '6px',
+          overflow: 'hidden',
+          display: 'flex',
+          justifyContent: 'center',
+          backgroundColor: isDark ? '#1e1e1e' : '#f0f0f0',
+          padding: '8px',
+        }}
+      >
         <GridMiniPreview config={grid.config} size={64} isDark={isDark} />
       </div>
-      
+
       {/* Info */}
-      <h4 style={{
-        margin: '0 0 4px 0',
-        fontSize: '12px',
-        fontWeight: 600,
-        color: theme.text,
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
-      }}>
+      <h4
+        style={{
+          margin: '0 0 4px 0',
+          fontSize: '12px',
+          fontWeight: 600,
+          color: theme.text,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
         {grid.name}
       </h4>
-      
-      <p style={{
-        margin: '0 0 6px 0',
-        fontSize: '10px',
-        color: theme.textMuted,
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
-      }}>
+
+      <p
+        style={{
+          margin: '0 0 6px 0',
+          fontSize: '10px',
+          color: theme.textMuted,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        }}
+      >
         {grid.description || 'No description'}
       </p>
-      
+
       {/* Tags */}
       {grid.tags.length > 0 && (
-        <div style={{
-          display: 'flex',
-          gap: '4px',
-          flexWrap: 'wrap',
-          marginBottom: '8px',
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: '4px',
+            flexWrap: 'wrap',
+            marginBottom: '8px',
+          }}
+        >
           {grid.tags.slice(0, 3).map(tag => (
             <span
               key={tag}
@@ -155,22 +163,25 @@ const GridCard: React.FC<GridCardProps> = ({
             </span>
           ))}
           {grid.tags.length > 3 && (
-            <span style={{ fontSize: '9px', color: theme.textMuted }}>
-              +{grid.tags.length - 3}
-            </span>
+            <span style={{ fontSize: '9px', color: theme.textMuted }}>+{grid.tags.length - 3}</span>
           )}
         </div>
       )}
-      
+
       {/* Quick Actions (visible on hover) */}
       {showActions && (
-        <div style={{
-          display: 'flex',
-          gap: '4px',
-          marginTop: '8px',
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: '4px',
+            marginTop: '8px',
+          }}
+        >
           <button
-            onClick={(e) => { e.stopPropagation(); onApply(); }}
+            onClick={e => {
+              e.stopPropagation();
+              onApply();
+            }}
             style={{
               flex: 1,
               padding: '6px 8px',
@@ -186,7 +197,10 @@ const GridCard: React.FC<GridCardProps> = ({
             Apply
           </button>
           <button
-            onClick={(e) => { e.stopPropagation(); onCreateFrame(); }}
+            onClick={e => {
+              e.stopPropagation();
+              onCreateFrame();
+            }}
             style={{
               padding: '6px 8px',
               borderRadius: '4px',
@@ -203,18 +217,23 @@ const GridCard: React.FC<GridCardProps> = ({
           </button>
         </div>
       )}
-      
+
       {/* Context Menu (visible on hover) */}
       {showActions && (
-        <div style={{
-          position: 'absolute',
-          top: '8px',
-          right: '8px',
-          display: 'flex',
-          gap: '4px',
-        }}>
+        <div
+          style={{
+            position: 'absolute',
+            top: '8px',
+            right: '8px',
+            display: 'flex',
+            gap: '4px',
+          }}
+        >
           <button
-            onClick={(e) => { e.stopPropagation(); onEdit(); }}
+            onClick={e => {
+              e.stopPropagation();
+              onEdit();
+            }}
             title="Edit"
             style={{
               width: '24px',
@@ -233,7 +252,10 @@ const GridCard: React.FC<GridCardProps> = ({
             ✏️
           </button>
           <button
-            onClick={(e) => { e.stopPropagation(); onDuplicate(); }}
+            onClick={e => {
+              e.stopPropagation();
+              onDuplicate();
+            }}
             title="Duplicate"
             style={{
               width: '24px',
@@ -252,7 +274,10 @@ const GridCard: React.FC<GridCardProps> = ({
             📋
           </button>
           <button
-            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+            onClick={e => {
+              e.stopPropagation();
+              onDelete();
+            }}
             title="Delete"
             style={{
               width: '24px',
@@ -273,68 +298,76 @@ const GridCard: React.FC<GridCardProps> = ({
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
 // ============================================
 // Edit Modal Component
 // ============================================
 
 interface EditModalProps {
-  grid: SavedGrid
-  isDark: boolean
-  onSave: (updates: Partial<SavedGrid>) => void
-  onCancel: () => void
+  grid: SavedGrid;
+  isDark: boolean;
+  onSave: (updates: Partial<SavedGrid>) => void;
+  onCancel: () => void;
 }
 
 const EditModal: React.FC<EditModalProps> = ({ grid, isDark, onSave, onCancel }) => {
-  const theme = isDark ? styles.dark : styles.light
-  const [name, setName] = React.useState(grid.name)
-  const [description, setDescription] = React.useState(grid.description)
-  const [tags, setTags] = React.useState(grid.tags.join(', '))
-  
+  const theme = isDark ? styles.dark : styles.light;
+  const [name, setName] = React.useState(grid.name);
+  const [description, setDescription] = React.useState(grid.description);
+  const [tags, setTags] = React.useState(grid.tags.join(', '));
+
   return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-    }}>
-      <div style={{
-        width: '340px',
-        backgroundColor: theme.bg,
-        borderRadius: '12px',
-        padding: '20px',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
-      }}>
-        <h3 style={{
-          margin: '0 0 16px 0',
-          fontSize: '16px',
-          fontWeight: 600,
-          color: theme.text,
-        }}>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+      }}
+    >
+      <div
+        style={{
+          width: '340px',
+          backgroundColor: theme.bg,
+          borderRadius: '12px',
+          padding: '20px',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+        }}
+      >
+        <h3
+          style={{
+            margin: '0 0 16px 0',
+            fontSize: '16px',
+            fontWeight: 600,
+            color: theme.text,
+          }}
+        >
           Edit Grid
         </h3>
-        
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div>
-            <label style={{
-              display: 'block',
-              marginBottom: '4px',
-              fontSize: '11px',
-              fontWeight: 600,
-              color: theme.textMuted,
-              textTransform: 'uppercase',
-            }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '4px',
+                fontSize: '11px',
+                fontWeight: 600,
+                color: theme.textMuted,
+                textTransform: 'uppercase',
+              }}
+            >
               Name
             </label>
             <input
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={e => setName(e.target.value)}
               style={{
                 width: '100%',
                 padding: '10px 12px',
@@ -348,21 +381,23 @@ const EditModal: React.FC<EditModalProps> = ({ grid, isDark, onSave, onCancel })
               }}
             />
           </div>
-          
+
           <div>
-            <label style={{
-              display: 'block',
-              marginBottom: '4px',
-              fontSize: '11px',
-              fontWeight: 600,
-              color: theme.textMuted,
-              textTransform: 'uppercase',
-            }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '4px',
+                fontSize: '11px',
+                fontWeight: 600,
+                color: theme.textMuted,
+                textTransform: 'uppercase',
+              }}
+            >
               Description
             </label>
             <textarea
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={e => setDescription(e.target.value)}
               rows={3}
               style={{
                 width: '100%',
@@ -378,22 +413,24 @@ const EditModal: React.FC<EditModalProps> = ({ grid, isDark, onSave, onCancel })
               }}
             />
           </div>
-          
+
           <div>
-            <label style={{
-              display: 'block',
-              marginBottom: '4px',
-              fontSize: '11px',
-              fontWeight: 600,
-              color: theme.textMuted,
-              textTransform: 'uppercase',
-            }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '4px',
+                fontSize: '11px',
+                fontWeight: 600,
+                color: theme.textMuted,
+                textTransform: 'uppercase',
+              }}
+            >
               Tags (comma-separated)
             </label>
             <input
               type="text"
               value={tags}
-              onChange={(e) => setTags(e.target.value)}
+              onChange={e => setTags(e.target.value)}
               placeholder="poster, swiss, 4-column"
               style={{
                 width: '100%',
@@ -409,12 +446,14 @@ const EditModal: React.FC<EditModalProps> = ({ grid, isDark, onSave, onCancel })
             />
           </div>
         </div>
-        
-        <div style={{
-          display: 'flex',
-          gap: '8px',
-          marginTop: '20px',
-        }}>
+
+        <div
+          style={{
+            display: 'flex',
+            gap: '8px',
+            marginTop: '20px',
+          }}
+        >
           <button
             onClick={onCancel}
             style={{
@@ -432,11 +471,16 @@ const EditModal: React.FC<EditModalProps> = ({ grid, isDark, onSave, onCancel })
             Cancel
           </button>
           <button
-            onClick={() => onSave({
-              name: name.trim() || 'Untitled Grid',
-              description: description.trim(),
-              tags: tags.split(',').map(t => t.trim()).filter(Boolean),
-            })}
+            onClick={() =>
+              onSave({
+                name: name.trim() || 'Untitled Grid',
+                description: description.trim(),
+                tags: tags
+                  .split(',')
+                  .map(t => t.trim())
+                  .filter(Boolean),
+              })
+            }
             style={{
               flex: 1,
               padding: '10px 16px',
@@ -454,58 +498,66 @@ const EditModal: React.FC<EditModalProps> = ({ grid, isDark, onSave, onCancel })
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 // ============================================
 // Delete Confirmation Modal
 // ============================================
 
 interface DeleteModalProps {
-  gridName: string
-  isDark: boolean
-  onConfirm: () => void
-  onCancel: () => void
+  gridName: string;
+  isDark: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
 }
 
 const DeleteModal: React.FC<DeleteModalProps> = ({ gridName, isDark, onConfirm, onCancel }) => {
-  const theme = isDark ? styles.dark : styles.light
-  
+  const theme = isDark ? styles.dark : styles.light;
+
   return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 1000,
-    }}>
-      <div style={{
-        width: '300px',
-        backgroundColor: theme.bg,
-        borderRadius: '12px',
-        padding: '20px',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
-        textAlign: 'center',
-      }}>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+      }}
+    >
+      <div
+        style={{
+          width: '300px',
+          backgroundColor: theme.bg,
+          borderRadius: '12px',
+          padding: '20px',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+          textAlign: 'center',
+        }}
+      >
         <div style={{ fontSize: '32px', marginBottom: '12px' }}>🗑️</div>
-        <h3 style={{
-          margin: '0 0 8px 0',
-          fontSize: '16px',
-          fontWeight: 600,
-          color: theme.text,
-        }}>
+        <h3
+          style={{
+            margin: '0 0 8px 0',
+            fontSize: '16px',
+            fontWeight: 600,
+            color: theme.text,
+          }}
+        >
           Delete Grid?
         </h3>
-        <p style={{
-          margin: '0 0 20px 0',
-          fontSize: '13px',
-          color: theme.textMuted,
-        }}>
-          Are you sure you want to delete "{gridName}"? This action cannot be undone.
+        <p
+          style={{
+            margin: '0 0 20px 0',
+            fontSize: '13px',
+            color: theme.textMuted,
+          }}
+        >
+          Are you sure you want to delete &ldquo;{gridName}&rdquo;? This action cannot be undone.
         </p>
-        
+
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
             onClick={onCancel}
@@ -542,50 +594,56 @@ const DeleteModal: React.FC<DeleteModalProps> = ({ gridName, isDark, onConfirm, 
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 // ============================================
 // Main MyGrids Component
 // ============================================
 
 export const MyGrids: React.FC<MyGridsProps> = ({ isDark }) => {
-  const theme = isDark ? styles.dark : styles.light
-  const fileInputRef = React.useRef<HTMLInputElement>(null)
-  
+  const theme = isDark ? styles.dark : styles.light;
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
   // State
-  const [grids, setGrids] = React.useState<SavedGrid[]>([])
-  const [searchQuery, setSearchQuery] = React.useState('')
-  const [selectedGrid, setSelectedGrid] = React.useState<SavedGrid | null>(null)
-  const [editingGrid, setEditingGrid] = React.useState<SavedGrid | null>(null)
-  const [deletingGrid, setDeletingGrid] = React.useState<SavedGrid | null>(null)
-  const [notification, setNotification] = React.useState<{ type: 'success' | 'error'; message: string } | null>(null)
-  
+  const [grids, setGrids] = React.useState<SavedGrid[]>([]);
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [selectedGrid, setSelectedGrid] = React.useState<SavedGrid | null>(null);
+  const [editingGrid, setEditingGrid] = React.useState<SavedGrid | null>(null);
+  const [deletingGrid, setDeletingGrid] = React.useState<SavedGrid | null>(null);
+  const [notification, setNotification] = React.useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
+
   // Load grids on mount
   React.useEffect(() => {
-    setGrids(loadSavedGrids())
-  }, [])
-  
+    setGrids(loadSavedGrids());
+  }, []);
+
   // Filter grids by search
   const filteredGrids = React.useMemo(() => {
-    if (!searchQuery.trim()) return grids
-    return searchSavedGrids(searchQuery)
-  }, [grids, searchQuery])
-  
+    if (!searchQuery.trim()) return grids;
+    return searchSavedGrids(searchQuery);
+  }, [grids, searchQuery]);
+
   // Show notification
   const showNotification = (type: 'success' | 'error', message: string) => {
-    setNotification({ type, message })
-    setTimeout(() => setNotification(null), 3000)
-  }
-  
+    setNotification({ type, message });
+    setTimeout(() => setNotification(null), 3000);
+  };
+
   // Apply grid to selection
   const handleApplyGrid = (grid: SavedGrid) => {
-    parent.postMessage({
-      pluginMessage: {
-        type: 'get-selection-for-grid'
-      }
-    }, '*')
-    
+    parent.postMessage(
+      {
+        pluginMessage: {
+          type: 'get-selection-for-grid',
+        },
+      },
+      '*'
+    );
+
     // We'll send the apply message after getting selection info
     // For now, just send directly with default dimensions
     const message = buildApplyGridMessage({
@@ -593,102 +651,106 @@ export const MyGrids: React.FC<MyGridsProps> = ({ isDark }) => {
       width: 800,
       height: 600,
       replaceExisting: true,
-    })
-    parent.postMessage({ pluginMessage: message }, '*')
-    showNotification('success', `Applied "${grid.name}"`)
-  }
-  
+    });
+    parent.postMessage({ pluginMessage: message }, '*');
+    showNotification('success', `Applied "${grid.name}"`);
+  };
+
   // Create new frame with grid
   const handleCreateFrame = (grid: SavedGrid) => {
-    const dimensions = getPresetFrameDimensions(grid)
+    const dimensions = getPresetFrameDimensions(grid);
     const message = buildCreateGridFrameMessage({
       config: grid.config,
       frameName: `Grid - ${grid.name}`,
       width: dimensions.width,
       height: dimensions.height,
       positionNearSelection: true,
-    })
-    parent.postMessage({ pluginMessage: message }, '*')
-    showNotification('success', `Created frame with "${grid.name}"`)
-  }
-  
+    });
+    parent.postMessage({ pluginMessage: message }, '*');
+    showNotification('success', `Created frame with "${grid.name}"`);
+  };
+
   // Edit grid
   const handleEditGrid = (grid: SavedGrid, updates: Partial<SavedGrid>) => {
-    const updated = updateSavedGrid(grid.id, updates)
-    setGrids(updated)
-    setEditingGrid(null)
-    showNotification('success', 'Grid updated')
-  }
-  
+    const updated = updateSavedGrid(grid.id, updates);
+    setGrids(updated);
+    setEditingGrid(null);
+    showNotification('success', 'Grid updated');
+  };
+
   // Duplicate grid
   const handleDuplicateGrid = (grid: SavedGrid) => {
-    const duplicate = duplicateSavedGrid(grid.id)
+    const duplicate = duplicateSavedGrid(grid.id);
     if (duplicate) {
-      setGrids(loadSavedGrids())
-      showNotification('success', `Created copy of "${grid.name}"`)
+      setGrids(loadSavedGrids());
+      showNotification('success', `Created copy of "${grid.name}"`);
     }
-  }
-  
+  };
+
   // Delete grid
   const handleDeleteGrid = (grid: SavedGrid) => {
-    const updated = deleteSavedGrid(grid.id)
-    setGrids(updated)
-    setDeletingGrid(null)
+    const updated = deleteSavedGrid(grid.id);
+    setGrids(updated);
+    setDeletingGrid(null);
     if (selectedGrid?.id === grid.id) {
-      setSelectedGrid(null)
+      setSelectedGrid(null);
     }
-    showNotification('success', `Deleted "${grid.name}"`)
-  }
-  
+    showNotification('success', `Deleted "${grid.name}"`);
+  };
+
   // Export grids
   const handleExport = () => {
     if (grids.length === 0) {
-      showNotification('error', 'No grids to export')
-      return
+      showNotification('error', 'No grids to export');
+      return;
     }
-    downloadGridsAsJSON(grids)
-    showNotification('success', `Exported ${grids.length} grid(s)`)
-  }
-  
+    downloadGridsAsJSON(grids);
+    showNotification('success', `Exported ${grids.length} grid(s)`);
+  };
+
   // Import grids
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    
-    const result = await importGridsFromFile(file)
-    
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const result = await importGridsFromFile(file);
+
     if (result.success) {
-      setGrids(result.grids || [])
-      showNotification('success', `Imported ${result.count} grid(s)`)
+      setGrids(result.grids || []);
+      showNotification('success', `Imported ${result.count} grid(s)`);
     } else {
-      showNotification('error', result.error || 'Import failed')
+      showNotification('error', result.error || 'Import failed');
     }
-    
+
     // Reset file input
     if (fileInputRef.current) {
-      fileInputRef.current.value = ''
+      fileInputRef.current.value = '';
     }
-  }
-  
+  };
+
   return (
-    <div style={{
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      backgroundColor: theme.bg,
-    }}>
+    <div
+      style={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: theme.bg,
+      }}
+    >
       {/* Header with search and actions */}
-      <div style={{
-        flexShrink: 0,
-        padding: '12px 16px',
-        borderBottom: `1px solid ${theme.border}`,
-      }}>
+      <div
+        style={{
+          flexShrink: 0,
+          padding: '12px 16px',
+          borderBottom: `1px solid ${theme.border}`,
+        }}
+      >
         {/* Search */}
         <input
           type="text"
           placeholder="Search your grids..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={e => setSearchQuery(e.target.value)}
           style={{
             width: '100%',
             padding: '10px 14px',
@@ -702,12 +764,14 @@ export const MyGrids: React.FC<MyGridsProps> = ({ isDark }) => {
             marginBottom: '12px',
           }}
         />
-        
+
         {/* Actions */}
-        <div style={{
-          display: 'flex',
-          gap: '8px',
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: '8px',
+          }}
+        >
           <button
             onClick={handleExport}
             disabled={grids.length === 0}
@@ -759,33 +823,39 @@ export const MyGrids: React.FC<MyGridsProps> = ({ isDark }) => {
           />
         </div>
       </div>
-      
+
       {/* Notification */}
       {notification && (
-        <div style={{
-          padding: '10px 16px',
-          backgroundColor: notification.type === 'success' ? theme.successBg : theme.dangerBg,
-          color: notification.type === 'success' ? theme.successText : theme.dangerText,
-          fontSize: '12px',
-          fontWeight: 500,
-          textAlign: 'center',
-        }}>
+        <div
+          style={{
+            padding: '10px 16px',
+            backgroundColor: notification.type === 'success' ? theme.successBg : theme.dangerBg,
+            color: notification.type === 'success' ? theme.successText : theme.dangerText,
+            fontSize: '12px',
+            fontWeight: 500,
+            textAlign: 'center',
+          }}
+        >
           {notification.message}
         </div>
       )}
-      
+
       {/* Grid List */}
-      <div style={{
-        flex: 1,
-        overflowY: 'auto',
-        padding: '16px',
-      }}>
+      <div
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          padding: '16px',
+        }}
+      >
         {filteredGrids.length > 0 ? (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: '12px',
-          }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '12px',
+            }}
+          >
             {filteredGrids.map(grid => (
               <GridCard
                 key={grid.id}
@@ -802,31 +872,36 @@ export const MyGrids: React.FC<MyGridsProps> = ({ isDark }) => {
             ))}
           </div>
         ) : (
-          <div style={{
-            textAlign: 'center',
-            padding: '40px 20px',
-          }}>
+          <div
+            style={{
+              textAlign: 'center',
+              padding: '40px 20px',
+            }}
+          >
             <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.3 }}>💾</div>
-            <h3 style={{
-              margin: '0 0 8px 0',
-              fontSize: '16px',
-              fontWeight: 600,
-              color: theme.text,
-            }}>
+            <h3
+              style={{
+                margin: '0 0 8px 0',
+                fontSize: '16px',
+                fontWeight: 600,
+                color: theme.text,
+              }}
+            >
               {searchQuery ? 'No matching grids' : 'No saved grids yet'}
             </h3>
-            <p style={{
-              margin: 0,
-              fontSize: '13px',
-              color: theme.textMuted,
-              lineHeight: 1.5,
-            }}>
-              {searchQuery 
+            <p
+              style={{
+                margin: 0,
+                fontSize: '13px',
+                color: theme.textMuted,
+                lineHeight: 1.5,
+              }}
+            >
+              {searchQuery
                 ? 'Try a different search term'
-                : 'Save grids from the Library tab to build your collection.'
-              }
+                : 'Save grids from the Library tab to build your collection.'}
             </p>
-            
+
             {!searchQuery && (
               <button
                 onClick={() => fileInputRef.current?.click()}
@@ -851,34 +926,35 @@ export const MyGrids: React.FC<MyGridsProps> = ({ isDark }) => {
           </div>
         )}
       </div>
-      
+
       {/* Footer with count */}
       {grids.length > 0 && (
-        <div style={{
-          flexShrink: 0,
-          padding: '8px 16px',
-          borderTop: `1px solid ${theme.border}`,
-          fontSize: '11px',
-          color: theme.textMuted,
-          textAlign: 'center',
-        }}>
-          {filteredGrids.length === grids.length 
+        <div
+          style={{
+            flexShrink: 0,
+            padding: '8px 16px',
+            borderTop: `1px solid ${theme.border}`,
+            fontSize: '11px',
+            color: theme.textMuted,
+            textAlign: 'center',
+          }}
+        >
+          {filteredGrids.length === grids.length
             ? `${grids.length} saved grid${grids.length !== 1 ? 's' : ''}`
-            : `${filteredGrids.length} of ${grids.length} grids`
-          }
+            : `${filteredGrids.length} of ${grids.length} grids`}
         </div>
       )}
-      
+
       {/* Edit Modal */}
       {editingGrid && (
         <EditModal
           grid={editingGrid}
           isDark={isDark}
-          onSave={(updates) => handleEditGrid(editingGrid, updates)}
+          onSave={updates => handleEditGrid(editingGrid, updates)}
           onCancel={() => setEditingGrid(null)}
         />
       )}
-      
+
       {/* Delete Confirmation Modal */}
       {deletingGrid && (
         <DeleteModal
@@ -889,9 +965,7 @@ export const MyGrids: React.FC<MyGridsProps> = ({ isDark }) => {
         />
       )}
     </div>
-  )
-}
+  );
+};
 
-export default MyGrids
-
-
+export default MyGrids;

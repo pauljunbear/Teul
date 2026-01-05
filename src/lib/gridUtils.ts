@@ -10,17 +10,11 @@ import type {
   GridUnit,
   FigmaLayoutGrid,
   GridColor,
-  DEFAULT_COLUMN_COLOR,
-  DEFAULT_ROW_COLOR,
-  DEFAULT_BASELINE_COLOR,
-} from '../types/grid'
+} from '../types/grid';
+import { DEFAULT_COLUMN_COLOR, DEFAULT_ROW_COLOR, DEFAULT_BASELINE_COLOR } from '../types/grid';
 
 // Re-export default colors for convenience
-export {
-  DEFAULT_COLUMN_COLOR,
-  DEFAULT_ROW_COLOR,
-  DEFAULT_BASELINE_COLOR,
-} from '../types/grid'
+export { DEFAULT_COLUMN_COLOR, DEFAULT_ROW_COLOR, DEFAULT_BASELINE_COLOR };
 
 // ============================================
 // Unit Conversion Utilities
@@ -33,7 +27,7 @@ export {
  * @returns Value in pixels
  */
 export function percentToPixels(percent: number, totalSize: number): number {
-  return (percent / 100) * totalSize
+  return (percent / 100) * totalSize;
 }
 
 /**
@@ -43,8 +37,8 @@ export function percentToPixels(percent: number, totalSize: number): number {
  * @returns Value as percentage (0-100)
  */
 export function pixelsToPercent(pixels: number, totalSize: number): number {
-  if (totalSize === 0) return 0
-  return (pixels / totalSize) * 100
+  if (totalSize === 0) return 0;
+  return (pixels / totalSize) * 100;
 }
 
 /**
@@ -55,7 +49,7 @@ export function pixelsToPercent(pixels: number, totalSize: number): number {
  * @returns Value in pixels
  */
 export function toPixels(value: number, unit: GridUnit, totalSize: number): number {
-  return unit === 'percent' ? percentToPixels(value, totalSize) : value
+  return unit === 'percent' ? percentToPixels(value, totalSize) : value;
 }
 
 /**
@@ -66,7 +60,7 @@ export function toPixels(value: number, unit: GridUnit, totalSize: number): numb
  * @returns Value in target unit
  */
 export function fromPixels(pixels: number, unit: GridUnit, totalSize: number): number {
-  return unit === 'percent' ? pixelsToPercent(pixels, totalSize) : pixels
+  return unit === 'percent' ? pixelsToPercent(pixels, totalSize) : pixels;
 }
 
 // ============================================
@@ -83,7 +77,7 @@ export const COMMON_ASPECT_RATIOS: { name: string; ratio: number; display: strin
   { name: 'Widescreen 16:9', ratio: 1.778, display: '16:9' },
   { name: 'Cinema 2.35:1', ratio: 2.35, display: '2.35:1' },
   { name: 'Letter (US)', ratio: 1.294, display: '8.5:11' },
-]
+];
 
 /**
  * Calculate aspect ratio from dimensions
@@ -92,8 +86,8 @@ export const COMMON_ASPECT_RATIOS: { name: string; ratio: number; display: strin
  * @returns Aspect ratio as a number (width/height)
  */
 export function calculateAspectRatio(width: number, height: number): number {
-  if (height === 0) return 1
-  return width / height
+  if (height === 0) return 1;
+  return width / height;
 }
 
 /**
@@ -104,16 +98,16 @@ export function calculateAspectRatio(width: number, height: number): number {
  */
 export function getAspectRatioName(ratio: number, tolerance = 0.05): string {
   // Handle both landscape and portrait orientations
-  const normalizedRatio = ratio >= 1 ? ratio : 1 / ratio
-  
+  const normalizedRatio = ratio >= 1 ? ratio : 1 / ratio;
+
   for (const common of COMMON_ASPECT_RATIOS) {
     if (Math.abs(normalizedRatio - common.ratio) < tolerance) {
-      return common.display
+      return common.display;
     }
   }
-  
+
   // Return simplified fraction or decimal
-  return simplifyRatio(ratio)
+  return simplifyRatio(ratio);
 }
 
 /**
@@ -122,17 +116,17 @@ export function getAspectRatioName(ratio: number, tolerance = 0.05): string {
 function simplifyRatio(ratio: number): string {
   if (ratio >= 1) {
     // Landscape or square
-    const simplified = findSimpleFraction(ratio)
-    return simplified || ratio.toFixed(2)
+    const simplified = findSimpleFraction(ratio);
+    return simplified || ratio.toFixed(2);
   } else {
     // Portrait - flip the ratio
-    const flipped = 1 / ratio
-    const simplified = findSimpleFraction(flipped)
+    const flipped = 1 / ratio;
+    const simplified = findSimpleFraction(flipped);
     if (simplified) {
-      const [a, b] = simplified.split(':')
-      return `${b}:${a}`
+      const [a, b] = simplified.split(':');
+      return `${b}:${a}`;
     }
-    return (1 / ratio).toFixed(2)
+    return (1 / ratio).toFixed(2);
   }
 }
 
@@ -140,15 +134,15 @@ function simplifyRatio(ratio: number): string {
  * Find a simple fraction representation
  */
 function findSimpleFraction(ratio: number): string | null {
-  const maxDenominator = 20
+  const maxDenominator = 20;
   for (let b = 1; b <= maxDenominator; b++) {
     for (let a = 1; a <= maxDenominator; a++) {
       if (Math.abs(a / b - ratio) < 0.02) {
-        return `${a}:${b}`
+        return `${a}:${b}`;
       }
     }
   }
-  return null
+  return null;
 }
 
 // ============================================
@@ -161,21 +155,18 @@ function findSimpleFraction(ratio: number): string | null {
  * @param frameWidth - Total frame width
  * @returns Width of each column in pixels
  */
-export function calculateColumnWidth(
-  config: ColumnGridConfig,
-  frameWidth: number
-): number {
-  const marginPx = toPixels(config.margin, config.marginUnit, frameWidth)
-  const gutterPx = toPixels(config.gutterSize, config.gutterUnit, frameWidth)
-  
+export function calculateColumnWidth(config: ColumnGridConfig, frameWidth: number): number {
+  const marginPx = toPixels(config.margin, config.marginUnit, frameWidth);
+  const gutterPx = toPixels(config.gutterSize, config.gutterUnit, frameWidth);
+
   // Available width after margins
-  const availableWidth = frameWidth - (marginPx * 2)
-  
+  const availableWidth = frameWidth - marginPx * 2;
+
   // Total gutter width
-  const totalGutterWidth = gutterPx * (config.count - 1)
-  
+  const totalGutterWidth = gutterPx * (config.count - 1);
+
   // Column width
-  return (availableWidth - totalGutterWidth) / config.count
+  return (availableWidth - totalGutterWidth) / config.count;
 }
 
 /**
@@ -184,21 +175,18 @@ export function calculateColumnWidth(
  * @param frameHeight - Total frame height
  * @returns Height of each row in pixels
  */
-export function calculateRowHeight(
-  config: RowGridConfig,
-  frameHeight: number
-): number {
-  const marginPx = toPixels(config.margin, config.marginUnit, frameHeight)
-  const gutterPx = toPixels(config.gutterSize, config.gutterUnit, frameHeight)
-  
+export function calculateRowHeight(config: RowGridConfig, frameHeight: number): number {
+  const marginPx = toPixels(config.margin, config.marginUnit, frameHeight);
+  const gutterPx = toPixels(config.gutterSize, config.gutterUnit, frameHeight);
+
   // Available height after margins
-  const availableHeight = frameHeight - (marginPx * 2)
-  
+  const availableHeight = frameHeight - marginPx * 2;
+
   // Total gutter height
-  const totalGutterHeight = gutterPx * (config.count - 1)
-  
+  const totalGutterHeight = gutterPx * (config.count - 1);
+
   // Row height
-  return (availableHeight - totalGutterHeight) / config.count
+  return (availableHeight - totalGutterHeight) / config.count;
 }
 
 /**
@@ -218,7 +206,7 @@ export function calculateModuleDimensions(
   return {
     width: calculateColumnWidth(columns, frameWidth),
     height: calculateRowHeight(rows, frameHeight),
-  }
+  };
 }
 
 // ============================================
@@ -241,46 +229,48 @@ export function scaleGrid(
   newWidth: number,
   newHeight: number
 ): GridConfig {
-  const widthScale = newWidth / originalWidth
-  const heightScale = newHeight / originalHeight
-  
-  const scaled: GridConfig = {}
-  
+  const widthScale = newWidth / originalWidth;
+  const heightScale = newHeight / originalHeight;
+
+  const scaled: GridConfig = {};
+
   if (config.columns) {
     scaled.columns = {
       ...config.columns,
       // Scale pixel values, keep percentages as-is
-      gutterSize: config.columns.gutterUnit === 'px'
-        ? config.columns.gutterSize * widthScale
-        : config.columns.gutterSize,
-      margin: config.columns.marginUnit === 'px'
-        ? config.columns.margin * widthScale
-        : config.columns.margin,
-    }
+      gutterSize:
+        config.columns.gutterUnit === 'px'
+          ? config.columns.gutterSize * widthScale
+          : config.columns.gutterSize,
+      margin:
+        config.columns.marginUnit === 'px'
+          ? config.columns.margin * widthScale
+          : config.columns.margin,
+    };
   }
-  
+
   if (config.rows) {
     scaled.rows = {
       ...config.rows,
-      gutterSize: config.rows.gutterUnit === 'px'
-        ? config.rows.gutterSize * heightScale
-        : config.rows.gutterSize,
-      margin: config.rows.marginUnit === 'px'
-        ? config.rows.margin * heightScale
-        : config.rows.margin,
-    }
+      gutterSize:
+        config.rows.gutterUnit === 'px'
+          ? config.rows.gutterSize * heightScale
+          : config.rows.gutterSize,
+      margin:
+        config.rows.marginUnit === 'px' ? config.rows.margin * heightScale : config.rows.margin,
+    };
   }
-  
+
   if (config.baseline) {
     scaled.baseline = {
       ...config.baseline,
       // Scale baseline proportionally
       height: config.baseline.height * Math.min(widthScale, heightScale),
       offset: config.baseline.offset * heightScale,
-    }
+    };
   }
-  
-  return scaled
+
+  return scaled;
 }
 
 // ============================================
@@ -293,27 +283,24 @@ export function scaleGrid(
  * @param lineHeight - Line height multiplier (e.g., 1.5)
  * @returns Recommended baseline grid height in pixels
  */
-export function calculateBaselineFromTypography(
-  fontSize: number,
-  lineHeight: number
-): number {
-  const rawBaseline = fontSize * lineHeight
-  
+export function calculateBaselineFromTypography(fontSize: number, lineHeight: number): number {
+  const rawBaseline = fontSize * lineHeight;
+
   // Round to nearest "nice" number (4, 6, 8, 12, 16, 20, 24, etc.)
-  const niceNumbers = [4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 48]
-  
-  let closest = niceNumbers[0]
-  let closestDiff = Math.abs(rawBaseline - closest)
-  
+  const niceNumbers = [4, 6, 8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36, 40, 48];
+
+  let closest = niceNumbers[0];
+  let closestDiff = Math.abs(rawBaseline - closest);
+
   for (const n of niceNumbers) {
-    const diff = Math.abs(rawBaseline - n)
+    const diff = Math.abs(rawBaseline - n);
     if (diff < closestDiff) {
-      closest = n
-      closestDiff = diff
+      closest = n;
+      closestDiff = diff;
     }
   }
-  
-  return closest
+
+  return closest;
 }
 
 /**
@@ -322,28 +309,28 @@ export function calculateBaselineFromTypography(
  * @returns Suggested font sizes and line heights
  */
 export function getTypographySuggestions(baseline: number): {
-  bodySize: number
-  bodyLineHeight: number
-  headingSizes: number[]
+  bodySize: number;
+  bodyLineHeight: number;
+  headingSizes: number[];
 } {
   // Common multiplier for line height
-  const lineHeight = 1.5
-  const bodySize = Math.round(baseline / lineHeight)
-  
+  const lineHeight = 1.5;
+  const bodySize = Math.round(baseline / lineHeight);
+
   // Heading sizes based on modular scale (1.25 ratio)
-  const scale = 1.25
+  const scale = 1.25;
   const headingSizes = [
     Math.round(bodySize * scale),
     Math.round(bodySize * scale * scale),
     Math.round(bodySize * scale * scale * scale),
     Math.round(bodySize * scale * scale * scale * scale),
-  ]
-  
+  ];
+
   return {
     bodySize,
     bodyLineHeight: lineHeight,
     headingSizes,
-  }
+  };
 }
 
 // ============================================
@@ -362,13 +349,13 @@ export function gridConfigToFigmaLayoutGrids(
   frameWidth: number,
   frameHeight: number
 ): FigmaLayoutGrid[] {
-  const layoutGrids: FigmaLayoutGrid[] = []
-  
+  const layoutGrids: FigmaLayoutGrid[] = [];
+
   // Add column grid
   if (config.columns) {
-    const marginPx = toPixels(config.columns.margin, config.columns.marginUnit, frameWidth)
-    const gutterPx = toPixels(config.columns.gutterSize, config.columns.gutterUnit, frameWidth)
-    
+    const marginPx = toPixels(config.columns.margin, config.columns.marginUnit, frameWidth);
+    const gutterPx = toPixels(config.columns.gutterSize, config.columns.gutterUnit, frameWidth);
+
     layoutGrids.push({
       pattern: 'COLUMNS',
       alignment: config.columns.alignment,
@@ -377,14 +364,14 @@ export function gridConfigToFigmaLayoutGrids(
       offset: Math.round(marginPx),
       visible: config.columns.visible,
       color: config.columns.color,
-    })
+    });
   }
-  
+
   // Add row grid
   if (config.rows) {
-    const marginPx = toPixels(config.rows.margin, config.rows.marginUnit, frameHeight)
-    const gutterPx = toPixels(config.rows.gutterSize, config.rows.gutterUnit, frameHeight)
-    
+    const marginPx = toPixels(config.rows.margin, config.rows.marginUnit, frameHeight);
+    const gutterPx = toPixels(config.rows.gutterSize, config.rows.gutterUnit, frameHeight);
+
     layoutGrids.push({
       pattern: 'ROWS',
       alignment: config.rows.alignment,
@@ -393,9 +380,9 @@ export function gridConfigToFigmaLayoutGrids(
       offset: Math.round(marginPx),
       visible: config.rows.visible,
       color: config.rows.color,
-    })
+    });
   }
-  
+
   // Add baseline grid
   if (config.baseline) {
     layoutGrids.push({
@@ -407,10 +394,10 @@ export function gridConfigToFigmaLayoutGrids(
       offset: config.baseline.offset,
       visible: config.baseline.visible,
       color: config.baseline.color,
-    })
+    });
   }
-  
-  return layoutGrids
+
+  return layoutGrids;
 }
 
 // ============================================
@@ -429,47 +416,47 @@ export function validateGridConfig(
   frameWidth: number,
   frameHeight: number
 ): { valid: boolean; warnings: string[] } {
-  const warnings: string[] = []
-  
+  const warnings: string[] = [];
+
   if (config.columns) {
-    const columnWidth = calculateColumnWidth(config.columns, frameWidth)
-    
+    const columnWidth = calculateColumnWidth(config.columns, frameWidth);
+
     if (columnWidth < 10) {
-      warnings.push('Columns may be too narrow (< 10px each)')
+      warnings.push('Columns may be too narrow (< 10px each)');
     }
-    
+
     if (config.columns.count > 24) {
-      warnings.push('Very high column count (> 24) may be difficult to use')
+      warnings.push('Very high column count (> 24) may be difficult to use');
     }
-    
-    const marginPx = toPixels(config.columns.margin, config.columns.marginUnit, frameWidth)
+
+    const marginPx = toPixels(config.columns.margin, config.columns.marginUnit, frameWidth);
     if (marginPx > frameWidth * 0.25) {
-      warnings.push('Margins exceed 25% of frame width')
+      warnings.push('Margins exceed 25% of frame width');
     }
   }
-  
+
   if (config.rows) {
-    const rowHeight = calculateRowHeight(config.rows, frameHeight)
-    
+    const rowHeight = calculateRowHeight(config.rows, frameHeight);
+
     if (rowHeight < 10) {
-      warnings.push('Rows may be too short (< 10px each)')
+      warnings.push('Rows may be too short (< 10px each)');
     }
   }
-  
+
   if (config.baseline) {
     if (config.baseline.height < 4) {
-      warnings.push('Baseline height may be too small (< 4px)')
+      warnings.push('Baseline height may be too small (< 4px)');
     }
-    
+
     if (config.baseline.height > 48) {
-      warnings.push('Baseline height is quite large (> 48px)')
+      warnings.push('Baseline height is quite large (> 48px)');
     }
   }
-  
+
   return {
     valid: warnings.length === 0,
     warnings,
-  }
+  };
 }
 
 // ============================================
@@ -488,24 +475,24 @@ export function generateColumnGridSVGPath(
   width: number,
   height: number
 ): string {
-  const marginPx = toPixels(config.margin, config.marginUnit, width)
-  const gutterPx = toPixels(config.gutterSize, config.gutterUnit, width)
-  const columnWidth = calculateColumnWidth(config, width)
-  
-  let path = ''
-  let x = marginPx
-  
+  const marginPx = toPixels(config.margin, config.marginUnit, width);
+  const gutterPx = toPixels(config.gutterSize, config.gutterUnit, width);
+  const columnWidth = calculateColumnWidth(config, width);
+
+  let path = '';
+  let x = marginPx;
+
   for (let i = 0; i < config.count; i++) {
     // Left edge of column
-    path += `M ${x} 0 L ${x} ${height} `
+    path += `M ${x} 0 L ${x} ${height} `;
     // Right edge of column
-    const rightEdge = x + columnWidth
-    path += `M ${rightEdge} 0 L ${rightEdge} ${height} `
-    
-    x = rightEdge + gutterPx
+    const rightEdge = x + columnWidth;
+    path += `M ${rightEdge} 0 L ${rightEdge} ${height} `;
+
+    x = rightEdge + gutterPx;
   }
-  
-  return path
+
+  return path;
 }
 
 /**
@@ -520,24 +507,24 @@ export function generateRowGridSVGPath(
   width: number,
   height: number
 ): string {
-  const marginPx = toPixels(config.margin, config.marginUnit, height)
-  const gutterPx = toPixels(config.gutterSize, config.gutterUnit, height)
-  const rowHeight = calculateRowHeight(config, height)
-  
-  let path = ''
-  let y = marginPx
-  
+  const marginPx = toPixels(config.margin, config.marginUnit, height);
+  const gutterPx = toPixels(config.gutterSize, config.gutterUnit, height);
+  const rowHeight = calculateRowHeight(config, height);
+
+  let path = '';
+  let y = marginPx;
+
   for (let i = 0; i < config.count; i++) {
     // Top edge of row
-    path += `M 0 ${y} L ${width} ${y} `
+    path += `M 0 ${y} L ${width} ${y} `;
     // Bottom edge of row
-    const bottomEdge = y + rowHeight
-    path += `M 0 ${bottomEdge} L ${width} ${bottomEdge} `
-    
-    y = bottomEdge + gutterPx
+    const bottomEdge = y + rowHeight;
+    path += `M 0 ${bottomEdge} L ${width} ${bottomEdge} `;
+
+    y = bottomEdge + gutterPx;
   }
-  
-  return path
+
+  return path;
 }
 
 /**
@@ -552,22 +539,22 @@ export function generateBaselineGridSVGPath(
   width: number,
   height: number
 ): string {
-  let path = ''
-  let y = config.offset
-  
+  let path = '';
+  let y = config.offset;
+
   while (y < height) {
-    path += `M 0 ${y} L ${width} ${y} `
-    y += config.height
+    path += `M 0 ${y} L ${width} ${y} `;
+    y += config.height;
   }
-  
-  return path
+
+  return path;
 }
 
 /**
  * Convert GridColor to CSS rgba string
  */
 export function gridColorToCSS(color: GridColor): string {
-  return `rgba(${Math.round(color.r * 255)}, ${Math.round(color.g * 255)}, ${Math.round(color.b * 255)}, ${color.a})`
+  return `rgba(${Math.round(color.r * 255)}, ${Math.round(color.g * 255)}, ${Math.round(color.b * 255)}, ${color.a})`;
 }
 
 /**
@@ -576,27 +563,26 @@ export function gridColorToCSS(color: GridColor): string {
 export function cssToGridColor(css: string, alpha = 0.1): GridColor {
   // Handle hex colors
   if (css.startsWith('#')) {
-    const hex = css.slice(1)
+    const hex = css.slice(1);
     return {
       r: parseInt(hex.slice(0, 2), 16) / 255,
       g: parseInt(hex.slice(2, 4), 16) / 255,
       b: parseInt(hex.slice(4, 6), 16) / 255,
       a: alpha,
-    }
+    };
   }
-  
+
   // Handle rgb/rgba
-  const match = css.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/)
+  const match = css.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
   if (match) {
     return {
       r: parseInt(match[1]) / 255,
       g: parseInt(match[2]) / 255,
       b: parseInt(match[3]) / 255,
       a: match[4] ? parseFloat(match[4]) : alpha,
-    }
+    };
   }
-  
-  // Default to red
-  return { r: 1, g: 0.2, b: 0.2, a: alpha }
-}
 
+  // Default to red
+  return { r: 1, g: 0.2, b: 0.2, a: alpha };
+}

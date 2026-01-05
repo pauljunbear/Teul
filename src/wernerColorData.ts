@@ -54,6 +54,3 @@ export const getWernerColorById = (id: number): WernerColor | undefined => {
 export const getCharacteristicColors = (): WernerColor[] => {
   return wernerColors.filter(c => c.characteristic);
 };
-
-console.log('Werner colors loaded:', wernerColors.length);
-

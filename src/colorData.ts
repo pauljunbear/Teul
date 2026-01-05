@@ -21,13 +21,11 @@ export interface ColorData {
   combinations: ColorCombination[];
 }
 
-console.log('Total colors loaded:', colorJson.length);
-
 // Initialize and export the color data
 export const colorData: ColorData = {
   colors: colorJson,
-  combinations: []
+  combinations: [],
 };
 
 // Export colors directly for backward compatibility
-export const colors: { colors: Color[] } = { colors: colorJson }; 
+export const colors: { colors: Color[] } = { colors: colorJson };

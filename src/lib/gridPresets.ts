@@ -4,19 +4,12 @@
 // Curated collection of classic and modern grid systems
 // inspired by Swiss/International Typographic Style
 
-import type { 
-  GridPreset, 
-  GridCategory, 
-  GridColor,
-  DEFAULT_COLUMN_COLOR,
-  DEFAULT_ROW_COLOR,
-  DEFAULT_BASELINE_COLOR 
-} from '../types/grid'
+import type { GridPreset, GridCategory, GridColor } from '../types/grid';
 
 // Default colors for grid visualization
-const COLUMN_COLOR: GridColor = { r: 1, g: 0.2, b: 0.2, a: 0.1 }
-const ROW_COLOR: GridColor = { r: 0.2, g: 0.4, b: 1, a: 0.1 }
-const BASELINE_COLOR: GridColor = { r: 0.2, g: 0.8, b: 0.9, a: 0.15 }
+const COLUMN_COLOR: GridColor = { r: 1, g: 0.2, b: 0.2, a: 0.1 };
+const ROW_COLOR: GridColor = { r: 0.2, g: 0.4, b: 1, a: 0.1 };
+const BASELINE_COLOR: GridColor = { r: 0.2, g: 0.8, b: 0.9, a: 0.15 };
 
 // ============================================
 // Classic Swiss Grids (Müller-Brockmann Inspired)
@@ -26,7 +19,8 @@ const classicSwissGrids: GridPreset[] = [
   {
     id: 'swiss-4col',
     name: '4-Column Classic',
-    description: 'The foundational Müller-Brockmann grid. Clean, balanced, and versatile for posters and editorial.',
+    description:
+      'The foundational Müller-Brockmann grid. Clean, balanced, and versatile for posters and editorial.',
     category: 'classic-swiss',
     tags: ['müller-brockmann', 'poster', 'editorial', 'balanced'],
     aspectRatio: '1:√2',
@@ -47,7 +41,8 @@ const classicSwissGrids: GridPreset[] = [
   {
     id: 'swiss-6col',
     name: '6-Column Editorial',
-    description: 'Classic editorial grid with more flexibility. Ideal for magazines and multi-column layouts.',
+    description:
+      'Classic editorial grid with more flexibility. Ideal for magazines and multi-column layouts.',
     category: 'classic-swiss',
     tags: ['editorial', 'magazine', 'flexible', 'multi-column'],
     aspectRatio: '2:3',
@@ -89,7 +84,8 @@ const classicSwissGrids: GridPreset[] = [
   {
     id: 'swiss-3plus3',
     name: '3+3 Split Grid',
-    description: 'Two groups of 3 columns with a wider center gutter. Perfect for facing pages or comparison layouts.',
+    description:
+      'Two groups of 3 columns with a wider center gutter. Perfect for facing pages or comparison layouts.',
     category: 'classic-swiss',
     tags: ['split', 'facing-pages', 'comparison', 'symmetrical'],
     aspectRatio: '16:9',
@@ -170,7 +166,7 @@ const classicSwissGrids: GridPreset[] = [
     },
     isCustom: false,
   },
-]
+];
 
 // ============================================
 // Editorial Grids
@@ -261,7 +257,7 @@ const editorialGrids: GridPreset[] = [
     },
     isCustom: false,
   },
-]
+];
 
 // ============================================
 // Poster Grids
@@ -352,7 +348,7 @@ const posterGrids: GridPreset[] = [
     },
     isCustom: false,
   },
-]
+];
 
 // ============================================
 // Web/UI Standard Grids
@@ -464,7 +460,7 @@ const webUIGrids: GridPreset[] = [
     },
     isCustom: false,
   },
-]
+];
 
 // ============================================
 // Modular Grids
@@ -626,7 +622,7 @@ const modularGrids: GridPreset[] = [
     },
     isCustom: false,
   },
-]
+];
 
 // ============================================
 // Baseline Typography Grids
@@ -713,7 +709,7 @@ const baselineGrids: GridPreset[] = [
     },
     isCustom: false,
   },
-]
+];
 
 // ============================================
 // Combined Grids (Column + Baseline)
@@ -838,7 +834,7 @@ const combinedGrids: GridPreset[] = [
     },
     isCustom: false,
   },
-]
+];
 
 // ============================================
 // Export All Presets
@@ -853,67 +849,81 @@ export const GRID_PRESETS: GridPreset[] = [
   ...modularGrids,
   ...baselineGrids,
   ...combinedGrids,
-]
+];
 
 /** Grid presets organized by category for easy filtering */
 export const PRESETS_BY_CATEGORY: Record<GridCategory, GridPreset[]> = {
   'classic-swiss': classicSwissGrids,
-  'editorial': editorialGrids,
-  'poster': posterGrids,
+  editorial: editorialGrids,
+  poster: posterGrids,
   'web-ui': webUIGrids,
-  'modular': modularGrids,
-  'baseline': baselineGrids,
-  'combined': combinedGrids,
-  'custom': [], // User-created presets will be added here dynamically
-}
+  modular: modularGrids,
+  baseline: baselineGrids,
+  combined: combinedGrids,
+  custom: [], // User-created presets will be added here dynamically
+};
 
 /** Category display information */
-export const GRID_CATEGORIES: { id: GridCategory | 'all'; name: string; icon: string; description: string }[] = [
+export const GRID_CATEGORIES: {
+  id: GridCategory | 'all';
+  name: string;
+  icon: string;
+  description: string;
+}[] = [
   { id: 'all', name: 'All Grids', icon: '📐', description: 'Browse all available grid presets' },
-  { id: 'classic-swiss', name: 'Classic Swiss', icon: '🇨🇭', description: 'Müller-Brockmann inspired grids' },
+  {
+    id: 'classic-swiss',
+    name: 'Classic Swiss',
+    icon: '🇨🇭',
+    description: 'Müller-Brockmann inspired grids',
+  },
   { id: 'editorial', name: 'Editorial', icon: '📰', description: 'Magazine and publication grids' },
   { id: 'poster', name: 'Poster', icon: '🎨', description: 'Large format poster grids' },
   { id: 'web-ui', name: 'Web/UI', icon: '💻', description: 'Standard web and interface grids' },
   { id: 'modular', name: 'Modular', icon: '🔲', description: 'Column + row modular grids' },
   { id: 'baseline', name: 'Baseline', icon: '📏', description: 'Typography baseline grids' },
-  { id: 'combined', name: 'Combined', icon: '🎯', description: 'Column + baseline complete systems' },
-]
+  {
+    id: 'combined',
+    name: 'Combined',
+    icon: '🎯',
+    description: 'Column + baseline complete systems',
+  },
+];
 
 /** Get preset by ID */
 export function getPresetById(id: string): GridPreset | undefined {
-  return GRID_PRESETS.find(p => p.id === id)
+  return GRID_PRESETS.find(p => p.id === id);
 }
 
 /** Get presets by category */
 export function getPresetsByCategory(category: GridCategory | 'all'): GridPreset[] {
   if (category === 'all') {
-    return GRID_PRESETS
+    return GRID_PRESETS;
   }
-  return PRESETS_BY_CATEGORY[category] || []
+  return PRESETS_BY_CATEGORY[category] || [];
 }
 
 /** Search presets by name or tags */
 export function searchPresets(query: string): GridPreset[] {
-  const normalizedQuery = query.toLowerCase().trim()
+  const normalizedQuery = query.toLowerCase().trim();
   if (!normalizedQuery) {
-    return GRID_PRESETS
+    return GRID_PRESETS;
   }
-  
+
   return GRID_PRESETS.filter(preset => {
-    const nameMatch = preset.name.toLowerCase().includes(normalizedQuery)
-    const descMatch = preset.description.toLowerCase().includes(normalizedQuery)
-    const tagMatch = preset.tags.some(tag => tag.toLowerCase().includes(normalizedQuery))
-    return nameMatch || descMatch || tagMatch
-  })
+    const nameMatch = preset.name.toLowerCase().includes(normalizedQuery);
+    const descMatch = preset.description.toLowerCase().includes(normalizedQuery);
+    const tagMatch = preset.tags.some(tag => tag.toLowerCase().includes(normalizedQuery));
+    return nameMatch || descMatch || tagMatch;
+  });
 }
 
 /** Get total preset count */
 export function getPresetCount(): number {
-  return GRID_PRESETS.length
+  return GRID_PRESETS.length;
 }
 
 /** Get preset count by category */
 export function getPresetCountByCategory(category: GridCategory | 'all'): number {
-  return getPresetsByCategory(category).length
+  return getPresetsByCategory(category).length;
 }
-

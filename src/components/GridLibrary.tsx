@@ -1,46 +1,48 @@
-import * as React from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { GridPresetCard } from './GridPresetCard'
-import { SaveGridModal } from './SaveGridModal'
-import { 
-  GRID_PRESETS, 
-  GRID_CATEGORIES, 
+import * as React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { GridPresetCard } from './GridPresetCard';
+import { SaveGridModal } from './SaveGridModal';
+import {
+  GRID_PRESETS,
+  GRID_CATEGORIES,
   getPresetsByCategory,
-  searchPresets,
   getPresetCountByCategory,
-} from '../lib/gridPresets'
-import { 
-  buildCreateGridFrameMessage, 
+} from '../lib/gridPresets';
+import {
+  buildCreateGridFrameMessage,
   buildApplyGridMessage,
   getPresetFrameDimensions,
   presetToFrameName,
   scaleGridForFrameSize,
-} from '../lib/figmaGrids'
-import type { GridPreset, GridCategory } from '../types/grid'
+} from '../lib/figmaGrids';
+import type { GridPreset, GridCategory } from '../types/grid';
 
 // Hook for scroll direction detection
 function useScrollDirection() {
-  const [scrollDirection, setScrollDirection] = React.useState<'up' | 'down' | null>(null)
-  const [lastScrollY, setLastScrollY] = React.useState(0)
-  const [isAtTop, setIsAtTop] = React.useState(true)
-  
-  const updateScrollDirection = React.useCallback((scrollY: number) => {
-    setIsAtTop(scrollY < 10)
-    
-    if (scrollY > lastScrollY && scrollY > 50) {
-      setScrollDirection('down')
-    } else if (scrollY < lastScrollY) {
-      setScrollDirection('up')
-    }
-    
-    setLastScrollY(scrollY)
-  }, [lastScrollY])
-  
-  return { scrollDirection, isAtTop, updateScrollDirection }
+  const [scrollDirection, setScrollDirection] = React.useState<'up' | 'down' | null>(null);
+  const [lastScrollY, setLastScrollY] = React.useState(0);
+  const [isAtTop, setIsAtTop] = React.useState(true);
+
+  const updateScrollDirection = React.useCallback(
+    (scrollY: number) => {
+      setIsAtTop(scrollY < 10);
+
+      if (scrollY > lastScrollY && scrollY > 50) {
+        setScrollDirection('down');
+      } else if (scrollY < lastScrollY) {
+        setScrollDirection('up');
+      }
+
+      setLastScrollY(scrollY);
+    },
+    [lastScrollY]
+  );
+
+  return { scrollDirection, isAtTop, updateScrollDirection };
 }
 
 interface GridLibraryProps {
-  isDark: boolean
+  isDark: boolean;
 }
 
 const styles = {
@@ -65,130 +67,138 @@ const styles = {
     categoryActive: '#ffffff',
     categoryActiveText: '#1a1a1a',
     emptyIcon: '#404040',
-  }
-}
+  },
+};
 
 export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
-  const theme = isDark ? styles.dark : styles.light
-  const scrollContainerRef = React.useRef<HTMLDivElement>(null)
-  const { scrollDirection, isAtTop, updateScrollDirection } = useScrollDirection()
-  
-  const [selectedCategory, setSelectedCategory] = React.useState<GridCategory | 'all'>('all')
-  const [searchQuery, setSearchQuery] = React.useState('')
-  const [selectedPreset, setSelectedPreset] = React.useState<GridPreset | null>(null)
+  const theme = isDark ? styles.dark : styles.light;
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  const { scrollDirection, isAtTop, updateScrollDirection } = useScrollDirection();
+
+  const [selectedCategory, setSelectedCategory] = React.useState<GridCategory | 'all'>('all');
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [selectedPreset, setSelectedPreset] = React.useState<GridPreset | null>(null);
   const [selectionInfo, setSelectionInfo] = React.useState<{
-    hasSelection: boolean
-    isFrame: boolean
-    width?: number
-    height?: number
-    name?: string
-  } | null>(null)
-  const [showSaveModal, setShowSaveModal] = React.useState(false)
-  
+    hasSelection: boolean;
+    isFrame: boolean;
+    width?: number;
+    height?: number;
+    name?: string;
+  } | null>(null);
+  const [showSaveModal, setShowSaveModal] = React.useState(false);
+
   // Track scroll for header hide/show
-  const handleScroll = React.useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    updateScrollDirection(e.currentTarget.scrollTop)
-  }, [updateScrollDirection])
-  
+  const handleScroll = React.useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      updateScrollDirection(e.currentTarget.scrollTop);
+    },
+    [updateScrollDirection]
+  );
+
   // Show header when search has focus or at top
-  const showHeader = isAtTop || scrollDirection === 'up'
-  
+  const showHeader = isAtTop || scrollDirection === 'up';
+
   // Get filtered presets
   const filteredPresets = React.useMemo(() => {
-    let presets = selectedCategory === 'all' 
-      ? GRID_PRESETS 
-      : getPresetsByCategory(selectedCategory)
-    
+    let presets =
+      selectedCategory === 'all' ? GRID_PRESETS : getPresetsByCategory(selectedCategory);
+
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase()
-      presets = presets.filter(p => 
-        p.name.toLowerCase().includes(query) ||
-        p.description.toLowerCase().includes(query) ||
-        p.tags.some(t => t.toLowerCase().includes(query))
-      )
+      const query = searchQuery.toLowerCase();
+      presets = presets.filter(
+        p =>
+          p.name.toLowerCase().includes(query) ||
+          p.description.toLowerCase().includes(query) ||
+          p.tags.some(t => t.toLowerCase().includes(query))
+      );
     }
-    
-    return presets
-  }, [selectedCategory, searchQuery])
-  
+
+    return presets;
+  }, [selectedCategory, searchQuery]);
+
   // Request selection info - optimized to reduce polling overhead
   React.useEffect(() => {
-    let isRequestPending = false
-    let intervalId: ReturnType<typeof setInterval> | null = null
+    let isRequestPending = false;
+    let intervalId: ReturnType<typeof setInterval> | null = null;
 
     const requestSelectionInfo = () => {
       // Prevent duplicate requests while one is pending
-      if (isRequestPending) return
+      if (isRequestPending) return;
       // Don't poll when document is hidden
-      if (document.hidden) return
+      if (document.hidden) return;
 
-      isRequestPending = true
-      parent.postMessage({ pluginMessage: { type: 'get-selection-for-grid' } }, '*')
+      isRequestPending = true;
+      parent.postMessage({ pluginMessage: { type: 'get-selection-for-grid' } }, '*');
 
       // Reset pending flag after reasonable timeout
-      setTimeout(() => { isRequestPending = false }, 500)
-    }
+      setTimeout(() => {
+        isRequestPending = false;
+      }, 500);
+    };
 
     // Listen for selection info
     const handleMessage = (event: MessageEvent) => {
-      const msg = event.data.pluginMessage
+      const msg = event.data.pluginMessage;
       if (msg?.type === 'selection-info') {
-        isRequestPending = false
+        isRequestPending = false;
         setSelectionInfo({
           hasSelection: msg.hasSelection,
           isFrame: msg.isFrame,
           width: msg.width,
           height: msg.height,
           name: msg.name,
-        })
+        });
       }
-    }
+    };
 
     // Pause/resume polling based on visibility
     const handleVisibilityChange = () => {
       if (document.hidden && intervalId) {
-        clearInterval(intervalId)
-        intervalId = null
+        clearInterval(intervalId);
+        intervalId = null;
       } else if (!document.hidden && !intervalId) {
-        requestSelectionInfo()
-        intervalId = setInterval(requestSelectionInfo, 5000)
+        requestSelectionInfo();
+        intervalId = setInterval(requestSelectionInfo, 5000);
       }
-    }
+    };
 
     // Initial request
-    requestSelectionInfo()
+    requestSelectionInfo();
 
-    window.addEventListener('message', handleMessage)
-    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('message', handleMessage);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     // Poll less frequently (5s instead of 2s) - only when visible
-    intervalId = setInterval(requestSelectionInfo, 5000)
+    intervalId = setInterval(requestSelectionInfo, 5000);
 
     return () => {
-      window.removeEventListener('message', handleMessage)
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-      if (intervalId) clearInterval(intervalId)
-    }
-  }, [])
-  
+      window.removeEventListener('message', handleMessage);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, []);
+
   // Apply grid to selection
   const handleApplyGrid = (preset: GridPreset) => {
     if (!selectionInfo?.hasSelection) {
-      parent.postMessage({ 
-        pluginMessage: { 
-          type: 'notify', 
-          text: 'Please select a frame first' 
-        } 
-      }, '*')
-      return
+      parent.postMessage(
+        {
+          pluginMessage: {
+            type: 'notify',
+            text: 'Please select a frame first',
+          },
+        },
+        '*'
+      );
+      return;
     }
-    
-    const targetWidth = selectionInfo.width || 800
-    const targetHeight = selectionInfo.height || 600
-    
+
+    const targetWidth = selectionInfo.width || 800;
+    const targetHeight = selectionInfo.height || 600;
+
     // Get preset's native dimensions
-    const presetDimensions = getPresetFrameDimensions(preset)
-    
+    const presetDimensions = getPresetFrameDimensions(preset);
+
     // Scale the grid if needed (preserving column/row counts)
     const scaledConfig = scaleGridForFrameSize(
       preset.config,
@@ -197,24 +207,24 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
       targetWidth,
       targetHeight,
       true // preserve column count
-    )
-    
+    );
+
     // Build and send the apply message
     const message = buildApplyGridMessage({
       config: scaledConfig,
       width: targetWidth,
       height: targetHeight,
       replaceExisting: true,
-    })
-    
-    parent.postMessage({ pluginMessage: message }, '*')
-  }
-  
+    });
+
+    parent.postMessage({ pluginMessage: message }, '*');
+  };
+
   // Create new frame with grid
   const handleCreateFrame = (preset: GridPreset) => {
     // Get recommended dimensions for this preset
-    const { width, height } = getPresetFrameDimensions(preset)
-    
+    const { width, height } = getPresetFrameDimensions(preset);
+
     // Build and send the create frame message
     const message = buildCreateGridFrameMessage({
       config: preset.config,
@@ -222,29 +232,31 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
       width,
       height,
       positionNearSelection: true,
-    })
-    
-    parent.postMessage({ pluginMessage: message }, '*')
-  }
-  
+    });
+
+    parent.postMessage({ pluginMessage: message }, '*');
+  };
+
   return (
-    <div style={{
-      height: '100%',
-      display: 'flex',
-      flexDirection: 'column',
-      backgroundColor: theme.bg,
-      position: 'relative',
-    }}>
+    <div
+      style={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: theme.bg,
+        position: 'relative',
+      }}
+    >
       {/* Animated Header - hides on scroll down */}
       <motion.div
         initial={{ y: 0 }}
-        animate={{ 
+        animate={{
           y: showHeader ? 0 : -140,
           opacity: showHeader ? 1 : 0,
         }}
-        transition={{ 
-          type: 'spring', 
-          stiffness: 300, 
+        transition={{
+          type: 'spring',
+          stiffness: 300,
           damping: 30,
         }}
         style={{
@@ -263,7 +275,7 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
             type="text"
             placeholder="Search grids..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={e => setSearchQuery(e.target.value)}
             style={{
               width: '100%',
               padding: '8px 12px',
@@ -277,18 +289,20 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
             }}
           />
         </div>
-        
+
         {/* Category Pills - more compact */}
         <div style={{ padding: '2px 12px 8px' }}>
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '4px',
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '4px',
+            }}
+          >
             {GRID_CATEGORIES.map(cat => {
-              const count = getPresetCountByCategory(cat.id)
-              const isActive = selectedCategory === cat.id
-              
+              const count = getPresetCountByCategory(cat.id);
+              const isActive = selectedCategory === cat.id;
+
               return (
                 <motion.button
                   key={cat.id}
@@ -313,19 +327,21 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
                 >
                   <span style={{ fontSize: '9px' }}>{cat.icon}</span>
                   <span>{cat.name}</span>
-                  <span style={{
-                    fontSize: '8px',
-                    opacity: 0.5,
-                  }}>
+                  <span
+                    style={{
+                      fontSize: '8px',
+                      opacity: 0.5,
+                    }}
+                  >
                     {count}
                   </span>
                 </motion.button>
-              )
+              );
             })}
           </div>
         </div>
       </motion.div>
-      
+
       {/* Selection Status - compact floating pill */}
       <AnimatePresence>
         {selectionInfo && !selectionInfo.hasSelection && (
@@ -347,20 +363,22 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
               transition: 'top 0.3s ease',
             }}
           >
-            <p style={{
-              margin: 0,
-              fontSize: '9px',
-              fontWeight: 500,
-              color: isDark ? '#fbbf24' : '#b45309',
-            }}>
+            <p
+              style={{
+                margin: 0,
+                fontSize: '9px',
+                fontWeight: 500,
+                color: isDark ? '#fbbf24' : '#b45309',
+              }}
+            >
               ⚠ Select a frame to apply
             </p>
           </motion.div>
         )}
       </AnimatePresence>
-      
+
       {/* Grid Cards - with scroll tracking */}
-      <div 
+      <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
         style={{
@@ -373,7 +391,7 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
         }}
       >
         {filteredPresets.length > 0 ? (
-          <motion.div 
+          <motion.div
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(2, 1fr)',
@@ -389,14 +407,14 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
               },
             }}
           >
-            {filteredPresets.map((preset, index) => (
+            {filteredPresets.map(preset => (
               <motion.div
                 key={preset.id}
                 variants={{
                   hidden: { opacity: 0, y: 20 },
                   visible: { opacity: 1, y: 0 },
                 }}
-                transition={{ 
+                transition={{
                   type: 'spring',
                   stiffness: 400,
                   damping: 25,
@@ -408,15 +426,18 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
                   onClick={() => setSelectedPreset(preset)}
                   onApply={() => {
                     if (selectionInfo?.hasSelection) {
-                      handleApplyGrid(preset)
+                      handleApplyGrid(preset);
                     } else {
-                      parent.postMessage({ 
-                        pluginMessage: { 
-                          type: 'notify', 
-                          text: 'Select a frame first, or use "Create Frame"' 
-                        } 
-                      }, '*')
-                      setSelectedPreset(preset)
+                      parent.postMessage(
+                        {
+                          pluginMessage: {
+                            type: 'notify',
+                            text: 'Select a frame first, or use "Create Frame"',
+                          },
+                        },
+                        '*'
+                      );
+                      setSelectedPreset(preset);
                     }
                   }}
                   isDark={isDark}
@@ -425,7 +446,7 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
             ))}
           </motion.div>
         ) : (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             style={{
@@ -435,45 +456,49 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
             }}
           >
             <div style={{ fontSize: '40px', marginBottom: '12px', opacity: 0.3 }}>📐</div>
-            <p style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>
-              No grids found
-            </p>
-            <p style={{ fontSize: '11px', opacity: 0.6 }}>
-              Try adjusting your search
-            </p>
+            <p style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>No grids found</p>
+            <p style={{ fontSize: '11px', opacity: 0.6 }}>Try adjusting your search</p>
           </motion.div>
         )}
       </div>
-      
+
       {/* Selected Preset Info Panel */}
       {selectedPreset && (
-        <div style={{
-          flexShrink: 0,
-          padding: '16px',
-          borderTop: `1px solid ${theme.border}`,
-          backgroundColor: isDark ? '#262626' : '#fafafa',
-        }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            marginBottom: '12px',
-          }}>
+        <div
+          style={{
+            flexShrink: 0,
+            padding: '16px',
+            borderTop: `1px solid ${theme.border}`,
+            backgroundColor: isDark ? '#262626' : '#fafafa',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-start',
+              marginBottom: '12px',
+            }}
+          >
             <div style={{ flex: 1, marginRight: '12px' }}>
-              <h3 style={{
-                margin: '0 0 4px 0',
-                fontSize: '14px',
-                fontWeight: 600,
-                color: theme.text,
-              }}>
+              <h3
+                style={{
+                  margin: '0 0 4px 0',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: theme.text,
+                }}
+              >
                 {selectedPreset.name}
               </h3>
-              <p style={{
-                margin: 0,
-                fontSize: '11px',
-                color: theme.textMuted,
-                lineHeight: 1.4,
-              }}>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: '11px',
+                  color: theme.textMuted,
+                  lineHeight: 1.4,
+                }}
+              >
                 {selectedPreset.description}
               </p>
             </div>
@@ -493,20 +518,25 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
               ✕
             </button>
           </div>
-          
+
           {/* Action buttons - always show both Apply and Create */}
-          <div style={{
-            display: 'flex',
-            gap: '8px',
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              gap: '8px',
+            }}
+          >
             <button
               onClick={() => {
                 if (selectionInfo?.hasSelection) {
-                  handleApplyGrid(selectedPreset)
+                  handleApplyGrid(selectedPreset);
                 } else {
-                  parent.postMessage({ 
-                    pluginMessage: { type: 'notify', text: 'Select a frame first' } 
-                  }, '*')
+                  parent.postMessage(
+                    {
+                      pluginMessage: { type: 'notify', text: 'Select a frame first' },
+                    },
+                    '*'
+                  );
                 }
               }}
               disabled={!selectionInfo?.hasSelection}
@@ -515,8 +545,12 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
                 padding: '10px 16px',
                 border: 'none',
                 borderRadius: '8px',
-                backgroundColor: selectionInfo?.hasSelection ? '#3b82f6' : (isDark ? '#404040' : '#d4d4d4'),
-                color: selectionInfo?.hasSelection ? '#ffffff' : (isDark ? '#666' : '#999'),
+                backgroundColor: selectionInfo?.hasSelection
+                  ? '#3b82f6'
+                  : isDark
+                    ? '#404040'
+                    : '#d4d4d4',
+                color: selectionInfo?.hasSelection ? '#ffffff' : isDark ? '#666' : '#999',
                 fontSize: '12px',
                 fontWeight: 600,
                 cursor: selectionInfo?.hasSelection ? 'pointer' : 'not-allowed',
@@ -525,7 +559,7 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
             >
               ✓ Apply
             </button>
-            
+
             <button
               onClick={() => handleCreateFrame(selectedPreset)}
               style={{
@@ -543,7 +577,7 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
             >
               + New Frame
             </button>
-            
+
             <button
               onClick={() => setShowSaveModal(true)}
               title="Save to My Grids"
@@ -565,7 +599,7 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
           </div>
         </div>
       )}
-      
+
       {/* Save Grid Modal */}
       {showSaveModal && selectedPreset && (
         <SaveGridModal
@@ -576,20 +610,22 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
           isDark={isDark}
           onClose={() => setShowSaveModal(false)}
           onSave={() => {
-            setShowSaveModal(false)
+            setShowSaveModal(false);
             // Notify user
-            parent.postMessage({
-              pluginMessage: {
-                type: 'notify',
-                text: `Saved "${selectedPreset.name}" to My Grids`
-              }
-            }, '*')
+            parent.postMessage(
+              {
+                pluginMessage: {
+                  type: 'notify',
+                  text: `Saved "${selectedPreset.name}" to My Grids`,
+                },
+              },
+              '*'
+            );
           }}
         />
       )}
     </div>
-  )
-}
+  );
+};
 
-export default GridLibrary
-
+export default GridLibrary;
