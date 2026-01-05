@@ -3,7 +3,7 @@
  * Grid persistence and CRUD operations
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import {
   loadSavedGrids,
   saveGridsToStorage,
