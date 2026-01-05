@@ -43,9 +43,22 @@ interface GridConfigMessage {
   baseline?: FigmaGridConfig;
 }
 
-// Helper to convert hex to Figma RGB
+// Validate hex color format
+function isValidHex(hex: string): boolean {
+  const cleanHex = hex.replace('#', '');
+  return /^[0-9a-fA-F]{6}$/.test(cleanHex);
+}
+
+// Helper to convert hex to Figma RGB (with validation)
 function hexToFigmaRgb(hex: string): RGB {
   const cleanHex = hex.replace('#', '');
+
+  // Validate hex format - return black if invalid
+  if (!isValidHex(hex)) {
+    console.error(`Invalid hex color: ${hex}`);
+    return { r: 0, g: 0, b: 0 };
+  }
+
   return {
     r: parseInt(cleanHex.substring(0, 2), 16) / 255,
     g: parseInt(cleanHex.substring(2, 4), 16) / 255,
@@ -205,13 +218,20 @@ figma.ui.onmessage = async (msg) => {
   // Apply gradient fill
   if (msg.type === 'apply-gradient') {
     const nodes = getSelectedNodesWithFills();
-    
+
     if (nodes.length === 0) {
       figma.notify('Please select a shape or frame first');
       return;
     }
 
     const colors: GradientColor[] = msg.colors;
+
+    // Validate: gradients need at least 2 colors
+    if (!colors || colors.length < 2) {
+      figma.notify('Gradient requires at least 2 colors');
+      return;
+    }
+
     const gradientStops: ColorStop[] = colors.map((color: GradientColor, index: number) => {
       const rgb = hexToFigmaRgb(color.hex);
       return {
@@ -702,12 +722,44 @@ function getAccessibilityRating(contrast: number): { rating: string; color: RGB 
   }
 }
 
-// Font loading helper
-async function loadFonts() {
-  await figma.loadFontAsync({ family: "Inter", style: "Regular" });
-  await figma.loadFontAsync({ family: "Inter", style: "Medium" });
-  await figma.loadFontAsync({ family: "Inter", style: "Semi Bold" });
-  await figma.loadFontAsync({ family: "Inter", style: "Bold" });
+// Font loading helper with timeout
+const FONT_LOAD_TIMEOUT = 5000; // 5 seconds
+
+async function loadFontWithTimeout(
+  family: string,
+  style: string
+): Promise<boolean> {
+  try {
+    await Promise.race([
+      figma.loadFontAsync({ family, style }),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error(`Font load timeout: ${family} ${style}`)), FONT_LOAD_TIMEOUT)
+      )
+    ]);
+    return true;
+  } catch (error) {
+    console.warn(`Failed to load font ${family} ${style}:`, error);
+    return false;
+  }
+}
+
+async function loadFonts(): Promise<boolean> {
+  const fonts = [
+    { family: "Inter", style: "Regular" },
+    { family: "Inter", style: "Medium" },
+    { family: "Inter", style: "Semi Bold" },
+    { family: "Inter", style: "Bold" }
+  ];
+
+  const results = await Promise.all(
+    fonts.map(f => loadFontWithTimeout(f.family, f.style))
+  );
+
+  const allLoaded = results.every(r => r);
+  if (!allLoaded) {
+    console.warn("Some fonts failed to load - text rendering may be affected");
+  }
+  return allLoaded;
 }
 
 // Get contrasting text color
