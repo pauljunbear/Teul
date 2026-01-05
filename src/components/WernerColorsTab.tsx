@@ -106,6 +106,7 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
               flexShrink: 0,
             }}
             title="About Werner's Colors"
+            aria-label="Learn about Werner's Nomenclature of Colours"
           >
             ?
           </button>

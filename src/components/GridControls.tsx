@@ -171,6 +171,8 @@ const UnitToggle: React.FC<UnitToggleProps> = ({ value, onChange, isDark }) => {
         <button
           key={unit}
           onClick={() => onChange(unit)}
+          aria-label={`Use ${unit === 'percent' ? 'percentage' : 'pixel'} units`}
+          aria-pressed={value === unit}
           style={{
             padding: '4px 8px',
             border: 'none',
@@ -240,6 +242,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange, isDar
             key={preset.hex}
             onClick={() => onChange(cssToGridColor(preset.hex, value.a))}
             title={preset.name}
+            aria-label={`Select ${preset.name} color`}
             style={{
               width: '20px',
               height: '20px',
@@ -369,6 +372,8 @@ const BaselineCalculator: React.FC<BaselineCalculatorProps> = ({
       {/* Header - clickable to expand */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
+        aria-expanded={isExpanded}
+        aria-label={`${isExpanded ? 'Collapse' : 'Expand'} typography calculator`}
         style={{
           width: '100%',
           padding: '8px 10px',
@@ -587,6 +592,8 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
       </div>
       <button
         onClick={() => onToggle(!enabled)}
+        aria-label={`${enabled ? 'Disable' : 'Enable'} ${title.toLowerCase()}`}
+        aria-pressed={enabled}
         style={{
           padding: '4px 10px',
           borderRadius: '4px',

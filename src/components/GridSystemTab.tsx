@@ -174,6 +174,7 @@ export const GridSystemTab: React.FC<GridSystemTabProps> = ({ isDark }) => {
                 fontSize: '11px',
               }}
               title="Help (F1)"
+              aria-label="Open help and documentation"
             >
               ?
             </button>

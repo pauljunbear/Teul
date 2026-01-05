@@ -571,6 +571,7 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
             <button
               onClick={() => setShowSaveModal(true)}
               title="Save to My Grids"
+              aria-label="Save grid to My Grids collection"
               style={{
                 padding: '10px 14px',
                 border: `1px solid ${theme.border}`,

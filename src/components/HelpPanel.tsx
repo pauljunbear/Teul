@@ -1,13 +1,13 @@
-import * as React from 'react'
+import * as React from 'react';
 
 // ============================================
 // Help Panel Component
 // ============================================
 
 interface HelpPanelProps {
-  isOpen: boolean
-  onClose: () => void
-  isDark: boolean
+  isOpen: boolean;
+  onClose: () => void;
+  isDark: boolean;
 }
 
 const styles = {
@@ -32,8 +32,8 @@ const styles = {
     accentBg: '#1e3a5f',
     accentBorder: '#3b82f6',
     accentText: '#93c5fd',
-  }
-}
+  },
+};
 
 // ============================================
 // Help Content Sections
@@ -70,7 +70,8 @@ const HELP_SECTIONS = [
     definitions: [
       {
         term: 'Columns',
-        definition: 'Vertical divisions that structure your layout. Content aligns to column edges.',
+        definition:
+          'Vertical divisions that structure your layout. Content aligns to column edges.',
       },
       {
         term: 'Gutter',
@@ -90,7 +91,8 @@ const HELP_SECTIONS = [
       },
       {
         term: 'Swiss Style',
-        definition: 'Design approach emphasizing mathematical grids, clean typography, and asymmetric balance. Pioneered by Josef Müller-Brockmann.',
+        definition:
+          'Design approach emphasizing mathematical grids, clean typography, and asymmetric balance. Pioneered by Josef Müller-Brockmann.',
       },
     ],
   },
@@ -123,25 +125,25 @@ const HELP_SECTIONS = [
       'Export your grid library as JSON backup before major Figma updates.',
     ],
   },
-]
+];
 
 export const HelpPanel: React.FC<HelpPanelProps> = ({ isOpen, onClose, isDark }) => {
-  const theme = isDark ? styles.dark : styles.light
-  const [expandedSection, setExpandedSection] = React.useState<string | null>('getting-started')
-  
+  const theme = isDark ? styles.dark : styles.light;
+  const [expandedSection, setExpandedSection] = React.useState<string | null>('getting-started');
+
   // Close on Escape
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
+      if (e.key === 'Escape') onClose();
+    };
     if (isOpen) {
-      window.addEventListener('keydown', handleKeyDown)
-      return () => window.removeEventListener('keydown', handleKeyDown)
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
     }
-  }, [isOpen, onClose])
-  
-  if (!isOpen) return null
-  
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
   return (
     <div
       style={{
@@ -154,38 +156,44 @@ export const HelpPanel: React.FC<HelpPanelProps> = ({ isOpen, onClose, isDark })
         zIndex: 1000,
         padding: '20px',
       }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
+      onClick={e => {
+        if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div style={{
-        width: '100%',
-        maxWidth: '480px',
-        maxHeight: '80vh',
-        backgroundColor: theme.bg,
-        borderRadius: '16px',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-      }}>
-        {/* Header */}
-        <div style={{
-          padding: '20px 24px',
-          borderBottom: `1px solid ${theme.border}`,
+      <div
+        style={{
+          width: '100%',
+          maxWidth: '480px',
+          maxHeight: '80vh',
+          backgroundColor: theme.bg,
+          borderRadius: '16px',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+          overflow: 'hidden',
           display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}>
-          <h2 style={{
-            margin: 0,
-            fontSize: '18px',
-            fontWeight: 700,
-            color: theme.text,
+          flexDirection: 'column',
+        }}
+      >
+        {/* Header */}
+        <div
+          style={{
+            padding: '20px 24px',
+            borderBottom: `1px solid ${theme.border}`,
             display: 'flex',
+            justifyContent: 'space-between',
             alignItems: 'center',
-            gap: '10px',
-          }}>
+          }}
+        >
+          <h2
+            style={{
+              margin: 0,
+              fontSize: '18px',
+              fontWeight: 700,
+              color: theme.text,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+            }}
+          >
             <span>📚</span> Grid System Guide
           </h2>
           <button
@@ -207,20 +215,22 @@ export const HelpPanel: React.FC<HelpPanelProps> = ({ isOpen, onClose, isDark })
             ✕
           </button>
         </div>
-        
+
         {/* Content */}
-        <div style={{
-          flex: 1,
-          overflowY: 'auto',
-          padding: '16px 24px',
-        }}>
+        <div
+          style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '16px 24px',
+          }}
+        >
           {HELP_SECTIONS.map(section => (
             <div key={section.id} style={{ marginBottom: '16px' }}>
               {/* Section Header */}
               <button
-                onClick={() => setExpandedSection(
-                  expandedSection === section.id ? null : section.id
-                )}
+                onClick={() =>
+                  setExpandedSection(expandedSection === section.id ? null : section.id)
+                }
                 style={{
                   width: '100%',
                   padding: '12px 16px',
@@ -238,44 +248,55 @@ export const HelpPanel: React.FC<HelpPanelProps> = ({ isOpen, onClose, isDark })
                 }}
               >
                 {section.title}
-                <span style={{
-                  transform: expandedSection === section.id ? 'rotate(180deg)' : 'rotate(0deg)',
-                  transition: 'transform 0.2s ease',
-                }}>
+                <span
+                  style={{
+                    transform: expandedSection === section.id ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.2s ease',
+                  }}
+                >
                   ▼
                 </span>
               </button>
-              
+
               {/* Section Content */}
               {expandedSection === section.id && (
-                <div style={{
-                  padding: '16px',
-                  marginTop: '8px',
-                  backgroundColor: theme.sectionBg,
-                  borderRadius: '10px',
-                }}>
+                <div
+                  style={{
+                    padding: '16px',
+                    marginTop: '8px',
+                    backgroundColor: theme.sectionBg,
+                    borderRadius: '10px',
+                  }}
+                >
                   {/* Regular content */}
                   {section.content?.map((item, idx) => (
-                    <div key={idx} style={{ marginBottom: idx < section.content!.length - 1 ? '12px' : 0 }}>
-                      <h4 style={{
-                        margin: '0 0 4px 0',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        color: theme.text,
-                      }}>
+                    <div
+                      key={idx}
+                      style={{ marginBottom: idx < section.content!.length - 1 ? '12px' : 0 }}
+                    >
+                      <h4
+                        style={{
+                          margin: '0 0 4px 0',
+                          fontSize: '12px',
+                          fontWeight: 600,
+                          color: theme.text,
+                        }}
+                      >
                         {item.heading}
                       </h4>
-                      <p style={{
-                        margin: 0,
-                        fontSize: '11px',
-                        lineHeight: 1.5,
-                        color: theme.textMuted,
-                      }}>
+                      <p
+                        style={{
+                          margin: 0,
+                          fontSize: '11px',
+                          lineHeight: 1.5,
+                          color: theme.textMuted,
+                        }}
+                      >
                         {item.text}
                       </p>
                     </div>
                   ))}
-                  
+
                   {/* Keyboard shortcuts */}
                   {section.shortcuts?.map((shortcut, idx) => (
                     <div
@@ -285,26 +306,31 @@ export const HelpPanel: React.FC<HelpPanelProps> = ({ isOpen, onClose, isDark })
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         padding: '8px 0',
-                        borderBottom: idx < section.shortcuts!.length - 1 
-                          ? `1px solid ${theme.border}` 
-                          : 'none',
+                        borderBottom:
+                          idx < section.shortcuts!.length - 1
+                            ? `1px solid ${theme.border}`
+                            : 'none',
                       }}
                     >
-                      <span style={{
-                        display: 'flex',
-                        gap: '4px',
-                      }}>
+                      <span
+                        style={{
+                          display: 'flex',
+                          gap: '4px',
+                        }}
+                      >
                         {shortcut.keys.map((key, i) => (
                           <React.Fragment key={i}>
-                            <kbd style={{
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              backgroundColor: theme.codeBg,
-                              color: theme.text,
-                              fontSize: '10px',
-                              fontWeight: 600,
-                              fontFamily: 'monospace',
-                            }}>
+                            <kbd
+                              style={{
+                                padding: '3px 8px',
+                                borderRadius: '4px',
+                                backgroundColor: theme.codeBg,
+                                color: theme.text,
+                                fontSize: '10px',
+                                fontWeight: 600,
+                                fontFamily: 'monospace',
+                              }}
+                            >
                               {key}
                             </kbd>
                             {i < shortcut.keys.length - 1 && (
@@ -313,37 +339,46 @@ export const HelpPanel: React.FC<HelpPanelProps> = ({ isOpen, onClose, isDark })
                           </React.Fragment>
                         ))}
                       </span>
-                      <span style={{
-                        fontSize: '11px',
-                        color: theme.textMuted,
-                      }}>
+                      <span
+                        style={{
+                          fontSize: '11px',
+                          color: theme.textMuted,
+                        }}
+                      >
                         {shortcut.action}
                       </span>
                     </div>
                   ))}
-                  
+
                   {/* Definitions */}
                   {section.definitions?.map((def, idx) => (
-                    <div key={idx} style={{ marginBottom: idx < section.definitions!.length - 1 ? '10px' : 0 }}>
-                      <dt style={{
-                        fontSize: '11px',
-                        fontWeight: 700,
-                        color: theme.text,
-                        marginBottom: '2px',
-                      }}>
+                    <div
+                      key={idx}
+                      style={{ marginBottom: idx < section.definitions!.length - 1 ? '10px' : 0 }}
+                    >
+                      <dt
+                        style={{
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          color: theme.text,
+                          marginBottom: '2px',
+                        }}
+                      >
                         {def.term}
                       </dt>
-                      <dd style={{
-                        margin: 0,
-                        fontSize: '10px',
-                        lineHeight: 1.4,
-                        color: theme.textMuted,
-                      }}>
+                      <dd
+                        style={{
+                          margin: 0,
+                          fontSize: '10px',
+                          lineHeight: 1.4,
+                          color: theme.textMuted,
+                        }}
+                      >
                         {def.definition}
                       </dd>
                     </div>
                   ))}
-                  
+
                   {/* Tips */}
                   {section.tips?.map((tip, idx) => (
                     <div
@@ -356,11 +391,13 @@ export const HelpPanel: React.FC<HelpPanelProps> = ({ isOpen, onClose, isDark })
                       }}
                     >
                       <span style={{ color: '#f59e0b', fontSize: '12px' }}>•</span>
-                      <span style={{
-                        fontSize: '11px',
-                        lineHeight: 1.4,
-                        color: theme.textMuted,
-                      }}>
+                      <span
+                        style={{
+                          fontSize: '11px',
+                          lineHeight: 1.4,
+                          color: theme.textMuted,
+                        }}
+                      >
                         {tip}
                       </span>
                     </div>
@@ -370,13 +407,15 @@ export const HelpPanel: React.FC<HelpPanelProps> = ({ isOpen, onClose, isDark })
             </div>
           ))}
         </div>
-        
+
         {/* Footer */}
-        <div style={{
-          padding: '16px 24px',
-          borderTop: `1px solid ${theme.border}`,
-          textAlign: 'center',
-        }}>
+        <div
+          style={{
+            padding: '16px 24px',
+            borderTop: `1px solid ${theme.border}`,
+            textAlign: 'center',
+          }}
+        >
           <button
             onClick={onClose}
             style={{
@@ -395,16 +434,16 @@ export const HelpPanel: React.FC<HelpPanelProps> = ({ isOpen, onClose, isDark })
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 // ============================================
 // Help Button Component
 // ============================================
 
 interface HelpButtonProps {
-  onClick: () => void
-  isDark: boolean
+  onClick: () => void;
+  isDark: boolean;
 }
 
 export const HelpButton: React.FC<HelpButtonProps> = ({ onClick, isDark }) => {
@@ -412,6 +451,7 @@ export const HelpButton: React.FC<HelpButtonProps> = ({ onClick, isDark }) => {
     <button
       onClick={onClick}
       title="Help & Documentation"
+      aria-label="Open help and documentation panel"
       style={{
         width: '32px',
         height: '32px',
@@ -428,9 +468,7 @@ export const HelpButton: React.FC<HelpButtonProps> = ({ onClick, isDark }) => {
     >
       ?
     </button>
-  )
-}
+  );
+};
 
-export default HelpPanel
-
-
+export default HelpPanel;
