@@ -6,6 +6,7 @@ import { copyToClipboard } from '../lib/clipboard';
 import { styles } from '../lib/theme';
 import { ColorSystemModal } from './ColorSystemModal';
 import { AboutPanel, WADA_ABOUT_CONTENT } from './AboutPanel';
+import { getWCAGContrastHex, getWCAGRating } from '../lib/accessibility';
 
 interface Color {
   name: string;
@@ -384,6 +385,18 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({ isDark }) => {
             {filteredColors.map(color => {
               const textColor = getTextColor(color.rgb);
               const combos = calculateCombinations(color, comboIndex);
+              // Calculate best WCAG contrast (against white or black)
+              const contrastWhite = getWCAGContrastHex(color.hex, '#ffffff');
+              const contrastBlack = getWCAGContrastHex(color.hex, '#000000');
+              const bestContrast = Math.max(contrastWhite, contrastBlack);
+              const wcagRating = getWCAGRating(bestContrast);
+              const wcagLabel = wcagRating.aaa
+                ? 'AAA'
+                : wcagRating.aa
+                  ? 'AA'
+                  : wcagRating.aaLarge
+                    ? 'A'
+                    : '';
               return (
                 <div
                   key={color.hex}
@@ -431,18 +444,36 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({ isDark }) => {
                     >
                       {color.hex.toUpperCase()}
                     </span>
-                    <span
-                      style={{
-                        fontSize: '9px',
-                        color: textColor,
-                        backgroundColor: 'rgba(0,0,0,0.15)',
-                        padding: '1px 5px',
-                        borderRadius: '8px',
-                        fontWeight: 600,
-                      }}
-                    >
-                      {combos.length}
-                    </span>
+                    <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
+                      {wcagLabel && (
+                        <span
+                          style={{
+                            fontSize: '7px',
+                            color: textColor,
+                            backgroundColor: 'rgba(255,255,255,0.2)',
+                            padding: '1px 3px',
+                            borderRadius: '3px',
+                            fontWeight: 700,
+                            opacity: 0.9,
+                          }}
+                          title={`WCAG ${wcagLabel} (${bestContrast.toFixed(1)}:1)`}
+                        >
+                          {wcagLabel}
+                        </span>
+                      )}
+                      <span
+                        style={{
+                          fontSize: '9px',
+                          color: textColor,
+                          backgroundColor: 'rgba(0,0,0,0.15)',
+                          padding: '1px 5px',
+                          borderRadius: '8px',
+                          fontWeight: 600,
+                        }}
+                      >
+                        {combos.length}
+                      </span>
+                    </div>
                   </div>
                 </div>
               );

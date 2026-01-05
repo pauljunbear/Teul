@@ -5,6 +5,7 @@ import { ColorSystemModal } from './ColorSystemModal';
 import { AboutPanel, WERNER_ABOUT_CONTENT } from './AboutPanel';
 import { copyToClipboard } from '../lib/clipboard';
 import { styles } from '../lib/theme';
+import { getWCAGContrastHex, getWCAGRating } from '../lib/accessibility';
 
 interface WernerColorsTabProps {
   isDark: boolean;
@@ -206,6 +207,18 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
             {filteredColors.map(color => {
               const textColor = getTextColor(color.hex);
+              // Calculate best WCAG contrast (against white or black)
+              const contrastWhite = getWCAGContrastHex(color.hex, '#ffffff');
+              const contrastBlack = getWCAGContrastHex(color.hex, '#000000');
+              const bestContrast = Math.max(contrastWhite, contrastBlack);
+              const wcagRating = getWCAGRating(bestContrast);
+              const wcagLabel = wcagRating.aaa
+                ? 'AAA'
+                : wcagRating.aa
+                  ? 'AA'
+                  : wcagRating.aaLarge
+                    ? 'A'
+                    : '';
               return (
                 <div
                   key={color.id}
@@ -271,18 +284,36 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
                     >
                       {color.hex.toUpperCase()}
                     </span>
-                    <span
-                      style={{
-                        fontSize: '8px',
-                        color: textColor,
-                        backgroundColor: 'rgba(0,0,0,0.15)',
-                        padding: '1px 4px',
-                        borderRadius: '6px',
-                        fontWeight: 600,
-                      }}
-                    >
-                      {color.relatedColors.length}
-                    </span>
+                    <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
+                      {wcagLabel && (
+                        <span
+                          style={{
+                            fontSize: '7px',
+                            color: textColor,
+                            backgroundColor: 'rgba(255,255,255,0.2)',
+                            padding: '1px 3px',
+                            borderRadius: '3px',
+                            fontWeight: 700,
+                            opacity: 0.9,
+                          }}
+                          title={`WCAG ${wcagLabel} (${bestContrast.toFixed(1)}:1)`}
+                        >
+                          {wcagLabel}
+                        </span>
+                      )}
+                      <span
+                        style={{
+                          fontSize: '8px',
+                          color: textColor,
+                          backgroundColor: 'rgba(0,0,0,0.15)',
+                          padding: '1px 4px',
+                          borderRadius: '6px',
+                          fontWeight: 600,
+                        }}
+                      >
+                        {color.relatedColors.length}
+                      </span>
+                    </div>
                   </div>
                 </div>
               );

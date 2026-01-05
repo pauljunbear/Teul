@@ -7,11 +7,12 @@ import { styles } from './lib/theme';
 import { GridSystemTab } from './components/GridSystemTab';
 import { WernerColorsTab } from './components/WernerColorsTab';
 import { WadaColorsTab } from './components/WadaColorsTab';
+import { AccessibilityTab } from './components/AccessibilityTab';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 const App: React.FC = () => {
   const [isDark, setIsDark] = useState(true);
-  const [mainTab, setMainTab] = useState<'colors' | 'werner' | 'grids'>('colors');
+  const [mainTab, setMainTab] = useState<'colors' | 'werner' | 'grids' | 'a11y'>('colors');
 
   const theme = isDark ? styles.dark : styles.light;
 
@@ -137,6 +138,28 @@ const App: React.FC = () => {
               <span style={{ fontSize: '11px' }}>📐</span>
               Grids
             </button>
+            <button
+              onClick={() => setMainTab('a11y')}
+              style={{
+                flex: 1,
+                padding: '6px 8px',
+                borderRadius: '6px',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '10px',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '4px',
+                transition: 'all 0.15s ease',
+                backgroundColor: mainTab === 'a11y' ? theme.btnActive : 'transparent',
+                color: mainTab === 'a11y' ? theme.btnActiveText : theme.textMuted,
+              }}
+            >
+              <span style={{ fontSize: '11px' }}>A</span>
+              A11y
+            </button>
           </div>
 
           {/* Theme Toggle */}
@@ -169,6 +192,8 @@ const App: React.FC = () => {
           <GridSystemTab isDark={isDark} />
         ) : mainTab === 'werner' ? (
           <WernerColorsTab isDark={isDark} />
+        ) : mainTab === 'a11y' ? (
+          <AccessibilityTab isDark={isDark} />
         ) : (
           <WadaColorsTab isDark={isDark} />
         )}
