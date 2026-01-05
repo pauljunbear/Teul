@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { GridPresetCard } from './GridPresetCard';
 import { SaveGridModal } from './SaveGridModal';
 import {
@@ -17,6 +16,54 @@ import {
 } from '../lib/figmaGrids';
 import type { GridPreset, GridCategory } from '../types/grid';
 
+// CSS keyframe animations injected once
+const injectStyles = (() => {
+  let injected = false;
+  return () => {
+    if (injected) return;
+    injected = true;
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes gridFadeIn {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes gridFadeOut {
+        from { opacity: 1; transform: translateY(0); }
+        to { opacity: 0; transform: translateY(-8px); }
+      }
+      @keyframes pillFadeIn {
+        from { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+        to { opacity: 1; transform: translateX(-50%) translateY(0); }
+      }
+      .grid-card-animate {
+        animation: gridFadeIn 0.25s ease-out forwards;
+      }
+      .grid-header-visible {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      .grid-header-hidden {
+        transform: translateY(-140px);
+        opacity: 0;
+      }
+      .grid-pill-visible {
+        animation: pillFadeIn 0.2s ease-out forwards;
+      }
+      .grid-category-btn {
+        transition: transform 0.1s ease, background-color 0.15s ease, color 0.15s ease;
+      }
+      .grid-category-btn:hover {
+        transform: scale(1.02);
+      }
+      .grid-category-btn:active {
+        transform: scale(0.98);
+      }
+    `;
+    document.head.appendChild(style);
+  };
+})();
+
 // Hook for scroll direction detection with debouncing
 function useScrollDirection() {
   const [scrollDirection, setScrollDirection] = React.useState<'up' | 'down' | null>(null);
@@ -25,17 +72,14 @@ function useScrollDirection() {
   const rafRef = React.useRef<number | null>(null);
 
   const updateScrollDirection = React.useCallback((scrollY: number) => {
-    // Cancel any pending animation frame
     if (rafRef.current !== null) {
       cancelAnimationFrame(rafRef.current);
     }
 
-    // Debounce using requestAnimationFrame (max 60fps)
     rafRef.current = requestAnimationFrame(() => {
       const lastScrollY = lastScrollYRef.current;
       const delta = scrollY - lastScrollY;
 
-      // Only update state if there's a significant change (>5px)
       if (Math.abs(delta) > 5) {
         setIsAtTop(scrollY < 10);
 
@@ -52,7 +96,6 @@ function useScrollDirection() {
     });
   }, []);
 
-  // Cleanup animation frame on unmount
   React.useEffect(() => {
     return () => {
       if (rafRef.current !== null) {
@@ -110,7 +153,11 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
   } | null>(null);
   const [showSaveModal, setShowSaveModal] = React.useState(false);
 
-  // Track scroll for header hide/show
+  // Inject CSS animations on mount
+  React.useEffect(() => {
+    injectStyles();
+  }, []);
+
   const handleScroll = React.useCallback(
     (e: React.UIEvent<HTMLDivElement>) => {
       updateScrollDirection(e.currentTarget.scrollTop);
@@ -118,10 +165,8 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
     [updateScrollDirection]
   );
 
-  // Show header when search has focus or at top
   const showHeader = isAtTop || scrollDirection === 'up';
 
-  // Get filtered presets
   const filteredPresets = React.useMemo(() => {
     let presets =
       selectedCategory === 'all' ? GRID_PRESETS : getPresetsByCategory(selectedCategory);
@@ -154,14 +199,12 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
       }
     };
 
-    // Request initial selection info once on mount
     parent.postMessage({ pluginMessage: { type: 'get-selection-for-grid' } }, '*');
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
   }, []);
 
-  // Apply grid to selection
   const handleApplyGrid = (preset: GridPreset) => {
     if (!selectionInfo?.hasSelection) {
       parent.postMessage(
@@ -178,21 +221,17 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
 
     const targetWidth = selectionInfo.width || 800;
     const targetHeight = selectionInfo.height || 600;
-
-    // Get preset's native dimensions
     const presetDimensions = getPresetFrameDimensions(preset);
 
-    // Scale the grid if needed (preserving column/row counts)
     const scaledConfig = scaleGridForFrameSize(
       preset.config,
       presetDimensions.width,
       presetDimensions.height,
       targetWidth,
       targetHeight,
-      true // preserve column count
+      true
     );
 
-    // Build and send the apply message
     const message = buildApplyGridMessage({
       config: scaledConfig,
       width: targetWidth,
@@ -203,12 +242,9 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
     parent.postMessage({ pluginMessage: message }, '*');
   };
 
-  // Create new frame with grid
   const handleCreateFrame = (preset: GridPreset) => {
-    // Get recommended dimensions for this preset
     const { width, height } = getPresetFrameDimensions(preset);
 
-    // Build and send the create frame message
     const message = buildCreateGridFrameMessage({
       config: preset.config,
       frameName: presetToFrameName(preset),
@@ -231,17 +267,8 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
       }}
     >
       {/* Animated Header - hides on scroll down */}
-      <motion.div
-        initial={{ y: 0 }}
-        animate={{
-          y: showHeader ? 0 : -140,
-          opacity: showHeader ? 1 : 0,
-        }}
-        transition={{
-          type: 'spring',
-          stiffness: 300,
-          damping: 30,
-        }}
+      <div
+        className={showHeader ? 'grid-header-visible' : 'grid-header-hidden'}
         style={{
           position: 'absolute',
           top: 0,
@@ -250,9 +277,10 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
           zIndex: 10,
           backgroundColor: theme.bg,
           boxShadow: !isAtTop ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+          transition: 'transform 0.3s ease, opacity 0.3s ease',
         }}
       >
-        {/* Search + Categories unified */}
+        {/* Search */}
         <div style={{ padding: '8px 12px 6px' }}>
           <input
             type="text"
@@ -273,7 +301,7 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
           />
         </div>
 
-        {/* Category Pills - more compact */}
+        {/* Category Pills */}
         <div style={{ padding: '2px 12px 8px' }}>
           <div
             style={{
@@ -287,11 +315,10 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
               const isActive = selectedCategory === cat.id;
 
               return (
-                <motion.button
+                <button
                   key={cat.id}
+                  className="grid-category-btn"
                   onClick={() => setSelectedCategory(cat.id)}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -303,7 +330,6 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
                     fontSize: '9px',
                     fontWeight: isActive ? 600 : 500,
                     whiteSpace: 'nowrap',
-                    transition: 'background-color 0.15s ease, color 0.15s ease',
                     backgroundColor: isActive ? theme.categoryActive : 'transparent',
                     color: isActive ? theme.categoryActiveText : theme.textMuted,
                   }}
@@ -318,89 +344,72 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
                   >
                     {count}
                   </span>
-                </motion.button>
+                </button>
               );
             })}
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Selection Status - compact floating pill */}
-      <AnimatePresence>
-        {selectionInfo && !selectionInfo.hasSelection && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+      {selectionInfo && !selectionInfo.hasSelection && (
+        <div
+          className="grid-pill-visible"
+          style={{
+            position: 'absolute',
+            top: showHeader ? 125 : 6,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 5,
+            padding: '4px 10px',
+            borderRadius: '12px',
+            backgroundColor: isDark ? '#3a2e1e' : '#fef3e6',
+            border: `1px solid ${isDark ? '#5a4a2a' : '#fcd34d'}`,
+            boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
+            transition: 'top 0.3s ease',
+          }}
+        >
+          <p
             style={{
-              position: 'absolute',
-              top: showHeader ? 125 : 6,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              zIndex: 5,
-              padding: '4px 10px',
-              borderRadius: '12px',
-              backgroundColor: isDark ? '#3a2e1e' : '#fef3e6',
-              border: `1px solid ${isDark ? '#5a4a2a' : '#fcd34d'}`,
-              boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
-              transition: 'top 0.3s ease',
+              margin: 0,
+              fontSize: '9px',
+              fontWeight: 500,
+              color: isDark ? '#fbbf24' : '#b45309',
             }}
           >
-            <p
-              style={{
-                margin: 0,
-                fontSize: '9px',
-                fontWeight: 500,
-                color: isDark ? '#fbbf24' : '#b45309',
-              }}
-            >
-              ⚠ Select a frame to apply
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            ⚠ Select a frame to apply
+          </p>
+        </div>
+      )}
 
-      {/* Grid Cards - with scroll tracking */}
+      {/* Grid Cards */}
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
         style={{
           flex: 1,
           overflowY: 'auto',
-          paddingTop: '130px', // Space for header (search + 2 rows of categories)
+          paddingTop: '130px',
           paddingLeft: '8px',
           paddingRight: '8px',
-          paddingBottom: '40px', // Extra space for last row
+          paddingBottom: '40px',
         }}
       >
         {filteredPresets.length > 0 ? (
-          <motion.div
+          <div
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(2, 1fr)',
               gap: '6px',
             }}
-            initial="hidden"
-            animate="visible"
-            variants={{
-              visible: {
-                transition: {
-                  staggerChildren: 0.03,
-                },
-              },
-            }}
           >
-            {filteredPresets.map(preset => (
-              <motion.div
+            {filteredPresets.map((preset, index) => (
+              <div
                 key={preset.id}
-                variants={{
-                  hidden: { opacity: 0, y: 20 },
-                  visible: { opacity: 1, y: 0 },
-                }}
-                transition={{
-                  type: 'spring',
-                  stiffness: 400,
-                  damping: 25,
+                className="grid-card-animate"
+                style={{
+                  animationDelay: `${index * 0.03}s`,
+                  opacity: 0,
                 }}
               >
                 <GridPresetCard
@@ -425,23 +434,22 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
                   }}
                   isDark={isDark}
                 />
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
         ) : (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+          <div
             style={{
               textAlign: 'center',
               padding: '40px 20px',
               color: theme.textMuted,
+              animation: 'gridFadeIn 0.2s ease-out forwards',
             }}
           >
             <div style={{ fontSize: '40px', marginBottom: '12px', opacity: 0.3 }}>📐</div>
             <p style={{ fontSize: '13px', fontWeight: 600, marginBottom: '6px' }}>No grids found</p>
             <p style={{ fontSize: '11px', opacity: 0.6 }}>Try adjusting your search</p>
-          </motion.div>
+          </div>
         )}
       </div>
 
@@ -502,7 +510,6 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
             </button>
           </div>
 
-          {/* Action buttons - always show both Apply and Create */}
           <div
             style={{
               display: 'flex',
@@ -594,7 +601,6 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
           onClose={() => setShowSaveModal(false)}
           onSave={() => {
             setShowSaveModal(false);
-            // Notify user
             parent.postMessage(
               {
                 pluginMessage: {
