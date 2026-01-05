@@ -12,8 +12,15 @@ import type {
   FigmaLayoutGrid,
   GridColor,
   GridPreset,
-} from '../types/grid'
-import { toPixels, scaleGrid } from './gridUtils'
+} from '../types/grid';
+import { toPixels, scaleGrid } from './gridUtils';
+
+// Type for the Figma-formatted grid config passed to the plugin backend
+interface FigmaGridConfigs {
+  columns?: FigmaLayoutGrid;
+  rows?: FigmaLayoutGrid;
+  baseline?: FigmaLayoutGrid;
+}
 
 // ============================================
 // GridConfig to Figma LayoutGrid Conversion
@@ -29,9 +36,9 @@ export function columnConfigToFigmaGrid(
   config: ColumnGridConfig,
   frameWidth: number
 ): FigmaLayoutGrid {
-  const marginPx = toPixels(config.margin, config.marginUnit, frameWidth)
-  const gutterPx = toPixels(config.gutterSize, config.gutterUnit, frameWidth)
-  
+  const marginPx = toPixels(config.margin, config.marginUnit, frameWidth);
+  const gutterPx = toPixels(config.gutterSize, config.gutterUnit, frameWidth);
+
   return {
     pattern: 'COLUMNS',
     alignment: config.alignment,
@@ -40,7 +47,7 @@ export function columnConfigToFigmaGrid(
     offset: Math.round(marginPx),
     visible: config.visible,
     color: config.color,
-  }
+  };
 }
 
 /**
@@ -49,13 +56,10 @@ export function columnConfigToFigmaGrid(
  * @param frameHeight - Frame height for percentage calculations
  * @returns Figma LayoutGrid object
  */
-export function rowConfigToFigmaGrid(
-  config: RowGridConfig,
-  frameHeight: number
-): FigmaLayoutGrid {
-  const marginPx = toPixels(config.margin, config.marginUnit, frameHeight)
-  const gutterPx = toPixels(config.gutterSize, config.gutterUnit, frameHeight)
-  
+export function rowConfigToFigmaGrid(config: RowGridConfig, frameHeight: number): FigmaLayoutGrid {
+  const marginPx = toPixels(config.margin, config.marginUnit, frameHeight);
+  const gutterPx = toPixels(config.gutterSize, config.gutterUnit, frameHeight);
+
   return {
     pattern: 'ROWS',
     alignment: config.alignment,
@@ -64,7 +68,7 @@ export function rowConfigToFigmaGrid(
     offset: Math.round(marginPx),
     visible: config.visible,
     color: config.color,
-  }
+  };
 }
 
 /**
@@ -72,9 +76,7 @@ export function rowConfigToFigmaGrid(
  * @param config - Baseline grid configuration
  * @returns Figma LayoutGrid object
  */
-export function baselineConfigToFigmaGrid(
-  config: BaselineGridConfig
-): FigmaLayoutGrid {
+export function baselineConfigToFigmaGrid(config: BaselineGridConfig): FigmaLayoutGrid {
   return {
     pattern: 'GRID',
     alignment: 'MIN', // Baseline grids always align to top
@@ -84,7 +86,7 @@ export function baselineConfigToFigmaGrid(
     offset: config.offset,
     visible: config.visible,
     color: config.color,
-  }
+  };
 }
 
 /**
@@ -99,21 +101,21 @@ export function gridConfigToFigmaLayoutGrids(
   frameWidth: number,
   frameHeight: number
 ): FigmaLayoutGrid[] {
-  const layoutGrids: FigmaLayoutGrid[] = []
-  
+  const layoutGrids: FigmaLayoutGrid[] = [];
+
   if (config.columns) {
-    layoutGrids.push(columnConfigToFigmaGrid(config.columns, frameWidth))
+    layoutGrids.push(columnConfigToFigmaGrid(config.columns, frameWidth));
   }
-  
+
   if (config.rows) {
-    layoutGrids.push(rowConfigToFigmaGrid(config.rows, frameHeight))
+    layoutGrids.push(rowConfigToFigmaGrid(config.rows, frameHeight));
   }
-  
+
   if (config.baseline) {
-    layoutGrids.push(baselineConfigToFigmaGrid(config.baseline))
+    layoutGrids.push(baselineConfigToFigmaGrid(config.baseline));
   }
-  
-  return layoutGrids
+
+  return layoutGrids;
 }
 
 // ============================================
@@ -125,49 +127,46 @@ export function gridConfigToFigmaLayoutGrids(
  * Convention: "Grid - [Source/Preset Name] - [Columns]col"
  */
 export function generateGridFrameName(params: {
-  source?: string
-  presetName?: string
-  columns?: number
-  rows?: number
-  isModular?: boolean
+  source?: string;
+  presetName?: string;
+  columns?: number;
+  rows?: number;
+  isModular?: boolean;
 }): string {
-  const parts = ['Grid']
-  
+  const parts = ['Grid'];
+
   // Add source/preset name
-  const name = params.presetName || params.source || 'Custom'
-  parts.push(name)
-  
+  const name = params.presetName || params.source || 'Custom';
+  parts.push(name);
+
   // Add grid specs
-  const specs: string[] = []
-  
+  const specs: string[] = [];
+
   if (params.columns && params.columns > 0) {
-    specs.push(`${params.columns}col`)
+    specs.push(`${params.columns}col`);
   }
-  
+
   if (params.isModular && params.rows && params.rows > 0) {
-    specs.push(`${params.rows}row`)
+    specs.push(`${params.rows}row`);
   }
-  
+
   if (specs.length > 0) {
-    parts.push(specs.join(' × '))
+    parts.push(specs.join(' × '));
   }
-  
-  return parts.join(' - ')
+
+  return parts.join(' - ');
 }
 
 /**
  * Generate frame name from a GridConfig
  */
-export function gridConfigToFrameName(
-  config: GridConfig,
-  source?: string
-): string {
+export function gridConfigToFrameName(config: GridConfig, source?: string): string {
   return generateGridFrameName({
     source,
     columns: config.columns?.count,
     rows: config.rows?.count,
     isModular: !!(config.columns && config.rows),
-  })
+  });
 }
 
 /**
@@ -179,7 +178,7 @@ export function presetToFrameName(preset: GridPreset): string {
     columns: preset.config.columns?.count,
     rows: preset.config.rows?.count,
     isModular: !!(preset.config.columns && preset.config.rows),
-  })
+  });
 }
 
 // ============================================
@@ -205,25 +204,19 @@ export function scaleGridForFrameSize(
   preserveColumnCount: boolean = true
 ): GridConfig {
   // Use the utility from gridUtils for basic scaling
-  const scaled = scaleGrid(
-    config,
-    originalWidth,
-    originalHeight,
-    targetWidth,
-    targetHeight
-  )
-  
+  const scaled = scaleGrid(config, originalWidth, originalHeight, targetWidth, targetHeight);
+
   // If we want to preserve column count, ensure it's unchanged
   if (preserveColumnCount) {
     if (scaled.columns && config.columns) {
-      scaled.columns.count = config.columns.count
+      scaled.columns.count = config.columns.count;
     }
     if (scaled.rows && config.rows) {
-      scaled.rows.count = config.rows.count
+      scaled.rows.count = config.rows.count;
     }
   }
-  
-  return scaled
+
+  return scaled;
 }
 
 /**
@@ -240,7 +233,7 @@ export function needsScaling(
   return (
     Math.abs(originalWidth - targetWidth) > tolerance ||
     Math.abs(originalHeight - targetHeight) > tolerance
-  )
+  );
 }
 
 // ============================================
@@ -260,35 +253,35 @@ export function parseAspectRatio(
   // Handle special cases
   if (aspectRatio.includes('√2') || aspectRatio.includes('1.414')) {
     // A-series paper ratio (portrait)
-    return { width: baseWidth, height: Math.round(baseWidth * 1.414) }
+    return { width: baseWidth, height: Math.round(baseWidth * 1.414) };
   }
-  
+
   if (aspectRatio.includes('φ') || aspectRatio.includes('1.618')) {
     // Golden ratio (portrait)
-    return { width: baseWidth, height: Math.round(baseWidth * 1.618) }
+    return { width: baseWidth, height: Math.round(baseWidth * 1.618) };
   }
-  
+
   // Parse standard ratios like "16:9", "2:3", etc.
-  const match = aspectRatio.match(/(\d+(?:\.\d+)?)\s*:\s*(\d+(?:\.\d+)?)/)
-  
+  const match = aspectRatio.match(/(\d+(?:\.\d+)?)\s*:\s*(\d+(?:\.\d+)?)/);
+
   if (match) {
-    const w = parseFloat(match[1])
-    const h = parseFloat(match[2])
-    
+    const w = parseFloat(match[1]);
+    const h = parseFloat(match[2]);
+
     if (w && h) {
       // Determine if we should calculate height from width or vice versa
       // For portrait ratios (h > w), calculate height from width
       // For landscape ratios (w > h), calculate height from width
-      const ratio = h / w
+      const ratio = h / w;
       return {
         width: baseWidth,
-        height: Math.round(baseWidth * ratio)
-      }
+        height: Math.round(baseWidth * ratio),
+      };
     }
   }
-  
+
   // Default to 4:3
-  return { width: baseWidth, height: Math.round(baseWidth * 0.75) }
+  return { width: baseWidth, height: Math.round(baseWidth * 0.75) };
 }
 
 /**
@@ -299,19 +292,19 @@ export function getPresetFrameDimensions(
   baseWidth: number = 800
 ): { width: number; height: number } {
   if (preset.aspectRatio) {
-    return parseAspectRatio(preset.aspectRatio, baseWidth)
+    return parseAspectRatio(preset.aspectRatio, baseWidth);
   }
-  
+
   // Default dimensions based on category
   switch (preset.category) {
     case 'poster':
-      return { width: 800, height: 1132 } // ~A2 proportion
+      return { width: 800, height: 1132 }; // ~A2 proportion
     case 'editorial':
-      return { width: 800, height: 1040 } // Magazine page
+      return { width: 800, height: 1040 }; // Magazine page
     case 'web-ui':
-      return { width: 1440, height: 900 } // Desktop viewport
+      return { width: 1440, height: 900 }; // Desktop viewport
     default:
-      return { width: baseWidth, height: Math.round(baseWidth * 1.414) }
+      return { width: baseWidth, height: Math.round(baseWidth * 1.414) };
   }
 }
 
@@ -323,40 +316,40 @@ export function getPresetFrameDimensions(
  * Build the message payload for creating a grid frame
  */
 export function buildCreateGridFrameMessage(params: {
-  config: GridConfig
-  frameName?: string
-  width: number
-  height: number
-  includeImage?: boolean
-  imageData?: string
-  positionNearSelection?: boolean
+  config: GridConfig;
+  frameName?: string;
+  width: number;
+  height: number;
+  includeImage?: boolean;
+  imageData?: string;
+  positionNearSelection?: boolean;
 }): {
-  type: 'create-grid-frame'
-  config: any
-  frameName: string
-  width: number
-  height: number
-  includeImage?: boolean
-  imageData?: string
-  positionNearSelection?: boolean
+  type: 'create-grid-frame';
+  config: FigmaGridConfigs;
+  frameName: string;
+  width: number;
+  height: number;
+  includeImage?: boolean;
+  imageData?: string;
+  positionNearSelection?: boolean;
 } {
-  const { config, width, height } = params
-  
+  const { config, width, height } = params;
+
   // Convert to Figma-friendly format
-  const figmaConfig: any = {}
-  
+  const figmaConfig: FigmaGridConfigs = {};
+
   if (config.columns) {
-    figmaConfig.columns = columnConfigToFigmaGrid(config.columns, width)
+    figmaConfig.columns = columnConfigToFigmaGrid(config.columns, width);
   }
-  
+
   if (config.rows) {
-    figmaConfig.rows = rowConfigToFigmaGrid(config.rows, height)
+    figmaConfig.rows = rowConfigToFigmaGrid(config.rows, height);
   }
-  
+
   if (config.baseline) {
-    figmaConfig.baseline = baselineConfigToFigmaGrid(config.baseline)
+    figmaConfig.baseline = baselineConfigToFigmaGrid(config.baseline);
   }
-  
+
   return {
     type: 'create-grid-frame',
     config: figmaConfig,
@@ -366,44 +359,44 @@ export function buildCreateGridFrameMessage(params: {
     includeImage: params.includeImage,
     imageData: params.imageData,
     positionNearSelection: params.positionNearSelection !== false,
-  }
+  };
 }
 
 /**
  * Build the message payload for applying a grid to selection
  */
 export function buildApplyGridMessage(params: {
-  config: GridConfig
-  width: number
-  height: number
-  replaceExisting?: boolean
+  config: GridConfig;
+  width: number;
+  height: number;
+  replaceExisting?: boolean;
 }): {
-  type: 'apply-grid'
-  config: any
-  replaceExisting: boolean
+  type: 'apply-grid';
+  config: FigmaGridConfigs;
+  replaceExisting: boolean;
 } {
-  const { config, width, height } = params
-  
+  const { config, width, height } = params;
+
   // Convert to Figma-friendly format
-  const figmaConfig: any = {}
-  
+  const figmaConfig: FigmaGridConfigs = {};
+
   if (config.columns) {
-    figmaConfig.columns = columnConfigToFigmaGrid(config.columns, width)
+    figmaConfig.columns = columnConfigToFigmaGrid(config.columns, width);
   }
-  
+
   if (config.rows) {
-    figmaConfig.rows = rowConfigToFigmaGrid(config.rows, height)
+    figmaConfig.rows = rowConfigToFigmaGrid(config.rows, height);
   }
-  
+
   if (config.baseline) {
-    figmaConfig.baseline = baselineConfigToFigmaGrid(config.baseline)
+    figmaConfig.baseline = baselineConfigToFigmaGrid(config.baseline);
   }
-  
+
   return {
     type: 'apply-grid',
     config: figmaConfig,
     replaceExisting: params.replaceExisting !== false,
-  }
+  };
 }
 
 // ============================================
@@ -418,62 +411,62 @@ export function validateGridForFigma(
   frameWidth: number,
   frameHeight: number
 ): { valid: boolean; errors: string[]; warnings: string[] } {
-  const errors: string[] = []
-  const warnings: string[] = []
-  
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
   // Check columns
   if (config.columns) {
     if (config.columns.count < 1) {
-      errors.push('Column count must be at least 1')
+      errors.push('Column count must be at least 1');
     }
     if (config.columns.count > 100) {
-      errors.push('Column count exceeds Figma maximum (100)')
+      errors.push('Column count exceeds Figma maximum (100)');
     }
-    
-    const marginPx = toPixels(config.columns.margin, config.columns.marginUnit, frameWidth)
+
+    const marginPx = toPixels(config.columns.margin, config.columns.marginUnit, frameWidth);
     if (marginPx * 2 >= frameWidth) {
-      errors.push('Column margins exceed frame width')
+      errors.push('Column margins exceed frame width');
     }
-    
-    const gutterPx = toPixels(config.columns.gutterSize, config.columns.gutterUnit, frameWidth)
+
+    const gutterPx = toPixels(config.columns.gutterSize, config.columns.gutterUnit, frameWidth);
     if (gutterPx >= frameWidth) {
-      errors.push('Column gutter exceeds frame width')
+      errors.push('Column gutter exceeds frame width');
     }
   }
-  
+
   // Check rows
   if (config.rows) {
     if (config.rows.count < 1) {
-      errors.push('Row count must be at least 1')
+      errors.push('Row count must be at least 1');
     }
     if (config.rows.count > 100) {
-      errors.push('Row count exceeds Figma maximum (100)')
+      errors.push('Row count exceeds Figma maximum (100)');
     }
-    
-    const marginPx = toPixels(config.rows.margin, config.rows.marginUnit, frameHeight)
+
+    const marginPx = toPixels(config.rows.margin, config.rows.marginUnit, frameHeight);
     if (marginPx * 2 >= frameHeight) {
-      errors.push('Row margins exceed frame height')
+      errors.push('Row margins exceed frame height');
     }
   }
-  
+
   // Check baseline
   if (config.baseline) {
     if (config.baseline.height < 1) {
-      errors.push('Baseline height must be at least 1px')
+      errors.push('Baseline height must be at least 1px');
     }
     if (config.baseline.height > frameHeight) {
-      warnings.push('Baseline height exceeds frame height')
+      warnings.push('Baseline height exceeds frame height');
     }
     if (config.baseline.offset < 0) {
-      warnings.push('Baseline offset is negative')
+      warnings.push('Baseline offset is negative');
     }
   }
-  
+
   return {
     valid: errors.length === 0,
     errors,
     warnings,
-  }
+  };
 }
 
 // ============================================
@@ -482,21 +475,19 @@ export function validateGridForFigma(
 
 export const FIGMA_GRID_COLORS = {
   column: { r: 1, g: 0.2, b: 0.2, a: 0.1 } as GridColor, // Red
-  row: { r: 0.2, g: 0.4, b: 1, a: 0.1 } as GridColor,    // Blue  
+  row: { r: 0.2, g: 0.4, b: 1, a: 0.1 } as GridColor, // Blue
   baseline: { r: 0.2, g: 0.8, b: 0.9, a: 0.15 } as GridColor, // Cyan
-  
+
   // Alternative color schemes
   mono: {
     column: { r: 0.4, g: 0.4, b: 0.4, a: 0.1 } as GridColor,
     row: { r: 0.3, g: 0.3, b: 0.3, a: 0.1 } as GridColor,
     baseline: { r: 0.5, g: 0.5, b: 0.5, a: 0.15 } as GridColor,
   },
-  
+
   vibrant: {
-    column: { r: 1, g: 0, b: 0.5, a: 0.15 } as GridColor,   // Magenta
-    row: { r: 0, g: 0.8, b: 1, a: 0.15 } as GridColor,       // Cyan
-    baseline: { r: 1, g: 0.8, b: 0, a: 0.2 } as GridColor,   // Yellow
-  }
-}
-
-
+    column: { r: 1, g: 0, b: 0.5, a: 0.15 } as GridColor, // Magenta
+    row: { r: 0, g: 0.8, b: 1, a: 0.15 } as GridColor, // Cyan
+    baseline: { r: 1, g: 0.8, b: 0, a: 0.2 } as GridColor, // Yellow
+  },
+};

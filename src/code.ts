@@ -1,7 +1,7 @@
 figma.showUI(__html__, {
   width: 560,
   height: 600,
-  themeColors: true
+  themeColors: true,
 });
 
 interface GradientColor {
@@ -13,34 +13,6 @@ interface ColorMessage {
   hex: string;
   name: string;
   rgb?: number[];
-}
-
-// ============================================
-// Grid System Types (inline for plugin backend)
-// ============================================
-
-interface GridColor {
-  r: number;
-  g: number;
-  b: number;
-  a: number;
-}
-
-interface FigmaGridConfig {
-  pattern: 'COLUMNS' | 'ROWS' | 'GRID';
-  alignment: 'MIN' | 'CENTER' | 'MAX' | 'STRETCH';
-  gutterSize: number;
-  count: number;
-  sectionSize?: number;
-  offset: number;
-  visible: boolean;
-  color: GridColor;
-}
-
-interface GridConfigMessage {
-  columns?: FigmaGridConfig;
-  rows?: FigmaGridConfig;
-  baseline?: FigmaGridConfig;
 }
 
 // Validate hex color format
@@ -62,7 +34,7 @@ function hexToFigmaRgb(hex: string): RGB {
   return {
     r: parseInt(cleanHex.substring(0, 2), 16) / 255,
     g: parseInt(cleanHex.substring(2, 4), 16) / 255,
-    b: parseInt(cleanHex.substring(4, 6), 16) / 255
+    b: parseInt(cleanHex.substring(4, 6), 16) / 255,
   };
 }
 
@@ -80,74 +52,82 @@ function getSelectedNodesWithStrokes(): (SceneNode & { strokes: Paint[] })[] {
   );
 }
 
-figma.ui.onmessage = async (msg) => {
+figma.ui.onmessage = async msg => {
   // Apply solid fill to selection
   if (msg.type === 'apply-fill') {
     const nodes = getSelectedNodesWithFills();
-    
+
     if (nodes.length === 0) {
       figma.notify('Please select a shape or frame first');
       return;
     }
 
     const color = hexToFigmaRgb(msg.hex);
-    
+
     nodes.forEach(node => {
-      node.fills = [{
-        type: 'SOLID',
-        color: color
-      }];
+      node.fills = [
+        {
+          type: 'SOLID',
+          color: color,
+        },
+      ];
     });
-    
+
     figma.notify(`Applied "${msg.name}" to ${nodes.length} element${nodes.length > 1 ? 's' : ''}`);
   }
 
   // Apply stroke to selection
   if (msg.type === 'apply-stroke') {
     const nodes = getSelectedNodesWithStrokes();
-    
+
     if (nodes.length === 0) {
       figma.notify('Please select a shape or frame first');
       return;
     }
 
     const color = hexToFigmaRgb(msg.hex);
-    
+
     nodes.forEach(node => {
-      node.strokes = [{
-        type: 'SOLID',
-        color: color
-      }];
+      node.strokes = [
+        {
+          type: 'SOLID',
+          color: color,
+        },
+      ];
       // Set stroke weight if not already set
       if ('strokeWeight' in node && (node.strokeWeight === 0 || node.strokeWeight === undefined)) {
         (node as GeometryMixin).strokeWeight = 2;
       }
     });
-    
-    figma.notify(`Applied stroke "${msg.name}" to ${nodes.length} element${nodes.length > 1 ? 's' : ''}`);
+
+    figma.notify(
+      `Applied stroke "${msg.name}" to ${nodes.length} element${nodes.length > 1 ? 's' : ''}`
+    );
   }
 
   // Create a color style
   if (msg.type === 'create-style') {
     try {
       const color = hexToFigmaRgb(msg.hex);
-      
+
       // Check if style already exists
       const existingStyles = await figma.getLocalPaintStylesAsync();
       const existingStyle = existingStyles.find(s => s.name === `Teul/${msg.name}`);
-      
+
       if (existingStyle) {
         figma.notify(`Style "Teul/${msg.name}" already exists`);
         return;
       }
-      
+
       const style = figma.createPaintStyle();
       style.name = `Teul/${msg.name}`;
-      style.paints = [{
-        type: 'SOLID',
-        color: color
-      }];
-      
+      style.paints = [
+        {
+          type: 'SOLID',
+          color: color,
+        },
+      ];
+
       figma.notify(`Created style: Teul/${msg.name}`);
     } catch (error) {
       figma.notify('Failed to create style');
@@ -158,28 +138,28 @@ figma.ui.onmessage = async (msg) => {
   // Get color from selection (for "Find Closest Color" feature)
   if (msg.type === 'get-selection-color') {
     const selection = figma.currentPage.selection;
-    
+
     if (selection.length === 0) {
       figma.notify('Please select an element first');
       return;
     }
 
     const node = selection[0];
-    
+
     if ('fills' in node) {
       const fills = node.fills as Paint[];
-      
+
       if (fills.length > 0 && fills[0].type === 'SOLID') {
         const fill = fills[0] as SolidPaint;
         const rgb = [
           Math.round(fill.color.r * 255),
           Math.round(fill.color.g * 255),
-          Math.round(fill.color.b * 255)
+          Math.round(fill.color.b * 255),
         ];
-        
+
         figma.ui.postMessage({
           type: 'selection-color',
-          rgb: rgb
+          rgb: rgb,
         });
       } else {
         figma.notify('Selected element has no solid fill');
@@ -193,28 +173,30 @@ figma.ui.onmessage = async (msg) => {
   if (msg.type === 'create-color') {
     const color = msg.color;
     const rect = figma.createRectangle();
-    
+
     rect.resize(100, 100);
     rect.x = figma.viewport.center.x - 50;
     rect.y = figma.viewport.center.y - 50;
-    
+
     const rgbColor = {
       r: color.rgb_array[0] / 255,
       g: color.rgb_array[1] / 255,
-      b: color.rgb_array[2] / 255
+      b: color.rgb_array[2] / 255,
     };
-    
-    rect.fills = [{
-      type: 'SOLID',
-      color: rgbColor
-    }];
-    
+
+    rect.fills = [
+      {
+        type: 'SOLID',
+        color: rgbColor,
+      },
+    ];
+
     rect.name = color.name;
-    
+
     figma.currentPage.selection = [rect];
     figma.viewport.scrollAndZoomIntoView([rect]);
   }
-  
+
   // Apply gradient fill
   if (msg.type === 'apply-gradient') {
     const nodes = getSelectedNodesWithFills();
@@ -236,43 +218,56 @@ figma.ui.onmessage = async (msg) => {
       const rgb = hexToFigmaRgb(color.hex);
       return {
         position: index / (colors.length - 1),
-        color: { ...rgb, a: 1 }
+        color: { ...rgb, a: 1 },
       };
     });
 
     // Different transforms for different gradient types
     let gradientTransform: Transform;
-    
+
     switch (msg.gradientType) {
       case 'LINEAR':
         // Diagonal gradient from top-left to bottom-right
-        gradientTransform = [[1, 0, 0], [0, 1, 0]];
+        gradientTransform = [
+          [1, 0, 0],
+          [0, 1, 0],
+        ];
         break;
       case 'RADIAL':
       case 'ANGULAR':
       case 'DIAMOND':
         // Centered gradient
-        gradientTransform = [[0.5, 0, 0.25], [0, 0.5, 0.25]];
+        gradientTransform = [
+          [0.5, 0, 0.25],
+          [0, 0.5, 0.25],
+        ];
         break;
       default:
-        gradientTransform = [[1, 0, 0], [0, 1, 0]];
+        gradientTransform = [
+          [1, 0, 0],
+          [0, 1, 0],
+        ];
     }
 
-    const gradientType = msg.gradientType === 'LINEAR' ? 'GRADIENT_LINEAR' :
-                         msg.gradientType === 'RADIAL' ? 'GRADIENT_RADIAL' :
-                         msg.gradientType === 'ANGULAR' ? 'GRADIENT_ANGULAR' :
-                         'GRADIENT_DIAMOND';
+    const gradientType =
+      msg.gradientType === 'LINEAR'
+        ? 'GRADIENT_LINEAR'
+        : msg.gradientType === 'RADIAL'
+          ? 'GRADIENT_RADIAL'
+          : msg.gradientType === 'ANGULAR'
+            ? 'GRADIENT_ANGULAR'
+            : 'GRADIENT_DIAMOND';
 
     const gradientFill: GradientPaint = {
       type: gradientType,
       gradientTransform,
-      gradientStops
+      gradientStops,
     };
 
     nodes.forEach(node => {
       node.fills = [gradientFill];
     });
-    
+
     figma.notify(`Applied ${msg.gradientType.toLowerCase()} gradient with ${colors.length} colors`);
   }
 
@@ -280,7 +275,7 @@ figma.ui.onmessage = async (msg) => {
   if (msg.type === 'create-palette') {
     const colors: ColorMessage[] = msg.colors;
     const paletteName = msg.name || 'Teul Palette';
-    
+
     // Create frame
     const frame = figma.createFrame();
     frame.name = paletteName;
@@ -294,7 +289,7 @@ figma.ui.onmessage = async (msg) => {
     frame.paddingBottom = 24;
     frame.cornerRadius = 16;
     frame.fills = [{ type: 'SOLID', color: { r: 0.97, g: 0.97, b: 0.97 } }];
-    
+
     // Add color swatches
     for (const color of colors) {
       const swatch = figma.createFrame();
@@ -304,41 +299,41 @@ figma.ui.onmessage = async (msg) => {
       swatch.primaryAxisSizingMode = 'FIXED';
       swatch.counterAxisSizingMode = 'FIXED';
       swatch.fills = [];
-      
+
       // Color rectangle
       const rect = figma.createRectangle();
       rect.resize(80, 60);
       rect.cornerRadius = 4;
       rect.fills = [{ type: 'SOLID', color: hexToFigmaRgb(color.hex) }];
       swatch.appendChild(rect);
-      
+
       // Color name text
       const nameText = figma.createText();
-      await figma.loadFontAsync({ family: "Inter", style: "Medium" });
-      nameText.fontName = { family: "Inter", style: "Medium" };
+      await figma.loadFontAsync({ family: 'Inter', style: 'Medium' });
+      nameText.fontName = { family: 'Inter', style: 'Medium' };
       nameText.characters = color.name;
       nameText.fontSize = 10;
       nameText.fills = [{ type: 'SOLID', color: { r: 0.2, g: 0.2, b: 0.2 } }];
       swatch.appendChild(nameText);
-      
+
       // Hex text
       const hexText = figma.createText();
-      hexText.fontName = { family: "Inter", style: "Medium" };
+      hexText.fontName = { family: 'Inter', style: 'Medium' };
       hexText.characters = color.hex;
       hexText.fontSize = 9;
       hexText.fills = [{ type: 'SOLID', color: { r: 0.5, g: 0.5, b: 0.5 } }];
       swatch.appendChild(hexText);
-      
+
       frame.appendChild(swatch);
     }
-    
+
     // Position frame in viewport
     frame.x = figma.viewport.center.x - frame.width / 2;
     frame.y = figma.viewport.center.y - frame.height / 2;
-    
+
     figma.currentPage.selection = [frame];
     figma.viewport.scrollAndZoomIntoView([frame]);
-    
+
     figma.notify(`Created palette with ${colors.length} colors`);
   }
 
@@ -379,23 +374,23 @@ figma.ui.onmessage = async (msg) => {
   // Create a new frame with grid applied
   if (msg.type === 'create-grid-frame') {
     try {
-      const { 
-        config, 
-        frameName, 
-        width, 
-        height, 
-        includeImage, 
+      const {
+        config,
+        frameName,
+        width,
+        height,
+        includeImage,
         imageData,
-        positionNearSelection = true 
+        positionNearSelection = true,
       } = msg;
-      
+
       const frame = figma.createFrame();
       frame.name = frameName || 'Grid Frame';
       frame.resize(width, height);
-      
+
       // Apply layout grids
       const layoutGrids: LayoutGrid[] = [];
-      
+
       if (config.columns) {
         layoutGrids.push({
           pattern: config.columns.pattern,
@@ -407,7 +402,7 @@ figma.ui.onmessage = async (msg) => {
           color: config.columns.color,
         } as LayoutGrid);
       }
-      
+
       if (config.rows) {
         layoutGrids.push({
           pattern: config.rows.pattern,
@@ -419,7 +414,7 @@ figma.ui.onmessage = async (msg) => {
           color: config.rows.color,
         } as LayoutGrid);
       }
-      
+
       if (config.baseline) {
         layoutGrids.push({
           pattern: 'GRID',
@@ -428,9 +423,9 @@ figma.ui.onmessage = async (msg) => {
           color: config.baseline.color,
         } as LayoutGrid);
       }
-      
+
       frame.layoutGrids = layoutGrids;
-      
+
       // Include original image as reference layer if requested
       if (includeImage && imageData) {
         try {
@@ -440,41 +435,43 @@ figma.ui.onmessage = async (msg) => {
           for (let i = 0; i < binaryString.length; i++) {
             bytes[i] = binaryString.charCodeAt(i);
           }
-          
+
           // Create image hash
           const imageHash = figma.createImage(bytes).hash;
-          
+
           // Create rectangle with image fill
           const imageRect = figma.createRectangle();
-          imageRect.name = "Reference Image";
+          imageRect.name = 'Reference Image';
           imageRect.resize(width, height);
           imageRect.x = 0;
           imageRect.y = 0;
-          imageRect.fills = [{
-            type: 'IMAGE',
-            scaleMode: 'FILL',
-            imageHash: imageHash,
-          }];
+          imageRect.fills = [
+            {
+              type: 'IMAGE',
+              scaleMode: 'FILL',
+              imageHash: imageHash,
+            },
+          ];
           imageRect.opacity = 0.5; // Semi-transparent for reference
           imageRect.locked = true; // Lock to prevent accidental edits
-          
+
           frame.appendChild(imageRect);
         } catch (imgError) {
           console.error('Failed to add reference image:', imgError);
           // Continue without the image
         }
       }
-      
+
       // Position near selection or in viewport center
       const selection = figma.currentPage.selection;
       if (positionNearSelection && selection.length > 0) {
         const bounds = selection[0];
-        
+
         // Calculate position to the right of selection with spacing
         const spacing = 48;
         frame.x = bounds.x + bounds.width + spacing;
         frame.y = bounds.y;
-        
+
         // Check if frame would go off-canvas (beyond reasonable bounds)
         // If so, position below instead
         const maxX = 100000; // Figma's practical limit
@@ -486,16 +483,16 @@ figma.ui.onmessage = async (msg) => {
         frame.x = figma.viewport.center.x - width / 2;
         frame.y = figma.viewport.center.y - height / 2;
       }
-      
+
       figma.currentPage.selection = [frame];
       figma.viewport.scrollAndZoomIntoView([frame]);
-      
+
       // Build notification message
       const gridInfo: string[] = [];
       if (config.columns?.count) gridInfo.push(`${config.columns.count} columns`);
       if (config.rows?.count) gridInfo.push(`${config.rows.count} rows`);
       if (config.baseline) gridInfo.push('baseline grid');
-      
+
       const infoStr = gridInfo.length > 0 ? ` (${gridInfo.join(', ')})` : '';
       figma.notify(`Created: ${frameName}${infoStr}`);
     } catch (error) {
@@ -507,14 +504,14 @@ figma.ui.onmessage = async (msg) => {
   // Apply grid to existing frame
   if (msg.type === 'apply-grid') {
     const selection = figma.currentPage.selection;
-    
+
     if (selection.length === 0) {
       figma.notify('Please select a frame first');
       return;
     }
 
     const node = selection[0];
-    
+
     if (!('layoutGrids' in node)) {
       figma.notify('Selected element cannot have layout grids');
       return;
@@ -523,10 +520,10 @@ figma.ui.onmessage = async (msg) => {
     try {
       const { config, replaceExisting = true, scaledToFit = false } = msg;
       const frame = node as FrameNode;
-      
+
       // Build new layout grids
       const newGrids: LayoutGrid[] = [];
-      
+
       if (config.columns) {
         newGrids.push({
           pattern: config.columns.pattern,
@@ -538,7 +535,7 @@ figma.ui.onmessage = async (msg) => {
           color: config.columns.color,
         } as LayoutGrid);
       }
-      
+
       if (config.rows) {
         newGrids.push({
           pattern: config.rows.pattern,
@@ -550,7 +547,7 @@ figma.ui.onmessage = async (msg) => {
           color: config.rows.color,
         } as LayoutGrid);
       }
-      
+
       if (config.baseline) {
         newGrids.push({
           pattern: 'GRID',
@@ -559,31 +556,29 @@ figma.ui.onmessage = async (msg) => {
           color: config.baseline.color,
         } as LayoutGrid);
       }
-      
+
       // Apply grids
       const previousCount = frame.layoutGrids.length;
-      
+
       if (replaceExisting) {
         frame.layoutGrids = newGrids;
       } else {
         frame.layoutGrids = [...frame.layoutGrids, ...newGrids];
       }
-      
+
       // Build notification message
       const gridInfo: string[] = [];
       if (config.columns?.count) gridInfo.push(`${config.columns.count}col`);
       if (config.rows?.count) gridInfo.push(`${config.rows.count}row`);
       if (config.baseline) gridInfo.push('baseline');
-      
-      const action = replaceExisting 
-        ? (previousCount > 0 ? 'Replaced' : 'Applied')
-        : 'Added';
-      
+
+      const action = replaceExisting ? (previousCount > 0 ? 'Replaced' : 'Applied') : 'Added';
+
       const infoStr = gridInfo.length > 0 ? ` (${gridInfo.join(', ')})` : '';
       const scaleNote = scaledToFit ? ' [scaled]' : '';
-      
+
       figma.notify(`${action} grid on "${frame.name}"${infoStr}${scaleNote}`);
-      
+
       // Send success message back to UI
       figma.ui.postMessage({
         type: 'grid-applied',
@@ -595,7 +590,7 @@ figma.ui.onmessage = async (msg) => {
     } catch (error) {
       console.error('Error applying grid:', error);
       figma.notify('Failed to apply grid');
-      
+
       figma.ui.postMessage({
         type: 'grid-applied',
         success: false,
@@ -603,18 +598,18 @@ figma.ui.onmessage = async (msg) => {
       });
     }
   }
-  
+
   // Clear all grids from selection
   if (msg.type === 'clear-grids') {
     const selection = figma.currentPage.selection;
-    
+
     if (selection.length === 0) {
       figma.notify('Please select a frame first');
       return;
     }
 
     const node = selection[0];
-    
+
     if (!('layoutGrids' in node)) {
       figma.notify('Selected element cannot have layout grids');
       return;
@@ -624,8 +619,10 @@ figma.ui.onmessage = async (msg) => {
       const frame = node as FrameNode;
       const previousCount = frame.layoutGrids.length;
       frame.layoutGrids = [];
-      
-      figma.notify(`Cleared ${previousCount} grid${previousCount !== 1 ? 's' : ''} from "${frame.name}"`);
+
+      figma.notify(
+        `Cleared ${previousCount} grid${previousCount !== 1 ? 's' : ''} from "${frame.name}"`
+      );
     } catch (error) {
       console.error('Error clearing grids:', error);
       figma.notify('Failed to clear grids');
@@ -675,18 +672,18 @@ interface ColorSystemData {
 
 // Semantic labels for each step (following Radix UI conventions)
 const SEMANTIC_LABELS: Record<number, { short: string; full: string }> = {
-  1:  { short: 'App BG',         full: 'App Background' },
-  2:  { short: 'Subtle BG',      full: 'Subtle Background' },
-  3:  { short: 'Element BG',     full: 'UI Element Background' },
-  4:  { short: 'Hovered',        full: 'Hovered Element BG' },
-  5:  { short: 'Active',         full: 'Active/Selected Element BG' },
-  6:  { short: 'Subtle Border',  full: 'Subtle Border' },
-  7:  { short: 'Border',         full: 'Border' },
-  8:  { short: 'Focus Ring',     full: 'Border Focus/Hover' },
-  9:  { short: 'Solid',          full: 'Solid Background' },
-  10: { short: 'Solid Hover',    full: 'Solid Hover' },
-  11: { short: 'Text Low',       full: 'Low Contrast Text' },
-  12: { short: 'Text High',      full: 'High Contrast Text' },
+  1: { short: 'App BG', full: 'App Background' },
+  2: { short: 'Subtle BG', full: 'Subtle Background' },
+  3: { short: 'Element BG', full: 'UI Element Background' },
+  4: { short: 'Hovered', full: 'Hovered Element BG' },
+  5: { short: 'Active', full: 'Active/Selected Element BG' },
+  6: { short: 'Subtle Border', full: 'Subtle Border' },
+  7: { short: 'Border', full: 'Border' },
+  8: { short: 'Focus Ring', full: 'Border Focus/Hover' },
+  9: { short: 'Solid', full: 'Solid Background' },
+  10: { short: 'Solid Hover', full: 'Solid Hover' },
+  11: { short: 'Text Low', full: 'Low Contrast Text' },
+  12: { short: 'Text High', full: 'High Contrast Text' },
 };
 
 // Calculate relative luminance
@@ -694,9 +691,9 @@ function getRelativeLuminance(hex: string): number {
   const r = parseInt(hex.slice(1, 3), 16) / 255;
   const g = parseInt(hex.slice(3, 5), 16) / 255;
   const b = parseInt(hex.slice(5, 7), 16) / 255;
-  
-  const toLinear = (c: number) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
-  
+
+  const toLinear = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+
   return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
 }
 
@@ -725,16 +722,16 @@ function getAccessibilityRating(contrast: number): { rating: string; color: RGB 
 // Font loading helper with timeout
 const FONT_LOAD_TIMEOUT = 5000; // 5 seconds
 
-async function loadFontWithTimeout(
-  family: string,
-  style: string
-): Promise<boolean> {
+async function loadFontWithTimeout(family: string, style: string): Promise<boolean> {
   try {
     await Promise.race([
       figma.loadFontAsync({ family, style }),
       new Promise((_, reject) =>
-        setTimeout(() => reject(new Error(`Font load timeout: ${family} ${style}`)), FONT_LOAD_TIMEOUT)
-      )
+        setTimeout(
+          () => reject(new Error(`Font load timeout: ${family} ${style}`)),
+          FONT_LOAD_TIMEOUT
+        )
+      ),
     ]);
     return true;
   } catch (error) {
@@ -745,41 +742,30 @@ async function loadFontWithTimeout(
 
 async function loadFonts(): Promise<boolean> {
   const fonts = [
-    { family: "Inter", style: "Regular" },
-    { family: "Inter", style: "Medium" },
-    { family: "Inter", style: "Semi Bold" },
-    { family: "Inter", style: "Bold" }
+    { family: 'Inter', style: 'Regular' },
+    { family: 'Inter', style: 'Medium' },
+    { family: 'Inter', style: 'Semi Bold' },
+    { family: 'Inter', style: 'Bold' },
   ];
 
-  const results = await Promise.all(
-    fonts.map(f => loadFontWithTimeout(f.family, f.style))
-  );
+  const results = await Promise.all(fonts.map(f => loadFontWithTimeout(f.family, f.style)));
 
   const allLoaded = results.every(r => r);
   if (!allLoaded) {
-    console.warn("Some fonts failed to load - text rendering may be affected");
+    console.warn('Some fonts failed to load - text rendering may be affected');
   }
   return allLoaded;
-}
-
-// Get contrasting text color
-function getContrastingColor(hex: string): RGB {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-  const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
-  return luminance > 0.5 ? { r: 0.1, g: 0.1, b: 0.1 } : { r: 1, g: 1, b: 1 };
 }
 
 // Create a text node with styling
 function createText(
   content: string,
   fontSize: number,
-  fontStyle: "Regular" | "Medium" | "Semi Bold" | "Bold" = "Regular",
+  fontStyle: 'Regular' | 'Medium' | 'Semi Bold' | 'Bold' = 'Regular',
   color: RGB = { r: 0.2, g: 0.2, b: 0.2 }
 ): TextNode {
   const text = figma.createText();
-  text.fontName = { family: "Inter", style: fontStyle };
+  text.fontName = { family: 'Inter', style: fontStyle };
   text.characters = content;
   text.fontSize = fontSize;
   text.fills = [{ type: 'SOLID', color }];
@@ -819,14 +805,14 @@ async function createScaleRow(
   // Role label
   if (showLabels) {
     const labelColor = mode === 'dark' ? { r: 0.9, g: 0.9, b: 0.9 } : { r: 0.3, g: 0.3, b: 0.3 };
-    const label = createText(scale.role.toUpperCase(), 10, "Bold", labelColor);
-    label.letterSpacing = { value: 1, unit: "PIXELS" };
+    const label = createText(scale.role.toUpperCase(), 10, 'Bold', labelColor);
+    label.letterSpacing = { value: 1, unit: 'PIXELS' };
     row.appendChild(label);
   }
 
   // Color swatches container
   const swatchesContainer = figma.createFrame();
-  swatchesContainer.name = "Swatches";
+  swatchesContainer.name = 'Swatches';
   swatchesContainer.layoutMode = 'HORIZONTAL';
   swatchesContainer.primaryAxisSizingMode = 'AUTO';
   swatchesContainer.counterAxisSizingMode = 'AUTO';
@@ -856,7 +842,7 @@ async function createScaleRow(
       const hexLabel = createText(
         step.hex.toUpperCase().slice(1),
         7,
-        "Regular",
+        'Regular',
         mode === 'dark' ? { r: 0.6, g: 0.6, b: 0.6 } : { r: 0.5, g: 0.5, b: 0.5 }
       );
       hexLabel.textAlignHorizontal = 'CENTER';
@@ -871,7 +857,7 @@ async function createScaleRow(
   // Semantic labels row
   if (showLabels) {
     const labelsContainer = figma.createFrame();
-    labelsContainer.name = "Semantic Labels";
+    labelsContainer.name = 'Semantic Labels';
     labelsContainer.layoutMode = 'HORIZONTAL';
     labelsContainer.primaryAxisSizingMode = 'AUTO';
     labelsContainer.counterAxisSizingMode = 'AUTO';
@@ -892,7 +878,7 @@ async function createScaleRow(
       const label = createText(
         semantic.short,
         6,
-        "Regular",
+        'Regular',
         mode === 'dark' ? { r: 0.5, g: 0.5, b: 0.5 } : { r: 0.6, g: 0.6, b: 0.6 }
       );
       label.textAlignHorizontal = 'CENTER';
@@ -906,7 +892,7 @@ async function createScaleRow(
   // Accessibility badges for text steps (11 and 12)
   if (showLabels && scale.steps.length >= 12) {
     const accessibilityRow = figma.createFrame();
-    accessibilityRow.name = "Accessibility";
+    accessibilityRow.name = 'Accessibility';
     accessibilityRow.layoutMode = 'HORIZONTAL';
     accessibilityRow.primaryAxisSizingMode = 'AUTO';
     accessibilityRow.counterAxisSizingMode = 'AUTO';
@@ -915,7 +901,7 @@ async function createScaleRow(
 
     // Calculate contrast of text colors (11, 12) against app background (1)
     const bgColor = scale.steps[0].hex; // Step 1 - app background
-    
+
     for (let i = 1; i <= 12; i++) {
       const badgeFrame = figma.createFrame();
       badgeFrame.resize(swatchSize, 14);
@@ -930,7 +916,7 @@ async function createScaleRow(
       if (i === 9 || i === 11 || i === 12) {
         const contrast = calculateContrastRatio(scale.steps[i - 1].hex, bgColor);
         const { rating, color } = getAccessibilityRating(contrast);
-        const badge = createText(rating, 6, "Medium", color);
+        const badge = createText(rating, 6, 'Medium', color);
         badge.textAlignHorizontal = 'CENTER';
         badgeFrame.appendChild(badge);
       }
@@ -947,7 +933,7 @@ async function createScaleRow(
 // Create Black/White swatches
 function createBWSwatches(size: number = 60): FrameNode {
   const container = figma.createFrame();
-  container.name = "Black & White";
+  container.name = 'Black & White';
   container.layoutMode = 'HORIZONTAL';
   container.primaryAxisSizingMode = 'AUTO';
   container.counterAxisSizingMode = 'AUTO';
@@ -956,7 +942,7 @@ function createBWSwatches(size: number = 60): FrameNode {
 
   // Black
   const blackFrame = figma.createFrame();
-  blackFrame.name = "Black";
+  blackFrame.name = 'Black';
   blackFrame.layoutMode = 'VERTICAL';
   blackFrame.primaryAxisSizingMode = 'AUTO';
   blackFrame.counterAxisSizingMode = 'AUTO';
@@ -966,12 +952,12 @@ function createBWSwatches(size: number = 60): FrameNode {
   const blackSwatch = createColorSwatch('#000000', size, size, 4);
   blackFrame.appendChild(blackSwatch);
 
-  const blackLabel = createText("Black", 10, "Medium", { r: 0.3, g: 0.3, b: 0.3 });
+  const blackLabel = createText('Black', 10, 'Medium', { r: 0.3, g: 0.3, b: 0.3 });
   blackFrame.appendChild(blackLabel);
 
   // White
   const whiteFrame = figma.createFrame();
-  whiteFrame.name = "White";
+  whiteFrame.name = 'White';
   whiteFrame.layoutMode = 'VERTICAL';
   whiteFrame.primaryAxisSizingMode = 'AUTO';
   whiteFrame.counterAxisSizingMode = 'AUTO';
@@ -983,7 +969,7 @@ function createBWSwatches(size: number = 60): FrameNode {
   whiteSwatch.strokeWeight = 1;
   whiteFrame.appendChild(whiteSwatch);
 
-  const whiteLabel = createText("White", 10, "Medium", { r: 0.3, g: 0.3, b: 0.3 });
+  const whiteLabel = createText('White', 10, 'Medium', { r: 0.3, g: 0.3, b: 0.3 });
   whiteFrame.appendChild(whiteLabel);
 
   container.appendChild(blackFrame);
@@ -994,13 +980,25 @@ function createBWSwatches(size: number = 60): FrameNode {
 
 // Create usage proportion bar
 function createUsageProportionBar(
-  proportions: { primary: number; secondary: number; tertiary: number; accent: number; neutral: number },
-  colors: { primary?: string; secondary?: string; tertiary?: string; accent?: string; neutral: string },
+  proportions: {
+    primary: number;
+    secondary: number;
+    tertiary: number;
+    accent: number;
+    neutral: number;
+  },
+  colors: {
+    primary?: string;
+    secondary?: string;
+    tertiary?: string;
+    accent?: string;
+    neutral: string;
+  },
   width: number = 400,
   mode: 'light' | 'dark' = 'light'
 ): FrameNode {
   const container = figma.createFrame();
-  container.name = "Usage Proportions";
+  container.name = 'Usage Proportions';
   container.layoutMode = 'VERTICAL';
   container.primaryAxisSizingMode = 'AUTO';
   container.counterAxisSizingMode = 'AUTO';
@@ -1008,13 +1006,13 @@ function createUsageProportionBar(
   container.fills = [];
 
   const labelColor = mode === 'dark' ? { r: 0.9, g: 0.9, b: 0.9 } : { r: 0.3, g: 0.3, b: 0.3 };
-  const title = createText("USAGE PROPORTIONS", 10, "Bold", labelColor);
-  title.letterSpacing = { value: 1, unit: "PIXELS" };
+  const title = createText('USAGE PROPORTIONS', 10, 'Bold', labelColor);
+  title.letterSpacing = { value: 1, unit: 'PIXELS' };
   container.appendChild(title);
 
   // Bar container
   const barFrame = figma.createFrame();
-  barFrame.name = "Bar";
+  barFrame.name = 'Bar';
   barFrame.layoutMode = 'HORIZONTAL';
   barFrame.primaryAxisSizingMode = 'AUTO';
   barFrame.counterAxisSizingMode = 'AUTO';
@@ -1023,7 +1021,12 @@ function createUsageProportionBar(
   barFrame.cornerRadius = 4;
   barFrame.clipsContent = true;
 
-  const total = proportions.primary + proportions.secondary + proportions.tertiary + proportions.accent + proportions.neutral;
+  const total =
+    proportions.primary +
+    proportions.secondary +
+    proportions.tertiary +
+    proportions.accent +
+    proportions.neutral;
 
   const segments = [
     { key: 'primary', color: colors.primary, proportion: proportions.primary },
@@ -1046,7 +1049,7 @@ function createUsageProportionBar(
 
   // Legend
   const legendFrame = figma.createFrame();
-  legendFrame.name = "Legend";
+  legendFrame.name = 'Legend';
   legendFrame.layoutMode = 'HORIZONTAL';
   legendFrame.primaryAxisSizingMode = 'AUTO';
   legendFrame.counterAxisSizingMode = 'AUTO';
@@ -1068,7 +1071,7 @@ function createUsageProportionBar(
     const label = createText(
       `${segment.key.charAt(0).toUpperCase() + segment.key.slice(1)}: ${segment.proportion}%`,
       9,
-      "Regular",
+      'Regular',
       mode === 'dark' ? { r: 0.7, g: 0.7, b: 0.7 } : { r: 0.4, g: 0.4, b: 0.4 }
     );
     item.appendChild(label);
@@ -1099,22 +1102,29 @@ function analyzeColor(hex: string, name: string, role: string): ColorInfo {
   const r = parseInt(hex.slice(1, 3), 16) / 255;
   const g = parseInt(hex.slice(3, 5), 16) / 255;
   const b = parseInt(hex.slice(5, 7), 16) / 255;
-  
+
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   const l = (max + min) / 2;
-  
-  let h = 0, s = 0;
+
+  let h = 0,
+    s = 0;
   if (max !== min) {
     const d = max - min;
     s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
     switch (max) {
-      case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
-      case g: h = ((b - r) / d + 2) / 6; break;
-      case b: h = ((r - g) / d + 4) / 6; break;
+      case r:
+        h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+        break;
+      case g:
+        h = ((b - r) / d + 2) / 6;
+        break;
+      case b:
+        h = ((r - g) / d + 4) / 6;
+        break;
     }
   }
-  
+
   return {
     hex,
     name,
@@ -1127,76 +1137,79 @@ function analyzeColor(hex: string, name: string, role: string): ColorInfo {
 
 // Get use case suggestion based on color properties
 function getColorUseCase(color: ColorInfo): string {
-  if (color.luminance > 0.7) return "Backgrounds";
-  if (color.luminance < 0.3) return "Text & Details";
-  if (color.saturation > 0.5) return "Accents & CTAs";
-  return "Supporting Elements";
+  if (color.luminance > 0.7) return 'Backgrounds';
+  if (color.luminance < 0.3) return 'Text & Details';
+  if (color.saturation > 0.5) return 'Accents & CTAs';
+  return 'Supporting Elements';
 }
 
 // Generate pairing suggestions from colors
-function generatePairingSuggestions(colors: ColorInfo[]): { 
+function generatePairingSuggestions(colors: ColorInfo[]): {
   pairs: { colors: ColorInfo[]; name: string; description: string }[];
   proportionStack: { color: ColorInfo; weight: number }[];
 } {
   const pairs: { colors: ColorInfo[]; name: string; description: string }[] = [];
-  
+
   if (colors.length < 2) {
     return { pairs: [], proportionStack: colors.map(c => ({ color: c, weight: 1 })) };
   }
-  
+
   // Sort by luminance for contrast pairing
   const byLuminance = [...colors].sort((a, b) => b.luminance - a.luminance);
-  
+
   // High contrast pair (lightest + darkest)
   if (colors.length >= 2) {
     pairs.push({
       colors: [byLuminance[0], byLuminance[byLuminance.length - 1]],
-      name: "High Contrast",
-      description: "Maximum visual impact, great for headlines and CTAs",
+      name: 'High Contrast',
+      description: 'Maximum visual impact, great for headlines and CTAs',
     });
   }
-  
+
   // Adjacent pairs (harmonious)
   if (colors.length >= 2) {
     pairs.push({
       colors: [colors[0], colors[1]],
-      name: "Harmonious Duo",
-      description: "Balanced and cohesive, ideal for branded content",
+      name: 'Harmonious Duo',
+      description: 'Balanced and cohesive, ideal for branded content',
     });
   }
-  
+
   // Trio (if 3+ colors)
   if (colors.length >= 3) {
     pairs.push({
       colors: [colors[0], colors[1], colors[2]],
-      name: "Core Trio",
-      description: "Rich palette for illustrations and marketing",
+      name: 'Core Trio',
+      description: 'Rich palette for illustrations and marketing',
     });
   }
-  
+
   // Full palette
   if (colors.length >= 4) {
     pairs.push({
       colors: colors.slice(0, 4),
-      name: "Full Palette",
-      description: "Complete expression for maximum visual variety",
+      name: 'Full Palette',
+      description: 'Complete expression for maximum visual variety',
     });
   }
-  
+
   // Calculate proportion stack - more saturated/darker colors get less weight (accents)
   const proportionStack = colors.map(c => {
     let weight: number;
-    if (c.luminance > 0.65) weight = 40; // Light colors: backgrounds
-    else if (c.saturation > 0.6 && c.luminance < 0.5) weight = 10; // Saturated dark: accents
-    else if (c.saturation > 0.5) weight = 20; // Saturated: secondary
+    if (c.luminance > 0.65)
+      weight = 40; // Light colors: backgrounds
+    else if (c.saturation > 0.6 && c.luminance < 0.5)
+      weight = 10; // Saturated dark: accents
+    else if (c.saturation > 0.5)
+      weight = 20; // Saturated: secondary
     else weight = 30; // Mid-tones: primary elements
     return { color: c, weight };
   });
-  
+
   // Normalize weights to sum to 100
   const totalWeight = proportionStack.reduce((sum, p) => sum + p.weight, 0);
-  proportionStack.forEach(p => p.weight = Math.round((p.weight / totalWeight) * 100));
-  
+  proportionStack.forEach(p => (p.weight = Math.round((p.weight / totalWeight) * 100)));
+
   return { pairs, proportionStack };
 }
 
@@ -1212,26 +1225,26 @@ async function createColorPairingGuide(
   // Extract base colors (step 9) from scales
   const scaleOrder = ['primary', 'secondary', 'tertiary', 'accent'] as const;
   const colorInfos: ColorInfo[] = [];
-  
+
   for (const key of scaleOrder) {
     const scale = scales[key];
     if (scale && scale.steps[8]) {
       colorInfos.push(analyzeColor(scale.steps[8].hex, scale.name, scale.role));
     }
   }
-  
+
   if (colorInfos.length === 0) {
     const emptyFrame = figma.createFrame();
-    emptyFrame.name = "Color Pairing Guide";
+    emptyFrame.name = 'Color Pairing Guide';
     emptyFrame.resize(100, 100);
     return emptyFrame;
   }
-  
+
   const { pairs, proportionStack } = generatePairingSuggestions(colorInfos);
 
   // Main container
   const container = figma.createFrame();
-  container.name = "Color Pairing Guide";
+  container.name = 'Color Pairing Guide';
   container.layoutMode = 'VERTICAL';
   container.primaryAxisSizingMode = 'AUTO';
   container.counterAxisSizingMode = 'AUTO';
@@ -1239,13 +1252,13 @@ async function createColorPairingGuide(
   container.fills = [];
 
   // Section title
-  const sectionTitle = createText("HOW TO USE THIS PALETTE", 11, "Bold", mutedColor);
-  sectionTitle.letterSpacing = { value: 1.5, unit: "PIXELS" };
+  const sectionTitle = createText('HOW TO USE THIS PALETTE', 11, 'Bold', mutedColor);
+  sectionTitle.letterSpacing = { value: 1.5, unit: 'PIXELS' };
   container.appendChild(sectionTitle);
 
   // --- Proportion Stack (like Robinhood's Jazzy Colors) ---
   const stackSection = figma.createFrame();
-  stackSection.name = "Visual Proportions";
+  stackSection.name = 'Visual Proportions';
   stackSection.layoutMode = 'HORIZONTAL';
   stackSection.primaryAxisSizingMode = 'AUTO';
   stackSection.counterAxisSizingMode = 'AUTO';
@@ -1254,7 +1267,7 @@ async function createColorPairingGuide(
 
   // Stack visualization
   const stackFrame = figma.createFrame();
-  stackFrame.name = "Stack";
+  stackFrame.name = 'Stack';
   stackFrame.layoutMode = 'VERTICAL';
   stackFrame.primaryAxisSizingMode = 'AUTO';
   stackFrame.counterAxisSizingMode = 'AUTO';
@@ -1265,7 +1278,7 @@ async function createColorPairingGuide(
 
   // Sort by weight descending for visual hierarchy
   const sortedStack = [...proportionStack].sort((a, b) => b.weight - a.weight);
-  
+
   for (const item of sortedStack) {
     const height = Math.max(20, (item.weight / 100) * 160); // Scale to max 160px
     const rect = figma.createRectangle();
@@ -1279,14 +1292,14 @@ async function createColorPairingGuide(
 
   // Stack legend
   const stackLegend = figma.createFrame();
-  stackLegend.name = "Stack Legend";
+  stackLegend.name = 'Stack Legend';
   stackLegend.layoutMode = 'VERTICAL';
   stackLegend.primaryAxisSizingMode = 'AUTO';
   stackLegend.counterAxisSizingMode = 'AUTO';
   stackLegend.itemSpacing = 8;
   stackLegend.fills = [];
 
-  const proportionTitle = createText("Suggested Proportions", 12, "Semi Bold", textColor);
+  const proportionTitle = createText('Suggested Proportions', 12, 'Semi Bold', textColor);
   stackLegend.appendChild(proportionTitle);
 
   for (const item of sortedStack) {
@@ -1301,10 +1314,10 @@ async function createColorPairingGuide(
     const dot = createColorSwatch(item.color.hex, 12, 12, 6);
     row.appendChild(dot);
 
-    const label = createText(`${item.color.name}: ${item.weight}%`, 11, "Regular", textColor);
+    const label = createText(`${item.color.name}: ${item.weight}%`, 11, 'Regular', textColor);
     row.appendChild(label);
 
-    const useCase = createText(`(${getColorUseCase(item.color)})`, 10, "Regular", mutedColor);
+    const useCase = createText(`(${getColorUseCase(item.color)})`, 10, 'Regular', mutedColor);
     row.appendChild(useCase);
 
     stackLegend.appendChild(row);
@@ -1315,18 +1328,18 @@ async function createColorPairingGuide(
 
   // --- Suggested Pairings ---
   const pairingsSection = figma.createFrame();
-  pairingsSection.name = "Suggested Pairings";
+  pairingsSection.name = 'Suggested Pairings';
   pairingsSection.layoutMode = 'VERTICAL';
   pairingsSection.primaryAxisSizingMode = 'AUTO';
   pairingsSection.counterAxisSizingMode = 'AUTO';
   pairingsSection.itemSpacing = 16;
   pairingsSection.fills = [];
 
-  const pairingsTitle = createText("Color Combinations", 12, "Semi Bold", textColor);
+  const pairingsTitle = createText('Color Combinations', 12, 'Semi Bold', textColor);
   pairingsSection.appendChild(pairingsTitle);
 
   const pairingsGrid = figma.createFrame();
-  pairingsGrid.name = "Pairings Grid";
+  pairingsGrid.name = 'Pairings Grid';
   pairingsGrid.layoutMode = 'HORIZONTAL';
   pairingsGrid.primaryAxisSizingMode = 'AUTO';
   pairingsGrid.counterAxisSizingMode = 'AUTO';
@@ -1349,7 +1362,7 @@ async function createColorPairingGuide(
 
     // Color swatches row
     const swatchesRow = figma.createFrame();
-    swatchesRow.name = "Swatches";
+    swatchesRow.name = 'Swatches';
     swatchesRow.layoutMode = 'HORIZONTAL';
     swatchesRow.primaryAxisSizingMode = 'AUTO';
     swatchesRow.counterAxisSizingMode = 'AUTO';
@@ -1360,7 +1373,12 @@ async function createColorPairingGuide(
       const swatch = figma.createEllipse();
       swatch.resize(32, 32);
       swatch.fills = [{ type: 'SOLID', color: hexToFigmaRgb(color.hex) }];
-      swatch.strokes = [{ type: 'SOLID', color: mode === 'dark' ? { r: 0.2, g: 0.2, b: 0.2 } : { r: 1, g: 1, b: 1 } }];
+      swatch.strokes = [
+        {
+          type: 'SOLID',
+          color: mode === 'dark' ? { r: 0.2, g: 0.2, b: 0.2 } : { r: 1, g: 1, b: 1 },
+        },
+      ];
       swatch.strokeWeight = 2;
       swatchesRow.appendChild(swatch);
     }
@@ -1368,11 +1386,11 @@ async function createColorPairingGuide(
     pairCard.appendChild(swatchesRow);
 
     // Pairing name
-    const pairName = createText(pair.name, 11, "Semi Bold", textColor);
+    const pairName = createText(pair.name, 11, 'Semi Bold', textColor);
     pairCard.appendChild(pairName);
 
     // Description
-    const pairDesc = createText(pair.description, 9, "Regular", mutedColor);
+    const pairDesc = createText(pair.description, 9, 'Regular', mutedColor);
     pairDesc.resize(140, pairDesc.height);
     pairDesc.textAutoResize = 'HEIGHT';
     pairCard.appendChild(pairDesc);
@@ -1385,21 +1403,21 @@ async function createColorPairingGuide(
 
   // --- Use Case Suggestions ---
   const useCaseSection = figma.createFrame();
-  useCaseSection.name = "Use Cases";
+  useCaseSection.name = 'Use Cases';
   useCaseSection.layoutMode = 'VERTICAL';
   useCaseSection.primaryAxisSizingMode = 'AUTO';
   useCaseSection.counterAxisSizingMode = 'AUTO';
   useCaseSection.itemSpacing = 12;
   useCaseSection.fills = [];
 
-  const useCaseTitle = createText("Quick Reference", 12, "Semi Bold", textColor);
+  const useCaseTitle = createText('Quick Reference', 12, 'Semi Bold', textColor);
   useCaseSection.appendChild(useCaseTitle);
 
   const useCases = [
-    { label: "Marketing & Social", suggestion: "Use Full Palette or Core Trio for visual energy" },
-    { label: "Website Sections", suggestion: "Dominant color as background, others as accents" },
-    { label: "Illustrations", suggestion: "All colors work together — vary saturation for depth" },
-    { label: "UI Elements", suggestion: "High Contrast pair for buttons and interactive states" },
+    { label: 'Marketing & Social', suggestion: 'Use Full Palette or Core Trio for visual energy' },
+    { label: 'Website Sections', suggestion: 'Dominant color as background, others as accents' },
+    { label: 'Illustrations', suggestion: 'All colors work together — vary saturation for depth' },
+    { label: 'UI Elements', suggestion: 'High Contrast pair for buttons and interactive states' },
   ];
 
   for (const useCase of useCases) {
@@ -1410,13 +1428,13 @@ async function createColorPairingGuide(
     row.itemSpacing = 8;
     row.fills = [];
 
-    const bullet = createText("→", 10, "Regular", mutedColor);
+    const bullet = createText('→', 10, 'Regular', mutedColor);
     row.appendChild(bullet);
 
-    const labelText = createText(`${useCase.label}:`, 10, "Semi Bold", textColor);
+    const labelText = createText(`${useCase.label}:`, 10, 'Semi Bold', textColor);
     row.appendChild(labelText);
 
-    const suggestionText = createText(useCase.suggestion, 10, "Regular", mutedColor);
+    const suggestionText = createText(useCase.suggestion, 10, 'Regular', mutedColor);
     row.appendChild(suggestionText);
 
     useCaseSection.appendChild(row);
@@ -1443,10 +1461,12 @@ async function generateMinimalLayout(
   frame.paddingTop = 24;
   frame.paddingBottom = 24;
   frame.cornerRadius = 12;
-  frame.fills = [{ 
-    type: 'SOLID', 
-    color: mode === 'dark' ? { r: 0.1, g: 0.1, b: 0.1 } : { r: 0.98, g: 0.98, b: 0.98 } 
-  }];
+  frame.fills = [
+    {
+      type: 'SOLID',
+      color: mode === 'dark' ? { r: 0.1, g: 0.1, b: 0.1 } : { r: 0.98, g: 0.98, b: 0.98 },
+    },
+  ];
 
   // Add scales
   const scaleOrder = ['primary', 'secondary', 'tertiary', 'accent', 'neutral'] as const;
@@ -1478,10 +1498,12 @@ async function generateDetailedLayout(
   frame.paddingTop = 32;
   frame.paddingBottom = 32;
   frame.cornerRadius = 16;
-  frame.fills = [{ 
-    type: 'SOLID', 
-    color: mode === 'dark' ? { r: 0.1, g: 0.1, b: 0.1 } : { r: 0.98, g: 0.98, b: 0.98 } 
-  }];
+  frame.fills = [
+    {
+      type: 'SOLID',
+      color: mode === 'dark' ? { r: 0.1, g: 0.1, b: 0.1 } : { r: 0.98, g: 0.98, b: 0.98 },
+    },
+  ];
 
   // Usage proportions
   const colors = {
@@ -1497,10 +1519,12 @@ async function generateDetailedLayout(
   // Divider
   const divider = figma.createRectangle();
   divider.resize(500, 1);
-  divider.fills = [{ 
-    type: 'SOLID', 
-    color: mode === 'dark' ? { r: 0.2, g: 0.2, b: 0.2 } : { r: 0.9, g: 0.9, b: 0.9 } 
-  }];
+  divider.fills = [
+    {
+      type: 'SOLID',
+      color: mode === 'dark' ? { r: 0.2, g: 0.2, b: 0.2 } : { r: 0.9, g: 0.9, b: 0.9 },
+    },
+  ];
   frame.appendChild(divider);
 
   // Add scales with larger swatches
@@ -1516,10 +1540,12 @@ async function generateDetailedLayout(
   // Add Color Pairing Guide
   const pairingDivider = figma.createRectangle();
   pairingDivider.resize(500, 1);
-  pairingDivider.fills = [{ 
-    type: 'SOLID', 
-    color: mode === 'dark' ? { r: 0.2, g: 0.2, b: 0.2 } : { r: 0.9, g: 0.9, b: 0.9 } 
-  }];
+  pairingDivider.fills = [
+    {
+      type: 'SOLID',
+      color: mode === 'dark' ? { r: 0.2, g: 0.2, b: 0.2 } : { r: 0.9, g: 0.9, b: 0.9 },
+    },
+  ];
   frame.appendChild(pairingDivider);
 
   const pairingGuide = await createColorPairingGuide(scales, mode);
@@ -1546,47 +1572,54 @@ async function generatePresentationLayout(
   frame.paddingTop = 40;
   frame.paddingBottom = 40;
   frame.cornerRadius = 20;
-  frame.fills = [{ 
-    type: 'SOLID', 
-    color: mode === 'dark' ? { r: 0.08, g: 0.08, b: 0.08 } : { r: 1, g: 1, b: 1 } 
-  }];
+  frame.fills = [
+    {
+      type: 'SOLID',
+      color: mode === 'dark' ? { r: 0.08, g: 0.08, b: 0.08 } : { r: 1, g: 1, b: 1 },
+    },
+  ];
 
   const textColor = mode === 'dark' ? { r: 0.95, g: 0.95, b: 0.95 } : { r: 0.1, g: 0.1, b: 0.1 };
   const mutedColor = mode === 'dark' ? { r: 0.6, g: 0.6, b: 0.6 } : { r: 0.5, g: 0.5, b: 0.5 };
 
   // Header
   const header = figma.createFrame();
-  header.name = "Header";
+  header.name = 'Header';
   header.layoutMode = 'VERTICAL';
   header.primaryAxisSizingMode = 'AUTO';
   header.counterAxisSizingMode = 'AUTO';
   header.itemSpacing = 8;
   header.fills = [];
 
-  const title = createText(systemName, 28, "Bold", textColor);
+  const title = createText(systemName, 28, 'Bold', textColor);
   header.appendChild(title);
 
-  const subtitle = createText(`${mode === 'dark' ? 'Dark' : 'Light'} Mode Color System`, 14, "Regular", mutedColor);
+  const subtitle = createText(
+    `${mode === 'dark' ? 'Dark' : 'Light'} Mode Color System`,
+    14,
+    'Regular',
+    mutedColor
+  );
   header.appendChild(subtitle);
 
   frame.appendChild(header);
 
   // Primary Palette Section
   const primarySection = figma.createFrame();
-  primarySection.name = "Primary Palette";
+  primarySection.name = 'Primary Palette';
   primarySection.layoutMode = 'VERTICAL';
   primarySection.primaryAxisSizingMode = 'AUTO';
   primarySection.counterAxisSizingMode = 'AUTO';
   primarySection.itemSpacing = 16;
   primarySection.fills = [];
 
-  const primaryTitle = createText("PRIMARY PALETTE", 11, "Bold", mutedColor);
-  primaryTitle.letterSpacing = { value: 1.5, unit: "PIXELS" };
+  const primaryTitle = createText('PRIMARY PALETTE', 11, 'Bold', mutedColor);
+  primaryTitle.letterSpacing = { value: 1.5, unit: 'PIXELS' };
   primarySection.appendChild(primaryTitle);
 
   // Primary colors row
   const primaryRow = figma.createFrame();
-  primaryRow.name = "Primary Colors";
+  primaryRow.name = 'Primary Colors';
   primaryRow.layoutMode = 'HORIZONTAL';
   primaryRow.primaryAxisSizingMode = 'AUTO';
   primaryRow.counterAxisSizingMode = 'AUTO';
@@ -1613,10 +1646,10 @@ async function generatePresentationLayout(
       const swatch = createColorSwatch(scale.steps[8].hex, 80, 80, 4);
       colorFrame.appendChild(swatch);
 
-      const label = createText(scale.role, 10, "Medium", mutedColor);
+      const label = createText(scale.role, 10, 'Medium', mutedColor);
       colorFrame.appendChild(label);
 
-      const hexLabel = createText(scale.steps[8].hex.toUpperCase(), 9, "Regular", mutedColor);
+      const hexLabel = createText(scale.steps[8].hex.toUpperCase(), 9, 'Regular', mutedColor);
       colorFrame.appendChild(hexLabel);
 
       primaryRow.appendChild(colorFrame);
@@ -1638,23 +1671,31 @@ async function generatePresentationLayout(
 
   // Semantic Categories Section
   const semanticSection = figma.createFrame();
-  semanticSection.name = "Semantic Categories";
+  semanticSection.name = 'Semantic Categories';
   semanticSection.layoutMode = 'VERTICAL';
   semanticSection.primaryAxisSizingMode = 'AUTO';
   semanticSection.counterAxisSizingMode = 'AUTO';
   semanticSection.itemSpacing = 24;
   semanticSection.fills = [];
 
-  const semanticTitle = createText("SEMANTIC USAGE GUIDE", 11, "Bold", mutedColor);
-  semanticTitle.letterSpacing = { value: 1.5, unit: "PIXELS" };
+  const semanticTitle = createText('SEMANTIC USAGE GUIDE', 11, 'Bold', mutedColor);
+  semanticTitle.letterSpacing = { value: 1.5, unit: 'PIXELS' };
   semanticSection.appendChild(semanticTitle);
 
   // Define semantic groups
   const semanticGroups = [
-    { name: "BACKGROUNDS", steps: [1, 2, 3, 4, 5], description: "App backgrounds, UI elements, hover & active states" },
-    { name: "BORDERS", steps: [6, 7, 8], description: "Subtle borders, default borders, focus rings" },
-    { name: "INTERACTIVE", steps: [9, 10], description: "Buttons, badges, solid backgrounds" },
-    { name: "TEXT", steps: [11, 12], description: "Secondary and primary text colors" },
+    {
+      name: 'BACKGROUNDS',
+      steps: [1, 2, 3, 4, 5],
+      description: 'App backgrounds, UI elements, hover & active states',
+    },
+    {
+      name: 'BORDERS',
+      steps: [6, 7, 8],
+      description: 'Subtle borders, default borders, focus rings',
+    },
+    { name: 'INTERACTIVE', steps: [9, 10], description: 'Buttons, badges, solid backgrounds' },
+    { name: 'TEXT', steps: [11, 12], description: 'Secondary and primary text colors' },
   ];
 
   for (const group of semanticGroups) {
@@ -1674,11 +1715,11 @@ async function generatePresentationLayout(
     groupTitleRow.itemSpacing = 12;
     groupTitleRow.fills = [];
 
-    const groupTitle = createText(group.name, 10, "Bold", textColor);
-    groupTitle.letterSpacing = { value: 1, unit: "PIXELS" };
+    const groupTitle = createText(group.name, 10, 'Bold', textColor);
+    groupTitle.letterSpacing = { value: 1, unit: 'PIXELS' };
     groupTitleRow.appendChild(groupTitle);
 
-    const groupDesc = createText(group.description, 9, "Regular", mutedColor);
+    const groupDesc = createText(group.description, 9, 'Regular', mutedColor);
     groupTitleRow.appendChild(groupDesc);
     groupFrame.appendChild(groupTitleRow);
 
@@ -1703,7 +1744,7 @@ async function generatePresentationLayout(
       roleColumn.fills = [];
 
       // Role label
-      const roleLabel = createText(roleKey.toUpperCase(), 7, "Medium", mutedColor);
+      const roleLabel = createText(roleKey.toUpperCase(), 7, 'Medium', mutedColor);
       roleColumn.appendChild(roleLabel);
 
       // Swatches row for this role
@@ -1730,7 +1771,7 @@ async function generatePresentationLayout(
 
         // Step label
         const semantic = SEMANTIC_LABELS[stepNum];
-        const stepLabel = createText(semantic.short, 5, "Regular", mutedColor);
+        const stepLabel = createText(semantic.short, 5, 'Regular', mutedColor);
         swatchContainer.appendChild(stepLabel);
 
         // Accessibility badge for text colors
@@ -1738,7 +1779,7 @@ async function generatePresentationLayout(
           const bgColor = scale.steps[0].hex;
           const contrast = calculateContrastRatio(step.hex, bgColor);
           const { rating, color } = getAccessibilityRating(contrast);
-          const badge = createText(rating, 5, "Medium", color);
+          const badge = createText(rating, 5, 'Medium', color);
           swatchContainer.appendChild(badge);
         }
 
@@ -1757,15 +1798,15 @@ async function generatePresentationLayout(
 
   // Extended Palette Section
   const extendedSection = figma.createFrame();
-  extendedSection.name = "Extended Palette";
+  extendedSection.name = 'Extended Palette';
   extendedSection.layoutMode = 'VERTICAL';
   extendedSection.primaryAxisSizingMode = 'AUTO';
   extendedSection.counterAxisSizingMode = 'AUTO';
   extendedSection.itemSpacing = 16;
   extendedSection.fills = [];
 
-  const extendedTitle = createText("FULL COLOR SCALES", 11, "Bold", mutedColor);
-  extendedTitle.letterSpacing = { value: 1.5, unit: "PIXELS" };
+  const extendedTitle = createText('FULL COLOR SCALES', 11, 'Bold', mutedColor);
+  extendedTitle.letterSpacing = { value: 1.5, unit: 'PIXELS' };
   extendedSection.appendChild(extendedTitle);
 
   // Add all scales
@@ -1788,7 +1829,7 @@ async function generatePresentationLayout(
 }
 
 // Main function to generate color system frames
-async function generateColorSystemFrames(config: any, scalesData: ColorSystemData) {
+async function generateColorSystemFrames(_config: unknown, scalesData: ColorSystemData) {
   await loadFonts();
 
   const { detailLevel, includeDarkMode, systemName, scaleMethod } = scalesData;
@@ -1814,7 +1855,12 @@ async function generateColorSystemFrames(config: any, scalesData: ColorSystemDat
       lightFrame = await generateDetailedLayout(lightScales, scalesData.usageProportions, 'light');
       break;
     case 'presentation':
-      lightFrame = await generatePresentationLayout(systemName, lightScales, scalesData.usageProportions, 'light');
+      lightFrame = await generatePresentationLayout(
+        systemName,
+        lightScales,
+        scalesData.usageProportions,
+        'light'
+      );
       break;
     default:
       lightFrame = await generateDetailedLayout(lightScales, scalesData.usageProportions, 'light');
@@ -1832,7 +1878,12 @@ async function generateColorSystemFrames(config: any, scalesData: ColorSystemDat
         darkFrame = await generateDetailedLayout(darkScales, scalesData.usageProportions, 'dark');
         break;
       case 'presentation':
-        darkFrame = await generatePresentationLayout(systemName, darkScales, scalesData.usageProportions, 'dark');
+        darkFrame = await generatePresentationLayout(
+          systemName,
+          darkScales,
+          scalesData.usageProportions,
+          'dark'
+        );
         break;
       default:
         darkFrame = await generateDetailedLayout(darkScales, scalesData.usageProportions, 'dark');
@@ -1854,7 +1905,9 @@ async function generateColorSystemFrames(config: any, scalesData: ColorSystemDat
   figma.currentPage.selection = [container];
   figma.viewport.scrollAndZoomIntoView([container]);
 
-  figma.notify(`Created "${systemName}" color system with ${includeDarkMode ? 'light & dark modes' : 'light mode'}`);
+  figma.notify(
+    `Created "${systemName}" color system with ${includeDarkMode ? 'light & dark modes' : 'light mode'}`
+  );
 }
 
 // ============================================
@@ -1915,19 +1968,14 @@ function stepToStyleNumber(step: number): string {
 async function createColorStyles(scalesData: CreateStylesData, systemName: string) {
   const existingStyles = await figma.getLocalPaintStylesAsync();
   const existingStyleNames = new Set(existingStyles.map(s => s.name));
-  
+
   let created = 0;
   let skipped = 0;
 
   // Helper to create a single style
-  const createStyle = async (
-    basePath: string,
-    role: string,
-    step: number,
-    hex: string
-  ) => {
+  const createStyle = async (basePath: string, role: string, step: number, hex: string) => {
     const styleName = `${basePath}/${role}/${stepToStyleNumber(step)}`;
-    
+
     // Check if style already exists
     if (existingStyleNames.has(styleName)) {
       skipped++;
@@ -1936,11 +1984,13 @@ async function createColorStyles(scalesData: CreateStylesData, systemName: strin
 
     const style = figma.createPaintStyle();
     style.name = styleName;
-    style.paints = [{
-      type: 'SOLID',
-      color: hexToFigmaRgb(hex)
-    }];
-    
+    style.paints = [
+      {
+        type: 'SOLID',
+        color: hexToFigmaRgb(hex),
+      },
+    ];
+
     created++;
   };
 
@@ -1950,7 +2000,7 @@ async function createColorStyles(scalesData: CreateStylesData, systemName: strin
     modePath: string
   ) => {
     const styleScaleOrder = ['primary', 'secondary', 'tertiary', 'accent', 'neutral'] as const;
-    
+
     for (const key of styleScaleOrder) {
       const scale = scales[key];
       if (scale) {
@@ -1962,9 +2012,7 @@ async function createColorStyles(scalesData: CreateStylesData, systemName: strin
   };
 
   // Create light mode styles
-  const lightPath = scalesData.includeDarkMode 
-    ? `${systemName}/Light` 
-    : systemName;
+  const lightPath = scalesData.includeDarkMode ? `${systemName}/Light` : systemName;
   await createScaleStyles(scalesData.scales.light, lightPath);
 
   // Create dark mode styles if available
@@ -1976,7 +2024,7 @@ async function createColorStyles(scalesData: CreateStylesData, systemName: strin
   // Also create semantic aliases for common use cases
   const lightScales = scalesData.scales.light;
   const basePath = scalesData.includeDarkMode ? `${systemName}/Light` : systemName;
-  
+
   // Create semantic aliases
   const semanticAliases = [
     // Backgrounds
@@ -2002,10 +2050,12 @@ async function createColorStyles(scalesData: CreateStylesData, systemName: strin
         if (!existingStyleNames.has(styleName)) {
           const style = figma.createPaintStyle();
           style.name = styleName;
-          style.paints = [{
-            type: 'SOLID',
-            color: hexToFigmaRgb(step.hex)
-          }];
+          style.paints = [
+            {
+              type: 'SOLID',
+              color: hexToFigmaRgb(step.hex),
+            },
+          ];
           created++;
         }
       }
@@ -2029,15 +2079,19 @@ async function createColorStyles(scalesData: CreateStylesData, systemName: strin
         if (!existingStyleNames.has(styleName)) {
           const style = figma.createPaintStyle();
           style.name = styleName;
-          style.paints = [{
-            type: 'SOLID',
-            color: hexToFigmaRgb(step.hex)
-          }];
+          style.paints = [
+            {
+              type: 'SOLID',
+              color: hexToFigmaRgb(step.hex),
+            },
+          ];
           created++;
         }
       }
     }
   }
 
-  figma.notify(`Created ${created} color styles${skipped > 0 ? ` (${skipped} already existed)` : ''}`);
+  figma.notify(
+    `Created ${created} color styles${skipped > 0 ? ` (${skipped} already existed)` : ''}`
+  );
 }

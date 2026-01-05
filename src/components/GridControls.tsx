@@ -1,36 +1,34 @@
-import * as React from 'react'
-import type { 
-  GridConfig, 
-  ColumnGridConfig, 
-  RowGridConfig, 
+import * as React from 'react';
+import type {
+  GridConfig,
+  ColumnGridConfig,
+  RowGridConfig,
   BaselineGridConfig,
   GridColor,
   GridUnit,
-  GridAlignment
-} from '../types/grid'
-import { 
-  gridColorToCSS, 
-  cssToGridColor, 
+} from '../types/grid';
+import {
+  cssToGridColor,
   calculateBaselineFromTypography,
-  getTypographySuggestions 
-} from '../lib/gridUtils'
+  getTypographySuggestions,
+} from '../lib/gridUtils';
 
 interface GridControlsProps {
   /** Current grid configuration */
-  config: GridConfig
+  config: GridConfig;
   /** Callback when config changes */
-  onChange: (config: GridConfig) => void
+  onChange: (config: GridConfig) => void;
   /** Reset to original/detected values */
-  onReset?: () => void
+  onReset?: () => void;
   /** Whether there are changes to reset */
-  hasChanges?: boolean
+  hasChanges?: boolean;
   /** Frame dimensions for percentage calculations */
-  frameWidth: number
-  frameHeight: number
+  frameWidth: number;
+  frameHeight: number;
   /** Dark mode */
-  isDark: boolean
+  isDark: boolean;
   /** Compact mode for smaller spaces */
-  compact?: boolean
+  compact?: boolean;
 }
 
 const styles = {
@@ -49,23 +47,23 @@ const styles = {
     inputBg: '#2a2a2a',
     sectionBg: '#262626',
     labelBg: '#333333',
-  }
-}
+  },
+};
 
 // ============================================
 // Number Input Component
 // ============================================
 
 interface NumberInputProps {
-  label: string
-  value: number
-  onChange: (value: number) => void
-  min?: number
-  max?: number
-  step?: number
-  suffix?: string
-  isDark: boolean
-  compact?: boolean
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+  suffix?: string;
+  isDark: boolean;
+  compact?: boolean;
 }
 
 const NumberInput: React.FC<NumberInputProps> = ({
@@ -79,37 +77,43 @@ const NumberInput: React.FC<NumberInputProps> = ({
   isDark,
   compact,
 }) => {
-  const theme = isDark ? styles.dark : styles.light
-  
+  const theme = isDark ? styles.dark : styles.light;
+
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: compact ? 'row' : 'column',
-      gap: compact ? '8px' : '4px',
-      alignItems: compact ? 'center' : 'stretch',
-    }}>
-      <label style={{
-        fontSize: '10px',
-        fontWeight: 600,
-        color: theme.textMuted,
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px',
-        minWidth: compact ? '60px' : undefined,
-      }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: compact ? 'row' : 'column',
+        gap: compact ? '8px' : '4px',
+        alignItems: compact ? 'center' : 'stretch',
+      }}
+    >
+      <label
+        style={{
+          fontSize: '10px',
+          fontWeight: 600,
+          color: theme.textMuted,
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+          minWidth: compact ? '60px' : undefined,
+        }}
+      >
         {label}
       </label>
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '4px',
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '4px',
+        }}
+      >
         <input
           type="number"
           value={value}
-          onChange={(e) => {
-            const val = parseFloat(e.target.value)
+          onChange={e => {
+            const val = parseFloat(e.target.value);
             if (!isNaN(val)) {
-              onChange(Math.min(max, Math.max(min, val)))
+              onChange(Math.min(max, Math.max(min, val)));
             }
           }}
           min={min}
@@ -127,38 +131,42 @@ const NumberInput: React.FC<NumberInputProps> = ({
           }}
         />
         {suffix && (
-          <span style={{
-            fontSize: '10px',
-            color: theme.textMuted,
-          }}>
+          <span
+            style={{
+              fontSize: '10px',
+              color: theme.textMuted,
+            }}
+          >
             {suffix}
           </span>
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
 // ============================================
 // Unit Toggle Component
 // ============================================
 
 interface UnitToggleProps {
-  value: GridUnit
-  onChange: (unit: GridUnit) => void
-  isDark: boolean
+  value: GridUnit;
+  onChange: (unit: GridUnit) => void;
+  isDark: boolean;
 }
 
 const UnitToggle: React.FC<UnitToggleProps> = ({ value, onChange, isDark }) => {
-  const theme = isDark ? styles.dark : styles.light
-  
+  const theme = isDark ? styles.dark : styles.light;
+
   return (
-    <div style={{
-      display: 'flex',
-      borderRadius: '6px',
-      overflow: 'hidden',
-      border: `1px solid ${theme.border}`,
-    }}>
+    <div
+      style={{
+        display: 'flex',
+        borderRadius: '6px',
+        overflow: 'hidden',
+        border: `1px solid ${theme.border}`,
+      }}
+    >
       {(['px', 'percent'] as GridUnit[]).map(unit => (
         <button
           key={unit}
@@ -178,18 +186,18 @@ const UnitToggle: React.FC<UnitToggleProps> = ({ value, onChange, isDark }) => {
         </button>
       ))}
     </div>
-  )
-}
+  );
+};
 
 // ============================================
 // Color Picker Component
 // ============================================
 
 interface ColorPickerProps {
-  label: string
-  value: GridColor
-  onChange: (color: GridColor) => void
-  isDark: boolean
+  label: string;
+  value: GridColor;
+  onChange: (color: GridColor) => void;
+  isDark: boolean;
 }
 
 const PRESET_COLORS = [
@@ -201,21 +209,29 @@ const PRESET_COLORS = [
   { name: 'Cyan', hex: '#06b6d4' },
   { name: 'Pink', hex: '#ec4899' },
   { name: 'Gray', hex: '#6b7280' },
-]
+];
 
 const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange, isDark }) => {
-  const theme = isDark ? styles.dark : styles.light
-  const currentHex = `#${Math.round(value.r * 255).toString(16).padStart(2, '0')}${Math.round(value.g * 255).toString(16).padStart(2, '0')}${Math.round(value.b * 255).toString(16).padStart(2, '0')}`
-  
+  const theme = isDark ? styles.dark : styles.light;
+  const currentHex = `#${Math.round(value.r * 255)
+    .toString(16)
+    .padStart(2, '0')}${Math.round(value.g * 255)
+    .toString(16)
+    .padStart(2, '0')}${Math.round(value.b * 255)
+    .toString(16)
+    .padStart(2, '0')}`;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-      <label style={{
-        fontSize: '10px',
-        fontWeight: 600,
-        color: theme.textMuted,
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px',
-      }}>
+      <label
+        style={{
+          fontSize: '10px',
+          fontWeight: 600,
+          color: theme.textMuted,
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+        }}
+      >
         {label}
       </label>
       <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
@@ -228,9 +244,10 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange, isDar
               width: '20px',
               height: '20px',
               borderRadius: '4px',
-              border: currentHex.toLowerCase() === preset.hex.toLowerCase() 
-                ? '2px solid #3b82f6' 
-                : `1px solid ${theme.border}`,
+              border:
+                currentHex.toLowerCase() === preset.hex.toLowerCase()
+                  ? '2px solid #3b82f6'
+                  : `1px solid ${theme.border}`,
               backgroundColor: preset.hex,
               cursor: 'pointer',
               padding: 0,
@@ -239,43 +256,49 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange, isDar
         ))}
       </div>
     </div>
-  )
-}
+  );
+};
 
 // ============================================
 // Opacity Slider Component
 // ============================================
 
 interface OpacitySliderProps {
-  value: number
-  onChange: (value: number) => void
-  isDark: boolean
+  value: number;
+  onChange: (value: number) => void;
+  isDark: boolean;
 }
 
 const OpacitySlider: React.FC<OpacitySliderProps> = ({ value, onChange, isDark }) => {
-  const theme = isDark ? styles.dark : styles.light
-  
+  const theme = isDark ? styles.dark : styles.light;
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}>
-        <label style={{
-          fontSize: '10px',
-          fontWeight: 600,
-          color: theme.textMuted,
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px',
-        }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <label
+          style={{
+            fontSize: '10px',
+            fontWeight: 600,
+            color: theme.textMuted,
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+          }}
+        >
           Opacity
         </label>
-        <span style={{
-          fontSize: '10px',
-          color: theme.textMuted,
-          fontFamily: 'monospace',
-        }}>
+        <span
+          style={{
+            fontSize: '10px',
+            color: theme.textMuted,
+            fontFamily: 'monospace',
+          }}
+        >
           {Math.round(value * 100)}%
         </span>
       </div>
@@ -285,7 +308,7 @@ const OpacitySlider: React.FC<OpacitySliderProps> = ({ value, onChange, isDark }
         max={1}
         step={0.05}
         value={value}
-        onChange={(e) => onChange(parseFloat(e.target.value))}
+        onChange={e => onChange(parseFloat(e.target.value))}
         style={{
           width: '100%',
           height: '4px',
@@ -296,8 +319,8 @@ const OpacitySlider: React.FC<OpacitySliderProps> = ({ value, onChange, isDark }
         }}
       />
     </div>
-  )
-}
+  );
+};
 
 // ============================================
 // Typography Presets
@@ -310,16 +333,16 @@ const TYPOGRAPHY_PRESETS = [
   { name: 'Print Body', fontSize: 10, lineHeight: 1.4, baseline: 12 },
   { name: 'Print Large', fontSize: 12, lineHeight: 1.4, baseline: 16 },
   { name: 'Display', fontSize: 24, lineHeight: 1.3, baseline: 24 },
-]
+];
 
 // ============================================
 // Baseline Calculator Component
 // ============================================
 
 interface BaselineCalculatorProps {
-  currentBaseline: number
-  onBaselineChange: (value: number) => void
-  isDark: boolean
+  currentBaseline: number;
+  onBaselineChange: (value: number) => void;
+  isDark: boolean;
 }
 
 const BaselineCalculator: React.FC<BaselineCalculatorProps> = ({
@@ -327,20 +350,22 @@ const BaselineCalculator: React.FC<BaselineCalculatorProps> = ({
   onBaselineChange,
   isDark,
 }) => {
-  const theme = isDark ? styles.dark : styles.light
-  const [fontSize, setFontSize] = React.useState(16)
-  const [lineHeight, setLineHeight] = React.useState(1.5)
-  const [isExpanded, setIsExpanded] = React.useState(false)
-  
-  const calculatedBaseline = calculateBaselineFromTypography(fontSize, lineHeight)
-  const suggestions = getTypographySuggestions(currentBaseline)
-  
+  const theme = isDark ? styles.dark : styles.light;
+  const [fontSize, setFontSize] = React.useState(16);
+  const [lineHeight, setLineHeight] = React.useState(1.5);
+  const [isExpanded, setIsExpanded] = React.useState(false);
+
+  const calculatedBaseline = calculateBaselineFromTypography(fontSize, lineHeight);
+  const suggestions = getTypographySuggestions(currentBaseline);
+
   return (
-    <div style={{
-      border: `1px solid ${theme.border}`,
-      borderRadius: '6px',
-      overflow: 'hidden',
-    }}>
+    <div
+      style={{
+        border: `1px solid ${theme.border}`,
+        borderRadius: '6px',
+        overflow: 'hidden',
+      }}
+    >
       {/* Header - clickable to expand */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
@@ -362,39 +387,47 @@ const BaselineCalculator: React.FC<BaselineCalculatorProps> = ({
           <span style={{ fontSize: '12px' }}>🧮</span>
           Typography Calculator
         </span>
-        <span style={{ 
-          transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-          transition: 'transform 0.15s ease',
-          fontSize: '10px',
-        }}>
+        <span
+          style={{
+            transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+            transition: 'transform 0.15s ease',
+            fontSize: '10px',
+          }}
+        >
           ▼
         </span>
       </button>
-      
+
       {isExpanded && (
-        <div style={{
-          padding: '10px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px',
-          borderTop: `1px solid ${theme.border}`,
-        }}>
+        <div
+          style={{
+            padding: '10px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+            borderTop: `1px solid ${theme.border}`,
+          }}
+        >
           {/* Input fields */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-              <label style={{
-                fontSize: '9px',
-                fontWeight: 600,
-                color: theme.textMuted,
-                textTransform: 'uppercase',
-              }}>
+              <label
+                style={{
+                  fontSize: '9px',
+                  fontWeight: 600,
+                  color: theme.textMuted,
+                  textTransform: 'uppercase',
+                }}
+              >
                 Font Size
               </label>
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <input
                   type="number"
                   value={fontSize}
-                  onChange={(e) => setFontSize(Math.max(8, Math.min(72, parseInt(e.target.value) || 16)))}
+                  onChange={e =>
+                    setFontSize(Math.max(8, Math.min(72, parseInt(e.target.value) || 16)))
+                  }
                   min={8}
                   max={72}
                   style={{
@@ -411,20 +444,24 @@ const BaselineCalculator: React.FC<BaselineCalculatorProps> = ({
                 <span style={{ fontSize: '9px', color: theme.textMuted }}>px</span>
               </div>
             </div>
-            
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-              <label style={{
-                fontSize: '9px',
-                fontWeight: 600,
-                color: theme.textMuted,
-                textTransform: 'uppercase',
-              }}>
+              <label
+                style={{
+                  fontSize: '9px',
+                  fontWeight: 600,
+                  color: theme.textMuted,
+                  textTransform: 'uppercase',
+                }}
+              >
                 Line Height
               </label>
               <input
                 type="number"
                 value={lineHeight}
-                onChange={(e) => setLineHeight(Math.max(1, Math.min(3, parseFloat(e.target.value) || 1.5)))}
+                onChange={e =>
+                  setLineHeight(Math.max(1, Math.min(3, parseFloat(e.target.value) || 1.5)))
+                }
                 min={1}
                 max={3}
                 step={0.1}
@@ -441,16 +478,18 @@ const BaselineCalculator: React.FC<BaselineCalculatorProps> = ({
               />
             </div>
           </div>
-          
+
           {/* Calculated result */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '8px 10px',
-            backgroundColor: isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)',
-            borderRadius: '4px',
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '8px 10px',
+              backgroundColor: isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)',
+              borderRadius: '4px',
+            }}
+          >
             <span style={{ fontSize: '10px', color: theme.text }}>
               Recommended: <strong>{calculatedBaseline}px</strong>
             </span>
@@ -470,69 +509,79 @@ const BaselineCalculator: React.FC<BaselineCalculatorProps> = ({
               Apply
             </button>
           </div>
-          
+
           {/* Typography suggestions based on current baseline */}
-          <div style={{
-            padding: '8px',
-            backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-            borderRadius: '4px',
-            fontSize: '9px',
-            color: theme.textMuted,
-          }}>
+          <div
+            style={{
+              padding: '8px',
+              backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+              borderRadius: '4px',
+              fontSize: '9px',
+              color: theme.textMuted,
+            }}
+          >
             <div style={{ marginBottom: '4px', fontWeight: 600 }}>
               Suggested typography for {currentBaseline}px baseline:
             </div>
-            <div>Body: {suggestions.bodySize}px / {suggestions.bodyLineHeight}</div>
+            <div>
+              Body: {suggestions.bodySize}px / {suggestions.bodyLineHeight}
+            </div>
             <div>Headings: {suggestions.headingSizes.join(', ')}px</div>
           </div>
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
 // ============================================
 // Section Header Component
 // ============================================
 
 interface SectionHeaderProps {
-  title: string
-  icon: string
-  enabled: boolean
-  onToggle: (enabled: boolean) => void
-  isDark: boolean
+  title: string;
+  icon: string;
+  enabled: boolean;
+  onToggle: (enabled: boolean) => void;
+  isDark: boolean;
 }
 
-const SectionHeader: React.FC<SectionHeaderProps> = ({ 
-  title, 
-  icon, 
-  enabled, 
-  onToggle, 
-  isDark 
+const SectionHeader: React.FC<SectionHeaderProps> = ({
+  title,
+  icon,
+  enabled,
+  onToggle,
+  isDark,
 }) => {
-  const theme = isDark ? styles.dark : styles.light
-  
+  const theme = isDark ? styles.dark : styles.light;
+
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '8px 12px',
-      backgroundColor: theme.labelBg,
-      borderRadius: '6px',
-      marginBottom: '8px',
-    }}>
-      <div style={{
+    <div
+      style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '8px',
-      }}>
+        justifyContent: 'space-between',
+        padding: '8px 12px',
+        backgroundColor: theme.labelBg,
+        borderRadius: '6px',
+        marginBottom: '8px',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+        }}
+      >
         <span style={{ fontSize: '14px' }}>{icon}</span>
-        <span style={{
-          fontSize: '12px',
-          fontWeight: 600,
-          color: theme.text,
-        }}>
+        <span
+          style={{
+            fontSize: '12px',
+            fontWeight: 600,
+            color: theme.text,
+          }}
+        >
           {title}
         </span>
       </div>
@@ -553,8 +602,8 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
         {enabled ? 'ON' : 'OFF'}
       </button>
     </div>
-  )
-}
+  );
+};
 
 // ============================================
 // Main Grid Controls Component
@@ -565,40 +614,37 @@ export const GridControls: React.FC<GridControlsProps> = ({
   onChange,
   onReset,
   hasChanges,
-  frameWidth,
-  frameHeight,
   isDark,
-  compact = false,
 }) => {
-  const theme = isDark ? styles.dark : styles.light
-  
+  const theme = isDark ? styles.dark : styles.light;
+
   // Update column config
   const updateColumns = (updates: Partial<ColumnGridConfig>) => {
-    if (!config.columns) return
+    if (!config.columns) return;
     onChange({
       ...config,
       columns: { ...config.columns, ...updates },
-    })
-  }
-  
+    });
+  };
+
   // Update row config
   const updateRows = (updates: Partial<RowGridConfig>) => {
-    if (!config.rows) return
+    if (!config.rows) return;
     onChange({
       ...config,
       rows: { ...config.rows, ...updates },
-    })
-  }
-  
+    });
+  };
+
   // Update baseline config
   const updateBaseline = (updates: Partial<BaselineGridConfig>) => {
-    if (!config.baseline) return
+    if (!config.baseline) return;
     onChange({
       ...config,
       baseline: { ...config.baseline, ...updates },
-    })
-  }
-  
+    });
+  };
+
   // Toggle sections
   const toggleColumns = (enabled: boolean) => {
     if (enabled && !config.columns) {
@@ -614,13 +660,13 @@ export const GridControls: React.FC<GridControlsProps> = ({
           visible: true,
           color: { r: 1, g: 0.2, b: 0.2, a: 0.1 },
         },
-      })
+      });
     } else if (!enabled) {
-      const { columns, ...rest } = config
-      onChange(rest)
+      const { columns: _columns, ...rest } = config;
+      onChange(rest);
     }
-  }
-  
+  };
+
   const toggleRows = (enabled: boolean) => {
     if (enabled && !config.rows) {
       onChange({
@@ -635,13 +681,13 @@ export const GridControls: React.FC<GridControlsProps> = ({
           visible: true,
           color: { r: 0.2, g: 0.4, b: 1, a: 0.1 },
         },
-      })
+      });
     } else if (!enabled) {
-      const { rows, ...rest } = config
-      onChange(rest)
+      const { rows: _rows, ...rest } = config;
+      onChange(rest);
     }
-  }
-  
+  };
+
   const toggleBaseline = (enabled: boolean) => {
     if (enabled && !config.baseline) {
       onChange({
@@ -652,19 +698,21 @@ export const GridControls: React.FC<GridControlsProps> = ({
           visible: true,
           color: { r: 0.2, g: 0.8, b: 0.9, a: 0.15 },
         },
-      })
+      });
     } else if (!enabled) {
-      const { baseline, ...rest } = config
-      onChange(rest)
+      const { baseline: _baseline, ...rest } = config;
+      onChange(rest);
     }
-  }
-  
+  };
+
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '16px',
-    }}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px',
+      }}
+    >
       {/* Column Grid Section */}
       <div>
         <SectionHeader
@@ -674,21 +722,23 @@ export const GridControls: React.FC<GridControlsProps> = ({
           onToggle={toggleColumns}
           isDark={isDark}
         />
-        
+
         {config.columns && (
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px',
-            padding: '12px',
-            backgroundColor: theme.sectionBg,
-            borderRadius: '8px',
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              padding: '12px',
+              backgroundColor: theme.sectionBg,
+              borderRadius: '8px',
+            }}
+          >
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <NumberInput
                 label="Columns"
                 value={config.columns.count}
-                onChange={(v) => updateColumns({ count: v })}
+                onChange={v => updateColumns({ count: v })}
                 min={1}
                 max={24}
                 isDark={isDark}
@@ -697,7 +747,7 @@ export const GridControls: React.FC<GridControlsProps> = ({
                 <NumberInput
                   label="Gutter"
                   value={config.columns.gutterSize}
-                  onChange={(v) => updateColumns({ gutterSize: v })}
+                  onChange={v => updateColumns({ gutterSize: v })}
                   min={0}
                   max={config.columns.gutterUnit === 'percent' ? 20 : 100}
                   step={config.columns.gutterUnit === 'percent' ? 0.5 : 1}
@@ -706,17 +756,17 @@ export const GridControls: React.FC<GridControlsProps> = ({
                 />
                 <UnitToggle
                   value={config.columns.gutterUnit}
-                  onChange={(unit) => updateColumns({ gutterUnit: unit })}
+                  onChange={unit => updateColumns({ gutterUnit: unit })}
                   isDark={isDark}
                 />
               </div>
             </div>
-            
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <NumberInput
                 label="Margin"
                 value={config.columns.margin}
-                onChange={(v) => updateColumns({ margin: v })}
+                onChange={v => updateColumns({ margin: v })}
                 min={0}
                 max={config.columns.marginUnit === 'percent' ? 25 : 200}
                 step={config.columns.marginUnit === 'percent' ? 0.5 : 1}
@@ -725,29 +775,31 @@ export const GridControls: React.FC<GridControlsProps> = ({
               />
               <UnitToggle
                 value={config.columns.marginUnit}
-                onChange={(unit) => updateColumns({ marginUnit: unit })}
+                onChange={unit => updateColumns({ marginUnit: unit })}
                 isDark={isDark}
               />
             </div>
-            
+
             <ColorPicker
               label="Color"
               value={config.columns.color}
-              onChange={(color) => updateColumns({ color })}
+              onChange={color => updateColumns({ color })}
               isDark={isDark}
             />
-            
+
             <OpacitySlider
               value={config.columns.color.a}
-              onChange={(a) => updateColumns({ 
-                color: { ...config.columns!.color, a } 
-              })}
+              onChange={a =>
+                updateColumns({
+                  color: { ...config.columns!.color, a },
+                })
+              }
               isDark={isDark}
             />
           </div>
         )}
       </div>
-      
+
       {/* Row Grid Section */}
       <div>
         <SectionHeader
@@ -757,21 +809,23 @@ export const GridControls: React.FC<GridControlsProps> = ({
           onToggle={toggleRows}
           isDark={isDark}
         />
-        
+
         {config.rows && (
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px',
-            padding: '12px',
-            backgroundColor: theme.sectionBg,
-            borderRadius: '8px',
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              padding: '12px',
+              backgroundColor: theme.sectionBg,
+              borderRadius: '8px',
+            }}
+          >
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <NumberInput
                 label="Rows"
                 value={config.rows.count}
-                onChange={(v) => updateRows({ count: v })}
+                onChange={v => updateRows({ count: v })}
                 min={1}
                 max={24}
                 isDark={isDark}
@@ -780,7 +834,7 @@ export const GridControls: React.FC<GridControlsProps> = ({
                 <NumberInput
                   label="Gutter"
                   value={config.rows.gutterSize}
-                  onChange={(v) => updateRows({ gutterSize: v })}
+                  onChange={v => updateRows({ gutterSize: v })}
                   min={0}
                   max={config.rows.gutterUnit === 'percent' ? 20 : 100}
                   step={config.rows.gutterUnit === 'percent' ? 0.5 : 1}
@@ -789,30 +843,32 @@ export const GridControls: React.FC<GridControlsProps> = ({
                 />
                 <UnitToggle
                   value={config.rows.gutterUnit}
-                  onChange={(unit) => updateRows({ gutterUnit: unit })}
+                  onChange={unit => updateRows({ gutterUnit: unit })}
                   isDark={isDark}
                 />
               </div>
             </div>
-            
+
             <ColorPicker
               label="Color"
               value={config.rows.color}
-              onChange={(color) => updateRows({ color })}
+              onChange={color => updateRows({ color })}
               isDark={isDark}
             />
-            
+
             <OpacitySlider
               value={config.rows.color.a}
-              onChange={(a) => updateRows({ 
-                color: { ...config.rows!.color, a } 
-              })}
+              onChange={a =>
+                updateRows({
+                  color: { ...config.rows!.color, a },
+                })
+              }
               isDark={isDark}
             />
           </div>
         )}
       </div>
-      
+
       {/* Baseline Grid Section */}
       <div>
         <SectionHeader
@@ -822,21 +878,23 @@ export const GridControls: React.FC<GridControlsProps> = ({
           onToggle={toggleBaseline}
           isDark={isDark}
         />
-        
+
         {config.baseline && (
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px',
-            padding: '12px',
-            backgroundColor: theme.sectionBg,
-            borderRadius: '8px',
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              padding: '12px',
+              backgroundColor: theme.sectionBg,
+              borderRadius: '8px',
+            }}
+          >
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <NumberInput
                 label="Height"
                 value={config.baseline.height}
-                onChange={(v) => updateBaseline({ height: v })}
+                onChange={v => updateBaseline({ height: v })}
                 min={2}
                 max={48}
                 suffix="px"
@@ -845,23 +903,25 @@ export const GridControls: React.FC<GridControlsProps> = ({
               <NumberInput
                 label="Offset"
                 value={config.baseline.offset}
-                onChange={(v) => updateBaseline({ offset: v })}
+                onChange={v => updateBaseline({ offset: v })}
                 min={0}
                 max={48}
                 suffix="px"
                 isDark={isDark}
               />
             </div>
-            
+
             {/* Quick baseline presets */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <label style={{
-                fontSize: '10px',
-                fontWeight: 600,
-                color: theme.textMuted,
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-              }}>
+              <label
+                style={{
+                  fontSize: '10px',
+                  fontWeight: 600,
+                  color: theme.textMuted,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}
+              >
                 Quick Presets
               </label>
               <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
@@ -872,12 +932,16 @@ export const GridControls: React.FC<GridControlsProps> = ({
                     style={{
                       padding: '4px 10px',
                       borderRadius: '4px',
-                      border: config.baseline?.height === h 
-                        ? '1px solid #3b82f6' 
-                        : `1px solid ${theme.border}`,
-                      backgroundColor: config.baseline?.height === h 
-                        ? (isDark ? '#1e3a5f' : '#e6f0ff')
-                        : 'transparent',
+                      border:
+                        config.baseline?.height === h
+                          ? '1px solid #3b82f6'
+                          : `1px solid ${theme.border}`,
+                      backgroundColor:
+                        config.baseline?.height === h
+                          ? isDark
+                            ? '#1e3a5f'
+                            : '#e6f0ff'
+                          : 'transparent',
                       color: theme.text,
                       fontSize: '11px',
                       fontWeight: 500,
@@ -889,16 +953,18 @@ export const GridControls: React.FC<GridControlsProps> = ({
                 ))}
               </div>
             </div>
-            
+
             {/* Typography Presets */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              <label style={{
-                fontSize: '10px',
-                fontWeight: 600,
-                color: theme.textMuted,
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-              }}>
+              <label
+                style={{
+                  fontSize: '10px',
+                  fontWeight: 600,
+                  color: theme.textMuted,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}
+              >
                 Typography Presets
               </label>
               <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
@@ -910,12 +976,16 @@ export const GridControls: React.FC<GridControlsProps> = ({
                     style={{
                       padding: '4px 8px',
                       borderRadius: '4px',
-                      border: config.baseline?.height === preset.baseline 
-                        ? '1px solid #3b82f6' 
-                        : `1px solid ${theme.border}`,
-                      backgroundColor: config.baseline?.height === preset.baseline 
-                        ? (isDark ? '#1e3a5f' : '#e6f0ff')
-                        : 'transparent',
+                      border:
+                        config.baseline?.height === preset.baseline
+                          ? '1px solid #3b82f6'
+                          : `1px solid ${theme.border}`,
+                      backgroundColor:
+                        config.baseline?.height === preset.baseline
+                          ? isDark
+                            ? '#1e3a5f'
+                            : '#e6f0ff'
+                          : 'transparent',
                       color: theme.text,
                       fontSize: '10px',
                       fontWeight: 500,
@@ -934,32 +1004,34 @@ export const GridControls: React.FC<GridControlsProps> = ({
                 ))}
               </div>
             </div>
-            
+
             {/* Typography Calculator */}
             <BaselineCalculator
               currentBaseline={config.baseline.height}
-              onBaselineChange={(h) => updateBaseline({ height: h })}
+              onBaselineChange={h => updateBaseline({ height: h })}
               isDark={isDark}
             />
-            
+
             <ColorPicker
               label="Color"
               value={config.baseline.color}
-              onChange={(color) => updateBaseline({ color })}
+              onChange={color => updateBaseline({ color })}
               isDark={isDark}
             />
-            
+
             <OpacitySlider
               value={config.baseline.color.a}
-              onChange={(a) => updateBaseline({ 
-                color: { ...config.baseline!.color, a } 
-              })}
+              onChange={a =>
+                updateBaseline({
+                  color: { ...config.baseline!.color, a },
+                })
+              }
               isDark={isDark}
             />
           </div>
         )}
       </div>
-      
+
       {/* Reset Button */}
       {onReset && hasChanges && (
         <button
@@ -984,8 +1056,7 @@ export const GridControls: React.FC<GridControlsProps> = ({
         </button>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default GridControls
-
+export default GridControls;

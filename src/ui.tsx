@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 import { colorData } from './colorData';
-import { getContrastRatio, getContrastLevel, colorDistance, rgbToLab } from './lib/utils';
+import { getContrastRatio, colorDistance, rgbToLab } from './lib/utils';
 import { ColorSystemModal } from './components/ColorSystemModal';
 import { GridSystemTab } from './components/GridSystemTab';
 import { WernerColorsTab } from './components/WernerColorsTab';
@@ -50,9 +50,9 @@ colorData.colors.forEach((color: Color) => {
 
 // O(1) lookup instead of O(n) filter - 5-10x faster
 const calculateCombinations = (color: Color): ColorCombo[] => {
-  return color.combinations.map((comboId) => ({
+  return color.combinations.map(comboId => ({
     id: comboId,
-    colors: (comboIndex.get(comboId) || []).filter(c => c.hex !== color.hex)
+    colors: (comboIndex.get(comboId) || []).filter(c => c.hex !== color.hex),
   }));
 };
 
@@ -86,64 +86,70 @@ const ContrastTooltip: React.FC<{
   isDark: boolean;
 }> = ({ ratio, children, isDark }) => {
   const [show, setShow] = useState(false);
-  
+
   const getLevel = () => {
     if (ratio >= 7) return { level: 'AAA', desc: 'Excellent' };
     if (ratio >= 4.5) return { level: 'AA', desc: 'Good for text' };
     if (ratio >= 3) return { level: 'AA Large', desc: 'Large text only' };
     return { level: 'Fail', desc: 'Not accessible' };
   };
-  
+
   const { level, desc } = getLevel();
   const theme = isDark ? styles.dark : styles.light;
-  
+
   return (
-    <div 
+    <div
       style={{ position: 'relative', display: 'inline-block' }}
       onMouseEnter={() => setShow(true)}
       onMouseLeave={() => setShow(false)}
     >
       {children}
       {show && (
-        <div style={{
-          position: 'absolute',
-          bottom: '100%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          marginBottom: '6px',
-          backgroundColor: isDark ? '#0a0a0a' : '#ffffff',
-          border: `1px solid ${theme.border}`,
-          borderRadius: '6px',
-          padding: '8px 10px',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-          zIndex: 9999,
-          fontSize: '10px',
-          color: theme.text,
-          whiteSpace: 'nowrap',
-          pointerEvents: 'none',
-        }}>
-          {/* Arrow */}
-          <div style={{
+        <div
+          style={{
             position: 'absolute',
-            bottom: '-5px',
+            bottom: '100%',
             left: '50%',
-            transform: 'translateX(-50%) rotate(45deg)',
-            width: '8px',
-            height: '8px',
+            transform: 'translateX(-50%)',
+            marginBottom: '6px',
             backgroundColor: isDark ? '#0a0a0a' : '#ffffff',
-            borderRight: `1px solid ${theme.border}`,
-            borderBottom: `1px solid ${theme.border}`,
-          }} />
-          
+            border: `1px solid ${theme.border}`,
+            borderRadius: '6px',
+            padding: '8px 10px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            zIndex: 9999,
+            fontSize: '10px',
+            color: theme.text,
+            whiteSpace: 'nowrap',
+            pointerEvents: 'none',
+          }}
+        >
+          {/* Arrow */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '-5px',
+              left: '50%',
+              transform: 'translateX(-50%) rotate(45deg)',
+              width: '8px',
+              height: '8px',
+              backgroundColor: isDark ? '#0a0a0a' : '#ffffff',
+              borderRight: `1px solid ${theme.border}`,
+              borderBottom: `1px solid ${theme.border}`,
+            }}
+          />
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{
-              padding: '1px 5px',
-              borderRadius: '3px',
-              backgroundColor: ratio >= 4.5 ? '#22c55e' : ratio >= 3 ? '#f59e0b' : '#ef4444',
-              color: '#ffffff',
-              fontWeight: 700,
-              fontSize: '9px',
-            }}>
+            <span
+              style={{
+                padding: '1px 5px',
+                borderRadius: '3px',
+                backgroundColor: ratio >= 4.5 ? '#22c55e' : ratio >= 3 ? '#f59e0b' : '#ef4444',
+                color: '#ffffff',
+                fontWeight: 700,
+                fontSize: '9px',
+              }}
+            >
               {level}
             </span>
             <span style={{ color: theme.textMuted }}>{desc}</span>
@@ -195,7 +201,7 @@ const styles = {
     btnHover: '#404040',
     btnActive: '#ffffff',
     btnActiveText: '#1a1a1a',
-  }
+  },
 };
 
 const App: React.FC = () => {
@@ -205,15 +211,15 @@ const App: React.FC = () => {
   const [isDark, setIsDark] = useState(true);
   const [showExport, setShowExport] = useState(false);
   const [exportColors, setExportColors] = useState<Color[]>([]);
-  
+
   // Color System Modal state
   const [showColorSystem, setShowColorSystem] = useState(false);
   const [colorSystemColors, setColorSystemColors] = useState<{ hex: string; name: string }[]>([]);
   const [colorSystemName, setColorSystemName] = useState('');
-  
+
   // About panel state
   const [showAbout, setShowAbout] = useState(false);
-  
+
   // Main navigation state (Wada Colors vs Werner's Colors vs Grids)
   const [mainTab, setMainTab] = useState<'colors' | 'werner' | 'grids'>('colors');
 
@@ -236,35 +242,35 @@ const App: React.FC = () => {
     setIsDark(prev => !prev);
   }, []);
 
-  const handleSelectColor = useCallback((color: Color | null) => {
-    setSelectedColor(color);
-  }, []);
-
-  const handleSelectSwatch = useCallback((swatchId: number) => {
-    setSelectedSwatch(swatchId);
-  }, []);
-
   const filteredColors = useMemo(() => {
     let colors = colorData.colors;
     if (selectedSwatch >= 0) colors = colors.filter(c => c.swatch === selectedSwatch);
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      colors = colors.filter(c => c.name.toLowerCase().includes(term) || c.hex.toLowerCase().includes(term));
+      colors = colors.filter(
+        c => c.name.toLowerCase().includes(term) || c.hex.toLowerCase().includes(term)
+      );
     }
     return colors;
   }, [searchTerm, selectedSwatch]);
 
-  const combinations = useMemo(() => selectedColor ? calculateCombinations(selectedColor) : [], [selectedColor]);
+  const combinations = useMemo(
+    () => (selectedColor ? calculateCombinations(selectedColor) : []),
+    [selectedColor]
+  );
 
   useEffect(() => {
-    window.onmessage = (e) => {
+    window.onmessage = e => {
       const msg = e.data.pluginMessage;
       if (msg?.type === 'selection-color') {
         const targetLab = rgbToLab(msg.rgb[0], msg.rgb[1], msg.rgb[2]);
-        const closest = colorData.colors.reduce((acc, c) => {
-          const dist = colorDistance(c.lab, targetLab);
-          return dist < acc.distance ? { color: c, distance: dist } : acc;
-        }, { color: null as Color | null, distance: Infinity });
+        const closest = colorData.colors.reduce(
+          (acc, c) => {
+            const dist = colorDistance(c.lab, targetLab);
+            return dist < acc.distance ? { color: c, distance: dist } : acc;
+          },
+          { color: null as Color | null, distance: Infinity }
+        );
         if (closest.color) setSelectedColor(closest.color);
       }
     };
@@ -297,47 +303,57 @@ const App: React.FC = () => {
   };
 
   return (
-    <div style={{
-      height: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      backgroundColor: theme.bg,
-      color: theme.text,
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      overflow: 'hidden',
-    }}>
-      {/* Compact Unified Header */}
-      <div style={{
-        flexShrink: 0,
-        padding: '10px 12px',
-        borderBottom: `1px solid ${theme.border}`,
+    <div
+      style={{
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
         backgroundColor: theme.bg,
-      }}>
+        color: theme.text,
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Compact Unified Header */}
+      <div
+        style={{
+          flexShrink: 0,
+          padding: '10px 12px',
+          borderBottom: `1px solid ${theme.border}`,
+          backgroundColor: theme.bg,
+        }}
+      >
         {/* Top Row: Logo + Main Tabs + Actions */}
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '8px',
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
           {/* Logo/Brand - compact */}
-          <div style={{ 
-            fontSize: '13px', 
-            fontWeight: 700, 
-            color: theme.textMuted,
-            minWidth: 'fit-content',
-          }}>
+          <div
+            style={{
+              fontSize: '13px',
+              fontWeight: 700,
+              color: theme.textMuted,
+              minWidth: 'fit-content',
+            }}
+          >
             SW
           </div>
-          
+
           {/* Main Tabs - pill style */}
-          <div style={{
-            flex: 1,
-            display: 'flex',
-            gap: '2px',
-            padding: '3px',
-            backgroundColor: theme.inputBg,
-            borderRadius: '8px',
-          }}>
+          <div
+            style={{
+              flex: 1,
+              display: 'flex',
+              gap: '2px',
+              padding: '3px',
+              backgroundColor: theme.inputBg,
+              borderRadius: '8px',
+            }}
+          >
             <button
               onClick={() => setMainTab('colors')}
               style={{
@@ -405,12 +421,12 @@ const App: React.FC = () => {
               Grids
             </button>
           </div>
-          
+
           {/* Action Buttons - compact */}
           <div style={{ display: 'flex', gap: '4px' }}>
             {mainTab === 'colors' && selectedColor && (
-              <button 
-                onClick={() => setSelectedColor(null)} 
+              <button
+                onClick={() => setSelectedColor(null)}
                 title="Back"
                 style={{
                   width: '28px',
@@ -430,9 +446,10 @@ const App: React.FC = () => {
               </button>
             )}
             {mainTab === 'colors' && (
-              <button 
+              <button
                 onClick={() => {
-                  const random = colorData.colors[Math.floor(Math.random() * colorData.colors.length)];
+                  const random =
+                    colorData.colors[Math.floor(Math.random() * colorData.colors.length)];
                   setSelectedColor(random);
                 }}
                 title="Random Wada Color"
@@ -483,7 +500,7 @@ const App: React.FC = () => {
                 type="text"
                 placeholder="Search colors..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={e => setSearchTerm(e.target.value)}
                 style={{
                   flex: 1,
                   padding: '8px 12px',
@@ -548,7 +565,13 @@ const App: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: (mainTab === 'grids' || mainTab === 'werner') ? '0' : '16px' }}>
+      <div
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          padding: mainTab === 'grids' || mainTab === 'werner' ? '0' : '16px',
+        }}
+      >
         {mainTab === 'grids' ? (
           <GridSystemTab isDark={isDark} />
         ) : mainTab === 'werner' ? (
@@ -575,24 +598,47 @@ const App: React.FC = () => {
                     boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
                     transition: 'transform 0.15s ease',
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.03)'}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                  onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.03)')}
+                  onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
                 >
-                  <div style={{ fontWeight: 700, fontSize: '11px', color: textColor, marginBottom: '2px', lineHeight: 1.2 }}>
+                  <div
+                    style={{
+                      fontWeight: 700,
+                      fontSize: '11px',
+                      color: textColor,
+                      marginBottom: '2px',
+                      lineHeight: 1.2,
+                    }}
+                  >
                     {color.name}
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '9px', color: textColor, opacity: 0.8, fontFamily: 'monospace' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: '9px',
+                        color: textColor,
+                        opacity: 0.8,
+                        fontFamily: 'monospace',
+                      }}
+                    >
                       {color.hex.toUpperCase()}
                     </span>
-                    <span style={{
-                      fontSize: '9px',
-                      color: textColor,
-                      backgroundColor: 'rgba(0,0,0,0.15)',
-                      padding: '1px 5px',
-                      borderRadius: '8px',
-                      fontWeight: 600,
-                    }}>
+                    <span
+                      style={{
+                        fontSize: '9px',
+                        color: textColor,
+                        backgroundColor: 'rgba(0,0,0,0.15)',
+                        padding: '1px 5px',
+                        borderRadius: '8px',
+                        fontWeight: 600,
+                      }}
+                    >
                       {combos.length}
                     </span>
                   </div>
@@ -600,7 +646,14 @@ const App: React.FC = () => {
               );
             })}
             {filteredColors.length === 0 && (
-              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: theme.textMuted }}>
+              <div
+                style={{
+                  gridColumn: '1 / -1',
+                  textAlign: 'center',
+                  padding: '40px',
+                  color: theme.textMuted,
+                }}
+              >
                 No colors found
               </div>
             )}
@@ -609,38 +662,46 @@ const App: React.FC = () => {
           // Detail View
           <div>
             {/* Hero */}
-            <div style={{
-              backgroundColor: selectedColor.hex,
-              borderRadius: '16px',
-              padding: '24px',
-              marginBottom: '16px',
-            }}>
-              <h2 style={{
-                fontSize: '24px',
-                fontWeight: 800,
-                color: getTextColor(selectedColor.rgb),
-                margin: '0 0 8px 0',
-              }}>
+            <div
+              style={{
+                backgroundColor: selectedColor.hex,
+                borderRadius: '16px',
+                padding: '24px',
+                marginBottom: '16px',
+              }}
+            >
+              <h2
+                style={{
+                  fontSize: '24px',
+                  fontWeight: 800,
+                  color: getTextColor(selectedColor.rgb),
+                  margin: '0 0 8px 0',
+                }}
+              >
                 {selectedColor.name}
               </h2>
-              <p style={{
-                fontSize: '14px',
-                color: getTextColor(selectedColor.rgb),
-                opacity: 0.8,
-                margin: 0,
-                fontFamily: 'monospace',
-              }}>
+              <p
+                style={{
+                  fontSize: '14px',
+                  color: getTextColor(selectedColor.rgb),
+                  opacity: 0.8,
+                  margin: 0,
+                  fontFamily: 'monospace',
+                }}
+              >
                 {selectedColor.hex.toUpperCase()}
               </p>
             </div>
 
             {/* Color Values */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: '8px',
-              marginBottom: '16px',
-            }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: '8px',
+                marginBottom: '16px',
+              }}
+            >
               {[
                 { label: 'RGB', value: selectedColor.rgb.join(', ') },
                 { label: 'CMYK', value: selectedColor.cmyk.join(', ') },
@@ -657,7 +718,14 @@ const App: React.FC = () => {
                   }}
                   onClick={() => item.label === 'HEX' && copyToClipboard(item.value, item.value)}
                 >
-                  <div style={{ fontSize: '10px', color: theme.textMuted, marginBottom: '4px', fontWeight: 600 }}>
+                  <div
+                    style={{
+                      fontSize: '10px',
+                      color: theme.textMuted,
+                      marginBottom: '4px',
+                      fontWeight: 600,
+                    }}
+                  >
                     {item.label}
                   </div>
                   <div style={{ fontSize: '12px', fontFamily: 'monospace', color: theme.text }}>
@@ -668,7 +736,14 @@ const App: React.FC = () => {
             </div>
 
             {/* Actions */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '24px' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '8px',
+                marginBottom: '24px',
+              }}
+            >
               <button
                 onClick={() => handleApplyFill(selectedColor)}
                 style={{
@@ -715,7 +790,14 @@ const App: React.FC = () => {
             </div>
 
             {/* Combinations */}
-            <h3 style={{ fontSize: '14px', fontWeight: 700, color: theme.textMuted, marginBottom: '12px' }}>
+            <h3
+              style={{
+                fontSize: '14px',
+                fontWeight: 700,
+                color: theme.textMuted,
+                marginBottom: '12px',
+              }}
+            >
               {combinations.length} COMBINATIONS
             </h3>
 
@@ -731,14 +813,24 @@ const App: React.FC = () => {
                     marginBottom: '12px',
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '12px',
+                    }}
+                  >
                     <span style={{ fontSize: '12px', fontWeight: 600, color: theme.textMuted }}>
                       Set {idx + 1}
                     </span>
                     <div style={{ display: 'flex', gap: '6px' }}>
                       <button
                         onClick={() => {
-                          const allColors = [selectedColor, ...combo.colors].map(c => ({ hex: c.hex, name: c.name }));
+                          const allColors = [selectedColor, ...combo.colors].map(c => ({
+                            hex: c.hex,
+                            name: c.name,
+                          }));
                           setColorSystemColors(allColors);
                           setColorSystemName(`${selectedColor.name} Palette`);
                           setShowColorSystem(true);
@@ -755,7 +847,10 @@ const App: React.FC = () => {
                         🎨 System
                       </button>
                       <button
-                        onClick={() => { setExportColors([selectedColor, ...combo.colors]); setShowExport(true); }}
+                        onClick={() => {
+                          setExportColors([selectedColor, ...combo.colors]);
+                          setShowExport(true);
+                        }}
                         style={{
                           ...buttonStyle(),
                           padding: '6px 12px',
@@ -769,7 +864,9 @@ const App: React.FC = () => {
                   </div>
 
                   {/* Swatches */}
-                  <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                  <div
+                    style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}
+                  >
                     <div
                       style={{
                         width: '48px',
@@ -794,15 +891,17 @@ const App: React.FC = () => {
                           transition: 'transform 0.1s ease',
                         }}
                         onClick={() => copyToClipboard(c.hex, c.hex)}
-                        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-                        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                        onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.1)')}
+                        onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
                         title={`${c.name} - Click to copy`}
                       />
                     ))}
                   </div>
 
                   {/* Contrast ratios */}
-                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
+                  <div
+                    style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}
+                  >
                     {combo.colors.map(c => {
                       const ratio = getCachedContrastRatio(selectedColor.rgb, c.rgb);
                       const isGood = ratio >= 4.5;
@@ -828,17 +927,27 @@ const App: React.FC = () => {
                   </div>
 
                   {/* Gradient buttons */}
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+                  <div
+                    style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}
+                  >
                     {['LINEAR', 'RADIAL', 'ANGULAR', 'DIAMOND'].map(type => (
                       <button
                         key={type}
-                        onClick={() => parent.postMessage({ 
-                          pluginMessage: { 
-                            type: 'apply-gradient', 
-                            gradientType: type, 
-                            colors: [selectedColor, ...combo.colors].map(co => ({ hex: co.hex, name: co.name })) 
-                          } 
-                        }, '*')}
+                        onClick={() =>
+                          parent.postMessage(
+                            {
+                              pluginMessage: {
+                                type: 'apply-gradient',
+                                gradientType: type,
+                                colors: [selectedColor, ...combo.colors].map(co => ({
+                                  hex: co.hex,
+                                  name: co.name,
+                                })),
+                              },
+                            },
+                            '*'
+                          )
+                        }
                         style={{
                           ...buttonStyle(),
                           padding: '8px 4px',
@@ -884,8 +993,17 @@ const App: React.FC = () => {
             }}
             onClick={e => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: theme.text }}>Export Palette</h3>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '16px',
+              }}
+            >
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: theme.text }}>
+                Export Palette
+              </h3>
               <button
                 onClick={() => setShowExport(false)}
                 style={{ ...iconButtonStyle, width: '32px', height: '32px', fontSize: '14px' }}
@@ -895,32 +1013,58 @@ const App: React.FC = () => {
             </div>
 
             {[
-              { label: 'CSS', data: exportColors.map((c, i) => `--color-${i + 1}: ${c.hex};`).join('\n') },
-              { label: 'JSON', data: JSON.stringify(exportColors.map(c => ({ name: c.name, hex: c.hex })), null, 2) },
+              {
+                label: 'CSS',
+                data: exportColors.map((c, i) => `--color-${i + 1}: ${c.hex};`).join('\n'),
+              },
+              {
+                label: 'JSON',
+                data: JSON.stringify(
+                  exportColors.map(c => ({ name: c.name, hex: c.hex })),
+                  null,
+                  2
+                ),
+              },
             ].map(({ label, data }) => (
               <div key={label} style={{ marginBottom: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '12px', fontWeight: 600, color: theme.textMuted }}>{label}</span>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '8px',
+                  }}
+                >
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: theme.textMuted }}>
+                    {label}
+                  </span>
                   <button
                     onClick={() => copyToClipboard(data, label)}
-                    style={{ ...buttonStyle(), padding: '6px 12px', fontSize: '11px', border: `1px solid ${theme.border}` }}
+                    style={{
+                      ...buttonStyle(),
+                      padding: '6px 12px',
+                      fontSize: '11px',
+                      border: `1px solid ${theme.border}`,
+                    }}
                   >
                     Copy
                   </button>
                 </div>
-                <pre style={{
-                  backgroundColor: theme.inputBg,
-                  padding: '12px',
-                  borderRadius: '8px',
-                  fontSize: '11px',
-                  fontFamily: 'monospace',
-                  overflow: 'auto',
-                  maxHeight: '120px',
-                  margin: 0,
-                  color: theme.text,
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-all',
-                }}>
+                <pre
+                  style={{
+                    backgroundColor: theme.inputBg,
+                    padding: '12px',
+                    borderRadius: '8px',
+                    fontSize: '11px',
+                    fontFamily: 'monospace',
+                    overflow: 'auto',
+                    maxHeight: '120px',
+                    margin: 0,
+                    color: theme.text,
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-all',
+                  }}
+                >
                   {data}
                 </pre>
               </div>
@@ -947,7 +1091,7 @@ const App: React.FC = () => {
           // Modal handles sending the message with computed scales
         }}
       />
-      
+
       {/* About Panel for Wada Colors */}
       <AboutPanel
         isOpen={showAbout}
