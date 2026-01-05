@@ -1,3 +1,5 @@
+import wernerColorJson from './wernerColors.json';
+
 export interface WernerColor {
   id: number;
   name: string;
@@ -18,7 +20,7 @@ export interface WernerColorGroup {
   name: string;
 }
 
-// Groups based on Werner's original organization (static, small data)
+// Groups based on Werner's original organization
 export const WERNER_GROUPS: WernerColorGroup[] = [
   { id: -1, name: 'All' },
   { id: 0, name: 'Whites' },
@@ -33,83 +35,22 @@ export const WERNER_GROUPS: WernerColorGroup[] = [
   { id: 9, name: 'Browns' },
 ];
 
-// Lazy-loaded Werner color data cache
-let cachedWernerColors: WernerColor[] | null = null;
-let loadingPromise: Promise<WernerColor[]> | null = null;
-
-/**
- * Lazy load Werner color data on demand
- */
-export async function getWernerColors(): Promise<WernerColor[]> {
-  if (cachedWernerColors) {
-    return cachedWernerColors;
-  }
-
-  if (loadingPromise) {
-    return loadingPromise;
-  }
-
-  loadingPromise = import('./wernerColors.json').then(module => {
-    cachedWernerColors = module.default as WernerColor[];
-    return cachedWernerColors;
-  });
-
-  return loadingPromise;
-}
-
-/**
- * Synchronous access to Werner colors (returns empty array if not yet loaded)
- */
-export function getWernerColorsSync(): WernerColor[] {
-  return cachedWernerColors ?? [];
-}
-
-/**
- * Check if Werner color data is loaded
- */
-export function isWernerColorsLoaded(): boolean {
-  return cachedWernerColors !== null;
-}
-
-// For backward compatibility - provides proxy that lazy loads
-let _wernerColorsProxy: WernerColor[] | null = null;
-
-export const wernerColors: WernerColor[] = new Proxy([] as WernerColor[], {
-  get(target, prop) {
-    if (!_wernerColorsProxy) {
-      // Trigger load
-      getWernerColors().then(data => {
-        _wernerColorsProxy = data;
-      });
-      // Return from empty array while loading
-      return Reflect.get(target, prop);
-    }
-    return Reflect.get(_wernerColorsProxy, prop);
-  },
-  set(_, prop, value) {
-    if (_wernerColorsProxy) {
-      return Reflect.set(_wernerColorsProxy, prop, value);
-    }
-    return true;
-  },
-});
+// Initialize colors from JSON
+export const wernerColors: WernerColor[] = wernerColorJson as WernerColor[];
 
 // Helper function to get related colors for a given color
 export const getRelatedColors = (color: WernerColor): WernerColor[] => {
-  const colors = cachedWernerColors ?? [];
   return color.relatedColors
-    .map(id => colors.find(c => c.id === id))
+    .map(id => wernerColors.find(c => c.id === id))
     .filter((c): c is WernerColor => c !== undefined);
 };
 
 // Helper function to get color by ID
 export const getWernerColorById = (id: number): WernerColor | undefined => {
-  const colors = cachedWernerColors ?? [];
-  return colors.find(c => c.id === id);
+  return wernerColors.find(c => c.id === id);
 };
 
 // Get characteristic colors (the primary/reference colors for each group)
 export const getCharacteristicColors = (): WernerColor[] => {
-  const colors = cachedWernerColors ?? [];
-  return colors.filter(c => c.characteristic);
+  return wernerColors.filter(c => c.characteristic);
 };

@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
-import { getColorData } from './colorData';
+import { colorData } from './colorData';
 import { getContrastRatio, colorDistance, rgbToLab } from './lib/utils';
 import { copyToClipboard } from './lib/clipboard';
 import { styles } from './lib/theme';
@@ -172,9 +172,9 @@ const App: React.FC = () => {
   const [showExport, setShowExport] = useState(false);
   const [exportColors, setExportColors] = useState<Color[]>([]);
 
-  // Lazy-loaded color data
-  const [colors, setColors] = useState<Color[]>([]);
-  const [comboIndex, setComboIndex] = useState<Map<number, Color[]>>(new Map());
+  // Color data (loaded synchronously)
+  const colors = colorData.colors as Color[];
+  const comboIndex = useMemo(() => buildComboIndex(colors), [colors]);
 
   // Color System Modal state
   const [showColorSystem, setShowColorSystem] = useState(false);
@@ -188,14 +188,6 @@ const App: React.FC = () => {
   const [mainTab, setMainTab] = useState<'colors' | 'werner' | 'grids'>('colors');
 
   const theme = isDark ? styles.dark : styles.light;
-
-  // Load color data on mount
-  useEffect(() => {
-    getColorData().then(data => {
-      setColors(data.colors as Color[]);
-      setComboIndex(buildComboIndex(data.colors as Color[]));
-    });
-  }, []);
 
   // Memoized handlers to prevent unnecessary re-renders
   const handleApplyFill = useCallback((color: Color) => {

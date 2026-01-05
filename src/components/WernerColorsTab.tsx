@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { useState, useMemo, useEffect } from 'react';
-import { getWernerColors, WERNER_GROUPS, WernerColor, getRelatedColors } from '../wernerColorData';
+import { useState, useMemo } from 'react';
+import { wernerColors, WERNER_GROUPS, WernerColor, getRelatedColors } from '../wernerColorData';
 import { ColorSystemModal } from './ColorSystemModal';
 import { AboutPanel, WERNER_ABOUT_CONTENT } from './AboutPanel';
 import { copyToClipboard } from '../lib/clipboard';
@@ -23,9 +23,6 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
   const [selectedColor, setSelectedColor] = useState<WernerColor | null>(null);
   const [selectedGroup, setSelectedGroup] = useState(-1);
 
-  // Lazy-loaded Werner colors
-  const [wernerColors, setWernerColors] = useState<WernerColor[]>([]);
-
   // Color System Modal state
   const [showColorSystem, setShowColorSystem] = useState(false);
   const [colorSystemColors, setColorSystemColors] = useState<{ hex: string; name: string }[]>([]);
@@ -35,13 +32,6 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
   const [showAbout, setShowAbout] = useState(false);
 
   const theme = isDark ? styles.dark : styles.light;
-
-  // Load Werner colors on mount
-  useEffect(() => {
-    getWernerColors().then(colors => {
-      setWernerColors(colors);
-    });
-  }, []);
 
   const filteredColors = useMemo(() => {
     let filtered = wernerColors;
