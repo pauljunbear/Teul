@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { useState, useMemo, useCallback } from 'react';
 import { generateColorScale, type ColorScale } from '../lib/utils';
+import { copyToClipboard } from '../lib/clipboard';
 import {
   findClosestRadixFamily,
   getNeutralForAccent,
@@ -197,26 +198,6 @@ function exportAsJSON(
   }
 
   return JSON.stringify(data, null, 2);
-}
-
-// Copy to clipboard helper
-function copyToClipboard(text: string, label: string) {
-  const textarea = document.createElement('textarea');
-  textarea.value = text;
-  textarea.style.position = 'fixed';
-  textarea.style.left = '-9999px';
-  document.body.appendChild(textarea);
-  textarea.select();
-  try {
-    document.execCommand('copy');
-    parent.postMessage(
-      { pluginMessage: { type: 'notify', text: `Copied ${label} to clipboard` } },
-      '*'
-    );
-  } catch {
-    parent.postMessage({ pluginMessage: { type: 'notify', text: 'Copy failed' } }, '*');
-  }
-  document.body.removeChild(textarea);
 }
 
 // Types
