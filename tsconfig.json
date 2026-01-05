@@ -11,7 +11,8 @@
     "allowJs": true,
     "outDir": "./dist",
     "noEmitOnError": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "skipLibCheck": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
