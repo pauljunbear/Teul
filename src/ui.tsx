@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
-import { colorData } from './colorData';
+import { getColorData } from './colorData';
 import { getContrastRatio, colorDistance, rgbToLab } from './lib/utils';
 import { copyToClipboard } from './lib/clipboard';
 import { styles } from './lib/theme';
@@ -38,20 +38,22 @@ const SWATCH_GROUPS = [
   { id: 5, name: 'Neutrals' },
 ];
 
-// Pre-build reverse index for O(1) combination lookups
-// Instead of O(n) filter per combo, we do O(1) Map lookup
-const comboIndex = new Map<number, Color[]>();
-colorData.colors.forEach((color: Color) => {
-  color.combinations.forEach((comboId: number) => {
-    if (!comboIndex.has(comboId)) {
-      comboIndex.set(comboId, []);
-    }
-    comboIndex.get(comboId)!.push(color);
+// Build reverse index for O(1) combination lookups - built on data load
+function buildComboIndex(colors: Color[]): Map<number, Color[]> {
+  const index = new Map<number, Color[]>();
+  colors.forEach((color: Color) => {
+    color.combinations.forEach((comboId: number) => {
+      if (!index.has(comboId)) {
+        index.set(comboId, []);
+      }
+      index.get(comboId)!.push(color);
+    });
   });
-});
+  return index;
+}
 
 // O(1) lookup instead of O(n) filter - 5-10x faster
-const calculateCombinations = (color: Color): ColorCombo[] => {
+const calculateCombinations = (color: Color, comboIndex: Map<number, Color[]>): ColorCombo[] => {
   return color.combinations.map(comboId => ({
     id: comboId,
     colors: (comboIndex.get(comboId) || []).filter(c => c.hex !== color.hex),
@@ -170,6 +172,10 @@ const App: React.FC = () => {
   const [showExport, setShowExport] = useState(false);
   const [exportColors, setExportColors] = useState<Color[]>([]);
 
+  // Lazy-loaded color data
+  const [colors, setColors] = useState<Color[]>([]);
+  const [comboIndex, setComboIndex] = useState<Map<number, Color[]>>(new Map());
+
   // Color System Modal state
   const [showColorSystem, setShowColorSystem] = useState(false);
   const [colorSystemColors, setColorSystemColors] = useState<{ hex: string; name: string }[]>([]);
@@ -182,6 +188,14 @@ const App: React.FC = () => {
   const [mainTab, setMainTab] = useState<'colors' | 'werner' | 'grids'>('colors');
 
   const theme = isDark ? styles.dark : styles.light;
+
+  // Load color data on mount
+  useEffect(() => {
+    getColorData().then(data => {
+      setColors(data.colors as Color[]);
+      setComboIndex(buildComboIndex(data.colors as Color[]));
+    });
+  }, []);
 
   // Memoized handlers to prevent unnecessary re-renders
   const handleApplyFill = useCallback((color: Color) => {
@@ -201,28 +215,28 @@ const App: React.FC = () => {
   }, []);
 
   const filteredColors = useMemo(() => {
-    let colors = colorData.colors;
-    if (selectedSwatch >= 0) colors = colors.filter(c => c.swatch === selectedSwatch);
+    let filtered = colors;
+    if (selectedSwatch >= 0) filtered = filtered.filter(c => c.swatch === selectedSwatch);
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      colors = colors.filter(
+      filtered = filtered.filter(
         c => c.name.toLowerCase().includes(term) || c.hex.toLowerCase().includes(term)
       );
     }
-    return colors;
-  }, [searchTerm, selectedSwatch]);
+    return filtered;
+  }, [colors, searchTerm, selectedSwatch]);
 
   const combinations = useMemo(
-    () => (selectedColor ? calculateCombinations(selectedColor) : []),
-    [selectedColor]
+    () => (selectedColor ? calculateCombinations(selectedColor, comboIndex) : []),
+    [selectedColor, comboIndex]
   );
 
   useEffect(() => {
     window.onmessage = e => {
       const msg = e.data.pluginMessage;
-      if (msg?.type === 'selection-color') {
+      if (msg?.type === 'selection-color' && colors.length > 0) {
         const targetLab = rgbToLab(msg.rgb[0], msg.rgb[1], msg.rgb[2]);
-        const closest = colorData.colors.reduce(
+        const closest = colors.reduce(
           (acc, c) => {
             const dist = colorDistance(c.lab, targetLab);
             return dist < acc.distance ? { color: c, distance: dist } : acc;
@@ -232,7 +246,7 @@ const App: React.FC = () => {
         if (closest.color) setSelectedColor(closest.color);
       }
     };
-  }, []);
+  }, [colors]);
 
   const buttonStyle = (active = false): React.CSSProperties => ({
     padding: '8px 16px',
@@ -406,8 +420,8 @@ const App: React.FC = () => {
             {mainTab === 'colors' && (
               <button
                 onClick={() => {
-                  const random =
-                    colorData.colors[Math.floor(Math.random() * colorData.colors.length)];
+                  if (colors.length === 0) return;
+                  const random = colors[Math.floor(Math.random() * colors.length)];
                   setSelectedColor(random);
                 }}
                 title="Random Wada Color"
@@ -539,7 +553,7 @@ const App: React.FC = () => {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
             {filteredColors.map(color => {
               const textColor = getTextColor(color.rgb);
-              const combos = calculateCombinations(color);
+              const combos = calculateCombinations(color, comboIndex);
               return (
                 <div
                   key={color.hex}
