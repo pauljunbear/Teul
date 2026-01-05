@@ -52,6 +52,27 @@ function getSelectedNodesWithStrokes(): (SceneNode & { strokes: Paint[] })[] {
   );
 }
 
+// Helper to send selection info to UI
+function sendSelectionInfo(): void {
+  const selection = figma.currentPage.selection;
+  const hasSelection = selection.length > 0;
+  const firstNode = selection[0];
+
+  figma.ui.postMessage({
+    type: 'selection-info',
+    hasSelection,
+    isFrame: hasSelection && firstNode?.type === 'FRAME',
+    width: hasSelection && 'width' in firstNode ? firstNode.width : undefined,
+    height: hasSelection && 'height' in firstNode ? firstNode.height : undefined,
+    name: hasSelection ? firstNode?.name : undefined,
+  });
+}
+
+// Listen for selection changes and push updates to UI (replaces polling)
+figma.on('selectionchange', () => {
+  sendSelectionInfo();
+});
+
 figma.ui.onmessage = async msg => {
   // Apply solid fill to selection
   if (msg.type === 'apply-fill') {
@@ -167,6 +188,11 @@ figma.ui.onmessage = async msg => {
     } else {
       figma.notify('Selected element has no fill property');
     }
+  }
+
+  // Get selection info for grid application
+  if (msg.type === 'get-selection-for-grid') {
+    sendSelectionInfo();
   }
 
   // Create a color rectangle (legacy)
@@ -551,7 +577,7 @@ figma.ui.onmessage = async msg => {
       if (config.baseline) {
         newGrids.push({
           pattern: 'GRID',
-          sectionSize: config.baseline.sectionSize || 8,
+          sectionSize: config.baseline.height || 8,
           visible: config.baseline.visible,
           color: config.baseline.color,
         } as LayoutGrid);
@@ -1969,63 +1995,49 @@ async function createColorStyles(scalesData: CreateStylesData, systemName: strin
   const existingStyles = await figma.getLocalPaintStylesAsync();
   const existingStyleNames = new Set(existingStyles.map(s => s.name));
 
-  let created = 0;
-  let skipped = 0;
+  // Collect all styles to create (batch processing for better performance)
+  interface StyleToCreate {
+    name: string;
+    hex: string;
+  }
+  const stylesToCreate: StyleToCreate[] = [];
 
-  // Helper to create a single style
-  const createStyle = async (basePath: string, role: string, step: number, hex: string) => {
-    const styleName = `${basePath}/${role}/${stepToStyleNumber(step)}`;
-
-    // Check if style already exists
-    if (existingStyleNames.has(styleName)) {
-      skipped++;
-      return;
+  // Helper to queue a style for creation
+  const queueStyle = (styleName: string, hex: string) => {
+    if (!existingStyleNames.has(styleName)) {
+      stylesToCreate.push({ name: styleName, hex });
     }
-
-    const style = figma.createPaintStyle();
-    style.name = styleName;
-    style.paints = [
-      {
-        type: 'SOLID',
-        color: hexToFigmaRgb(hex),
-      },
-    ];
-
-    created++;
   };
 
-  // Create styles for a set of scales
-  const createScaleStyles = async (
-    scales: CreateStylesData['scales']['light'],
-    modePath: string
-  ) => {
+  // Queue scale styles
+  const queueScaleStyles = (scales: CreateStylesData['scales']['light'], modePath: string) => {
     const styleScaleOrder = ['primary', 'secondary', 'tertiary', 'accent', 'neutral'] as const;
 
     for (const key of styleScaleOrder) {
       const scale = scales[key];
       if (scale) {
         for (const step of scale.steps) {
-          await createStyle(modePath, scale.role, step.step, step.hex);
+          const styleName = `${modePath}/${scale.role}/${stepToStyleNumber(step.step)}`;
+          queueStyle(styleName, step.hex);
         }
       }
     }
   };
 
-  // Create light mode styles
+  // Queue light mode styles
   const lightPath = scalesData.includeDarkMode ? `${systemName}/Light` : systemName;
-  await createScaleStyles(scalesData.scales.light, lightPath);
+  queueScaleStyles(scalesData.scales.light, lightPath);
 
-  // Create dark mode styles if available
+  // Queue dark mode styles if available
   if (scalesData.includeDarkMode && scalesData.scales.dark) {
     const darkPath = `${systemName}/Dark`;
-    await createScaleStyles(scalesData.scales.dark, darkPath);
+    queueScaleStyles(scalesData.scales.dark, darkPath);
   }
 
-  // Also create semantic aliases for common use cases
+  // Queue semantic aliases
   const lightScales = scalesData.scales.light;
   const basePath = scalesData.includeDarkMode ? `${systemName}/Light` : systemName;
 
-  // Create semantic aliases
   const semanticAliases = [
     // Backgrounds
     { name: 'bg-app', scale: 'neutral', step: 1 },
@@ -2046,23 +2058,12 @@ async function createColorStyles(scalesData: CreateStylesData, systemName: strin
     if (scale) {
       const step = scale.steps.find(s => s.step === alias.step);
       if (step) {
-        const styleName = `${basePath}/Semantic/${alias.name}`;
-        if (!existingStyleNames.has(styleName)) {
-          const style = figma.createPaintStyle();
-          style.name = styleName;
-          style.paints = [
-            {
-              type: 'SOLID',
-              color: hexToFigmaRgb(step.hex),
-            },
-          ];
-          created++;
-        }
+        queueStyle(`${basePath}/Semantic/${alias.name}`, step.hex);
       }
     }
   }
 
-  // Add primary color semantic aliases if available
+  // Queue primary color semantic aliases if available
   if (lightScales.primary) {
     const primaryAliases = [
       { name: 'primary-bg', step: 3 },
@@ -2075,23 +2076,28 @@ async function createColorStyles(scalesData: CreateStylesData, systemName: strin
     for (const alias of primaryAliases) {
       const step = lightScales.primary.steps.find(s => s.step === alias.step);
       if (step) {
-        const styleName = `${basePath}/Semantic/${alias.name}`;
-        if (!existingStyleNames.has(styleName)) {
-          const style = figma.createPaintStyle();
-          style.name = styleName;
-          style.paints = [
-            {
-              type: 'SOLID',
-              color: hexToFigmaRgb(step.hex),
-            },
-          ];
-          created++;
-        }
+        queueStyle(`${basePath}/Semantic/${alias.name}`, step.hex);
       }
     }
   }
 
-  figma.notify(
-    `Created ${created} color styles${skipped > 0 ? ` (${skipped} already existed)` : ''}`
-  );
+  // Create all styles in batches for better performance
+  // Figma may still serialize internally, but the UI remains responsive
+  const BATCH_SIZE = 20;
+  let created = 0;
+
+  for (let i = 0; i < stylesToCreate.length; i += BATCH_SIZE) {
+    const batch = stylesToCreate.slice(i, i + BATCH_SIZE);
+    await Promise.all(
+      batch.map(({ name, hex }) => {
+        const style = figma.createPaintStyle();
+        style.name = name;
+        style.paints = [{ type: 'SOLID', color: hexToFigmaRgb(hex) }];
+        created++;
+        return Promise.resolve();
+      })
+    );
+  }
+
+  figma.notify(`Created ${created} color styles`);
 }

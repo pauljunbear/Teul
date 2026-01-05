@@ -5,6 +5,8 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
 import { colorData } from './colorData';
 import { getContrastRatio, colorDistance, rgbToLab } from './lib/utils';
+import { copyToClipboard } from './lib/clipboard';
+import { styles } from './lib/theme';
 import { ColorSystemModal } from './components/ColorSystemModal';
 import { GridSystemTab } from './components/GridSystemTab';
 import { WernerColorsTab } from './components/WernerColorsTab';
@@ -158,50 +160,6 @@ const ContrastTooltip: React.FC<{
       )}
     </div>
   );
-};
-
-const copyToClipboard = (text: string, label: string) => {
-  const textarea = document.createElement('textarea');
-  textarea.value = text;
-  textarea.style.position = 'fixed';
-  textarea.style.left = '-9999px';
-  document.body.appendChild(textarea);
-  textarea.select();
-  try {
-    document.execCommand('copy');
-    parent.postMessage({ pluginMessage: { type: 'notify', text: `Copied ${label}` } }, '*');
-  } catch {
-    parent.postMessage({ pluginMessage: { type: 'notify', text: 'Copy failed' } }, '*');
-  }
-  document.body.removeChild(textarea);
-};
-
-// Styles
-const styles = {
-  light: {
-    bg: '#ffffff',
-    cardBg: '#ffffff',
-    text: '#1a1a1a',
-    textMuted: '#666666',
-    border: '#e5e5e5',
-    inputBg: '#f5f5f5',
-    btnBg: '#f0f0f0',
-    btnHover: '#e5e5e5',
-    btnActive: '#1a1a1a',
-    btnActiveText: '#ffffff',
-  },
-  dark: {
-    bg: '#1a1a1a',
-    cardBg: '#262626',
-    text: '#ffffff',
-    textMuted: '#a3a3a3',
-    border: '#404040',
-    inputBg: '#333333',
-    btnBg: '#333333',
-    btnHover: '#404040',
-    btnActive: '#ffffff',
-    btnActiveText: '#1a1a1a',
-  },
 };
 
 const App: React.FC = () => {

@@ -3,37 +3,12 @@ import { useState, useMemo } from 'react';
 import { wernerColors, WERNER_GROUPS, WernerColor, getRelatedColors } from '../wernerColorData';
 import { ColorSystemModal } from './ColorSystemModal';
 import { AboutPanel, WERNER_ABOUT_CONTENT } from './AboutPanel';
+import { copyToClipboard } from '../lib/clipboard';
+import { styles } from '../lib/theme';
 
 interface WernerColorsTabProps {
   isDark: boolean;
 }
-
-const styles = {
-  light: {
-    bg: '#ffffff',
-    cardBg: '#ffffff',
-    text: '#1a1a1a',
-    textMuted: '#666666',
-    border: '#e5e5e5',
-    inputBg: '#f5f5f5',
-    btnBg: '#f0f0f0',
-    btnHover: '#e5e5e5',
-    btnActive: '#1a1a1a',
-    btnActiveText: '#ffffff',
-  },
-  dark: {
-    bg: '#1a1a1a',
-    cardBg: '#262626',
-    text: '#ffffff',
-    textMuted: '#a3a3a3',
-    border: '#404040',
-    inputBg: '#333333',
-    btnBg: '#333333',
-    btnHover: '#404040',
-    btnActive: '#ffffff',
-    btnActiveText: '#1a1a1a',
-  },
-};
 
 const getTextColor = (hex: string): string => {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -41,22 +16,6 @@ const getTextColor = (hex: string): string => {
   const b = parseInt(hex.slice(5, 7), 16);
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   return luminance > 0.5 ? '#1a1a1a' : '#ffffff';
-};
-
-const copyToClipboard = (text: string, label: string) => {
-  const textarea = document.createElement('textarea');
-  textarea.value = text;
-  textarea.style.position = 'fixed';
-  textarea.style.left = '-9999px';
-  document.body.appendChild(textarea);
-  textarea.select();
-  try {
-    document.execCommand('copy');
-    parent.postMessage({ pluginMessage: { type: 'notify', text: `Copied ${label}` } }, '*');
-  } catch {
-    parent.postMessage({ pluginMessage: { type: 'notify', text: 'Copy failed' } }, '*');
-  }
-  document.body.removeChild(textarea);
 };
 
 export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {

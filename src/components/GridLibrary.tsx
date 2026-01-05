@@ -17,26 +17,49 @@ import {
 } from '../lib/figmaGrids';
 import type { GridPreset, GridCategory } from '../types/grid';
 
-// Hook for scroll direction detection
+// Hook for scroll direction detection with debouncing
 function useScrollDirection() {
   const [scrollDirection, setScrollDirection] = React.useState<'up' | 'down' | null>(null);
-  const [lastScrollY, setLastScrollY] = React.useState(0);
   const [isAtTop, setIsAtTop] = React.useState(true);
+  const lastScrollYRef = React.useRef(0);
+  const rafRef = React.useRef<number | null>(null);
 
-  const updateScrollDirection = React.useCallback(
-    (scrollY: number) => {
-      setIsAtTop(scrollY < 10);
+  const updateScrollDirection = React.useCallback((scrollY: number) => {
+    // Cancel any pending animation frame
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+    }
 
-      if (scrollY > lastScrollY && scrollY > 50) {
-        setScrollDirection('down');
-      } else if (scrollY < lastScrollY) {
-        setScrollDirection('up');
+    // Debounce using requestAnimationFrame (max 60fps)
+    rafRef.current = requestAnimationFrame(() => {
+      const lastScrollY = lastScrollYRef.current;
+      const delta = scrollY - lastScrollY;
+
+      // Only update state if there's a significant change (>5px)
+      if (Math.abs(delta) > 5) {
+        setIsAtTop(scrollY < 10);
+
+        if (scrollY > lastScrollY && scrollY > 50) {
+          setScrollDirection('down');
+        } else if (scrollY < lastScrollY) {
+          setScrollDirection('up');
+        }
+
+        lastScrollYRef.current = scrollY;
       }
 
-      setLastScrollY(scrollY);
-    },
-    [lastScrollY]
-  );
+      rafRef.current = null;
+    });
+  }, []);
+
+  // Cleanup animation frame on unmount
+  React.useEffect(() => {
+    return () => {
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, []);
 
   return { scrollDirection, isAtTop, updateScrollDirection };
 }
@@ -116,31 +139,11 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
     return presets;
   }, [selectedCategory, searchQuery]);
 
-  // Request selection info - optimized to reduce polling overhead
+  // Listen for selection info from Figma (event-driven, no polling)
   React.useEffect(() => {
-    let isRequestPending = false;
-    let intervalId: ReturnType<typeof setInterval> | null = null;
-
-    const requestSelectionInfo = () => {
-      // Prevent duplicate requests while one is pending
-      if (isRequestPending) return;
-      // Don't poll when document is hidden
-      if (document.hidden) return;
-
-      isRequestPending = true;
-      parent.postMessage({ pluginMessage: { type: 'get-selection-for-grid' } }, '*');
-
-      // Reset pending flag after reasonable timeout
-      setTimeout(() => {
-        isRequestPending = false;
-      }, 500);
-    };
-
-    // Listen for selection info
     const handleMessage = (event: MessageEvent) => {
       const msg = event.data.pluginMessage;
       if (msg?.type === 'selection-info') {
-        isRequestPending = false;
         setSelectionInfo({
           hasSelection: msg.hasSelection,
           isFrame: msg.isFrame,
@@ -151,31 +154,11 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
       }
     };
 
-    // Pause/resume polling based on visibility
-    const handleVisibilityChange = () => {
-      if (document.hidden && intervalId) {
-        clearInterval(intervalId);
-        intervalId = null;
-      } else if (!document.hidden && !intervalId) {
-        requestSelectionInfo();
-        intervalId = setInterval(requestSelectionInfo, 5000);
-      }
-    };
-
-    // Initial request
-    requestSelectionInfo();
+    // Request initial selection info once on mount
+    parent.postMessage({ pluginMessage: { type: 'get-selection-for-grid' } }, '*');
 
     window.addEventListener('message', handleMessage);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    // Poll less frequently (5s instead of 2s) - only when visible
-    intervalId = setInterval(requestSelectionInfo, 5000);
-
-    return () => {
-      window.removeEventListener('message', handleMessage);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      if (intervalId) clearInterval(intervalId);
-    };
+    return () => window.removeEventListener('message', handleMessage);
   }, []);
 
   // Apply grid to selection
