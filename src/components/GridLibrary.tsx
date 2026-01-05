@@ -111,18 +111,29 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
     return presets
   }, [selectedCategory, searchQuery])
   
-  // Request selection info on mount and periodically
+  // Request selection info - optimized to reduce polling overhead
   React.useEffect(() => {
+    let isRequestPending = false
+    let intervalId: ReturnType<typeof setInterval> | null = null
+
     const requestSelectionInfo = () => {
+      // Prevent duplicate requests while one is pending
+      if (isRequestPending) return
+      // Don't poll when document is hidden
+      if (document.hidden) return
+
+      isRequestPending = true
       parent.postMessage({ pluginMessage: { type: 'get-selection-for-grid' } }, '*')
+
+      // Reset pending flag after reasonable timeout
+      setTimeout(() => { isRequestPending = false }, 500)
     }
-    
-    requestSelectionInfo()
-    
+
     // Listen for selection info
     const handleMessage = (event: MessageEvent) => {
       const msg = event.data.pluginMessage
       if (msg?.type === 'selection-info') {
+        isRequestPending = false
         setSelectionInfo({
           hasSelection: msg.hasSelection,
           isFrame: msg.isFrame,
@@ -132,15 +143,31 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
         })
       }
     }
-    
+
+    // Pause/resume polling based on visibility
+    const handleVisibilityChange = () => {
+      if (document.hidden && intervalId) {
+        clearInterval(intervalId)
+        intervalId = null
+      } else if (!document.hidden && !intervalId) {
+        requestSelectionInfo()
+        intervalId = setInterval(requestSelectionInfo, 5000)
+      }
+    }
+
+    // Initial request
+    requestSelectionInfo()
+
     window.addEventListener('message', handleMessage)
-    
-    // Poll for selection changes
-    const interval = setInterval(requestSelectionInfo, 2000)
-    
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    // Poll less frequently (5s instead of 2s) - only when visible
+    intervalId = setInterval(requestSelectionInfo, 5000)
+
     return () => {
       window.removeEventListener('message', handleMessage)
-      clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      if (intervalId) clearInterval(intervalId)
     }
   }, [])
   

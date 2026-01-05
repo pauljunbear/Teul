@@ -9,6 +9,7 @@ import { ColorSystemModal } from './components/ColorSystemModal';
 import { GridSystemTab } from './components/GridSystemTab';
 import { WernerColorsTab } from './components/WernerColorsTab';
 import { AboutPanel, WADA_ABOUT_CONTENT } from './components/AboutPanel';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 interface Color {
   name: string;
@@ -906,7 +907,11 @@ const App: React.FC = () => {
 
 const container = document.getElementById('react-page');
 if (container) {
-  createRoot(container).render(<App />);
+  createRoot(container).render(
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  );
 }
 
 export default App;
