@@ -1,7 +1,7 @@
 // ============================================
-// Swiss Grid System Presets
+// Swiss-Inspired Grid System Presets
 // ============================================
-// Curated collection of classic and modern grid systems
+// Curated collection of Swiss-inspired and modern grid systems
 // inspired by Swiss/International Typographic Style
 
 import type { GridPreset, GridCategory, GridColor } from '../types/grid';
@@ -11,18 +11,95 @@ const COLUMN_COLOR: GridColor = { r: 1, g: 0.2, b: 0.2, a: 0.1 };
 const ROW_COLOR: GridColor = { r: 0.2, g: 0.4, b: 1, a: 0.1 };
 const BASELINE_COLOR: GridColor = { r: 0.2, g: 0.8, b: 0.9, a: 0.15 };
 
+const PRESET_ADAPTATION_NOTES: Record<string, string> = {
+  'swiss-4col':
+    'Teul-defined proportional four-column construction; not an artifact-level historical reconstruction.',
+  'swiss-6col':
+    'Teul-defined proportional six-column construction informed by general Swiss editorial practice.',
+  'swiss-8col-asym':
+    'Uses one offset and uniform columns; it does not encode independent asymmetric margins.',
+  'swiss-3plus3':
+    'Emits six uniform columns and gutters; it does not encode two grouped column sets.',
+  'swiss-golden':
+    'Uses a golden-ratio frame label with uniform columns; it does not construct golden-ratio subdivisions.',
+  'swiss-poster':
+    'Teul-defined proportional poster construction informed by Swiss-style composition.',
+  'swiss-2col-wide': 'Teul-defined two-column composition with a proportional gutter and margins.',
+  'editorial-magazine':
+    'Teul-defined nine-column editorial suggestion; the label is not tied to a specific publication artifact.',
+  'editorial-newspaper':
+    'Teul-defined dense editorial suggestion; the label is not tied to a specific newspaper system.',
+  'editorial-book':
+    'Teul-defined single-column page suggestion with equal margins; it does not encode an independent binding margin.',
+  'editorial-2col-text': 'Teul-defined two-column reading layout using equal proportional margins.',
+  'poster-dramatic': 'Teul-defined offset poster composition using uniform columns and gutters.',
+  'poster-cinema':
+    'Teul-defined wide-frame poster suggestion; it is not derived from a specific cinema-poster artifact.',
+  'poster-minimal': 'Teul-defined single-column composition with generous equal margins.',
+  'poster-event':
+    'Teul-defined four-column poster suggestion; hierarchy zones are not encoded as separate geometry.',
+  'web-12col':
+    'Bootstrap-inspired label with fixed Teul measurements; it does not encode Bootstrap containers or breakpoints.',
+  'web-8col': 'Teul-defined desktop interface grid with fixed pixel margins and gutters.',
+  'web-16col':
+    'Teul-defined dense desktop interface grid; narrow frames require a lower column count.',
+  'web-4col-mobile': 'Teul-defined mobile interface grid with fixed pixel margins and gutters.',
+  'web-6col-tablet': 'Teul-defined tablet interface grid with fixed pixel margins and gutters.',
+  'modular-4x4':
+    'Teul-defined equal-module construction using independent uniform row and column guides.',
+  'modular-5x7':
+    'Teul-defined equal-module construction sized proportionally for an A-series-like frame.',
+  'modular-6x8': 'Teul-defined equal-module editorial construction using uniform rows and columns.',
+  'modular-3x5': 'Teul-defined equal-module card and gallery construction.',
+  'modular-8x8-dense':
+    'Teul-defined dense equal-module construction; small frames may require fewer modules.',
+  'baseline-4px':
+    'Emits a native Figma square GRID at 4px, not horizontal-only typographic baselines.',
+  'baseline-8px':
+    'Emits a native Figma square GRID at 8px, not horizontal-only typographic baselines.',
+  'baseline-12px': 'Emits a native Figma square GRID at 12px; it is not a sourced print standard.',
+  'baseline-16px':
+    'Emits a native Figma square GRID at 16px, not horizontal-only typographic baselines.',
+  'baseline-24px':
+    'Emits a native Figma square GRID at 24px, not horizontal-only typographic baselines.',
+  'combined-6col-8px': 'Combines Teul-defined columns with a native square 8px Figma GRID.',
+  'combined-12col-8px':
+    'Uses a Bootstrap-inspired label with Teul measurements and a native square 8px Figma GRID.',
+  'combined-4col-12px':
+    'Combines a Swiss-inspired Teul column construction with a native square 12px Figma GRID.',
+  'combined-modular-8px':
+    'Combines Teul-defined equal modules with a native square 8px Figma GRID.',
+};
+
+function addBundledPresetProvenance(preset: GridPreset): GridPreset {
+  const adaptationNotes = PRESET_ADAPTATION_NOTES[preset.id];
+
+  if (!adaptationNotes) {
+    throw new Error(`Missing provenance adaptation notes for bundled grid preset: ${preset.id}`);
+  }
+
+  return {
+    ...preset,
+    provenance: {
+      classification: 'teul-modern-adaptation',
+      source: 'Teul preset catalog',
+      evidence: 'unsourced',
+      adaptationNotes,
+    },
+  };
+}
+
 // ============================================
-// Classic Swiss Grids (Müller-Brockmann Inspired)
+// Swiss-Inspired Modern Adaptations
 // ============================================
 
 const classicSwissGrids: GridPreset[] = [
   {
     id: 'swiss-4col',
-    name: '4-Column Classic',
-    description:
-      'The foundational Müller-Brockmann grid. Clean, balanced, and versatile for posters and editorial.',
+    name: '4-Column Swiss-Inspired',
+    description: 'A balanced modern adaptation for posters and editorial layouts.',
     category: 'classic-swiss',
-    tags: ['müller-brockmann', 'poster', 'editorial', 'balanced'],
+    tags: ['swiss-inspired', 'poster', 'editorial', 'balanced'],
     aspectRatio: '1:√2',
     config: {
       columns: {
@@ -41,8 +118,7 @@ const classicSwissGrids: GridPreset[] = [
   {
     id: 'swiss-6col',
     name: '6-Column Editorial',
-    description:
-      'Classic editorial grid with more flexibility. Ideal for magazines and multi-column layouts.',
+    description: 'A flexible Swiss-inspired grid for magazines and multi-column layouts.',
     category: 'classic-swiss',
     tags: ['editorial', 'magazine', 'flexible', 'multi-column'],
     aspectRatio: '2:3',
@@ -62,8 +138,8 @@ const classicSwissGrids: GridPreset[] = [
   },
   {
     id: 'swiss-8col-asym',
-    name: '8-Column Asymmetric',
-    description: 'Asymmetric Swiss grid with wider left margin for annotations and notes.',
+    name: '8-Column Offset',
+    description: 'An offset eight-column grid for annotations and notes.',
     category: 'classic-swiss',
     tags: ['asymmetric', 'annotated', 'academic', 'notes'],
     aspectRatio: '1:√2',
@@ -83,9 +159,8 @@ const classicSwissGrids: GridPreset[] = [
   },
   {
     id: 'swiss-3plus3',
-    name: '3+3 Split Grid',
-    description:
-      'Two groups of 3 columns with a wider center gutter. Perfect for facing pages or comparison layouts.',
+    name: '6-Column Comparison',
+    description: 'A uniform six-column grid suited to facing pages or comparison layouts.',
     category: 'classic-swiss',
     tags: ['split', 'facing-pages', 'comparison', 'symmetrical'],
     aspectRatio: '16:9',
@@ -106,7 +181,7 @@ const classicSwissGrids: GridPreset[] = [
   {
     id: 'swiss-golden',
     name: 'Golden Ratio Grid',
-    description: 'Grid based on the golden ratio (φ). Creates naturally pleasing proportions.',
+    description: 'A modern proportional grid using a golden-ratio frame.',
     category: 'classic-swiss',
     tags: ['golden-ratio', 'phi', 'proportional', 'classic'],
     aspectRatio: '1:φ',
@@ -126,8 +201,8 @@ const classicSwissGrids: GridPreset[] = [
   },
   {
     id: 'swiss-poster',
-    name: 'Swiss Poster Grid',
-    description: 'Bold 3-column grid with generous margins. Designed for large-format posters.',
+    name: '3-Column Poster',
+    description: 'A bold Swiss-inspired grid with generous margins for large-format posters.',
     category: 'classic-swiss',
     tags: ['poster', 'bold', 'large-format', 'minimal'],
     aspectRatio: '1:√2',
@@ -358,7 +433,7 @@ const webUIGrids: GridPreset[] = [
   {
     id: 'web-12col',
     name: '12-Column (Bootstrap)',
-    description: 'Industry-standard 12-column grid used in Bootstrap and most web frameworks.',
+    description: 'A Bootstrap-inspired 12-column layout for modern web interfaces.',
     category: 'web-ui',
     tags: ['bootstrap', 'web', 'responsive', 'standard'],
     aspectRatio: '16:9',
@@ -625,14 +700,14 @@ const modularGrids: GridPreset[] = [
 ];
 
 // ============================================
-// Baseline Typography Grids
+// Uniform Square Grids
 // ============================================
 
 const baselineGrids: GridPreset[] = [
   {
     id: 'baseline-4px',
-    name: '4px Sub-Grid',
-    description: 'Fine-grained 4px baseline for precise spacing and icon alignment.',
+    name: '4px Uniform Grid',
+    description: 'A fine-grained square Figma grid for spacing and icon alignment.',
     category: 'baseline',
     tags: ['fine', 'precise', 'icons', 'alignment'],
     config: {
@@ -647,8 +722,8 @@ const baselineGrids: GridPreset[] = [
   },
   {
     id: 'baseline-8px',
-    name: '8px Web Standard',
-    description: 'Industry-standard 8px baseline grid for web and UI design.',
+    name: '8px Uniform Grid',
+    description: 'A square 8px Figma grid for web and UI spacing.',
     category: 'baseline',
     tags: ['web', 'standard', 'ui', '8-point'],
     config: {
@@ -663,8 +738,8 @@ const baselineGrids: GridPreset[] = [
   },
   {
     id: 'baseline-12px',
-    name: '12px Print Standard',
-    description: 'Traditional 12px baseline for print typography and editorial.',
+    name: '12px Uniform Grid',
+    description: 'A square 12px Figma grid for editorial spacing.',
     category: 'baseline',
     tags: ['print', 'editorial', 'traditional', 'typography'],
     config: {
@@ -679,8 +754,8 @@ const baselineGrids: GridPreset[] = [
   },
   {
     id: 'baseline-16px',
-    name: '16px Large Format',
-    description: 'Generous 16px baseline for large-format designs and posters.',
+    name: '16px Uniform Grid',
+    description: 'A generous square Figma grid for large-format designs and posters.',
     category: 'baseline',
     tags: ['large-format', 'poster', 'generous', 'display'],
     config: {
@@ -695,8 +770,8 @@ const baselineGrids: GridPreset[] = [
   },
   {
     id: 'baseline-24px',
-    name: '24px Display',
-    description: 'Large 24px baseline for display typography and headlines.',
+    name: '24px Uniform Grid',
+    description: 'A large square Figma grid for display typography and headlines.',
     category: 'baseline',
     tags: ['display', 'headlines', 'large', 'impact'],
     config: {
@@ -712,14 +787,14 @@ const baselineGrids: GridPreset[] = [
 ];
 
 // ============================================
-// Combined Grids (Column + Baseline)
+// Combined Grids (Column + Uniform Grid)
 // ============================================
 
 const combinedGrids: GridPreset[] = [
   {
     id: 'combined-6col-8px',
-    name: '6-Column + 8px Baseline',
-    description: 'Editorial grid with 6 columns and 8px baseline for web typography.',
+    name: '6-Column + 8px Uniform Grid',
+    description: 'Editorial columns combined with a square 8px Figma grid.',
     category: 'combined',
     tags: ['editorial', 'web', 'typography', 'complete'],
     aspectRatio: '16:9',
@@ -745,8 +820,8 @@ const combinedGrids: GridPreset[] = [
   },
   {
     id: 'combined-12col-8px',
-    name: '12-Column + 8px Baseline',
-    description: 'Complete web grid system with Bootstrap columns and 8-point baseline.',
+    name: '12-Column + 8px Uniform Grid',
+    description: 'Bootstrap-inspired columns combined with a square 8px Figma grid.',
     category: 'combined',
     tags: ['bootstrap', 'web', 'complete', 'standard'],
     aspectRatio: '16:9',
@@ -772,8 +847,8 @@ const combinedGrids: GridPreset[] = [
   },
   {
     id: 'combined-4col-12px',
-    name: '4-Column + 12px Baseline',
-    description: 'Swiss poster grid with 4 columns and 12px baseline for print.',
+    name: '4-Column + 12px Uniform Grid',
+    description: 'A Swiss-inspired poster grid combined with a square 12px Figma grid.',
     category: 'combined',
     tags: ['swiss', 'poster', 'print', 'complete'],
     aspectRatio: '1:√2',
@@ -799,8 +874,8 @@ const combinedGrids: GridPreset[] = [
   },
   {
     id: 'combined-modular-8px',
-    name: '4×4 Modular + 8px Baseline',
-    description: 'Modular grid with columns, rows, and baseline for structured layouts.',
+    name: '4×4 Modular + 8px Uniform Grid',
+    description: 'Modular columns and rows combined with a square 8px Figma grid.',
     category: 'combined',
     tags: ['modular', 'structured', 'complete', 'systematic'],
     aspectRatio: '1:1',
@@ -849,17 +924,17 @@ export const GRID_PRESETS: GridPreset[] = [
   ...modularGrids,
   ...baselineGrids,
   ...combinedGrids,
-];
+].map(addBundledPresetProvenance);
 
 /** Grid presets organized by category for easy filtering */
 export const PRESETS_BY_CATEGORY: Record<GridCategory, GridPreset[]> = {
-  'classic-swiss': classicSwissGrids,
-  editorial: editorialGrids,
-  poster: posterGrids,
-  'web-ui': webUIGrids,
-  modular: modularGrids,
-  baseline: baselineGrids,
-  combined: combinedGrids,
+  'classic-swiss': GRID_PRESETS.filter(preset => preset.category === 'classic-swiss'),
+  editorial: GRID_PRESETS.filter(preset => preset.category === 'editorial'),
+  poster: GRID_PRESETS.filter(preset => preset.category === 'poster'),
+  'web-ui': GRID_PRESETS.filter(preset => preset.category === 'web-ui'),
+  modular: GRID_PRESETS.filter(preset => preset.category === 'modular'),
+  baseline: GRID_PRESETS.filter(preset => preset.category === 'baseline'),
+  combined: GRID_PRESETS.filter(preset => preset.category === 'combined'),
   custom: [], // User-created presets will be added here dynamically
 };
 
@@ -873,27 +948,22 @@ export const GRID_CATEGORIES: {
   { id: 'all', name: 'All Grids', icon: '📐', description: 'Browse all available grid presets' },
   {
     id: 'classic-swiss',
-    name: 'Classic Swiss',
+    name: 'Swiss-Inspired',
     icon: '🇨🇭',
-    description: 'Müller-Brockmann inspired grids',
+    description: 'Modern adaptations informed by Swiss design',
   },
   { id: 'editorial', name: 'Editorial', icon: '📰', description: 'Magazine and publication grids' },
   { id: 'poster', name: 'Poster', icon: '🎨', description: 'Large format poster grids' },
   { id: 'web-ui', name: 'Web/UI', icon: '💻', description: 'Standard web and interface grids' },
   { id: 'modular', name: 'Modular', icon: '🔲', description: 'Column + row modular grids' },
-  { id: 'baseline', name: 'Baseline', icon: '📏', description: 'Typography baseline grids' },
+  { id: 'baseline', name: 'Uniform Grid', icon: '📏', description: 'Square Figma spacing grids' },
   {
     id: 'combined',
     name: 'Combined',
     icon: '🎯',
-    description: 'Column + baseline complete systems',
+    description: 'Column + uniform-grid systems',
   },
 ];
-
-/** Get preset by ID */
-export function getPresetById(id: string): GridPreset | undefined {
-  return GRID_PRESETS.find(p => p.id === id);
-}
 
 /** Get presets by category */
 export function getPresetsByCategory(category: GridCategory | 'all'): GridPreset[] {
@@ -901,26 +971,6 @@ export function getPresetsByCategory(category: GridCategory | 'all'): GridPreset
     return GRID_PRESETS;
   }
   return PRESETS_BY_CATEGORY[category] || [];
-}
-
-/** Search presets by name or tags */
-export function searchPresets(query: string): GridPreset[] {
-  const normalizedQuery = query.toLowerCase().trim();
-  if (!normalizedQuery) {
-    return GRID_PRESETS;
-  }
-
-  return GRID_PRESETS.filter(preset => {
-    const nameMatch = preset.name.toLowerCase().includes(normalizedQuery);
-    const descMatch = preset.description.toLowerCase().includes(normalizedQuery);
-    const tagMatch = preset.tags.some(tag => tag.toLowerCase().includes(normalizedQuery));
-    return nameMatch || descMatch || tagMatch;
-  });
-}
-
-/** Get total preset count */
-export function getPresetCount(): number {
-  return GRID_PRESETS.length;
 }
 
 /** Get preset count by category */

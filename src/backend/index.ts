@@ -1,6 +1,45 @@
 // Backend Module Barrel Export
 // Re-exports all backend operations for use in code.ts
 
+import type {
+  DocumentColorProfileMessage,
+  NormalizedDocumentColorProfile,
+} from '../types/messages';
+
+interface DocumentWithOptionalColorProfile {
+  readonly documentColorProfile?: unknown;
+}
+
+export function normalizeDocumentColorProfile(profile: unknown): NormalizedDocumentColorProfile {
+  if (profile === 'LEGACY') return 'legacy';
+  if (profile === 'SRGB') return 'srgb';
+  if (profile === 'DISPLAY_P3') return 'display-p3';
+  return 'unknown';
+}
+
+export function detectDocumentColorProfile(root: unknown): NormalizedDocumentColorProfile {
+  try {
+    if (typeof root !== 'object' || root === null || !('documentColorProfile' in root)) {
+      return 'unknown';
+    }
+
+    return normalizeDocumentColorProfile(
+      (root as DocumentWithOptionalColorProfile).documentColorProfile
+    );
+  } catch {
+    return 'unknown';
+  }
+}
+
+export function sendDocumentColorProfile(): void {
+  const message: DocumentColorProfileMessage = {
+    type: 'document-color-profile',
+    profile: detectDocumentColorProfile(figma.root),
+  };
+
+  figma.ui.postMessage(message);
+}
+
 // Figma Helpers
 export {
   isValidHex,
@@ -9,7 +48,6 @@ export {
   getSelectedNodesWithStrokes,
   sendSelectionInfo,
   type GradientColor,
-  type ColorMessage,
 } from './figmaHelpers';
 
 // Color Operations
@@ -17,14 +55,11 @@ export {
   handleApplyFill,
   handleApplyStroke,
   handleCreateStyle,
-  handleGetSelectionColor,
-  handleCreateColorRect,
   handleApplyGradient,
-  handleCreatePalette,
 } from './colorOperations';
 
 // Grid Operations
-export { handleCreateGridFrame, handleApplyGrid, handleClearGrids } from './gridOperations';
+export { handleCreateGridFrame, handleApplyGrid } from './gridOperations';
 
 // Color System Generation
 export {
@@ -32,6 +67,7 @@ export {
   type ColorScaleData,
   type ColorSystemData,
 } from './colorSystemGeneration';
+export { handleGenerateColorSystem } from './colorSystemTransaction';
 
 // Color Styles
 export { createColorStyles, type CreateStylesData } from './colorStyles';

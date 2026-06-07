@@ -6,13 +6,5 @@
   "ui": "dist/ui.html",
   "capabilities": [],
   "enableProposedApi": false,
-  "editorType": [
-    "figma"
-  ],
-  "networkAccess": {
-    "allowedDomains": [
-      "https://unpkg.com",
-      "https://*.unpkg.com"
-    ]
-  }
+  "editorType": ["figma"]
 }

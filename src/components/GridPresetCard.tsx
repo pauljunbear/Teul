@@ -1,13 +1,21 @@
-import * as React from 'react'
-import type { GridPreset, GridConfig, ColumnGridConfig, RowGridConfig, BaselineGridConfig } from '../types/grid'
-import { gridColorToCSS } from '../lib/gridUtils'
+import * as React from 'react';
+import type {
+  GridPreset,
+  GridConfig,
+  ColumnGridConfig,
+  RowGridConfig,
+  BaselineGridConfig,
+} from '../types/grid';
+import type { GridFitAnalysis } from '../lib/gridFit';
+import { gridColorToCSS } from '../lib/gridUtils';
 
 interface GridPresetCardProps {
-  preset: GridPreset
-  isSelected: boolean
-  onClick: () => void
-  onApply: () => void
-  isDark: boolean
+  preset: GridPreset;
+  isSelected: boolean;
+  onClick: () => void;
+  onApply: () => void;
+  isDark: boolean;
+  fit?: GridFitAnalysis;
 }
 
 // ============================================
@@ -15,39 +23,41 @@ interface GridPresetCardProps {
 // ============================================
 
 interface GridPreviewSVGProps {
-  config: GridConfig
-  width: number
-  height: number
-  isDark: boolean
+  config: GridConfig;
+  width: number;
+  height: number;
+  isDark: boolean;
 }
 
 const GridPreviewSVG: React.FC<GridPreviewSVGProps> = ({ config, width, height, isDark }) => {
-  const bgColor = isDark ? '#2a2a2a' : '#f5f5f5'
-  
+  const bgColor = isDark ? '#2a2a2a' : '#f5f5f5';
+
   // Calculate column positions - fill entire width properly
   const renderColumns = (columns: ColumnGridConfig) => {
     // Convert margin to pixels
-    const marginPx = columns.marginUnit === 'percent' 
-      ? (columns.margin / 100) * width 
-      : columns.margin * (width / 200) // Scale for preview
-    
+    const marginPx =
+      columns.marginUnit === 'percent'
+        ? (columns.margin / 100) * width
+        : columns.margin * (width / 200); // Scale for preview
+
     // Convert gutter to pixels
-    const gutterPx = columns.gutterUnit === 'percent' 
-      ? (columns.gutterSize / 100) * width 
-      : columns.gutterSize * (width / 200) // Scale for preview
-    
+    const gutterPx =
+      columns.gutterUnit === 'percent'
+        ? (columns.gutterSize / 100) * width
+        : columns.gutterSize * (width / 200); // Scale for preview
+
     // Available width after both margins
-    const availableWidth = width - (marginPx * 2)
-    
+    const availableWidth = width - marginPx * 2;
+
     // Total gutter width (n-1 gutters)
-    const totalGutterWidth = Math.max(0, gutterPx * (columns.count - 1))
-    
+    const totalGutterWidth = Math.max(0, gutterPx * (columns.count - 1));
+
     // Each column width
-    const columnWidth = Math.max(1, (availableWidth - totalGutterWidth) / columns.count)
-    
-    const rects: React.ReactNode[] = []
-    let x = marginPx
-    
+    const columnWidth = Math.max(1, (availableWidth - totalGutterWidth) / columns.count);
+
+    const rects: React.ReactNode[] = [];
+    let x = marginPx;
+
     for (let i = 0; i < columns.count; i++) {
       rects.push(
         <rect
@@ -58,27 +68,29 @@ const GridPreviewSVG: React.FC<GridPreviewSVGProps> = ({ config, width, height, 
           height={height}
           fill={gridColorToCSS({ ...columns.color, a: 0.35 })}
         />
-      )
-      x += columnWidth + gutterPx
+      );
+      x += columnWidth + gutterPx;
     }
-    
-    return rects
-  }
-  
+
+    return rects;
+  };
+
   // Calculate row positions
   const renderRows = (rows: RowGridConfig) => {
-    const marginPercent = rows.marginUnit === 'percent' ? rows.margin : (rows.margin / height) * 100
-    const gutterPercent = rows.gutterUnit === 'percent' ? rows.gutterSize : (rows.gutterSize / height) * 100
-    
-    const marginPx = (marginPercent / 100) * height
-    const gutterPx = (gutterPercent / 100) * height
-    const availableHeight = height - (marginPx * 2)
-    const totalGutterHeight = gutterPx * (rows.count - 1)
-    const rowHeight = (availableHeight - totalGutterHeight) / rows.count
-    
-    const rects: React.ReactNode[] = []
-    let y = marginPx
-    
+    const marginPercent =
+      rows.marginUnit === 'percent' ? rows.margin : (rows.margin / height) * 100;
+    const gutterPercent =
+      rows.gutterUnit === 'percent' ? rows.gutterSize : (rows.gutterSize / height) * 100;
+
+    const marginPx = (marginPercent / 100) * height;
+    const gutterPx = (gutterPercent / 100) * height;
+    const availableHeight = height - marginPx * 2;
+    const totalGutterHeight = gutterPx * (rows.count - 1);
+    const rowHeight = (availableHeight - totalGutterHeight) / rows.count;
+
+    const rects: React.ReactNode[] = [];
+    let y = marginPx;
+
     for (let i = 0; i < rows.count; i++) {
       rects.push(
         <rect
@@ -89,19 +101,19 @@ const GridPreviewSVG: React.FC<GridPreviewSVGProps> = ({ config, width, height, 
           height={rowHeight}
           fill={gridColorToCSS({ ...rows.color, a: 0.15 })}
         />
-      )
-      y += rowHeight + gutterPx
+      );
+      y += rowHeight + gutterPx;
     }
-    
-    return rects
-  }
-  
+
+    return rects;
+  };
+
   // Render baseline grid lines
   const renderBaseline = (baseline: BaselineGridConfig) => {
-    const lines: React.ReactNode[] = []
-    let y = baseline.offset
-    let i = 0
-    
+    const lines: React.ReactNode[] = [];
+    let y = 0;
+    let i = 0;
+
     while (y < height) {
       lines.push(
         <line
@@ -113,35 +125,35 @@ const GridPreviewSVG: React.FC<GridPreviewSVGProps> = ({ config, width, height, 
           stroke={gridColorToCSS({ ...baseline.color, a: 0.4 })}
           strokeWidth={0.5}
         />
-      )
-      y += baseline.height
-      i++
+      );
+      y += baseline.height;
+      i++;
     }
-    
-    return lines
-  }
-  
+
+    return lines;
+  };
+
   return (
-    <svg 
-      width={width} 
-      height={height} 
+    <svg
+      width={width}
+      height={height}
       viewBox={`0 0 ${width} ${height}`}
       style={{ borderRadius: '4px', overflow: 'hidden' }}
     >
       {/* Background */}
       <rect x={0} y={0} width={width} height={height} fill={bgColor} />
-      
+
       {/* Rows (render first so columns overlay) */}
       {config.rows && renderRows(config.rows)}
-      
+
       {/* Columns */}
       {config.columns && renderColumns(config.columns)}
-      
+
       {/* Baseline */}
       {config.baseline && renderBaseline(config.baseline)}
     </svg>
-  )
-}
+  );
+};
 
 // ============================================
 // Grid Preset Card Component
@@ -175,8 +187,8 @@ const styles = {
     btnBg: '#ffffff',
     btnText: '#1a1a1a',
     btnBgHover: '#e5e5e5',
-  }
-}
+  },
+};
 
 export const GridPresetCard: React.FC<GridPresetCardProps> = ({
   preset,
@@ -184,124 +196,176 @@ export const GridPresetCard: React.FC<GridPresetCardProps> = ({
   onClick,
   onApply,
   isDark,
+  fit,
 }) => {
-  const theme = isDark ? styles.dark : styles.light
-  const [isHovered, setIsHovered] = React.useState(false)
-  const cardRef = React.useRef<HTMLDivElement>(null)
-  const [cardWidth, setCardWidth] = React.useState(140)
-  
+  const theme = isDark ? styles.dark : styles.light;
+  const [isHovered, setIsHovered] = React.useState(false);
+  const [hasFocusWithin, setHasFocusWithin] = React.useState(false);
+  const cardRef = React.useRef<HTMLDivElement>(null);
+  const [cardWidth, setCardWidth] = React.useState(140);
+  const fitMessageId = React.useId();
+
   // Measure card width for responsive SVG
   React.useEffect(() => {
     if (cardRef.current) {
       const observer = new ResizeObserver(entries => {
         for (const entry of entries) {
           // Card width minus padding (12px * 2) minus border (2px * 2)
-          setCardWidth(entry.contentRect.width)
+          setCardWidth(entry.contentRect.width);
         }
-      })
-      observer.observe(cardRef.current)
-      return () => observer.disconnect()
+      });
+      observer.observe(cardRef.current);
+      return () => observer.disconnect();
     }
-  }, [])
-  
+  }, []);
+
   // Get grid summary - more compact
   const getGridSummary = () => {
-    const parts: string[] = []
-    if (preset.config.columns) parts.push(`${preset.config.columns.count} col`)
-    if (preset.config.rows) parts.push(`${preset.config.rows.count} row`)
-    return parts.join(' × ') || (preset.config.baseline ? `${preset.config.baseline.height}px` : '')
-  }
-  
+    const parts: string[] = [];
+    if (preset.config.columns) parts.push(`${preset.config.columns.count} col`);
+    if (preset.config.rows) parts.push(`${preset.config.rows.count} row`);
+    return (
+      parts.join(' × ') || (preset.config.baseline ? `${preset.config.baseline.height}px` : '')
+    );
+  };
+
   // Calculate preview height based on aspect ratio - compact
   const getPreviewHeight = () => {
-    if (!preset.aspectRatio) return Math.round(cardWidth * 0.55)
-    
+    if (!preset.aspectRatio) return Math.round(cardWidth * 0.55);
+
     // Parse aspect ratio
-    if (preset.aspectRatio.includes('√2')) return Math.round(cardWidth * 1.2)
-    if (preset.aspectRatio.includes('9:16')) return Math.round(cardWidth * 1.2)
-    if (preset.aspectRatio.includes('16:9')) return Math.round(cardWidth * 0.5)
-    if (preset.aspectRatio.includes('2:3')) return Math.round(cardWidth * 1.1)
-    if (preset.aspectRatio.includes('3:4')) return Math.round(cardWidth * 0.9)
-    if (preset.aspectRatio.includes('4:3')) return Math.round(cardWidth * 0.65)
-    if (preset.aspectRatio.includes('1:1')) return Math.round(cardWidth * 0.8)
-    
-    return Math.round(cardWidth * 0.6) // Default
-  }
-  
+    if (preset.aspectRatio.includes('√2')) return Math.round(cardWidth * 1.2);
+    if (preset.aspectRatio.includes('9:16')) return Math.round(cardWidth * 1.2);
+    if (preset.aspectRatio.includes('16:9')) return Math.round(cardWidth * 0.5);
+    if (preset.aspectRatio.includes('2:3')) return Math.round(cardWidth * 1.1);
+    if (preset.aspectRatio.includes('3:4')) return Math.round(cardWidth * 0.9);
+    if (preset.aspectRatio.includes('4:3')) return Math.round(cardWidth * 0.65);
+    if (preset.aspectRatio.includes('1:1')) return Math.round(cardWidth * 0.8);
+
+    return Math.round(cardWidth * 0.6); // Default
+  };
+
   // Limit preview height for tall ratios - more compact
-  const previewHeight = Math.min(getPreviewHeight(), 85)
-  
+  const previewHeight = Math.min(getPreviewHeight(), 85);
+  const showApply = fit?.status !== 'fail' && (isHovered || isSelected || hasFocusWithin);
+  const failedFitMessage =
+    fit?.status === 'fail'
+      ? (fit.recommendations[0]?.message ??
+        fit.issues[0]?.message ??
+        'Adjust the grid or selected frame before applying.')
+      : undefined;
+
   return (
     <div
       ref={cardRef}
-      onClick={onClick}
+      role="group"
+      aria-label={`${preset.name} grid preset`}
+      onFocusCapture={() => setHasFocusWithin(true)}
+      onBlurCapture={event => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          setHasFocusWithin(false);
+        }
+      }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
-        backgroundColor: isSelected ? theme.cardBgSelected : (isHovered ? theme.cardBgHover : theme.cardBg),
-        border: `1px solid ${isSelected ? theme.borderSelected : (isHovered ? theme.text + '20' : theme.border)}`,
+        backgroundColor: isSelected
+          ? theme.cardBgSelected
+          : isHovered
+            ? theme.cardBgHover
+            : theme.cardBg,
+        border: `1px solid ${isSelected ? theme.borderSelected : isHovered ? theme.text + '20' : theme.border}`,
         borderRadius: '8px',
         padding: '6px',
-        cursor: 'pointer',
+        position: 'relative',
         transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
         transform: isHovered ? 'translateY(-1px)' : 'translateY(0)',
-        boxShadow: isHovered 
-          ? '0 4px 12px rgba(0,0,0,0.12)' 
-          : (isSelected ? '0 2px 6px rgba(59,130,246,0.15)' : 'none'),
+        boxShadow: isHovered
+          ? '0 4px 12px rgba(0,0,0,0.12)'
+          : isSelected
+            ? '0 2px 6px rgba(59,130,246,0.15)'
+            : 'none',
       }}
     >
+      <button
+        type="button"
+        aria-pressed={isSelected}
+        aria-describedby={failedFitMessage ? fitMessageId : undefined}
+        aria-label={`${preset.name}${fit ? `, ${fit.status} for selected frame` : ''}`}
+        onClick={onClick}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 1,
+          border: 'none',
+          borderRadius: '8px',
+          background: 'transparent',
+          cursor: 'pointer',
+        }}
+      />
+
       {/* Preview Thumbnail - compact */}
-      <div style={{
-        marginBottom: '5px',
-        borderRadius: '4px',
-        overflow: 'hidden',
-        backgroundColor: isDark ? '#1e1e1e' : '#e8e8e8',
-      }}>
-        <GridPreviewSVG 
-          config={preset.config} 
-          width={cardWidth} 
-          height={previewHeight} 
+      <div
+        style={{
+          marginBottom: '5px',
+          borderRadius: '4px',
+          overflow: 'hidden',
+          backgroundColor: isDark ? '#1e1e1e' : '#e8e8e8',
+        }}
+      >
+        <GridPreviewSVG
+          config={preset.config}
+          width={cardWidth}
+          height={previewHeight}
           isDark={isDark}
         />
       </div>
-      
+
       {/* Title + Summary Row - tighter */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'baseline',
-        justifyContent: 'space-between',
-        gap: '4px',
-        marginBottom: '3px',
-      }}>
-        <h4 style={{
-          margin: 0,
-          fontSize: '10px',
-          fontWeight: 600,
-          color: theme.text,
-          flex: 1,
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-        }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'baseline',
+          justifyContent: 'space-between',
+          gap: '4px',
+          marginBottom: '3px',
+        }}
+      >
+        <h4
+          style={{
+            margin: 0,
+            fontSize: '10px',
+            fontWeight: 600,
+            color: theme.text,
+            flex: 1,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
           {preset.name}
         </h4>
-        <span style={{
-          fontSize: '8px',
-          color: theme.textMuted,
-          fontFamily: 'monospace',
-          flexShrink: 0,
-        }}>
+        <span
+          style={{
+            fontSize: '8px',
+            color: theme.textMuted,
+            fontFamily: 'monospace',
+            flexShrink: 0,
+          }}
+        >
           {getGridSummary()}
         </span>
       </div>
-      
+
       {/* Tags Row - minimal */}
-      <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: '2px',
-        minHeight: '14px',
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '2px',
+          minHeight: '14px',
+        }}
+      >
         {preset.tags.slice(0, 2).map(tag => (
           <span
             key={tag}
@@ -330,41 +394,91 @@ export const GridPresetCard: React.FC<GridPresetCardProps> = ({
             {preset.aspectRatio}
           </span>
         )}
+        {fit && (
+          <span
+            style={{
+              fontSize: '7px',
+              padding: '1px 4px',
+              borderRadius: '3px',
+              backgroundColor:
+                fit.status === 'fit'
+                  ? isDark
+                    ? '#14532d'
+                    : '#dcfce7'
+                  : fit.status === 'warning'
+                    ? isDark
+                      ? '#713f12'
+                      : '#fef3c7'
+                    : isDark
+                      ? '#7f1d1d'
+                      : '#fee2e2',
+              color:
+                fit.status === 'fit'
+                  ? isDark
+                    ? '#86efac'
+                    : '#166534'
+                  : fit.status === 'warning'
+                    ? isDark
+                      ? '#fde68a'
+                      : '#92400e'
+                    : isDark
+                      ? '#fca5a5'
+                      : '#b91c1c',
+              fontWeight: 700,
+            }}
+          >
+            {fit.status}
+          </span>
+        )}
       </div>
-      
-      {/* Apply Button - slide in from bottom */}
-      <div style={{
-        overflow: 'hidden',
-        maxHeight: isHovered || isSelected ? '28px' : '0px',
-        marginTop: isHovered || isSelected ? '5px' : '0px',
-        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-      }}>
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            onApply()
-          }}
+
+      {failedFitMessage ? (
+        <p
+          id={fitMessageId}
           style={{
-            width: '100%',
-            padding: '5px 8px',
-            border: 'none',
-            borderRadius: '4px',
-            backgroundColor: '#3b82f6',
-            color: '#ffffff',
-            fontSize: '9px',
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: 'background-color 0.15s ease',
+            margin: '5px 2px 0',
+            color: isDark ? '#fca5a5' : '#b91c1c',
+            fontSize: '8px',
+            lineHeight: 1.35,
           }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#3b82f6'}
         >
-          Apply
-        </button>
-      </div>
+          <strong>Cannot apply.</strong> {failedFitMessage}
+        </p>
+      ) : (
+        showApply && (
+          <div
+            style={{
+              position: 'relative',
+              zIndex: 2,
+              marginTop: '5px',
+            }}
+          >
+            <button
+              type="button"
+              onClick={onApply}
+              aria-label={`Apply ${preset.name} to selected frame`}
+              style={{
+                width: '100%',
+                padding: '5px 8px',
+                border: 'none',
+                borderRadius: '4px',
+                backgroundColor: '#3b82f6',
+                color: '#ffffff',
+                fontSize: '9px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'background-color 0.15s ease',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#2563eb')}
+              onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#3b82f6')}
+            >
+              Apply
+            </button>
+          </div>
+        )
+      )}
     </div>
-  )
-}
+  );
+};
 
-export default GridPresetCard
-
+export default GridPresetCard;

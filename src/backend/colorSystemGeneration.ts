@@ -2,48 +2,12 @@
 // Generates visual color system layouts in Figma
 
 import { hexToFigmaRgb } from './figmaHelpers';
+import type { ColorScaleData, ColorSystemData } from '../types/colorSystem';
+export type { ColorScaleData, ColorSystemData } from '../types/colorSystem';
 
 // ============================================
 // Type Definitions
 // ============================================
-
-export interface ColorScaleData {
-  name: string;
-  role: string;
-  steps: { step: number; hex: string }[];
-}
-
-export interface ColorSystemData {
-  systemName: string;
-  detailLevel: 'minimal' | 'detailed' | 'presentation';
-  includeDarkMode: boolean;
-  scaleMethod: 'custom' | 'radix';
-  scales: {
-    light: {
-      primary?: ColorScaleData;
-      secondary?: ColorScaleData;
-      tertiary?: ColorScaleData;
-      accent?: ColorScaleData;
-      neutral: ColorScaleData;
-      [key: string]: ColorScaleData | undefined;
-    };
-    dark?: {
-      primary?: ColorScaleData;
-      secondary?: ColorScaleData;
-      tertiary?: ColorScaleData;
-      accent?: ColorScaleData;
-      neutral: ColorScaleData;
-      [key: string]: ColorScaleData | undefined;
-    };
-  };
-  usageProportions: {
-    primary: number;
-    secondary: number;
-    tertiary: number;
-    accent: number;
-    neutral: number;
-  };
-}
 
 interface ColorInfo {
   hex: string;
@@ -74,10 +38,106 @@ const SEMANTIC_LABELS: Record<number, { short: string; full: string }> = {
 };
 
 const FONT_LOAD_TIMEOUT = 5000;
+const CHROMATIC_SCALE_ORDER = ['primary', 'secondary', 'tertiary', 'accent'] as const;
+
+interface GenerationOperation {
+  nodes: Set<SceneNode>;
+}
+
+interface GenerateColorSystemFramesOptions {
+  notify?: boolean;
+}
+
+let activeGenerationOperation: GenerationOperation | null = null;
 
 // ============================================
 // Utility Functions
 // ============================================
+
+function beginGenerationOperation(): GenerationOperation {
+  if (activeGenerationOperation) {
+    throw new Error('Color system generation is already in progress');
+  }
+
+  const operation = { nodes: new Set<SceneNode>() };
+  activeGenerationOperation = operation;
+  return operation;
+}
+
+function finishGenerationOperation(operation: GenerationOperation): void {
+  if (activeGenerationOperation === operation) {
+    activeGenerationOperation = null;
+  }
+}
+
+function trackCreatedNode<T extends SceneNode>(node: T): T {
+  if (!activeGenerationOperation) {
+    throw new Error('Color system nodes must be created within a generation operation');
+  }
+
+  activeGenerationOperation.nodes.add(node);
+  return node;
+}
+
+function createOwnedFrame(): FrameNode {
+  return trackCreatedNode(figma.createFrame());
+}
+
+function createOwnedRectangle(): RectangleNode {
+  return trackCreatedNode(figma.createRectangle());
+}
+
+function createOwnedEllipse(): EllipseNode {
+  return trackCreatedNode(figma.createEllipse());
+}
+
+function createOwnedText(): TextNode {
+  return trackCreatedNode(figma.createText());
+}
+
+function removeOwnedNodes(operation: GenerationOperation): void {
+  const ownedRoots = [...operation.nodes].filter(
+    node => !operation.nodes.has(node.parent as SceneNode)
+  );
+
+  for (const node of ownedRoots.reverse()) {
+    try {
+      node.remove();
+    } catch (cleanupError) {
+      console.error('Failed to remove partial color system node:', cleanupError);
+    }
+  }
+}
+
+function getOrderedScaleKeys(scales: ColorSystemData['scales']['light']): string[] {
+  const roleOrder = new Map(CHROMATIC_SCALE_ORDER.map((role, index) => [role, index]));
+
+  const parseScaleKey = (key: string): { roleIndex: number; variant: number } | null => {
+    const match = /^(primary|secondary|tertiary|accent)(\d+)?$/.exec(key);
+    if (!match) return null;
+
+    return {
+      roleIndex: roleOrder.get(match[1] as (typeof CHROMATIC_SCALE_ORDER)[number]) ?? 0,
+      variant: match[2] ? Number(match[2]) : 1,
+    };
+  };
+
+  return Object.keys(scales)
+    .filter(key => scales[key])
+    .sort((a, b) => {
+      if (a === 'neutral') return b === 'neutral' ? 0 : 1;
+      if (b === 'neutral') return -1;
+
+      const parsedA = parseScaleKey(a);
+      const parsedB = parseScaleKey(b);
+      if (parsedA && parsedB) {
+        return parsedA.roleIndex - parsedB.roleIndex || parsedA.variant - parsedB.variant;
+      }
+      if (parsedA) return -1;
+      if (parsedB) return 1;
+      return a.localeCompare(b);
+    });
+}
 
 function getRelativeLuminance(hex: string): number {
   const r = parseInt(hex.slice(1, 3), 16) / 255;
@@ -154,7 +214,7 @@ function createText(
   fontStyle: 'Regular' | 'Medium' | 'Semi Bold' | 'Bold' = 'Regular',
   color: RGB = { r: 0.2, g: 0.2, b: 0.2 }
 ): TextNode {
-  const text = figma.createText();
+  const text = createOwnedText();
   text.fontName = { family: 'Inter', style: fontStyle };
   text.characters = content;
   text.fontSize = fontSize;
@@ -168,7 +228,7 @@ function createColorSwatch(
   height: number,
   cornerRadius: number = 4
 ): RectangleNode {
-  const rect = figma.createRectangle();
+  const rect = createOwnedRectangle();
   rect.resize(width, height);
   rect.cornerRadius = cornerRadius;
   rect.fills = [{ type: 'SOLID', color: hexToFigmaRgb(hex) }];
@@ -186,7 +246,7 @@ async function createScaleRow(
   showLabels: boolean = true,
   swatchSize: number = 40
 ): Promise<FrameNode> {
-  const row = figma.createFrame();
+  const row = createOwnedFrame();
   row.name = `${scale.name} Scale`;
   row.layoutMode = 'VERTICAL';
   row.primaryAxisSizingMode = 'AUTO';
@@ -200,10 +260,20 @@ async function createScaleRow(
     const label = createText(scale.role.toUpperCase(), 10, 'Bold', labelColor);
     label.letterSpacing = { value: 1, unit: 'PIXELS' };
     row.appendChild(label);
+    if (scale.method || scale.profile) {
+      row.appendChild(
+        createText(
+          [scale.method, scale.profile].filter(Boolean).join(' · '),
+          7,
+          'Regular',
+          labelColor
+        )
+      );
+    }
   }
 
   // Color swatches container
-  const swatchesContainer = figma.createFrame();
+  const swatchesContainer = createOwnedFrame();
   swatchesContainer.name = 'Swatches';
   swatchesContainer.layoutMode = 'HORIZONTAL';
   swatchesContainer.primaryAxisSizingMode = 'AUTO';
@@ -212,7 +282,7 @@ async function createScaleRow(
   swatchesContainer.fills = [];
 
   for (const step of scale.steps) {
-    const swatchFrame = figma.createFrame();
+    const swatchFrame = createOwnedFrame();
     swatchFrame.name = `Step ${step.step}`;
     swatchFrame.layoutMode = 'VERTICAL';
     swatchFrame.primaryAxisSizingMode = 'AUTO';
@@ -243,7 +313,7 @@ async function createScaleRow(
 
   // Semantic labels row
   if (showLabels) {
-    const labelsContainer = figma.createFrame();
+    const labelsContainer = createOwnedFrame();
     labelsContainer.name = 'Semantic Labels';
     labelsContainer.layoutMode = 'HORIZONTAL';
     labelsContainer.primaryAxisSizingMode = 'AUTO';
@@ -252,7 +322,7 @@ async function createScaleRow(
     labelsContainer.fills = [];
 
     for (let i = 1; i <= 12; i++) {
-      const labelFrame = figma.createFrame();
+      const labelFrame = createOwnedFrame();
       labelFrame.resize(swatchSize, 14);
       labelFrame.fills = [];
       labelFrame.layoutMode = 'VERTICAL';
@@ -278,7 +348,7 @@ async function createScaleRow(
 
   // Accessibility badges for text steps (11 and 12)
   if (showLabels && scale.steps.length >= 12) {
-    const accessibilityRow = figma.createFrame();
+    const accessibilityRow = createOwnedFrame();
     accessibilityRow.name = 'Accessibility';
     accessibilityRow.layoutMode = 'HORIZONTAL';
     accessibilityRow.primaryAxisSizingMode = 'AUTO';
@@ -289,7 +359,7 @@ async function createScaleRow(
     const bgColor = scale.steps[0].hex;
 
     for (let i = 1; i <= 12; i++) {
-      const badgeFrame = figma.createFrame();
+      const badgeFrame = createOwnedFrame();
       badgeFrame.resize(swatchSize, 14);
       badgeFrame.fills = [];
       badgeFrame.layoutMode = 'VERTICAL';
@@ -320,7 +390,7 @@ async function createScaleRow(
 // ============================================
 
 function createBWSwatches(size: number = 60): FrameNode {
-  const container = figma.createFrame();
+  const container = createOwnedFrame();
   container.name = 'Black & White';
   container.layoutMode = 'HORIZONTAL';
   container.primaryAxisSizingMode = 'AUTO';
@@ -329,7 +399,7 @@ function createBWSwatches(size: number = 60): FrameNode {
   container.fills = [];
 
   // Black
-  const blackFrame = figma.createFrame();
+  const blackFrame = createOwnedFrame();
   blackFrame.name = 'Black';
   blackFrame.layoutMode = 'VERTICAL';
   blackFrame.primaryAxisSizingMode = 'AUTO';
@@ -344,7 +414,7 @@ function createBWSwatches(size: number = 60): FrameNode {
   blackFrame.appendChild(blackLabel);
 
   // White
-  const whiteFrame = figma.createFrame();
+  const whiteFrame = createOwnedFrame();
   whiteFrame.name = 'White';
   whiteFrame.layoutMode = 'VERTICAL';
   whiteFrame.primaryAxisSizingMode = 'AUTO';
@@ -388,7 +458,7 @@ function createUsageProportionBar(
   width: number = 400,
   mode: 'light' | 'dark' = 'light'
 ): FrameNode {
-  const container = figma.createFrame();
+  const container = createOwnedFrame();
   container.name = 'Usage Proportions';
   container.layoutMode = 'VERTICAL';
   container.primaryAxisSizingMode = 'AUTO';
@@ -402,7 +472,7 @@ function createUsageProportionBar(
   container.appendChild(title);
 
   // Bar container
-  const barFrame = figma.createFrame();
+  const barFrame = createOwnedFrame();
   barFrame.name = 'Bar';
   barFrame.layoutMode = 'HORIZONTAL';
   barFrame.primaryAxisSizingMode = 'AUTO';
@@ -429,7 +499,7 @@ function createUsageProportionBar(
 
   for (const segment of segments) {
     const segmentWidth = (segment.proportion / total) * width;
-    const rect = figma.createRectangle();
+    const rect = createOwnedRectangle();
     rect.resize(segmentWidth, 24);
     rect.fills = [{ type: 'SOLID', color: hexToFigmaRgb(segment.color!) }];
     rect.name = segment.key;
@@ -439,7 +509,7 @@ function createUsageProportionBar(
   container.appendChild(barFrame);
 
   // Legend
-  const legendFrame = figma.createFrame();
+  const legendFrame = createOwnedFrame();
   legendFrame.name = 'Legend';
   legendFrame.layoutMode = 'HORIZONTAL';
   legendFrame.primaryAxisSizingMode = 'AUTO';
@@ -448,7 +518,7 @@ function createUsageProportionBar(
   legendFrame.fills = [];
 
   for (const segment of segments) {
-    const item = figma.createFrame();
+    const item = createOwnedFrame();
     item.layoutMode = 'HORIZONTAL';
     item.primaryAxisSizingMode = 'AUTO';
     item.counterAxisSizingMode = 'AUTO';
@@ -590,10 +660,9 @@ async function createColorPairingGuide(
   const mutedColor = mode === 'dark' ? { r: 0.6, g: 0.6, b: 0.6 } : { r: 0.5, g: 0.5, b: 0.5 };
   const bgColor = mode === 'dark' ? { r: 0.12, g: 0.12, b: 0.12 } : { r: 0.97, g: 0.97, b: 0.97 };
 
-  const scaleOrder = ['primary', 'secondary', 'tertiary', 'accent'] as const;
   const colorInfos: ColorInfo[] = [];
 
-  for (const key of scaleOrder) {
+  for (const key of getOrderedScaleKeys(scales).filter(key => key !== 'neutral')) {
     const scale = scales[key];
     if (scale && scale.steps[8]) {
       colorInfos.push(analyzeColor(scale.steps[8].hex, scale.name, scale.role));
@@ -601,7 +670,7 @@ async function createColorPairingGuide(
   }
 
   if (colorInfos.length === 0) {
-    const emptyFrame = figma.createFrame();
+    const emptyFrame = createOwnedFrame();
     emptyFrame.name = 'Color Pairing Guide';
     emptyFrame.resize(100, 100);
     return emptyFrame;
@@ -609,7 +678,7 @@ async function createColorPairingGuide(
 
   const { pairs, proportionStack } = generatePairingSuggestions(colorInfos);
 
-  const container = figma.createFrame();
+  const container = createOwnedFrame();
   container.name = 'Color Pairing Guide';
   container.layoutMode = 'VERTICAL';
   container.primaryAxisSizingMode = 'AUTO';
@@ -622,7 +691,7 @@ async function createColorPairingGuide(
   container.appendChild(sectionTitle);
 
   // Proportion Stack
-  const stackSection = figma.createFrame();
+  const stackSection = createOwnedFrame();
   stackSection.name = 'Visual Proportions';
   stackSection.layoutMode = 'HORIZONTAL';
   stackSection.primaryAxisSizingMode = 'AUTO';
@@ -630,7 +699,7 @@ async function createColorPairingGuide(
   stackSection.itemSpacing = 24;
   stackSection.fills = [];
 
-  const stackFrame = figma.createFrame();
+  const stackFrame = createOwnedFrame();
   stackFrame.name = 'Stack';
   stackFrame.layoutMode = 'VERTICAL';
   stackFrame.primaryAxisSizingMode = 'AUTO';
@@ -644,7 +713,7 @@ async function createColorPairingGuide(
 
   for (const item of sortedStack) {
     const height = Math.max(20, (item.weight / 100) * 160);
-    const rect = figma.createRectangle();
+    const rect = createOwnedRectangle();
     rect.resize(100, height);
     rect.fills = [{ type: 'SOLID', color: hexToFigmaRgb(item.color.hex) }];
     rect.name = `${item.color.name} (${item.weight}%)`;
@@ -654,7 +723,7 @@ async function createColorPairingGuide(
   stackSection.appendChild(stackFrame);
 
   // Stack legend
-  const stackLegend = figma.createFrame();
+  const stackLegend = createOwnedFrame();
   stackLegend.name = 'Stack Legend';
   stackLegend.layoutMode = 'VERTICAL';
   stackLegend.primaryAxisSizingMode = 'AUTO';
@@ -666,7 +735,7 @@ async function createColorPairingGuide(
   stackLegend.appendChild(proportionTitle);
 
   for (const item of sortedStack) {
-    const row = figma.createFrame();
+    const row = createOwnedFrame();
     row.layoutMode = 'HORIZONTAL';
     row.primaryAxisSizingMode = 'AUTO';
     row.counterAxisSizingMode = 'AUTO';
@@ -690,7 +759,7 @@ async function createColorPairingGuide(
   container.appendChild(stackSection);
 
   // Suggested Pairings
-  const pairingsSection = figma.createFrame();
+  const pairingsSection = createOwnedFrame();
   pairingsSection.name = 'Suggested Pairings';
   pairingsSection.layoutMode = 'VERTICAL';
   pairingsSection.primaryAxisSizingMode = 'AUTO';
@@ -701,7 +770,7 @@ async function createColorPairingGuide(
   const pairingsTitle = createText('Color Combinations', 12, 'Semi Bold', textColor);
   pairingsSection.appendChild(pairingsTitle);
 
-  const pairingsGrid = figma.createFrame();
+  const pairingsGrid = createOwnedFrame();
   pairingsGrid.name = 'Pairings Grid';
   pairingsGrid.layoutMode = 'HORIZONTAL';
   pairingsGrid.primaryAxisSizingMode = 'AUTO';
@@ -710,7 +779,7 @@ async function createColorPairingGuide(
   pairingsGrid.fills = [];
 
   for (const pair of pairs) {
-    const pairCard = figma.createFrame();
+    const pairCard = createOwnedFrame();
     pairCard.name = pair.name;
     pairCard.layoutMode = 'VERTICAL';
     pairCard.primaryAxisSizingMode = 'AUTO';
@@ -723,7 +792,7 @@ async function createColorPairingGuide(
     pairCard.cornerRadius = 8;
     pairCard.fills = [{ type: 'SOLID', color: bgColor }];
 
-    const swatchesRow = figma.createFrame();
+    const swatchesRow = createOwnedFrame();
     swatchesRow.name = 'Swatches';
     swatchesRow.layoutMode = 'HORIZONTAL';
     swatchesRow.primaryAxisSizingMode = 'AUTO';
@@ -732,7 +801,7 @@ async function createColorPairingGuide(
     swatchesRow.fills = [];
 
     for (const color of pair.colors) {
-      const swatch = figma.createEllipse();
+      const swatch = createOwnedEllipse();
       swatch.resize(32, 32);
       swatch.fills = [{ type: 'SOLID', color: hexToFigmaRgb(color.hex) }];
       swatch.strokes = [
@@ -762,7 +831,7 @@ async function createColorPairingGuide(
   container.appendChild(pairingsSection);
 
   // Use Case Suggestions
-  const useCaseSection = figma.createFrame();
+  const useCaseSection = createOwnedFrame();
   useCaseSection.name = 'Use Cases';
   useCaseSection.layoutMode = 'VERTICAL';
   useCaseSection.primaryAxisSizingMode = 'AUTO';
@@ -781,7 +850,7 @@ async function createColorPairingGuide(
   ];
 
   for (const useCase of useCases) {
-    const row = figma.createFrame();
+    const row = createOwnedFrame();
     row.layoutMode = 'HORIZONTAL';
     row.primaryAxisSizingMode = 'AUTO';
     row.counterAxisSizingMode = 'AUTO';
@@ -813,7 +882,7 @@ async function generateMinimalLayout(
   scales: ColorSystemData['scales']['light'],
   mode: 'light' | 'dark'
 ): Promise<FrameNode> {
-  const frame = figma.createFrame();
+  const frame = createOwnedFrame();
   frame.name = `Color Scales (${mode})`;
   frame.layoutMode = 'VERTICAL';
   frame.primaryAxisSizingMode = 'AUTO';
@@ -831,8 +900,7 @@ async function generateMinimalLayout(
     },
   ];
 
-  const scaleOrder = ['primary', 'secondary', 'tertiary', 'accent', 'neutral'] as const;
-  for (const key of scaleOrder) {
+  for (const key of getOrderedScaleKeys(scales)) {
     const scale = scales[key];
     if (scale) {
       const row = await createScaleRow(scale, mode, true, 36);
@@ -848,7 +916,7 @@ async function generateDetailedLayout(
   proportions: ColorSystemData['usageProportions'],
   mode: 'light' | 'dark'
 ): Promise<FrameNode> {
-  const frame = figma.createFrame();
+  const frame = createOwnedFrame();
   frame.name = `Color System (${mode})`;
   frame.layoutMode = 'VERTICAL';
   frame.primaryAxisSizingMode = 'AUTO';
@@ -876,7 +944,7 @@ async function generateDetailedLayout(
   const proportionBar = createUsageProportionBar(proportions, colors, 500, mode);
   frame.appendChild(proportionBar);
 
-  const divider = figma.createRectangle();
+  const divider = createOwnedRectangle();
   divider.resize(500, 1);
   divider.fills = [
     {
@@ -886,8 +954,7 @@ async function generateDetailedLayout(
   ];
   frame.appendChild(divider);
 
-  const scaleOrder = ['primary', 'secondary', 'tertiary', 'accent', 'neutral'] as const;
-  for (const key of scaleOrder) {
+  for (const key of getOrderedScaleKeys(scales)) {
     const scale = scales[key];
     if (scale) {
       const row = await createScaleRow(scale, mode, true, 40);
@@ -895,7 +962,7 @@ async function generateDetailedLayout(
     }
   }
 
-  const pairingDivider = figma.createRectangle();
+  const pairingDivider = createOwnedRectangle();
   pairingDivider.resize(500, 1);
   pairingDivider.fills = [
     {
@@ -917,7 +984,7 @@ async function generatePresentationLayout(
   proportions: ColorSystemData['usageProportions'],
   mode: 'light' | 'dark'
 ): Promise<FrameNode> {
-  const frame = figma.createFrame();
+  const frame = createOwnedFrame();
   frame.name = `${systemName} - ${mode === 'dark' ? 'Dark' : 'Light'} Mode`;
   frame.layoutMode = 'VERTICAL';
   frame.primaryAxisSizingMode = 'AUTO';
@@ -939,7 +1006,7 @@ async function generatePresentationLayout(
   const mutedColor = mode === 'dark' ? { r: 0.6, g: 0.6, b: 0.6 } : { r: 0.5, g: 0.5, b: 0.5 };
 
   // Header
-  const header = figma.createFrame();
+  const header = createOwnedFrame();
   header.name = 'Header';
   header.layoutMode = 'VERTICAL';
   header.primaryAxisSizingMode = 'AUTO';
@@ -961,7 +1028,7 @@ async function generatePresentationLayout(
   frame.appendChild(header);
 
   // Primary Palette Section
-  const primarySection = figma.createFrame();
+  const primarySection = createOwnedFrame();
   primarySection.name = 'Primary Palette';
   primarySection.layoutMode = 'VERTICAL';
   primarySection.primaryAxisSizingMode = 'AUTO';
@@ -973,7 +1040,7 @@ async function generatePresentationLayout(
   primaryTitle.letterSpacing = { value: 1.5, unit: 'PIXELS' };
   primarySection.appendChild(primaryTitle);
 
-  const primaryRow = figma.createFrame();
+  const primaryRow = createOwnedFrame();
   primaryRow.name = 'Primary Colors';
   primaryRow.layoutMode = 'HORIZONTAL';
   primaryRow.primaryAxisSizingMode = 'AUTO';
@@ -984,11 +1051,10 @@ async function generatePresentationLayout(
   const bw = createBWSwatches(80);
   primaryRow.appendChild(bw);
 
-  const mainColors = ['primary', 'secondary', 'tertiary', 'accent', 'neutral'] as const;
-  for (const key of mainColors) {
+  for (const key of getOrderedScaleKeys(scales)) {
     const scale = scales[key];
     if (scale && scale.steps[8]) {
-      const colorFrame = figma.createFrame();
+      const colorFrame = createOwnedFrame();
       colorFrame.name = scale.role;
       colorFrame.layoutMode = 'VERTICAL';
       colorFrame.primaryAxisSizingMode = 'AUTO';
@@ -1016,6 +1082,7 @@ async function generatePresentationLayout(
   const colors = {
     primary: scales.primary?.steps[8]?.hex,
     secondary: scales.secondary?.steps[8]?.hex,
+    tertiary: scales.tertiary?.steps[8]?.hex,
     accent: scales.accent?.steps[8]?.hex,
     neutral: scales.neutral.steps[8].hex,
   };
@@ -1023,7 +1090,7 @@ async function generatePresentationLayout(
   frame.appendChild(proportionBar);
 
   // Semantic Categories Section
-  const semanticSection = figma.createFrame();
+  const semanticSection = createOwnedFrame();
   semanticSection.name = 'Semantic Categories';
   semanticSection.layoutMode = 'VERTICAL';
   semanticSection.primaryAxisSizingMode = 'AUTO';
@@ -1051,7 +1118,7 @@ async function generatePresentationLayout(
   ];
 
   for (const group of semanticGroups) {
-    const groupFrame = figma.createFrame();
+    const groupFrame = createOwnedFrame();
     groupFrame.name = group.name;
     groupFrame.layoutMode = 'VERTICAL';
     groupFrame.primaryAxisSizingMode = 'AUTO';
@@ -1059,7 +1126,7 @@ async function generatePresentationLayout(
     groupFrame.itemSpacing = 8;
     groupFrame.fills = [];
 
-    const groupTitleRow = figma.createFrame();
+    const groupTitleRow = createOwnedFrame();
     groupTitleRow.layoutMode = 'HORIZONTAL';
     groupTitleRow.primaryAxisSizingMode = 'AUTO';
     groupTitleRow.counterAxisSizingMode = 'AUTO';
@@ -1074,29 +1141,28 @@ async function generatePresentationLayout(
     groupTitleRow.appendChild(groupDesc);
     groupFrame.appendChild(groupTitleRow);
 
-    const roleSwatches = figma.createFrame();
+    const roleSwatches = createOwnedFrame();
     roleSwatches.layoutMode = 'HORIZONTAL';
     roleSwatches.primaryAxisSizingMode = 'AUTO';
     roleSwatches.counterAxisSizingMode = 'AUTO';
     roleSwatches.itemSpacing = 16;
     roleSwatches.fills = [];
 
-    const roles = ['primary', 'secondary', 'accent', 'neutral'] as const;
-    for (const roleKey of roles) {
+    for (const roleKey of getOrderedScaleKeys(scales)) {
       const scale = scales[roleKey];
       if (!scale) continue;
 
-      const roleColumn = figma.createFrame();
+      const roleColumn = createOwnedFrame();
       roleColumn.layoutMode = 'VERTICAL';
       roleColumn.primaryAxisSizingMode = 'AUTO';
       roleColumn.counterAxisSizingMode = 'AUTO';
       roleColumn.itemSpacing = 4;
       roleColumn.fills = [];
 
-      const roleLabel = createText(roleKey.toUpperCase(), 7, 'Medium', mutedColor);
+      const roleLabel = createText(scale.role.toUpperCase(), 7, 'Medium', mutedColor);
       roleColumn.appendChild(roleLabel);
 
-      const swatchRow = figma.createFrame();
+      const swatchRow = createOwnedFrame();
       swatchRow.layoutMode = 'HORIZONTAL';
       swatchRow.primaryAxisSizingMode = 'AUTO';
       swatchRow.counterAxisSizingMode = 'AUTO';
@@ -1107,7 +1173,7 @@ async function generatePresentationLayout(
         const step = scale.steps[stepNum - 1];
         if (!step) continue;
 
-        const swatchContainer = figma.createFrame();
+        const swatchContainer = createOwnedFrame();
         swatchContainer.layoutMode = 'VERTICAL';
         swatchContainer.primaryAxisSizingMode = 'AUTO';
         swatchContainer.counterAxisSizingMode = 'AUTO';
@@ -1143,7 +1209,7 @@ async function generatePresentationLayout(
   frame.appendChild(semanticSection);
 
   // Extended Palette Section
-  const extendedSection = figma.createFrame();
+  const extendedSection = createOwnedFrame();
   extendedSection.name = 'Extended Palette';
   extendedSection.layoutMode = 'VERTICAL';
   extendedSection.primaryAxisSizingMode = 'AUTO';
@@ -1155,8 +1221,7 @@ async function generatePresentationLayout(
   extendedTitle.letterSpacing = { value: 1.5, unit: 'PIXELS' };
   extendedSection.appendChild(extendedTitle);
 
-  const extendedScaleOrder = ['primary', 'secondary', 'tertiary', 'accent', 'neutral'] as const;
-  for (const key of extendedScaleOrder) {
+  for (const key of getOrderedScaleKeys(scales)) {
     const scale = scales[key];
     if (scale) {
       const row = await createScaleRow(scale, mode, true, 48);
@@ -1178,80 +1243,105 @@ async function generatePresentationLayout(
 
 export async function generateColorSystemFrames(
   _config: unknown,
-  scalesData: ColorSystemData
-): Promise<void> {
-  await loadFonts();
+  scalesData: ColorSystemData,
+  options: GenerateColorSystemFramesOptions = {}
+): Promise<FrameNode> {
+  const operation = beginGenerationOperation();
+  try {
+    const fontsLoaded = await loadFonts();
+    if (!fontsLoaded) {
+      throw new Error('Unable to generate color system: required fonts failed to load');
+    }
 
-  const { detailLevel, includeDarkMode, systemName, scaleMethod } = scalesData;
-  const { light: lightScales, dark: darkScales } = scalesData.scales;
+    const { detailLevel, includeDarkMode, systemName, scaleMethod, documentColorProfile } =
+      scalesData;
+    const { light: lightScales, dark: darkScales } = scalesData.scales;
 
-  const container = figma.createFrame();
-  const methodLabel = scaleMethod === 'custom' ? 'Custom Scales' : 'Radix Matched';
-  container.name = `Color System - ${systemName} (${methodLabel})`;
-  container.layoutMode = 'HORIZONTAL';
-  container.primaryAxisSizingMode = 'AUTO';
-  container.counterAxisSizingMode = 'AUTO';
-  container.itemSpacing = 32;
-  container.fills = [];
+    const container = createOwnedFrame();
+    const methodLabel = scaleMethod === 'custom' ? 'Custom Scales' : 'Radix Matched';
+    const profileLabel = documentColorProfile ? `, document ${documentColorProfile}` : '';
+    container.name = `Color System - ${systemName} (${methodLabel}, source sRGB${profileLabel})`;
+    container.layoutMode = 'HORIZONTAL';
+    container.primaryAxisSizingMode = 'AUTO';
+    container.counterAxisSizingMode = 'AUTO';
+    container.itemSpacing = 32;
+    container.fills = [];
 
-  let lightFrame: FrameNode;
-  switch (detailLevel) {
-    case 'minimal':
-      lightFrame = await generateMinimalLayout(lightScales, 'light');
-      break;
-    case 'detailed':
-      lightFrame = await generateDetailedLayout(lightScales, scalesData.usageProportions, 'light');
-      break;
-    case 'presentation':
-      lightFrame = await generatePresentationLayout(
-        systemName,
-        lightScales,
-        scalesData.usageProportions,
-        'light'
-      );
-      break;
-    default:
-      lightFrame = await generateDetailedLayout(lightScales, scalesData.usageProportions, 'light');
-  }
-  container.appendChild(lightFrame);
-
-  if (includeDarkMode && darkScales) {
-    let darkFrame: FrameNode;
+    let lightFrame: FrameNode;
     switch (detailLevel) {
       case 'minimal':
-        darkFrame = await generateMinimalLayout(darkScales, 'dark');
+        lightFrame = await generateMinimalLayout(lightScales, 'light');
         break;
       case 'detailed':
-        darkFrame = await generateDetailedLayout(darkScales, scalesData.usageProportions, 'dark');
+        lightFrame = await generateDetailedLayout(
+          lightScales,
+          scalesData.usageProportions,
+          'light'
+        );
         break;
       case 'presentation':
-        darkFrame = await generatePresentationLayout(
+        lightFrame = await generatePresentationLayout(
           systemName,
-          darkScales,
+          lightScales,
           scalesData.usageProportions,
-          'dark'
+          'light'
         );
         break;
       default:
-        darkFrame = await generateDetailedLayout(darkScales, scalesData.usageProportions, 'dark');
+        lightFrame = await generateDetailedLayout(
+          lightScales,
+          scalesData.usageProportions,
+          'light'
+        );
     }
-    container.appendChild(darkFrame);
+    container.appendChild(lightFrame);
+
+    if (includeDarkMode && darkScales) {
+      let darkFrame: FrameNode;
+      switch (detailLevel) {
+        case 'minimal':
+          darkFrame = await generateMinimalLayout(darkScales, 'dark');
+          break;
+        case 'detailed':
+          darkFrame = await generateDetailedLayout(darkScales, scalesData.usageProportions, 'dark');
+          break;
+        case 'presentation':
+          darkFrame = await generatePresentationLayout(
+            systemName,
+            darkScales,
+            scalesData.usageProportions,
+            'dark'
+          );
+          break;
+        default:
+          darkFrame = await generateDetailedLayout(darkScales, scalesData.usageProportions, 'dark');
+      }
+      container.appendChild(darkFrame);
+    }
+
+    const selection = figma.currentPage.selection;
+    if (selection.length > 0) {
+      const bounds = selection[0];
+      container.x = bounds.x + bounds.width + 48;
+      container.y = bounds.y;
+    } else {
+      container.x = figma.viewport.center.x - container.width / 2;
+      container.y = figma.viewport.center.y - container.height / 2;
+    }
+
+    figma.currentPage.selection = [container];
+    figma.viewport.scrollAndZoomIntoView([container]);
+
+    if (options.notify !== false) {
+      figma.notify(
+        `Created "${systemName}" color system with ${includeDarkMode ? 'light & dark modes' : 'light mode'}`
+      );
+    }
+    return container;
+  } catch (error) {
+    removeOwnedNodes(operation);
+    throw error;
+  } finally {
+    finishGenerationOperation(operation);
   }
-
-  const selection = figma.currentPage.selection;
-  if (selection.length > 0) {
-    const bounds = selection[0];
-    container.x = bounds.x + bounds.width + 48;
-    container.y = bounds.y;
-  } else {
-    container.x = figma.viewport.center.x - container.width / 2;
-    container.y = figma.viewport.center.y - container.height / 2;
-  }
-
-  figma.currentPage.selection = [container];
-  figma.viewport.scrollAndZoomIntoView([container]);
-
-  figma.notify(
-    `Created "${systemName}" color system with ${includeDarkMode ? 'light & dark modes' : 'light mode'}`
-  );
 }

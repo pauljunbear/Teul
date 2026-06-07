@@ -5,6 +5,7 @@ node_modules
 
 out/
 dist/
+coverage/
 code.js
 .DS_Store
 

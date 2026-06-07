@@ -26,6 +26,3 @@ export const colorData: ColorData = {
   colors: colorJson,
   combinations: [],
 };
-
-// Export colors directly for backward compatibility
-export const colors: { colors: Color[] } = { colors: colorJson };

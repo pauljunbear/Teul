@@ -6,15 +6,15 @@
 
 ## What is Teul?
 
-**틀 (Teul)** is the Korean word for *frame*, *mold*, or *pattern*—a foundational structure that shapes what comes next. In Taekwondo, the forms are called *Tul*. In design, it's the framework that gives your work structure.
+**틀 (Teul)** is the Korean word for _frame_, _mold_, or _pattern_—a foundational structure that shapes what comes next. In Taekwondo, the forms are called _Tul_. In design, it's the framework that gives your work structure.
 
 Teul brings together three worlds:
 
-- **Sanzo Wada's color theory** — 348 colors and 159 combinations from 1930s Japan, refined through decades of use by textile designers and artists
-- **Werner's Nomenclature of Colours** — 110 colors from 1814, each grounded in observations from nature's animal, vegetable, and mineral kingdoms  
-- **Radix color scales** — Modern, accessible 12-step color systems designed for digital interfaces
+- **Sanzo Wada's color combinations** — 159 normalized colors used across 348 combinations from 1930s Japan
+- **Werner's Nomenclature of Colours** — Patrick Syme's 110-color 1821 second edition, adapted from Werner's nomenclature
+- **Radix color scales** — Exact Match scales pinned to `@radix-ui/colors` 3.0.0, plus Radix-inspired generated scales
 
-The result: historic color wisdom, made practical for modern design. Pick colors that have stood the test of time, then generate complete, accessible color systems ready for production.
+The result: historically sourced color relationships, clearly labeled digital approximations, and modern design tools. Generated systems should be validated for their intended color pairings and use cases.
 
 <img width="3888" height="2382" alt="CleanShot 2025-12-22 at 18 35 31@2x" src="https://github.com/user-attachments/assets/e1b04881-c29b-4691-8c9e-7867724328ff" />
 
@@ -22,11 +22,11 @@ The result: historic color wisdom, made practical for modern design. Pick colors
 
 ### 🎨 Historic Color Palettes
 
-Browse two carefully digitized color collections:
+Browse two historically sourced color collections represented by digital approximations:
 
-**Sanzo Wada** — From *A Dictionary of Color Combinations* (配色辞典, 1934). These aren't algorithm-generated palettes—they're curated combinations from a designer who spent his career studying color relationships.
+**Sanzo Wada** — 159 normalized colors used across 348 combinations. Bundled sRGB values are digital approximations based on modern Seigensha CMYK recipes.
 
-**Werner's Nomenclature** — Each of the 110 colors includes real-world examples: "the breast of the black-headed Gull," "the back of the Christmas Rose," "Carrara Marble." Colors grounded in observation, not abstraction.
+**Werner's Nomenclature** — Patrick Syme's 1821 second edition adapts Werner's nomenclature into 110 colors with references from nature. Teul independently transcribes the public-domain edition and reproducibly samples the Getty scan's aged painted swatches.
 
 ### ⚡ Color System Generator
 
@@ -40,11 +40,11 @@ Turn any palette into a complete design system:
 
 ### 📐 Swiss-Style Grids
 
-Classic grid systems inspired by Josef Müller-Brockmann:
+Swiss-inspired modern grid adaptations:
 
 - 4, 6, 8, and 12-column presets
 - Modular grids with rows and columns
-- Baseline grids for typography
+- Uniform square Figma grids for spacing
 - Save and reuse custom configurations
 
 ## Installation
@@ -57,6 +57,7 @@ Classic grid systems inspired by Josef Müller-Brockmann:
 ## Quick Start
 
 **Generate a color system:**
+
 1. Browse Wada or Werner colors
 2. Find a combination you like
 3. Click "System" to open the generator
@@ -64,6 +65,7 @@ Classic grid systems inspired by Josef Müller-Brockmann:
 5. Export to your codebase or create Figma frames
 
 **Apply a grid:**
+
 1. Select a frame
 2. Switch to Grids tab
 3. Pick a preset
@@ -71,10 +73,12 @@ Classic grid systems inspired by Josef Müller-Brockmann:
 
 ## Development
 
+Requires Node.js 22 or 24 and npm 10.9.8.
+
 ```bash
 git clone https://github.com/pauljunbear/Teul.git
 cd Teul
-npm install
+npm ci
 npm run dev
 ```
 
@@ -84,14 +88,21 @@ Import in Figma: **Plugins → Development → Import plugin from manifest**
 
 ### Color Data
 
-**Sanzo Wada** — *A Dictionary of Color Combinations* (1934), digitized by [Dain M. Blodorn Kim](https://sanzo-wada.dmbk.io/).
+**Sanzo Wada** — Modern Seigensha CMYK recipes, converted to sRGB by [dictionary-of-colour-combinations](https://github.com/mattdesl/dictionary-of-colour-combinations), which credits [Dain M. Blodorn Kim's](https://sanzo-wada.dmbk.io/) original digital compilation.
 
-**Werner's Nomenclature of Colours** — Patrick Syme's 1814 guide, digitized by [Nicholas Rougeux](https://www.c82.net/werner/).
+**Werner's Nomenclature of Colours** — Patrick Syme's 1821 second edition, adapted from Werner's nomenclature; independently transcribed and sampled from the [Getty Research Institute public-domain scan](https://archive.org/details/gri_c00033125012743312).
 
 ### Color System Generation
 
-**Radix UI Colors** — Accessible 12-step color scales from [Radix](https://www.radix-ui.com/colors).
+**Radix UI Colors** — Exact Match data pinned to [`@radix-ui/colors` 3.0.0](https://www.radix-ui.com/colors).
 
-## License
+## License And Data Rights
 
-MIT
+Teul's plugin code is MIT-licensed under [LICENSE](LICENSE). Bundled libraries,
+source data, and third-party rights retain their own terms; see
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and
+[the source and provenance ledger](docs/SOURCE_PROVENANCE.md). Werner's
+independent derivation is documented in
+[docs/WERNER_DERIVATION.md](docs/WERNER_DERIVATION.md), with source/display
+text differences pinned in
+[`scripts/werner-sampling/transcription-audit.json`](scripts/werner-sampling/transcription-audit.json).

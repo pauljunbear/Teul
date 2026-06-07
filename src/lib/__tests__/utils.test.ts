@@ -21,10 +21,8 @@ import {
   hslToRgb,
   hexToHsl,
   hslToHex,
-  clampToGamut,
-  generateColorScale,
-  generateColorScales,
 } from '../utils';
+import { generateColorScale, generateColorScales } from '../colorScale';
 
 // ============================================
 // Basic Color Conversions
@@ -48,10 +46,16 @@ describe('hexToRgb', () => {
     expect(hexToRgb('AABBCC')).toEqual({ r: 170, g: 187, b: 204 });
   });
 
-  it('returns black for invalid hex', () => {
-    expect(hexToRgb('invalid')).toEqual({ r: 0, g: 0, b: 0 });
-    expect(hexToRgb('#gg0000')).toEqual({ r: 0, g: 0, b: 0 });
-    expect(hexToRgb('')).toEqual({ r: 0, g: 0, b: 0 });
+  it.each(['invalid', '#gg0000', '', '#fff', '1234567', '##123456', ' 123456'])(
+    'throws for invalid hex format %j',
+    hex => {
+      expect(() => hexToRgb(hex)).toThrow(`Invalid hex color: ${hex}`);
+    }
+  );
+
+  it('does not treat invalid input as black', () => {
+    expect(() => hexToRgb('not-black')).toThrow();
+    expect(hexToRgb('#000000')).toEqual({ r: 0, g: 0, b: 0 });
   });
 });
 
@@ -491,39 +495,6 @@ describe('hexToHsl and hslToHex', () => {
     expect(result.r).toBeCloseTo(original.r, 0);
     expect(result.g).toBeCloseTo(original.g, 0);
     expect(result.b).toBeCloseTo(original.b, 0);
-  });
-});
-
-// ============================================
-// Gamut Clamping
-// ============================================
-
-describe('clampToGamut', () => {
-  it('does not modify in-gamut colors', () => {
-    const oklch = hexToOklch('#888888');
-    const clamped = clampToGamut(oklch.l, oklch.c, oklch.h);
-    expect(clamped.c).toBeCloseTo(oklch.c, 2);
-  });
-
-  it('reduces chroma for out-of-gamut colors', () => {
-    // Very high chroma that would be out of gamut
-    const clamped = clampToGamut(0.5, 0.5, 180);
-    expect(clamped.c).toBeLessThan(0.5);
-    expect(clamped.l).toBe(0.5); // Lightness unchanged
-    expect(clamped.h).toBe(180); // Hue unchanged
-  });
-
-  it('produces valid RGB after clamping', () => {
-    const clamped = clampToGamut(0.7, 0.4, 90);
-    const hex = oklchToHex(clamped.l, clamped.c, clamped.h);
-    const rgb = hexToRgb(hex);
-
-    expect(rgb.r).toBeGreaterThanOrEqual(0);
-    expect(rgb.r).toBeLessThanOrEqual(255);
-    expect(rgb.g).toBeGreaterThanOrEqual(0);
-    expect(rgb.g).toBeLessThanOrEqual(255);
-    expect(rgb.b).toBeGreaterThanOrEqual(0);
-    expect(rgb.b).toBeLessThanOrEqual(255);
   });
 });
 

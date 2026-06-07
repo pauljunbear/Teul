@@ -3,19 +3,21 @@
 
 import {
   sendSelectionInfo,
+  sendDocumentColorProfile,
   handleApplyFill,
   handleApplyStroke,
   handleCreateStyle,
-  handleGetSelectionColor,
-  handleCreateColorRect,
   handleApplyGradient,
-  handleCreatePalette,
   handleCreateGridFrame,
   handleApplyGrid,
-  handleClearGrids,
-  generateColorSystemFrames,
-  createColorStyles,
+  handleGenerateColorSystem,
 } from './backend';
+import { validateUIToPluginMessage } from './lib/messageValidation';
+import type {
+  ColorSystemOperationResultMessage,
+  GridAppliedMessage,
+  UIToPluginMessage,
+} from './types/messages';
 
 // ============================================
 // Plugin Initialization
@@ -36,97 +38,132 @@ figma.on('selectionchange', () => {
   sendSelectionInfo();
 });
 
+// Selection does not change when a selected frame is resized, so keep grid-fit
+// diagnostics synchronized with geometry changes as well.
+figma.on('documentchange', event => {
+  const selectedGridTargetIds = new Set(
+    figma.currentPage.selection.filter(node => 'layoutGrids' in node).map(node => node.id)
+  );
+
+  if (selectedGridTargetIds.size === 0) return;
+
+  const selectedGeometryChanged = event.documentChanges.some(
+    change =>
+      change.type === 'PROPERTY_CHANGE' &&
+      selectedGridTargetIds.has(change.id) &&
+      change.properties.some(property => property === 'width' || property === 'height')
+  );
+
+  if (selectedGeometryChanged) {
+    sendSelectionInfo();
+  }
+});
+
 // ============================================
 // Message Router
 // ============================================
 
-figma.ui.onmessage = async msg => {
+figma.ui.onmessage = async (msg: unknown) => {
+  const validation = validateUIToPluginMessage(msg);
+  if (!validation.valid) {
+    console.error('Rejected invalid UI message:', validation.error);
+    if (
+      typeof msg === 'object' &&
+      msg !== null &&
+      'type' in msg &&
+      msg.type === 'generate-color-system' &&
+      'requestId' in msg &&
+      typeof msg.requestId === 'string' &&
+      msg.requestId.trim().length > 0 &&
+      msg.requestId.length <= 128
+    ) {
+      const result: ColorSystemOperationResultMessage = {
+        type: 'color-system-operation-result',
+        requestId: msg.requestId,
+        success: false,
+        error: 'Invalid color system request',
+      };
+      figma.ui.postMessage(result);
+    }
+    if (
+      typeof msg === 'object' &&
+      msg !== null &&
+      'type' in msg &&
+      msg.type === 'apply-grid' &&
+      'requestId' in msg &&
+      typeof msg.requestId === 'string' &&
+      msg.requestId.trim().length > 0 &&
+      msg.requestId.length <= 128
+    ) {
+      const result: GridAppliedMessage = {
+        type: 'grid-applied',
+        requestId: msg.requestId,
+        success: false,
+        appliedCount: 0,
+        skippedCount: 0,
+        failedCount: 0,
+        message: 'Grid apply rejected: invalid request',
+        error: 'Invalid grid apply request',
+      };
+      figma.ui.postMessage(result);
+    }
+    figma.notify('Invalid plugin message');
+    return;
+  }
+
+  const message: UIToPluginMessage = validation.message;
+
   // Color Operations
-  if (msg.type === 'apply-fill') {
-    handleApplyFill(msg);
+  if (message.type === 'apply-fill') {
+    handleApplyFill(message);
     return;
   }
 
-  if (msg.type === 'apply-stroke') {
-    handleApplyStroke(msg);
+  if (message.type === 'apply-stroke') {
+    handleApplyStroke(message);
     return;
   }
 
-  if (msg.type === 'create-style') {
-    await handleCreateStyle(msg);
+  if (message.type === 'create-style') {
+    await handleCreateStyle(message);
     return;
   }
 
-  if (msg.type === 'get-selection-color') {
-    handleGetSelectionColor();
+  if (message.type === 'get-selection-for-grid') {
+    sendSelectionInfo(message.requestId);
     return;
   }
 
-  if (msg.type === 'get-selection-for-grid') {
-    sendSelectionInfo();
+  if (message.type === 'get-document-color-profile') {
+    sendDocumentColorProfile();
     return;
   }
 
-  if (msg.type === 'create-color') {
-    handleCreateColorRect(msg);
-    return;
-  }
-
-  if (msg.type === 'apply-gradient') {
-    handleApplyGradient(msg);
-    return;
-  }
-
-  if (msg.type === 'create-palette') {
-    await handleCreatePalette(msg);
+  if (message.type === 'apply-gradient') {
+    handleApplyGradient(message);
     return;
   }
 
   // Notification
-  if (msg.type === 'notify') {
-    figma.notify(msg.text);
-    return;
-  }
-
-  if (msg.type === 'copy') {
-    figma.notify(`${msg.text} copied!`);
+  if (message.type === 'notify') {
+    figma.notify(message.text);
     return;
   }
 
   // Color System Operations
-  if (msg.type === 'generate-color-system') {
-    try {
-      await generateColorSystemFrames(msg.config, msg.scales);
-    } catch (error) {
-      console.error('Error generating color system:', error);
-      figma.notify('Failed to generate color system');
-    }
-    return;
-  }
-
-  if (msg.type === 'create-color-styles') {
-    try {
-      await createColorStyles(msg.scales, msg.systemName);
-    } catch (error) {
-      console.error('Error creating color styles:', error);
-      figma.notify('Failed to create color styles');
-    }
+  if (message.type === 'generate-color-system') {
+    await handleGenerateColorSystem(message);
     return;
   }
 
   // Grid Operations
-  if (msg.type === 'create-grid-frame') {
-    await handleCreateGridFrame(msg);
+  if (message.type === 'create-grid-frame') {
+    await handleCreateGridFrame(message);
     return;
   }
 
-  if (msg.type === 'apply-grid') {
-    handleApplyGrid(msg);
-    return;
-  }
-
-  if (msg.type === 'clear-grids') {
-    handleClearGrids();
+  if (message.type === 'apply-grid') {
+    await handleApplyGrid(message);
     return;
   }
 };

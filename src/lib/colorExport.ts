@@ -5,10 +5,16 @@
 // Types
 // ============================================
 
+import type { ColorScaleValidation } from './colorScale';
+
 export interface ExportScale {
   name: string;
   role: string;
   steps: { step: number; hex: string }[];
+  profile?: 'sRGB';
+  method?: 'Teul OKLCH v2' | 'Radix Colors';
+  mode?: 'light' | 'dark';
+  validation?: ColorScaleValidation;
 }
 
 export interface ExportScales {
@@ -17,12 +23,17 @@ export interface ExportScales {
   tertiary?: ExportScale;
   accent?: ExportScale;
   neutral: ExportScale;
+  [key: string]: ExportScale | undefined;
 }
 
 interface ExportScaleData {
   name: string;
   role: string;
   colors: Record<string, string>;
+  profile?: 'sRGB';
+  method?: 'Teul OKLCH v2' | 'Radix Colors';
+  mode?: 'light' | 'dark';
+  validation?: ColorScaleValidation;
 }
 
 interface ExportJSONData {
@@ -37,7 +48,8 @@ interface ExportJSONData {
 // Helper Functions
 // ============================================
 
-// Convert step number to CSS variable name suffix (Tailwind-style numbering)
+// Export and Figma style suffixes are separate backward-compatibility contracts.
+// Figma style suffix 1000 historically means step 11; export suffix 1000 means step 12.
 export function stepToVarSuffix(step: number): string {
   const mapping: Record<number, string> = {
     1: '50',
@@ -56,11 +68,66 @@ export function stepToVarSuffix(step: number): string {
   return mapping[step] || step.toString();
 }
 
+export function stepToStyleSuffix(step: number): string {
+  const mapping: Record<number, string> = {
+    1: '50',
+    2: '100',
+    3: '200',
+    4: '300',
+    5: '400',
+    6: '500',
+    7: '600',
+    8: '700',
+    9: '800',
+    10: '900',
+    11: '1000',
+    12: '1100',
+  };
+  return mapping[step] || step.toString();
+}
+
+const BASE_SCALE_ORDER = ['primary', 'secondary', 'tertiary', 'accent'] as const;
+
+export function getOrderedScaleKeys(scales: Record<string, unknown>): string[] {
+  const presentKeys = Object.keys(scales).filter(key => scales[key] !== undefined);
+  const roleOrder = new Map(BASE_SCALE_ORDER.map((role, index) => [role, index]));
+  const parseRoleKey = (key: string) => {
+    const match = /^(primary|secondary|tertiary|accent)(\d+)?$/.exec(key);
+    return match
+      ? {
+          role: roleOrder.get(match[1] as (typeof BASE_SCALE_ORDER)[number]) ?? 0,
+          variant: match[2] ? Number(match[2]) : 1,
+        }
+      : null;
+  };
+  const remainingKeys = presentKeys
+    .filter(key => key !== 'neutral')
+    .sort((first, second) => {
+      const parsedFirst = parseRoleKey(first);
+      const parsedSecond = parseRoleKey(second);
+      if (parsedFirst && parsedSecond) {
+        return parsedFirst.role - parsedSecond.role || parsedFirst.variant - parsedSecond.variant;
+      }
+      if (parsedFirst) return -1;
+      if (parsedSecond) return 1;
+      return first.localeCompare(second);
+    });
+
+  return presentKeys.includes('neutral') ? [...remainingKeys, 'neutral'] : remainingKeys;
+}
+
+export function systemNameToTokenPrefix(systemName: string): string {
+  const normalized = systemName
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return normalized || 'teul-color-system';
+}
+
 // ============================================
 // Export Functions
 // ============================================
-
-const SCALE_ORDER = ['primary', 'secondary', 'tertiary', 'accent', 'neutral'] as const;
 
 // Export as CSS custom properties
 export function exportAsCSS(
@@ -68,17 +135,18 @@ export function exportAsCSS(
   darkScales: ExportScales | undefined,
   systemName: string
 ): string {
-  const prefix = systemName.toLowerCase().replace(/\s+/g, '-');
+  const prefix = systemNameToTokenPrefix(systemName);
   let css = `/* ${systemName} Color System */\n`;
   css += `/* Generated with Teul */\n\n`;
 
   css += `:root {\n`;
 
   // Light mode variables
-  for (const key of SCALE_ORDER) {
+  for (const key of getOrderedScaleKeys(scales)) {
     const scale = scales[key];
     if (scale) {
       css += `  /* ${scale.role} */\n`;
+      css += `  /* ${scale.method ?? 'Unspecified source'}${scale.profile ? ` · ${scale.profile}` : ''} */\n`;
       for (const step of scale.steps) {
         css += `  --${prefix}-${key}-${stepToVarSuffix(step.step)}: ${step.hex};\n`;
       }
@@ -91,7 +159,7 @@ export function exportAsCSS(
   if (darkScales) {
     css += `\n/* Dark Mode */\n`;
     css += `[data-theme="dark"],\n.dark {\n`;
-    for (const key of SCALE_ORDER) {
+    for (const key of getOrderedScaleKeys(darkScales)) {
       const scale = darkScales[key];
       if (scale) {
         css += `  /* ${scale.role} */\n`;
@@ -116,7 +184,7 @@ export function exportAsTailwind(
   const buildColorObject = (scalesData: ExportScales): Record<string, Record<string, string>> => {
     const colors: Record<string, Record<string, string>> = {};
 
-    for (const key of SCALE_ORDER) {
+    for (const key of getOrderedScaleKeys(scalesData)) {
       const scale = scalesData[key];
       if (scale) {
         colors[key] = {};
@@ -163,12 +231,16 @@ export function exportAsJSON(
   const buildScaleObject = (scalesData: ExportScales): Record<string, ExportScaleData> => {
     const result: Record<string, ExportScaleData> = {};
 
-    for (const key of SCALE_ORDER) {
+    for (const key of getOrderedScaleKeys(scalesData)) {
       const scale = scalesData[key];
       if (scale) {
         result[key] = {
           name: scale.name,
           role: scale.role,
+          profile: scale.profile,
+          method: scale.method,
+          mode: scale.mode,
+          validation: scale.validation,
           colors: scale.steps.reduce(
             (acc, step) => {
               acc[stepToVarSuffix(step.step)] = step.hex;

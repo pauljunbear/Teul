@@ -1,6 +1,8 @@
 // Figma Backend Helper Utilities
 // Common utilities for Figma plugin backend operations
 
+import type { GridSelectionTarget } from '../types/grid';
+
 // ============================================
 // Type Definitions
 // ============================================
@@ -10,20 +12,13 @@ export interface GradientColor {
   name: string;
 }
 
-export interface ColorMessage {
-  hex: string;
-  name: string;
-  rgb?: number[];
-}
-
 // ============================================
 // Validation Functions
 // ============================================
 
 // Validate hex color format
 export function isValidHex(hex: string): boolean {
-  const cleanHex = hex.replace('#', '');
-  return /^[0-9a-fA-F]{6}$/.test(cleanHex);
+  return /^#?[0-9a-fA-F]{6}$/.test(hex);
 }
 
 // ============================================
@@ -32,13 +27,11 @@ export function isValidHex(hex: string): boolean {
 
 // Convert hex to Figma RGB (with validation)
 export function hexToFigmaRgb(hex: string): RGB {
-  const cleanHex = hex.replace('#', '');
-
-  // Validate hex format - return black if invalid
   if (!isValidHex(hex)) {
-    console.error(`Invalid hex color: ${hex}`);
-    return { r: 0, g: 0, b: 0 };
+    throw new Error(`Invalid hex color: ${hex}`);
   }
+
+  const cleanHex = hex.replace(/^#/, '');
 
   return {
     r: parseInt(cleanHex.substring(0, 2), 16) / 255,
@@ -69,18 +62,34 @@ export function getSelectedNodesWithStrokes(): (SceneNode & { strokes: Paint[] }
 // UI Communication
 // ============================================
 
+export function getGridSelectionTargets(selection: readonly SceneNode[]): GridSelectionTarget[] {
+  return selection
+    .filter(node => 'layoutGrids' in node)
+    .map(node => ({
+      id: node.id,
+      name: node.name,
+      width: node.width,
+      height: node.height,
+    }));
+}
+
 // Send selection info to UI
-export function sendSelectionInfo(): void {
+export function sendSelectionInfo(requestId?: string): void {
   const selection = figma.currentPage.selection;
   const hasSelection = selection.length > 0;
   const firstNode = selection[0];
+  const eligibleTargets = getGridSelectionTargets(selection);
 
   figma.ui.postMessage({
     type: 'selection-info',
     hasSelection,
     isFrame: hasSelection && firstNode?.type === 'FRAME',
+    selectedCount: selection.length,
+    eligibleTargets,
+    ineligibleCount: selection.length - eligibleTargets.length,
     width: hasSelection && 'width' in firstNode ? firstNode.width : undefined,
     height: hasSelection && 'height' in firstNode ? firstNode.height : undefined,
     name: hasSelection ? firstNode?.name : undefined,
+    ...(requestId ? { requestId } : {}),
   });
 }

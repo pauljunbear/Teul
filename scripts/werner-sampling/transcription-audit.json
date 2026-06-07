@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "edition": "Patrick Syme's 1821 second edition",
+    "gettyItem": "gri_c00033125012743312",
+    "smithsonianItem": "wernersnomencla00wern",
+    "rights": "Public domain"
+  },
+  "policy": {
+    "source": "src/wernerColors.json stores a reviewed semantic transcription of the printed table and component-parts wording.",
+    "normalized": "The application applies only the rules and overrides below for screen display.",
+    "auditRequirement": "Every source/display difference must be produced by this ledger and covered by tests.",
+    "scope": "The semantic transcription is not a diplomatic facsimile: source layout, line breaks, W. attribution marks, and incidental typography are outside the current text model."
+  },
+  "sourceCorrections": [
+    {
+      "ids": [21, 56, 60, 70, 74, 79, 99, 100, 101, 102, 103, 104, 106, 109, 110],
+      "field": "description",
+      "correction": "Restored the printed spelling \"chesnut\" where the prior transcription silently used \"chestnut\".",
+      "evidence": "Getty scan, component-parts pages 29, 37, 40, 41, 44-46"
+    },
+    {
+      "id": 2,
+      "field": "animal",
+      "correction": "Restored the terminal period in \"Egg of Grey Linnet.\"",
+      "evidence": "Getty scan leaf 29, Whites table"
+    },
+    {
+      "id": 16,
+      "field": "description",
+      "correction": "Removed the inserted article before \"blackish lead grey\" and restored the source comma after \"lustre\".",
+      "evidence": "Getty scan, printed page 28"
+    },
+    {
+      "id": 46,
+      "field": "name",
+      "correction": "Corrected transcription \"Celadine Green\" to printed \"Celindine Green\".",
+      "evidence": "Getty scan leaf 49, Greens table"
+    },
+    {
+      "id": 57,
+      "field": "vegetable",
+      "correction": "Corrected transcription \"Hypman\" to printed \"Hypnum\".",
+      "evidence": "Getty scan leaf 52, Greens table"
+    },
+    {
+      "id": 58,
+      "field": "vegetable",
+      "correction": "Corrected transcription \"Veriegated\" to printed \"Variegated\".",
+      "evidence": "Getty scan leaf 52, Greens table"
+    },
+    {
+      "id": 59,
+      "field": "mineral",
+      "correction": "Corrected transcription \"Olvene\" to printed \"Olivene\".",
+      "evidence": "Getty scan leaf 52, Greens table"
+    },
+    {
+      "id": 65,
+      "field": "description",
+      "correction": "Restored the omitted sentence explaining that characteristic blue, red, and yellow colours ought to be pure.",
+      "evidence": "Getty scan, printed pages 38-39"
+    },
+    {
+      "id": 67,
+      "field": "description",
+      "correction": "Restored the apostrophe printed in the component-parts heading \"King's Yellow\".",
+      "evidence": "Getty scan, printed page 39"
+    },
+    {
+      "id": 68,
+      "field": "vegetable",
+      "correction": "Corrected transcription \"Anhers of Saffron Grocus\" to printed \"Anthers of Saffron Crocus\".",
+      "evidence": "Getty scan leaf 56, Yellows table"
+    },
+    {
+      "id": 83,
+      "field": "animal",
+      "correction": "Corrected malformed transcription \"Lygœns\" to printed \"Lygæus\".",
+      "evidence": "Getty scan leaf 66, Reds table"
+    },
+    {
+      "id": 86,
+      "field": "animal",
+      "correction": "Corrected truncated transcription \"convers\" to printed \"converts\".",
+      "evidence": "Getty scan leaf 66, Reds table"
+    },
+    {
+      "id": 87,
+      "field": "description",
+      "correction": "Corrected transcription \"Aterial\" to printed \"Arterial\".",
+      "evidence": "Getty scan, printed page 42"
+    },
+    {
+      "id": 90,
+      "field": "mineral",
+      "correction": "Corrected transcription \"Cobolt\" to printed \"Cobalt\".",
+      "evidence": "Getty scan leaf 66, Reds table"
+    },
+    {
+      "id": 98,
+      "field": "description",
+      "correction": "Corrected malformed transcription \"Chocoloate Red is\" to printed \"Chocolate Red, is\".",
+      "evidence": "Getty scan, printed page 44"
+    },
+    {
+      "id": 103,
+      "field": "name, vegetable",
+      "correction": "Restored the printed spelling \"Chesnut Brown\" and \"Chesnuts.\"",
+      "evidence": "Getty scan leaf 73, Browns table"
+    },
+    {
+      "id": 106,
+      "field": "animal",
+      "correction": "Corrected transcription \"Gosbeak\" to printed \"Grosbeak\".",
+      "evidence": "Getty scan leaf 73, Browns table"
+    },
+    {
+      "id": 109,
+      "field": "mineral",
+      "correction": "Corrected transcription \"Rok Cristal\" to printed \"Rock Cristal\".",
+      "evidence": "Getty scan leaf 73, Browns table"
+    }
+  ],
+  "normalizationRules": [
+    {
+      "ids": [21, 56, 60, 70, 74, 79, 99, 100, 101, 102, 104, 106, 109, 110],
+      "fields": ["description"],
+      "find": "chesnut",
+      "replace": "chestnut",
+      "reason": "Modern spelling for screen display; printed source spelling remains available.",
+      "evidence": "Getty scan, component-parts pages 29, 37, 40, 41, 44-46"
+    },
+    {
+      "ids": [103],
+      "fields": ["name", "description", "vegetable"],
+      "find": "Chesnut",
+      "replace": "Chestnut",
+      "reason": "Modern spelling for screen display; printed source spelling remains available.",
+      "evidence": "Getty scan leaf 73 and printed page 45"
+    }
+  ],
+  "normalizationOverrides": [
+    {
+      "id": 45,
+      "field": "description",
+      "source": "Pale Bluish Purple, is lavender purple mixed with a little red and black.",
+      "normalized": "Pale Blackish Purple, is lavender purple mixed with a little red and black.",
+      "reason": "The component-parts heading conflicts with the table name; display follows the table name.",
+      "evidence": "Getty scan leaf 45 and printed page 34"
+    },
+    {
+      "id": 67,
+      "field": "name",
+      "source": "Kings Yellow",
+      "normalized": "King's Yellow",
+      "reason": "The table omits the apostrophe; the component-parts heading prints it.",
+      "evidence": "Getty scan leaf 56 and printed page 39"
+    },
+    {
+      "id": 86,
+      "field": "animal",
+      "source": "Vent converts of Pied Wood-Pecker.",
+      "normalized": "Vent coverts of Pied Wood-Pecker.",
+      "reason": "The printed table uses \"converts\"; display uses the ornithological term \"coverts\".",
+      "evidence": "Getty scan leaf 66, Reds table"
+    },
+    {
+      "id": 109,
+      "field": "description",
+      "source": "Olive Brown, is ash grey mixed with a little blue, red, and chesnut brown.",
+      "normalized": "Clove Brown, is ash grey mixed with a little blue, red, and chestnut brown.",
+      "reason": "The component-parts heading says \"Olive Brown\" while the table identifies No. 109 as \"Clove Brown\"; display follows the table name.",
+      "evidence": "Getty scan leaf 73 and printed page 46"
+    }
+  ]
+}

@@ -11,10 +11,14 @@ export function copyToClipboard(text: string, label: string): void {
   document.body.appendChild(textarea);
   textarea.select();
   try {
-    document.execCommand('copy');
-    parent.postMessage({ pluginMessage: { type: 'notify', text: `Copied ${label}` } }, '*');
+    const copied = document.execCommand('copy');
+    parent.postMessage(
+      { pluginMessage: { type: 'notify', text: copied ? `Copied ${label}` : 'Copy failed' } },
+      '*'
+    );
   } catch {
     parent.postMessage({ pluginMessage: { type: 'notify', text: 'Copy failed' } }, '*');
+  } finally {
+    document.body.removeChild(textarea);
   }
-  document.body.removeChild(textarea);
 }

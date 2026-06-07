@@ -6,9 +6,6 @@ import {
   gridConfigToFigmaLayoutGrids,
   generateGridFrameName,
   gridConfigToFrameName,
-  presetToFrameName,
-  scaleGridForFrameSize,
-  needsScaling,
   parseAspectRatio,
   getPresetFrameDimensions,
   buildCreateGridFrameMessage,
@@ -69,6 +66,7 @@ describe('columnConfigToFigmaGrid', () => {
     const result = columnConfigToFigmaGrid(config, 1000);
 
     expect(result.offset).toBe(100); // 10% of 1000
+    expect(result.sectionSize).toBe(120);
   });
 
   it('converts column config with percentage gutters', () => {
@@ -86,6 +84,7 @@ describe('columnConfigToFigmaGrid', () => {
     const result = columnConfigToFigmaGrid(config, 800);
 
     expect(result.gutterSize).toBe(16); // 2% of 800
+    expect(result.sectionSize).toBe(188);
     expect(result.visible).toBe(false);
   });
 
@@ -152,6 +151,7 @@ describe('rowConfigToFigmaGrid', () => {
 
     expect(result.gutterSize).toBe(50); // 5% of 1000
     expect(result.offset).toBe(100); // 10% of 1000
+    expect(result.sectionSize).toBe(163);
   });
 });
 
@@ -172,16 +172,15 @@ describe('baselineConfigToFigmaGrid', () => {
 
     const result = baselineConfigToFigmaGrid(config);
 
-    expect(result.pattern).toBe('GRID');
-    expect(result.alignment).toBe('MIN');
-    expect(result.gutterSize).toBe(0);
-    expect(result.count).toBe(1);
-    expect(result.sectionSize).toBe(8);
-    expect(result.offset).toBe(0);
-    expect(result.visible).toBe(true);
+    expect(result).toEqual({
+      pattern: 'GRID',
+      sectionSize: 8,
+      visible: true,
+      color: defaultColor,
+    });
   });
 
-  it('preserves offset value', () => {
+  it('does not send unsupported offset fields for a uniform GRID', () => {
     const config: BaselineGridConfig = {
       height: 4,
       offset: 16,
@@ -192,7 +191,7 @@ describe('baselineConfigToFigmaGrid', () => {
     const result = baselineConfigToFigmaGrid(config);
 
     expect(result.sectionSize).toBe(4);
-    expect(result.offset).toBe(16);
+    expect(result).not.toHaveProperty('offset');
     expect(result.visible).toBe(false);
   });
 });
@@ -564,7 +563,7 @@ describe('getPresetFrameDimensions', () => {
       id: 'unknown-1',
       name: 'Unknown Grid',
       description: 'Test',
-      category: 'swiss' as any,
+      category: 'classic-swiss',
       tags: [],
       isCustom: false,
       config: {},
@@ -574,47 +573,6 @@ describe('getPresetFrameDimensions', () => {
 
     expect(result.width).toBe(800);
     expect(result.height).toBe(1131); // 800 * 1.414
-  });
-});
-
-// ============================================
-// needsScaling Tests
-// ============================================
-
-describe('needsScaling', () => {
-  it('returns false when dimensions match exactly', () => {
-    const config: GridConfig = {};
-    const result = needsScaling(config, 800, 600, 800, 600);
-
-    expect(result).toBe(false);
-  });
-
-  it('returns false when dimensions within tolerance', () => {
-    const config: GridConfig = {};
-    const result = needsScaling(config, 800, 600, 800.5, 600.5, 1);
-
-    expect(result).toBe(false);
-  });
-
-  it('returns true when width exceeds tolerance', () => {
-    const config: GridConfig = {};
-    const result = needsScaling(config, 800, 600, 810, 600, 5);
-
-    expect(result).toBe(true);
-  });
-
-  it('returns true when height exceeds tolerance', () => {
-    const config: GridConfig = {};
-    const result = needsScaling(config, 800, 600, 800, 620, 5);
-
-    expect(result).toBe(true);
-  });
-
-  it('uses default tolerance of 1 pixel', () => {
-    const config: GridConfig = {};
-    const result = needsScaling(config, 800, 600, 802, 600);
-
-    expect(result).toBe(true);
   });
 });
 
@@ -666,13 +624,13 @@ describe('validateGridForFigma', () => {
     expect(result.errors).toContain('Column count must be at least 1');
   });
 
-  it('errors when column count exceeds 100', () => {
+  it('does not invent a Figma maximum column count', () => {
     const config: GridConfig = {
       columns: {
         count: 101,
-        gutterSize: 24,
+        gutterSize: 0,
         gutterUnit: 'px',
-        margin: 32,
+        margin: 0,
         marginUnit: 'px',
         alignment: 'STRETCH',
         visible: true,
@@ -682,8 +640,7 @@ describe('validateGridForFigma', () => {
 
     const result = validateGridForFigma(config, 1440, 900);
 
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain('Column count exceeds Figma maximum (100)');
+    expect(result.valid).toBe(true);
   });
 
   it('errors when column margins exceed frame width', () => {
@@ -746,13 +703,13 @@ describe('validateGridForFigma', () => {
     expect(result.errors).toContain('Row count must be at least 1');
   });
 
-  it('errors when row count exceeds 100', () => {
+  it('does not invent a Figma maximum row count', () => {
     const config: GridConfig = {
       rows: {
         count: 150,
-        gutterSize: 16,
+        gutterSize: 0,
         gutterUnit: 'px',
-        margin: 24,
+        margin: 0,
         marginUnit: 'px',
         alignment: 'STRETCH',
         visible: true,
@@ -762,8 +719,7 @@ describe('validateGridForFigma', () => {
 
     const result = validateGridForFigma(config, 1440, 900);
 
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain('Row count exceeds Figma maximum (100)');
+    expect(result.valid).toBe(true);
   });
 
   it('errors when row margins exceed frame height', () => {
@@ -818,7 +774,7 @@ describe('validateGridForFigma', () => {
     expect(result.warnings).toContain('Baseline height exceeds frame height');
   });
 
-  it('warns when baseline offset is negative', () => {
+  it('warns when a baseline offset cannot be represented by Figma', () => {
     const config: GridConfig = {
       baseline: {
         height: 8,
@@ -831,7 +787,9 @@ describe('validateGridForFigma', () => {
     const result = validateGridForFigma(config, 1440, 900);
 
     expect(result.valid).toBe(true); // Warning, not error
-    expect(result.warnings).toContain('Baseline offset is negative');
+    expect(result.warnings).toContain(
+      'Figma uniform GRID ignores baseline offsets and starts at 0px'
+    );
   });
 
   it('accumulates multiple errors', () => {
@@ -977,13 +935,15 @@ describe('buildApplyGridMessage', () => {
     };
 
     const result = buildApplyGridMessage({
+      requestId: 'grid-apply-1',
       config,
-      width: 1440,
-      height: 900,
+      expectedTargetIds: ['1:2', '3:4'],
     });
 
     expect(result.type).toBe('apply-grid');
-    expect(result.config.columns).toBeDefined();
+    expect(result.requestId).toBe('grid-apply-1');
+    expect(result.sourceConfig).toBe(config);
+    expect(result.expectedTargetIds).toEqual(['1:2', '3:4']);
     expect(result.replaceExisting).toBe(true); // Default
   });
 
@@ -991,16 +951,16 @@ describe('buildApplyGridMessage', () => {
     const config: GridConfig = {};
 
     const result = buildApplyGridMessage({
+      requestId: 'grid-apply-2',
       config,
-      width: 800,
-      height: 600,
+      expectedTargetIds: ['1:2'],
       replaceExisting: false,
     });
 
     expect(result.replaceExisting).toBe(false);
   });
 
-  it('includes all grid types when present', () => {
+  it('preserves all source grid types without duplicating a converted config', () => {
     const config: GridConfig = {
       columns: {
         count: 12,
@@ -1031,14 +991,13 @@ describe('buildApplyGridMessage', () => {
     };
 
     const result = buildApplyGridMessage({
+      requestId: 'grid-apply-3',
       config,
-      width: 1440,
-      height: 900,
+      expectedTargetIds: ['1:2'],
     });
 
-    expect(result.config.columns).toBeDefined();
-    expect(result.config.rows).toBeDefined();
-    expect(result.config.baseline).toBeDefined();
+    expect(result.sourceConfig).toBe(config);
+    expect(result).not.toHaveProperty('config');
   });
 });
 

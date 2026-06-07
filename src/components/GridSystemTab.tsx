@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { GridLibrary } from './GridLibrary';
 import { MyGrids } from './MyGrids';
-import { getSavedGridCount } from '../lib/gridStorage';
+import { getSavedGridCount, SAVED_GRIDS_CHANGED_EVENT } from '../lib/gridStorage';
 import { HelpPanel } from './HelpPanel';
 import { ToastProvider, ToastContainer } from './Toast';
+import { isAnyModalOpen } from '../lib/useModalAccessibility';
 
 interface GridSystemTabProps {
   isDark: boolean;
@@ -37,7 +38,7 @@ const styles = {
 };
 
 export const GridSystemTab: React.FC<GridSystemTabProps> = ({ isDark }) => {
-  const [activeTab, setActiveTab] = React.useState('library');
+  const [activeTab, setActiveTab] = React.useState<'library' | 'my-grids'>('library');
   const [savedGridCount, setSavedGridCount] = React.useState(0);
   const [showHelp, setShowHelp] = React.useState(false);
   const theme = isDark ? styles.dark : styles.light;
@@ -54,12 +55,23 @@ export const GridSystemTab: React.FC<GridSystemTabProps> = ({ isDark }) => {
     };
 
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener(SAVED_GRIDS_CHANGED_EVENT, handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener(SAVED_GRIDS_CHANGED_EVENT, handleStorageChange);
+    };
   }, []);
 
   // Keyboard shortcuts
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target;
+      const isEditable =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        (target instanceof HTMLElement && target.isContentEditable);
+      if (isEditable || showHelp || isAnyModalOpen()) return;
+
       // ? or F1 for help
       if ((e.key === '?' && !e.metaKey && !e.ctrlKey) || e.key === 'F1') {
         e.preventDefault();
@@ -80,7 +92,7 @@ export const GridSystemTab: React.FC<GridSystemTabProps> = ({ isDark }) => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [showHelp]);
 
   return (
     <ToastProvider>
@@ -110,6 +122,8 @@ export const GridSystemTab: React.FC<GridSystemTabProps> = ({ isDark }) => {
           >
             {/* Sub-tabs - text links style */}
             <div
+              role="tablist"
+              aria-label="Grid sections"
               style={{
                 flex: 1,
                 display: 'flex',
@@ -122,7 +136,26 @@ export const GridSystemTab: React.FC<GridSystemTabProps> = ({ isDark }) => {
               ].map(tab => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  id={`grid-${tab.id}-tab`}
+                  role="tab"
+                  aria-selected={activeTab === tab.id}
+                  aria-controls={`grid-${tab.id}-panel`}
+                  tabIndex={activeTab === tab.id ? 0 : -1}
+                  onClick={() => setActiveTab(tab.id as 'library' | 'my-grids')}
+                  onKeyDown={event => {
+                    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+                    event.preventDefault();
+                    const nextTab =
+                      event.key === 'Home'
+                        ? 'library'
+                        : event.key === 'End'
+                          ? 'my-grids'
+                          : activeTab === 'library'
+                            ? 'my-grids'
+                            : 'library';
+                    setActiveTab(nextTab);
+                    document.getElementById(`grid-${nextTab}-tab`)?.focus();
+                  }}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -183,6 +216,11 @@ export const GridSystemTab: React.FC<GridSystemTabProps> = ({ isDark }) => {
 
         {/* Tab Content */}
         <div
+          id="grid-library-panel"
+          role="tabpanel"
+          aria-labelledby="grid-library-tab"
+          hidden={activeTab !== 'library'}
+          tabIndex={activeTab === 'library' ? 0 : -1}
           style={{
             flex: 1,
             overflow: 'auto',
@@ -190,6 +228,19 @@ export const GridSystemTab: React.FC<GridSystemTabProps> = ({ isDark }) => {
           }}
         >
           {activeTab === 'library' && <GridLibrary isDark={isDark} />}
+        </div>
+        <div
+          id="grid-my-grids-panel"
+          role="tabpanel"
+          aria-labelledby="grid-my-grids-tab"
+          hidden={activeTab !== 'my-grids'}
+          tabIndex={activeTab === 'my-grids' ? 0 : -1}
+          style={{
+            flex: 1,
+            overflow: 'auto',
+            backgroundColor: theme.bg,
+          }}
+        >
           {activeTab === 'my-grids' && <MyGrids isDark={isDark} />}
         </div>
 

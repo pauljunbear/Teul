@@ -1,12 +1,16 @@
 import * as React from 'react';
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { colorData } from '../colorData';
-import { getContrastRatio, colorDistance, rgbToLab } from '../lib/utils';
+import { getContrastRatio } from '../lib/utils';
 import { copyToClipboard } from '../lib/clipboard';
 import { styles } from '../lib/theme';
 import { ColorSystemModal } from './ColorSystemModal';
 import { AboutPanel, WADA_ABOUT_CONTENT } from './AboutPanel';
 import { getWCAGContrastHex, getWCAGRating } from '../lib/accessibility';
+import { WADA_SOURCE_PROVENANCE } from '../lib/sourceProvenance';
+import { useModalAccessibility } from '../lib/useModalAccessibility';
+import type { NormalizedDocumentColorProfile } from '../types/messages';
+import { SourceProvenanceDisclosure } from './SourceProvenanceDisclosure';
 
 interface Color {
   name: string;
@@ -25,6 +29,7 @@ interface ColorCombo {
 
 interface WadaColorsTabProps {
   isDark: boolean;
+  documentColorProfile?: NormalizedDocumentColorProfile;
 }
 
 const SWATCH_GROUPS = [
@@ -160,12 +165,21 @@ const ContrastTooltip: React.FC<{
   );
 };
 
-export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({ isDark }) => {
+export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
+  isDark,
+  documentColorProfile = 'unknown',
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedColor, setSelectedColor] = useState<Color | null>(null);
   const [selectedSwatch, setSelectedSwatch] = useState(-1);
   const [showExport, setShowExport] = useState(false);
   const [exportColors, setExportColors] = useState<Color[]>([]);
+  const exportCloseButtonRef = React.useRef<HTMLButtonElement>(null);
+  const exportDialogRef = useModalAccessibility({
+    isOpen: showExport,
+    onClose: () => setShowExport(false),
+    initialFocusRef: exportCloseButtonRef,
+  });
 
   // Color data (loaded synchronously)
   const colors = colorData.colors as Color[];
@@ -210,26 +224,6 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({ isDark }) => {
     () => (selectedColor ? calculateCombinations(selectedColor, comboIndex) : []),
     [selectedColor, comboIndex]
   );
-
-  useEffect(() => {
-    const handleMessage = (e: MessageEvent) => {
-      const msg = e.data.pluginMessage;
-      if (msg?.type === 'selection-color' && colors.length > 0) {
-        const targetLab = rgbToLab(msg.rgb[0], msg.rgb[1], msg.rgb[2]);
-        const closest = colors.reduce(
-          (acc, c) => {
-            const dist = colorDistance(c.lab, targetLab);
-            return dist < acc.distance ? { color: c, distance: dist } : acc;
-          },
-          { color: null as Color | null, distance: Infinity }
-        );
-        if (closest.color) setSelectedColor(closest.color);
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [colors]);
 
   const buttonStyle = (active = false): React.CSSProperties => ({
     padding: '8px 16px',
@@ -375,6 +369,7 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({ isDark }) => {
             ))}
           </div>
         )}
+        <SourceProvenanceDisclosure provenance={WADA_SOURCE_PROVENANCE} isDark={isDark} />
       </div>
 
       {/* Content */}
@@ -400,7 +395,16 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({ isDark }) => {
               return (
                 <div
                   key={color.hex}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Open ${color.name}, ${color.hex}`}
                   onClick={() => setSelectedColor(color)}
+                  onKeyDown={event => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      setSelectedColor(color);
+                    }
+                  }}
                   style={{
                     backgroundColor: color.hex,
                     borderRadius: '8px',
@@ -815,6 +819,11 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({ isDark }) => {
           onClick={() => setShowExport(false)}
         >
           <div
+            ref={exportDialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="wada-export-title"
+            tabIndex={-1}
             style={{
               backgroundColor: theme.cardBg,
               borderRadius: '16px',
@@ -834,11 +843,16 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({ isDark }) => {
                 marginBottom: '16px',
               }}
             >
-              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: theme.text }}>
+              <h3
+                id="wada-export-title"
+                style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: theme.text }}
+              >
                 Export Palette
               </h3>
               <button
+                ref={exportCloseButtonRef}
                 onClick={() => setShowExport(false)}
+                aria-label="Close palette export"
                 style={{ ...iconButtonStyle, width: '32px', height: '32px', fontSize: '14px' }}
               >
                 ✕
@@ -920,9 +934,7 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({ isDark }) => {
         colors={colorSystemColors}
         combinationName={colorSystemName}
         isDark={isDark}
-        onGenerate={() => {
-          // Modal handles sending the message with computed scales
-        }}
+        documentColorProfile={documentColorProfile}
       />
 
       {/* About Panel */}

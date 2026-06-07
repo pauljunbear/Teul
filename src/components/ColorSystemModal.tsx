@@ -1,7 +1,13 @@
 import * as React from 'react';
 import { useState, useMemo, useCallback } from 'react';
-import { generateColorScale, type ColorScale } from '../lib/utils';
+import { generateColorScale, type ColorScale } from '../lib/colorScale';
 import { copyToClipboard } from '../lib/clipboard';
+import { useModalAccessibility } from '../lib/useModalAccessibility';
+import { ColorScaleValidationSummary } from './ColorScaleValidationSummary';
+import type {
+  ColorSystemOperationResultMessage,
+  NormalizedDocumentColorProfile,
+} from '../types/messages';
 import {
   findClosestRadixFamily,
   getNeutralForAccent,
@@ -22,23 +28,24 @@ import {
 type ColorRole = 'primary' | 'secondary' | 'tertiary' | 'accent';
 type ScaleMethod = 'custom' | 'radix-match';
 type OutputDetailLevel = 'minimal' | 'detailed' | 'presentation';
+const MAX_SYSTEM_NAME_LENGTH = 512;
+
+const getSystemNameError = (systemName: string): string | null => {
+  if (systemName.trim().length === 0) {
+    return 'Enter a system name.';
+  }
+  if (systemName.length > MAX_SYSTEM_NAME_LENGTH) {
+    return `System name must be ${MAX_SYSTEM_NAME_LENGTH} characters or fewer.`;
+  }
+  return null;
+};
 
 interface RoleAssignment {
   hex: string;
   name: string;
   role: ColorRole | null;
-  // For multi-select mode (Werner colors with many related colors)
+  // For multi-select mode when a source palette assigns several colors to one role.
   roles?: ColorRole[];
-}
-
-interface ColorSystemConfig {
-  sourceColors: { hex: string; name: string }[];
-  roleAssignments: RoleAssignment[];
-  scaleMethod: ScaleMethod;
-  neutralFamily: NeutralName | 'auto';
-  detailLevel: OutputDetailLevel;
-  includeDarkMode: boolean;
-  systemName: string;
 }
 
 interface ColorSystemModalProps {
@@ -47,7 +54,7 @@ interface ColorSystemModalProps {
   colors: { hex: string; name: string }[];
   combinationName: string;
   isDark: boolean;
-  onGenerate: (config: ColorSystemConfig) => void;
+  documentColorProfile?: NormalizedDocumentColorProfile;
 }
 
 // Get styles based on theme
@@ -71,9 +78,15 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
   colors,
   combinationName,
   isDark,
-  onGenerate,
+  documentColorProfile = 'unknown',
 }) => {
   const theme = getStyles(isDark);
+  const closeButtonRef = React.useRef<HTMLButtonElement>(null);
+  const dialogRef = useModalAccessibility({
+    isOpen,
+    onClose,
+    initialFocusRef: closeButtonRef,
+  });
 
   // State
   const [scaleMethod, setScaleMethod] = useState<ScaleMethod>('custom');
@@ -84,8 +97,13 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
   const [systemName, setSystemName] = useState(combinationName || 'My Color System');
   const [showExport, setShowExport] = useState(false);
   const [exportFormat, setExportFormat] = useState<'css' | 'tailwind' | 'json'>('css');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const pendingRequestIdRef = React.useRef<string | null>(null);
+  const nextRequestIdRef = React.useRef(0);
+  const systemNameError = getSystemNameError(systemName);
 
-  // Multi-select mode: allows multiple colors per role (useful for Werner colors with many related colors)
+  // Multi-select mode allows multiple source colors per role.
   const [multiSelectMode, setMultiSelectMode] = useState(false);
 
   // Initialize role assignments from colors
@@ -93,10 +111,38 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
 
   // Auto-enable multi-select mode when there are more than 4 colors
   React.useEffect(() => {
-    if (colors && colors.length > 4) {
-      setMultiSelectMode(true);
-    }
+    setMultiSelectMode(Boolean(colors && colors.length > 4));
   }, [colors]);
+
+  React.useEffect(() => {
+    const handleMessage = (event: MessageEvent<{ pluginMessage?: unknown }>) => {
+      const message = event.data?.pluginMessage as Partial<ColorSystemOperationResultMessage>;
+      if (
+        message.type !== 'color-system-operation-result' ||
+        typeof message.requestId !== 'string' ||
+        message.requestId !== pendingRequestIdRef.current ||
+        typeof message.success !== 'boolean'
+      ) {
+        return;
+      }
+
+      pendingRequestIdRef.current = null;
+      setIsSubmitting(false);
+      if (message.success) {
+        setSubmissionError(null);
+        onClose();
+      } else {
+        setSubmissionError(message.error || 'Failed to generate color system');
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [onClose]);
+
+  React.useEffect(() => {
+    if (isOpen) setSubmissionError(null);
+  }, [isOpen]);
 
   // Update role assignments when colors change (e.g., when modal opens with new colors)
   React.useEffect(() => {
@@ -139,7 +185,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
 
   // Auto-suggested neutral based on primary color
   const suggestedNeutral = useMemo(() => {
-    const primary = roleAssignments.find(r => r.role === 'primary');
+    const primary = roleAssignments.find(r => r.role === 'primary' || r.roles?.includes('primary'));
     if (primary) {
       return getNeutralForAccent(primary.hex);
     }
@@ -150,7 +196,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
 
   // Generate preview scales (light mode)
   const previewScales = useMemo(() => {
-    const primary = roleAssignments.find(r => r.role === 'primary');
+    const primary = roleAssignments.find(r => r.role === 'primary' || r.roles?.includes('primary'));
     if (!primary) return null;
 
     if (scaleMethod === 'custom') {
@@ -173,7 +219,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
 
   // Generate dark preview scales
   const darkPreviewScales = useMemo(() => {
-    const primary = roleAssignments.find(r => r.role === 'primary');
+    const primary = roleAssignments.find(r => r.role === 'primary' || r.roles?.includes('primary'));
     if (!primary) return null;
 
     if (scaleMethod === 'custom') {
@@ -226,6 +272,10 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
           name: assignment.name,
           role,
           steps: scale.steps.map(s => ({ step: s.step, hex: s.hex })),
+          profile: scale.profile,
+          method: scale.method,
+          mode,
+          validation: scale.validation,
         };
       } else {
         const family = findClosestRadixFamily(assignment.hex);
@@ -233,21 +283,21 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
         return {
           name: family.displayName,
           role,
+          method: 'Radix Colors',
+          profile: 'sRGB',
+          mode,
           steps: Object.entries(radixScale).map(([step, hex]) => ({ step: parseInt(step), hex })),
         };
       }
     };
 
-    // For multi-select, use first color of each role for the main export
-    // Additional colors will be exported separately
     const light: ExportScales = {
-      primary: buildScale(primaries[0], 'Primary', 'light'),
-      secondary: buildScale(secondaries[0], 'Secondary', 'light'),
-      tertiary: buildScale(tertiaries[0], 'Tertiary', 'light'),
-      accent: buildScale(accents[0], 'Accent', 'light'),
       neutral: {
         name: effectiveNeutral.charAt(0).toUpperCase() + effectiveNeutral.slice(1),
         role: 'Neutral',
+        profile: 'sRGB',
+        method: 'Radix Colors',
+        mode: 'light',
         steps: Object.entries(neutralScale.light).map(([step, hex]) => ({
           step: parseInt(step),
           hex,
@@ -255,15 +305,34 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
       },
     };
 
+    const addRoleScales = (
+      target: ExportScales,
+      assignments: RoleAssignment[],
+      key: ColorRole,
+      label: string,
+      mode: 'light' | 'dark'
+    ) => {
+      assignments.forEach((assignment, index) => {
+        const scale = buildScale(assignment, index === 0 ? label : `${label} ${index + 1}`, mode);
+        if (scale) {
+          target[index === 0 ? key : `${key}${index + 1}`] = scale;
+        }
+      });
+    };
+
+    addRoleScales(light, primaries, 'primary', 'Primary', 'light');
+    addRoleScales(light, secondaries, 'secondary', 'Secondary', 'light');
+    addRoleScales(light, tertiaries, 'tertiary', 'Tertiary', 'light');
+    addRoleScales(light, accents, 'accent', 'Accent', 'light');
+
     const dark: ExportScales | undefined = includeDarkMode
       ? {
-          primary: buildScale(primaries[0], 'Primary', 'dark'),
-          secondary: buildScale(secondaries[0], 'Secondary', 'dark'),
-          tertiary: buildScale(tertiaries[0], 'Tertiary', 'dark'),
-          accent: buildScale(accents[0], 'Accent', 'dark'),
           neutral: {
             name: effectiveNeutral.charAt(0).toUpperCase() + effectiveNeutral.slice(1),
             role: 'Neutral',
+            profile: 'sRGB',
+            method: 'Radix Colors',
+            mode: 'dark',
             steps: Object.entries(neutralScale.dark).map(([step, hex]) => ({
               step: parseInt(step),
               hex,
@@ -271,6 +340,13 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
           },
         }
       : undefined;
+
+    if (dark) {
+      addRoleScales(dark, primaries, 'primary', 'Primary', 'dark');
+      addRoleScales(dark, secondaries, 'secondary', 'Secondary', 'dark');
+      addRoleScales(dark, tertiaries, 'tertiary', 'Tertiary', 'dark');
+      addRoleScales(dark, accents, 'accent', 'Accent', 'dark');
+    }
 
     return { light, dark };
   }, [getColorsForRole, scaleMethod, effectiveNeutral, includeDarkMode]);
@@ -351,6 +427,10 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
           name,
           role,
           steps: scale.steps.map(s => ({ step: s.step, hex: s.hex })),
+          profile: scale.profile,
+          method: scale.method,
+          mode,
+          validation: scale.validation,
         };
       } else {
         const family = findClosestRadixFamily(hex);
@@ -358,6 +438,9 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
         return {
           name: family.displayName,
           role,
+          method: 'Radix Colors' as const,
+          profile: 'sRGB' as const,
+          mode,
           steps: radixScaleToSteps(radixScale),
         };
       }
@@ -367,6 +450,8 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
 
   // Handle generate
   const handleGenerate = () => {
+    if (systemNameError || pendingRequestIdRef.current) return;
+
     // Get colors for each role (supports multiple colors per role in multi-select mode)
     const primaries = getColorsForRole('primary');
     const secondaries = getColorsForRole('secondary');
@@ -381,6 +466,9 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
       neutral: {
         name: effectiveNeutral.charAt(0).toUpperCase() + effectiveNeutral.slice(1),
         role: 'Neutral',
+        profile: 'sRGB',
+        method: 'Radix Colors',
+        mode: 'light',
         steps: radixScaleToSteps(neutralScale.light),
       },
     };
@@ -460,6 +548,9 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
         neutral: {
           name: effectiveNeutral.charAt(0).toUpperCase() + effectiveNeutral.slice(1),
           role: 'Neutral',
+          profile: 'sRGB',
+          method: 'Radix Colors',
+          mode: 'dark',
           steps: radixScaleToSteps(neutralScale.dark),
         },
       };
@@ -525,28 +616,27 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
       }
     }
 
-    // Calculate usage proportions based on assigned roles
+    // Usage proportions describe the aggregate role, even when it has multiple colors.
     const usageProportions = {
-      primary: primaries.length > 0 ? Math.round(35 / primaries.length) : 0,
-      secondary: secondaries.length > 0 ? Math.round(20 / secondaries.length) : 0,
-      tertiary: tertiaries.length > 0 ? Math.round(15 / tertiaries.length) : 0,
-      accent: accents.length > 0 ? Math.round(10 / accents.length) : 0,
+      primary: primaries.length > 0 ? 35 : 0,
+      secondary: secondaries.length > 0 ? 20 : 0,
+      tertiary: tertiaries.length > 0 ? 15 : 0,
+      accent: accents.length > 0 ? 10 : 0,
       neutral: 20,
     };
 
     // Adjust if some roles are missing
     const total =
-      usageProportions.primary * primaries.length +
-      usageProportions.secondary * secondaries.length +
-      usageProportions.tertiary * tertiaries.length +
-      usageProportions.accent * accents.length +
+      usageProportions.primary +
+      usageProportions.secondary +
+      usageProportions.tertiary +
+      usageProportions.accent +
       usageProportions.neutral;
     if (total < 100) {
       usageProportions.neutral += 100 - total;
     }
 
-    // Send to plugin
-    onGenerate({
+    const config = {
       sourceColors: colors,
       roleAssignments,
       scaleMethod,
@@ -554,11 +644,13 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
       detailLevel,
       includeDarkMode,
       systemName,
-    });
+      documentColorProfile,
+    };
 
     // Prepare scales data for messages
     const scalesPayload = {
       systemName,
+      documentColorProfile,
       detailLevel,
       includeDarkMode,
       scaleMethod,
@@ -577,44 +669,46 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
       },
     };
 
-    // Send frame generation message
-    parent.postMessage(
-      {
-        pluginMessage: {
-          type: 'generate-color-system',
-          config: {
-            sourceColors: colors,
-            roleAssignments,
-            scaleMethod,
-            neutralFamily,
-            detailLevel,
-            includeDarkMode,
-            systemName,
-          },
-          scales: scalesPayload,
-        },
-      },
-      '*'
-    );
+    const requestId = `color-system-${Date.now()}-${++nextRequestIdRef.current}`;
+    pendingRequestIdRef.current = requestId;
+    setIsSubmitting(true);
+    setSubmissionError(null);
 
-    // Also create Figma color styles if requested
-    if (createStyles) {
+    try {
       parent.postMessage(
         {
           pluginMessage: {
-            type: 'create-color-styles',
+            type: 'generate-color-system',
+            requestId,
+            createStyles,
+            config,
             scales: scalesPayload,
-            systemName,
           },
         },
         '*'
       );
+    } catch (error) {
+      pendingRequestIdRef.current = null;
+      setIsSubmitting(false);
+      setSubmissionError(error instanceof Error ? error.message : 'Failed to submit color system');
     }
-
-    onClose();
   };
 
   if (!isOpen) return null;
+
+  const generatedOutputScales = [
+    ...Object.values(exportScales.light),
+    ...Object.values(exportScales.dark ?? {}),
+  ].filter(scale => scale?.method === 'Teul OKLCH v2');
+  const canGenerate =
+    scaleMethod === 'radix-match' ||
+    generatedOutputScales.every(scale => scale?.validation?.valid === true);
+  const canSubmit = canGenerate && !systemNameError && !isSubmitting;
+  const generatedValidationItems = generatedOutputScales.flatMap(scale =>
+    scale?.validation && scale.mode
+      ? [{ name: scale.name, mode: scale.mode, validation: scale.validation }]
+      : []
+  );
 
   const buttonStyle = (active = false): React.CSSProperties => ({
     padding: '10px 16px',
@@ -655,6 +749,11 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
       onClick={onClose}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="color-system-dialog-title"
+        tabIndex={-1}
         style={{
           backgroundColor: theme.cardBg,
           borderRadius: '16px',
@@ -678,15 +777,37 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
           }}
         >
           <div>
-            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: theme.text }}>
+            <h2
+              id="color-system-dialog-title"
+              style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: theme.text }}
+            >
               Generate Color System
             </h2>
             <p style={{ margin: '4px 0 0', fontSize: '12px', color: theme.textMuted }}>
               Create a complete design system from your palette
             </p>
           </div>
+          {documentColorProfile === 'display-p3' && (
+            <div
+              role="status"
+              style={{
+                margin: '0 20px 12px',
+                padding: '8px',
+                borderRadius: '6px',
+                backgroundColor: isDark ? '#422006' : '#fffbeb',
+                color: isDark ? '#fcd34d' : '#92400e',
+                fontSize: '10px',
+                lineHeight: 1.4,
+              }}
+            >
+              The Figma document is Display P3. Generated and bundled hex values remain labeled
+              sRGB; preserving their numeric channels can change their appearance in this document.
+            </div>
+          )}
           <button
+            ref={closeButtonRef}
             onClick={onClose}
+            aria-label="Close color system generator"
             style={{
               width: '32px',
               height: '32px',
@@ -709,11 +830,16 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
           {/* System Name */}
           <div style={sectionStyle}>
-            <label style={labelStyle}>System Name</label>
+            <label htmlFor="color-system-name" style={labelStyle}>
+              System Name
+            </label>
             <input
+              id="color-system-name"
               type="text"
               value={systemName}
               onChange={e => setSystemName(e.target.value)}
+              aria-invalid={Boolean(systemNameError)}
+              aria-describedby={systemNameError ? 'color-system-name-error' : undefined}
               style={{
                 width: '100%',
                 padding: '12px',
@@ -727,6 +853,15 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
               }}
               placeholder="My Color System"
             />
+            {systemNameError && (
+              <span
+                id="color-system-name-error"
+                role="alert"
+                style={{ display: 'block', marginTop: '6px', color: '#ef4444', fontSize: '10px' }}
+              >
+                {systemNameError}
+              </span>
+            )}
           </div>
 
           {/* Multi-select Mode Toggle (show only when more than 4 colors) */}
@@ -859,6 +994,8 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
                         return (
                           <button
                             key={role}
+                            aria-pressed={isSelected}
+                            aria-label={`${isSelected ? 'Remove' : 'Assign'} ${assignment.name} as ${role}`}
                             onClick={() =>
                               assignRole(
                                 assignment.hex,
@@ -891,10 +1028,17 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
 
           {/* Scale Method */}
           <div style={sectionStyle}>
-            <label style={labelStyle}>Scale Generation Method</label>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div id="scale-generation-method-label" style={labelStyle}>
+              Scale Generation Method
+            </div>
+            <div
+              role="group"
+              aria-labelledby="scale-generation-method-label"
+              style={{ display: 'flex', gap: '8px' }}
+            >
               <button
                 onClick={() => setScaleMethod('custom')}
+                aria-pressed={scaleMethod === 'custom'}
                 style={{
                   ...buttonStyle(scaleMethod === 'custom'),
                   flex: 1,
@@ -911,6 +1055,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
               </button>
               <button
                 onClick={() => setScaleMethod('radix-match')}
+                aria-pressed={scaleMethod === 'radix-match'}
                 style={{
                   ...buttonStyle(scaleMethod === 'radix-match'),
                   flex: 1,
@@ -930,10 +1075,17 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
 
           {/* Neutral Family */}
           <div style={sectionStyle}>
-            <label style={labelStyle}>Neutral Family</label>
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            <div id="neutral-family-label" style={labelStyle}>
+              Neutral Family
+            </div>
+            <div
+              role="group"
+              aria-labelledby="neutral-family-label"
+              style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}
+            >
               <button
                 onClick={() => setNeutralFamily('auto')}
+                aria-pressed={neutralFamily === 'auto'}
                 style={{
                   ...buttonStyle(neutralFamily === 'auto'),
                   padding: '8px 12px',
@@ -948,6 +1100,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
                   <button
                     key={nf}
                     onClick={() => setNeutralFamily(nf)}
+                    aria-pressed={neutralFamily === nf}
                     style={{
                       ...buttonStyle(neutralFamily === nf),
                       padding: '8px 12px',
@@ -973,8 +1126,14 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
 
           {/* Output Detail Level */}
           <div style={sectionStyle}>
-            <label style={labelStyle}>Output Detail Level</label>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div id="output-detail-label" style={labelStyle}>
+              Output Detail Level
+            </div>
+            <div
+              role="group"
+              aria-labelledby="output-detail-label"
+              style={{ display: 'flex', gap: '8px' }}
+            >
               {(
                 [
                   { id: 'minimal', label: 'Minimal', desc: 'Scales only' },
@@ -985,6 +1144,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
                 <button
                   key={level.id}
                   onClick={() => setDetailLevel(level.id)}
+                  aria-pressed={detailLevel === level.id}
                   style={{
                     ...buttonStyle(detailLevel === level.id),
                     flex: 1,
@@ -1009,7 +1169,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
             <p style={{ fontSize: '11px', color: theme.textMuted, margin: '0 0 12px' }}>
               {scaleMethod === 'radix-match'
                 ? 'Matched to closest Radix scale'
-                : 'Custom generated scale'}
+                : 'Radix-inspired generated scale; only the pairings below have been tested'}
             </p>
 
             <div style={{ display: 'flex', gap: '8px' }}>
@@ -1127,6 +1287,9 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
                 </div>
               )}
             </div>
+            {scaleMethod === 'custom' && generatedValidationItems.length > 0 && (
+              <ColorScaleValidationSummary items={generatedValidationItems} isDark={isDark} />
+            )}
           </div>
 
           {/* Include Dark Mode Toggle */}
@@ -1193,7 +1356,9 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
           {/* Export Section */}
           <div style={sectionStyle}>
             <button
-              onClick={() => setShowExport(!showExport)}
+              onClick={() => setShowExport(current => (canGenerate ? !current : false))}
+              aria-disabled={!canGenerate}
+              aria-expanded={showExport && canGenerate}
               style={{
                 width: '100%',
                 padding: '12px',
@@ -1203,7 +1368,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
                 color: theme.text,
                 fontSize: '13px',
                 fontWeight: 600,
-                cursor: 'pointer',
+                cursor: canGenerate ? 'pointer' : 'not-allowed',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
@@ -1213,7 +1378,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
               <span style={{ fontSize: '16px' }}>{showExport ? '▲' : '▼'}</span>
             </button>
 
-            {showExport && (
+            {showExport && canGenerate && (
               <div style={{ marginTop: '12px' }}>
                 {/* Format selector */}
                 <div style={{ display: 'flex', gap: '6px', marginBottom: '12px' }}>
@@ -1227,6 +1392,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
                     <button
                       key={format.id}
                       onClick={() => setExportFormat(format.id)}
+                      aria-pressed={exportFormat === format.id}
                       style={{
                         ...buttonStyle(exportFormat === format.id),
                         flex: 1,
@@ -1267,13 +1433,18 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
 
                 {/* Copy button */}
                 <button
-                  onClick={() => copyToClipboard(exportContent, exportFormat.toUpperCase())}
+                  onClick={() =>
+                    canGenerate && copyToClipboard(exportContent, exportFormat.toUpperCase())
+                  }
+                  aria-disabled={!canGenerate}
                   style={{
                     ...buttonStyle(true),
                     width: '100%',
                     marginTop: '8px',
                     padding: '10px',
-                    backgroundColor: '#22c55e',
+                    backgroundColor: canGenerate ? '#22c55e' : theme.btnBg,
+                    cursor: canGenerate ? 'pointer' : 'not-allowed',
+                    opacity: canGenerate ? 1 : 0.6,
                   }}
                 >
                   📋 Copy {exportFormat.toUpperCase()}
@@ -1290,6 +1461,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
             borderTop: `1px solid ${theme.border}`,
             display: 'flex',
             gap: '12px',
+            flexWrap: 'wrap',
           }}
         >
           <button
@@ -1303,15 +1475,45 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
           </button>
           <button
             onClick={handleGenerate}
+            disabled={!canSubmit}
+            aria-busy={isSubmitting}
+            aria-describedby={
+              systemNameError
+                ? 'color-system-name-error'
+                : !canGenerate
+                  ? 'color-system-generation-error'
+                  : undefined
+            }
             style={{
               ...buttonStyle(true),
               flex: 2,
-              backgroundColor: theme.accent,
+              backgroundColor: canSubmit ? theme.accent : theme.btnBg,
               color: '#ffffff',
+              cursor: canSubmit ? 'pointer' : 'not-allowed',
+              opacity: canSubmit ? 1 : 0.6,
             }}
           >
-            🎨 Generate Color System
+            {isSubmitting ? 'Generating Color System…' : '🎨 Generate Color System'}
           </button>
+          {submissionError && (
+            <span
+              id="color-system-submission-error"
+              role="alert"
+              style={{ width: '100%', color: '#ef4444', fontSize: '10px' }}
+            >
+              {submissionError}
+            </span>
+          )}
+          {!canGenerate && (
+            <span
+              id="color-system-generation-error"
+              role="alert"
+              style={{ width: '100%', color: theme.textMuted, fontSize: '10px' }}
+            >
+              Generated scale fails structural or required contrast validation. Choose Radix Match
+              or another source color.
+            </span>
+          )}
         </div>
       </div>
     </div>

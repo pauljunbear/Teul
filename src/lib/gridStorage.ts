@@ -16,6 +16,7 @@ const STORAGE_VERSION = 1;
 // Avoids JSON.parse on every operation - 10-20x faster for users with many grids
 
 let cachedGrids: SavedGrid[] | null = null;
+export const SAVED_GRIDS_CHANGED_EVENT = 'teul-saved-grids-change';
 
 /**
  * Invalidate the in-memory cache (call after external storage changes)
@@ -32,6 +33,384 @@ interface StorageData {
   version: number;
   grids: SavedGrid[];
   lastUpdated: number;
+  quarantinedGrids?: QuarantinedGridEntry[];
+  diagnostics?: StoredGridDiagnostics;
+}
+
+interface QuarantinedGridEntry {
+  reason: string;
+  preservedAt: number;
+  value: unknown;
+}
+
+interface StoredGridDiagnostics {
+  quarantinedCount: number;
+  lastPreservedAt: number;
+  migratedFromVersion?: unknown;
+}
+
+export interface GridStorageDiagnostics {
+  quarantinedCount: number;
+  rejectedStoredGridCount: number;
+  migratedFromVersion?: unknown;
+  unparseableStorage: boolean;
+}
+
+export interface ImportResult {
+  success: boolean;
+  grids?: SavedGrid[];
+  error?: string;
+  count?: number;
+  rejectedCount?: number;
+  totalCount?: number;
+}
+
+type UnknownRecord = Record<string, unknown>;
+
+const GRID_CATEGORIES: GridCategory[] = [
+  'classic-swiss',
+  'editorial',
+  'poster',
+  'web-ui',
+  'modular',
+  'baseline',
+  'combined',
+  'custom',
+];
+const GRID_UNITS = ['px', 'percent'] as const;
+const GRID_ALIGNMENTS = ['MIN', 'CENTER', 'MAX', 'STRETCH'] as const;
+const MAX_GRID_COUNT = 1000;
+const MIN_BASELINE_HEIGHT = 1;
+export const MAX_GRID_IMPORT_FILE_BYTES = 2 * 1024 * 1024;
+export const MAX_GRID_IMPORT_RECORDS = 1000;
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+function isNonNegativeNumber(value: unknown): value is number {
+  return isFiniteNumber(value) && value >= 0;
+}
+
+function isOptionalString(value: unknown): value is string | undefined {
+  return value === undefined || typeof value === 'string';
+}
+
+function isGridCategory(value: unknown): value is GridCategory {
+  return typeof value === 'string' && GRID_CATEGORIES.includes(value as GridCategory);
+}
+
+function isGridUnit(value: unknown): value is (typeof GRID_UNITS)[number] {
+  return typeof value === 'string' && GRID_UNITS.includes(value as (typeof GRID_UNITS)[number]);
+}
+
+function isGridAlignment(value: unknown): value is (typeof GRID_ALIGNMENTS)[number] {
+  return (
+    typeof value === 'string' && GRID_ALIGNMENTS.includes(value as (typeof GRID_ALIGNMENTS)[number])
+  );
+}
+
+function parseGridColor(value: unknown): NonNullable<GridConfig['columns']>['color'] | null {
+  if (
+    !isRecord(value) ||
+    !isFiniteNumber(value.r) ||
+    !isFiniteNumber(value.g) ||
+    !isFiniteNumber(value.b) ||
+    !isFiniteNumber(value.a) ||
+    value.r < 0 ||
+    value.r > 1 ||
+    value.g < 0 ||
+    value.g > 1 ||
+    value.b < 0 ||
+    value.b > 1 ||
+    value.a < 0 ||
+    value.a > 1
+  ) {
+    return null;
+  }
+
+  return { r: value.r, g: value.g, b: value.b, a: value.a };
+}
+
+function parseColumnOrRowConfig(
+  value: unknown
+): NonNullable<GridConfig['columns'] | GridConfig['rows']> | null {
+  if (
+    !isRecord(value) ||
+    !isFiniteNumber(value.count) ||
+    !Number.isInteger(value.count) ||
+    value.count <= 0 ||
+    value.count > MAX_GRID_COUNT ||
+    !isNonNegativeNumber(value.gutterSize) ||
+    !isGridUnit(value.gutterUnit) ||
+    !isNonNegativeNumber(value.margin) ||
+    !isGridUnit(value.marginUnit) ||
+    !isGridAlignment(value.alignment) ||
+    typeof value.visible !== 'boolean'
+  ) {
+    return null;
+  }
+
+  const color = parseGridColor(value.color);
+  if (!color) return null;
+
+  return {
+    count: value.count,
+    gutterSize: value.gutterSize,
+    gutterUnit: value.gutterUnit,
+    margin: value.margin,
+    marginUnit: value.marginUnit,
+    alignment: value.alignment,
+    visible: value.visible,
+    color,
+  };
+}
+
+function parseBaselineConfig(value: unknown): NonNullable<GridConfig['baseline']> | null {
+  if (
+    !isRecord(value) ||
+    !isFiniteNumber(value.height) ||
+    value.height < MIN_BASELINE_HEIGHT ||
+    !isNonNegativeNumber(value.offset) ||
+    typeof value.visible !== 'boolean'
+  ) {
+    return null;
+  }
+
+  const color = parseGridColor(value.color);
+  if (!color) return null;
+
+  return {
+    height: value.height,
+    offset: value.offset,
+    visible: value.visible,
+    color,
+  };
+}
+
+function parseGridConfig(value: unknown): GridConfig | null {
+  if (!isRecord(value)) return null;
+
+  const config: GridConfig = {};
+  let sectionCount = 0;
+
+  if (value.columns !== undefined) {
+    const columns = parseColumnOrRowConfig(value.columns);
+    if (!columns) return null;
+    config.columns = columns;
+    sectionCount++;
+  }
+
+  if (value.rows !== undefined) {
+    const rows = parseColumnOrRowConfig(value.rows);
+    if (!rows) return null;
+    config.rows = rows;
+    sectionCount++;
+  }
+
+  if (value.baseline !== undefined) {
+    const baseline = parseBaselineConfig(value.baseline);
+    if (!baseline) return null;
+    config.baseline = baseline;
+    sectionCount++;
+  }
+
+  return sectionCount > 0 ? config : null;
+}
+
+function parseSavedGrid(value: unknown): SavedGrid | null {
+  if (
+    !isRecord(value) ||
+    typeof value.id !== 'string' ||
+    typeof value.name !== 'string' ||
+    typeof value.description !== 'string' ||
+    !isGridCategory(value.category) ||
+    !Array.isArray(value.tags) ||
+    !value.tags.every(tag => typeof tag === 'string') ||
+    value.isCustom !== true ||
+    !isOptionalString(value.aspectRatio) ||
+    !isOptionalString(value.source) ||
+    (value.createdAt !== undefined && !isNonNegativeNumber(value.createdAt))
+  ) {
+    return null;
+  }
+
+  const config = parseGridConfig(value.config);
+  if (!config) return null;
+
+  return {
+    id: value.id,
+    name: value.name,
+    description: value.description,
+    category: value.category,
+    tags: [...value.tags],
+    aspectRatio: value.aspectRatio,
+    config,
+    isCustom: true,
+    createdAt: value.createdAt,
+    source: value.source,
+  };
+}
+
+function parseSavedGridList(value: unknown): {
+  grids: SavedGrid[];
+  rejectedCount: number;
+  rejected: unknown[];
+} {
+  if (!Array.isArray(value)) {
+    return { grids: [], rejectedCount: 0, rejected: [] };
+  }
+
+  const grids: SavedGrid[] = [];
+  const rejected: unknown[] = [];
+  let rejectedCount = 0;
+
+  value.forEach(candidate => {
+    const grid = parseSavedGrid(candidate);
+    if (grid) {
+      grids.push(grid);
+    } else {
+      rejectedCount++;
+      rejected.push(candidate);
+    }
+  });
+
+  return { grids, rejectedCount, rejected };
+}
+
+interface StoredGridState {
+  grids: SavedGrid[];
+  quarantinedGrids: QuarantinedGridEntry[];
+  diagnostics: GridStorageDiagnostics;
+}
+
+function createQuarantinedEntry(reason: string, value: unknown): QuarantinedGridEntry {
+  return {
+    reason,
+    preservedAt: Date.now(),
+    value,
+  };
+}
+
+function parseQuarantinedGridList(value: unknown): QuarantinedGridEntry[] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value)) {
+    return [createQuarantinedEntry('invalid-quarantine-list', value)];
+  }
+
+  return value.map(entry => {
+    if (
+      isRecord(entry) &&
+      typeof entry.reason === 'string' &&
+      isNonNegativeNumber(entry.preservedAt) &&
+      Object.prototype.hasOwnProperty.call(entry, 'value')
+    ) {
+      return {
+        reason: entry.reason,
+        preservedAt: entry.preservedAt,
+        value: entry.value,
+      };
+    }
+
+    return createQuarantinedEntry('invalid-quarantine-entry', entry);
+  });
+}
+
+function readStoredGridState(): StoredGridState {
+  const emptyDiagnostics: GridStorageDiagnostics = {
+    quarantinedCount: 0,
+    rejectedStoredGridCount: 0,
+    unparseableStorage: false,
+  };
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) {
+    return { grids: [], quarantinedGrids: [], diagnostics: emptyDiagnostics };
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    const quarantinedGrids = [createQuarantinedEntry('unparseable-storage', raw)];
+    return {
+      grids: [],
+      quarantinedGrids,
+      diagnostics: {
+        quarantinedCount: quarantinedGrids.length,
+        rejectedStoredGridCount: 0,
+        unparseableStorage: true,
+      },
+    };
+  }
+
+  if (!isRecord(parsed)) {
+    const quarantinedGrids = [createQuarantinedEntry('invalid-storage-shape', parsed)];
+    return {
+      grids: [],
+      quarantinedGrids,
+      diagnostics: {
+        quarantinedCount: quarantinedGrids.length,
+        rejectedStoredGridCount: 0,
+        unparseableStorage: false,
+      },
+    };
+  }
+
+  const parsedGrids = parseSavedGridList(parsed.grids);
+  const quarantinedGrids = [
+    ...parseQuarantinedGridList(parsed.quarantinedGrids),
+    ...parsedGrids.rejected.map(grid => createQuarantinedEntry('invalid-saved-grid', grid)),
+  ];
+
+  if (parsed.grids !== undefined && !Array.isArray(parsed.grids)) {
+    quarantinedGrids.push(createQuarantinedEntry('invalid-grid-list', parsed.grids));
+  }
+
+  const storedDiagnostics = isRecord(parsed.diagnostics) ? parsed.diagnostics : undefined;
+  const migratedFromVersion =
+    parsed.version !== STORAGE_VERSION
+      ? Object.prototype.hasOwnProperty.call(parsed, 'version')
+        ? parsed.version
+        : 'missing'
+      : storedDiagnostics?.migratedFromVersion;
+
+  return {
+    grids: parsedGrids.grids,
+    quarantinedGrids,
+    diagnostics: {
+      quarantinedCount: quarantinedGrids.length,
+      rejectedStoredGridCount: parsedGrids.rejectedCount,
+      ...(migratedFromVersion !== undefined ? { migratedFromVersion } : {}),
+      unparseableStorage: false,
+    },
+  };
+}
+
+function reportStorageDiagnostics(diagnostics: GridStorageDiagnostics): void {
+  if (diagnostics.quarantinedCount === 0 && diagnostics.migratedFromVersion === undefined) return;
+
+  const messages: string[] = [];
+  if (diagnostics.quarantinedCount > 0) {
+    messages.push(
+      `Preserved ${diagnostics.quarantinedCount} unreadable entr${
+        diagnostics.quarantinedCount === 1 ? 'y' : 'ies'
+      } in quarantine.`
+    );
+  }
+  if (diagnostics.migratedFromVersion !== undefined) {
+    messages.push(`Migrated storage version ${String(diagnostics.migratedFromVersion)}.`);
+  }
+  console.warn(`Grid storage diagnostics: ${messages.join(' ')}`);
+}
+
+function notifySavedGridsChanged(): void {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(SAVED_GRIDS_CHANGED_EVENT));
+  }
 }
 
 // ============================================
@@ -48,21 +427,9 @@ export function loadSavedGrids(): SavedGrid[] {
   }
 
   try {
-    const data = localStorage.getItem(STORAGE_KEY);
-    if (!data) {
-      cachedGrids = [];
-      return [];
-    }
-
-    const parsed: StorageData = JSON.parse(data);
-
-    // Handle version migrations if needed
-    if (parsed.version !== STORAGE_VERSION) {
-      cachedGrids = migrateStorage(parsed);
-      return cachedGrids;
-    }
-
-    cachedGrids = parsed.grids || [];
+    const stored = readStoredGridState();
+    reportStorageDiagnostics(stored.diagnostics);
+    cachedGrids = stored.grids;
     return cachedGrids;
   } catch (error) {
     console.error('Failed to load saved grids:', error);
@@ -75,15 +442,40 @@ export function loadSavedGrids(): SavedGrid[] {
  * Save grids to localStorage (and update cache)
  */
 export function saveGridsToStorage(grids: SavedGrid[]): boolean {
+  const parsed = parseSavedGridList(grids);
+  if (parsed.rejectedCount > 0 || parsed.grids.length !== grids.length) {
+    console.error('Failed to save grids: invalid grid data');
+    cachedGrids = null;
+    return false;
+  }
+
   try {
+    const stored = readStoredGridState();
+    const diagnostics: StoredGridDiagnostics | undefined =
+      stored.quarantinedGrids.length > 0 || stored.diagnostics.migratedFromVersion !== undefined
+        ? {
+            quarantinedCount: stored.quarantinedGrids.length,
+            lastPreservedAt: Date.now(),
+            ...(stored.diagnostics.migratedFromVersion !== undefined
+              ? { migratedFromVersion: stored.diagnostics.migratedFromVersion }
+              : {}),
+          }
+        : undefined;
     const data: StorageData = {
       version: STORAGE_VERSION,
-      grids,
+      grids: parsed.grids,
       lastUpdated: Date.now(),
+      ...(stored.quarantinedGrids.length > 0 ? { quarantinedGrids: stored.quarantinedGrids } : {}),
+      ...(diagnostics ? { diagnostics } : {}),
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     // Update cache with the saved data
-    cachedGrids = grids;
+    cachedGrids = parsed.grids;
+    reportStorageDiagnostics({
+      ...stored.diagnostics,
+      quarantinedCount: stored.quarantinedGrids.length,
+    });
+    notifySavedGridsChanged();
     return true;
   } catch (error) {
     console.error('Failed to save grids:', error);
@@ -91,14 +483,6 @@ export function saveGridsToStorage(grids: SavedGrid[]): boolean {
     cachedGrids = null;
     return false;
   }
-}
-
-/**
- * Handle storage version migrations
- */
-function migrateStorage(data: StorageData): SavedGrid[] {
-  // Currently no migrations needed
-  return data.grids || [];
 }
 
 // ============================================
@@ -142,9 +526,10 @@ export function createSavedGrid(params: {
  * Add a new grid to saved grids
  */
 export function addSavedGrid(grid: SavedGrid): SavedGrid[] {
-  const grids = loadSavedGrids();
-  grids.unshift(grid); // Add to beginning
-  saveGridsToStorage(grids);
+  const grids = [grid, ...loadSavedGrids()];
+  if (!saveGridsToStorage(grids)) {
+    throw new Error('Failed to save grid');
+  }
   return grids;
 }
 
@@ -152,12 +537,14 @@ export function addSavedGrid(grid: SavedGrid): SavedGrid[] {
  * Update an existing saved grid
  */
 export function updateSavedGrid(id: string, updates: Partial<SavedGrid>): SavedGrid[] {
-  const grids = loadSavedGrids();
+  const grids = loadSavedGrids().map(grid => ({ ...grid }));
   const index = grids.findIndex(g => g.id === id);
 
   if (index !== -1) {
     grids[index] = { ...grids[index], ...updates };
-    saveGridsToStorage(grids);
+    if (!saveGridsToStorage(grids)) {
+      throw new Error('Failed to update grid');
+    }
   }
 
   return grids;
@@ -169,7 +556,9 @@ export function updateSavedGrid(id: string, updates: Partial<SavedGrid>): SavedG
 export function deleteSavedGrid(id: string): SavedGrid[] {
   const grids = loadSavedGrids();
   const filtered = grids.filter(g => g.id !== id);
-  saveGridsToStorage(filtered);
+  if (filtered.length !== grids.length && !saveGridsToStorage(filtered)) {
+    throw new Error('Failed to delete grid');
+  }
   return filtered;
 }
 
@@ -238,17 +627,19 @@ export function downloadGridsAsJSON(grids?: SavedGrid[], filename?: string): voi
 /**
  * Import grids from JSON string
  */
-export function importGridsFromJSON(jsonString: string): {
-  success: boolean;
-  grids?: SavedGrid[];
-  error?: string;
-  count?: number;
-} {
+export function importGridsFromJSON(jsonString: string): ImportResult {
+  if (new Blob([jsonString]).size > MAX_GRID_IMPORT_FILE_BYTES) {
+    return {
+      success: false,
+      error: `Import file is too large (maximum ${MAX_GRID_IMPORT_FILE_BYTES} bytes)`,
+    };
+  }
+
   try {
-    const data = JSON.parse(jsonString);
+    const data: unknown = JSON.parse(jsonString);
 
     // Validate structure
-    if (data.type !== 'teul-grids') {
+    if (!isRecord(data) || data.type !== 'teul-grids') {
       return { success: false, error: 'Invalid file format' };
     }
 
@@ -256,23 +647,56 @@ export function importGridsFromJSON(jsonString: string): {
       return { success: false, error: 'No grids found in file' };
     }
 
-    // Validate and regenerate IDs for imported grids
-    const importedGrids: SavedGrid[] = data.grids.map((grid: Partial<SavedGrid>) => ({
+    if (data.version !== STORAGE_VERSION) {
+      return { success: false, error: 'Unsupported file version' };
+    }
+
+    if (data.grids.length > MAX_GRID_IMPORT_RECORDS) {
+      return {
+        success: false,
+        error: `Import contains too many grids (maximum ${MAX_GRID_IMPORT_RECORDS})`,
+        count: 0,
+        totalCount: data.grids.length,
+      };
+    }
+
+    const parsed = parseSavedGridList(data.grids);
+    if (data.grids.length > 0 && parsed.grids.length === 0) {
+      return {
+        success: false,
+        error: 'No valid grids found in file',
+        count: 0,
+        rejectedCount: parsed.rejectedCount,
+        totalCount: data.grids.length,
+      };
+    }
+
+    // Regenerate IDs for imported grids to avoid conflicts.
+    const importedGrids: SavedGrid[] = parsed.grids.map(grid => ({
       ...grid,
-      id: generateGridId(), // Generate new IDs to avoid conflicts
-      isCustom: true,
-      createdAt: grid.createdAt || Date.now(),
+      id: generateGridId(),
+      createdAt: grid.createdAt ?? Date.now(),
     }));
 
     // Merge with existing grids
     const existingGrids = loadSavedGrids();
     const mergedGrids = [...importedGrids, ...existingGrids];
-    saveGridsToStorage(mergedGrids);
+    if (!saveGridsToStorage(mergedGrids)) {
+      return {
+        success: false,
+        error: 'Failed to save imported grids',
+        count: 0,
+        rejectedCount: parsed.rejectedCount,
+        totalCount: data.grids.length,
+      };
+    }
 
     return {
       success: true,
       grids: mergedGrids,
       count: importedGrids.length,
+      rejectedCount: parsed.rejectedCount,
+      totalCount: data.grids.length,
     };
   } catch (error) {
     return {
@@ -285,12 +709,14 @@ export function importGridsFromJSON(jsonString: string): {
 /**
  * Import grids from a File object
  */
-export function importGridsFromFile(file: File): Promise<{
-  success: boolean;
-  grids?: SavedGrid[];
-  error?: string;
-  count?: number;
-}> {
+export function importGridsFromFile(file: File): Promise<ImportResult> {
+  if (file.size > MAX_GRID_IMPORT_FILE_BYTES) {
+    return Promise.resolve({
+      success: false,
+      error: `Import file is too large (maximum ${MAX_GRID_IMPORT_FILE_BYTES} bytes)`,
+    });
+  }
+
   return new Promise(resolve => {
     const reader = new FileReader();
 
@@ -319,13 +745,23 @@ export function getSavedGridCount(): number {
 }
 
 /**
+ * Inspect storage preservation state without exposing quarantined values.
+ */
+export function getGridStorageDiagnostics(): GridStorageDiagnostics {
+  return readStoredGridState().diagnostics;
+}
+
+/**
  * Clear all saved grids (with confirmation)
  */
 export function clearAllSavedGrids(): boolean {
   try {
     localStorage.removeItem(STORAGE_KEY);
+    cachedGrids = [];
+    notifySavedGridsChanged();
     return true;
   } catch {
+    cachedGrids = null;
     return false;
   }
 }

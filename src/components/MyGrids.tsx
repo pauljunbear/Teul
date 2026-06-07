@@ -15,6 +15,9 @@ import {
   buildCreateGridFrameMessage,
   getPresetFrameDimensions,
 } from '../lib/figmaGrids';
+import { analyzeResolvedPresetFits } from '../lib/gridFit';
+import { useModalAccessibility } from '../lib/useModalAccessibility';
+import type { SelectionInfoMessage } from '../types/messages';
 
 interface MyGridsProps {
   isDark: boolean;
@@ -34,6 +37,8 @@ const styles = {
     dangerText: '#dc2626',
     successBg: '#f0fdf4',
     successText: '#16a34a',
+    warningBg: '#fffbeb',
+    warningText: '#b45309',
   },
   dark: {
     bg: '#1a1a1a',
@@ -47,6 +52,8 @@ const styles = {
     dangerText: '#fca5a5',
     successBg: '#052e16',
     successText: '#86efac',
+    warningBg: '#451a03',
+    warningText: '#fcd34d',
   },
 };
 
@@ -62,8 +69,6 @@ interface GridCardProps {
   onEdit: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
-  isSelected?: boolean;
-  onClick?: () => void;
 }
 
 const GridCard: React.FC<GridCardProps> = ({
@@ -74,23 +79,16 @@ const GridCard: React.FC<GridCardProps> = ({
   onEdit,
   onDuplicate,
   onDelete,
-  isSelected,
-  onClick,
 }) => {
   const theme = isDark ? styles.dark : styles.light;
-  const [showActions, setShowActions] = React.useState(false);
 
   return (
     <div
-      onClick={onClick}
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
       style={{
         padding: '12px',
-        backgroundColor: isSelected ? (isDark ? '#2a3a4a' : '#e6f0ff') : theme.cardBg,
+        backgroundColor: theme.cardBg,
         borderRadius: '10px',
-        border: `1px solid ${isSelected ? '#3b82f6' : theme.border}`,
-        cursor: 'pointer',
+        border: `1px solid ${theme.border}`,
         transition: 'all 0.15s ease',
         position: 'relative',
       }}
@@ -168,139 +166,120 @@ const GridCard: React.FC<GridCardProps> = ({
         </div>
       )}
 
-      {/* Quick Actions (visible on hover) */}
-      {showActions && (
-        <div
+      {/* Primary actions */}
+      <div
+        style={{
+          display: 'flex',
+          gap: '4px',
+          marginTop: '8px',
+        }}
+      >
+        <button
+          onClick={onApply}
           style={{
-            display: 'flex',
-            gap: '4px',
-            marginTop: '8px',
+            flex: 1,
+            padding: '6px 8px',
+            borderRadius: '4px',
+            border: 'none',
+            backgroundColor: '#3b82f6',
+            color: '#ffffff',
+            fontSize: '10px',
+            fontWeight: 600,
+            cursor: 'pointer',
           }}
         >
-          <button
-            onClick={e => {
-              e.stopPropagation();
-              onApply();
-            }}
-            style={{
-              flex: 1,
-              padding: '6px 8px',
-              borderRadius: '4px',
-              border: 'none',
-              backgroundColor: '#3b82f6',
-              color: '#ffffff',
-              fontSize: '10px',
-              fontWeight: 600,
-              cursor: 'pointer',
-            }}
-          >
-            Apply
-          </button>
-          <button
-            onClick={e => {
-              e.stopPropagation();
-              onCreateFrame();
-            }}
-            style={{
-              padding: '6px 8px',
-              borderRadius: '4px',
-              border: `1px solid ${theme.border}`,
-              backgroundColor: 'transparent',
-              color: theme.text,
-              fontSize: '10px',
-              fontWeight: 500,
-              cursor: 'pointer',
-            }}
-            title="Create new frame"
-            aria-label="Create new frame with this grid"
-          >
-            +
-          </button>
-        </div>
-      )}
+          Apply
+        </button>
+        <button
+          onClick={onCreateFrame}
+          style={{
+            padding: '6px 8px',
+            borderRadius: '4px',
+            border: `1px solid ${theme.border}`,
+            backgroundColor: 'transparent',
+            color: theme.text,
+            fontSize: '10px',
+            fontWeight: 500,
+            cursor: 'pointer',
+          }}
+          title="Create new frame"
+          aria-label="Create new frame with this grid"
+        >
+          +
+        </button>
+      </div>
 
-      {/* Context Menu (visible on hover) */}
-      {showActions && (
-        <div
+      {/* Secondary actions */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '8px',
+          right: '8px',
+          display: 'flex',
+          gap: '4px',
+        }}
+      >
+        <button
+          onClick={onEdit}
+          title="Edit"
+          aria-label="Edit grid settings"
           style={{
-            position: 'absolute',
-            top: '8px',
-            right: '8px',
+            width: '24px',
+            height: '24px',
+            borderRadius: '4px',
+            border: `1px solid ${theme.border}`,
+            backgroundColor: theme.cardBg,
+            color: theme.textMuted,
+            fontSize: '12px',
+            cursor: 'pointer',
             display: 'flex',
-            gap: '4px',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          <button
-            onClick={e => {
-              e.stopPropagation();
-              onEdit();
-            }}
-            title="Edit"
-            aria-label="Edit grid settings"
-            style={{
-              width: '24px',
-              height: '24px',
-              borderRadius: '4px',
-              border: `1px solid ${theme.border}`,
-              backgroundColor: theme.cardBg,
-              color: theme.textMuted,
-              fontSize: '12px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            ✏️
-          </button>
-          <button
-            onClick={e => {
-              e.stopPropagation();
-              onDuplicate();
-            }}
-            title="Duplicate"
-            aria-label="Duplicate this grid"
-            style={{
-              width: '24px',
-              height: '24px',
-              borderRadius: '4px',
-              border: `1px solid ${theme.border}`,
-              backgroundColor: theme.cardBg,
-              color: theme.textMuted,
-              fontSize: '12px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            📋
-          </button>
-          <button
-            onClick={e => {
-              e.stopPropagation();
-              onDelete();
-            }}
-            title="Delete"
-            aria-label="Delete this grid"
-            style={{
-              width: '24px',
-              height: '24px',
-              borderRadius: '4px',
-              border: `1px solid ${theme.border}`,
-              backgroundColor: theme.dangerBg,
-              color: theme.dangerText,
-              fontSize: '12px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            🗑️
-          </button>
-        </div>
-      )}
+          ✏️
+        </button>
+        <button
+          onClick={onDuplicate}
+          title="Duplicate"
+          aria-label="Duplicate this grid"
+          style={{
+            width: '24px',
+            height: '24px',
+            borderRadius: '4px',
+            border: `1px solid ${theme.border}`,
+            backgroundColor: theme.cardBg,
+            color: theme.textMuted,
+            fontSize: '12px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          📋
+        </button>
+        <button
+          onClick={onDelete}
+          title="Delete"
+          aria-label="Delete this grid"
+          style={{
+            width: '24px',
+            height: '24px',
+            borderRadius: '4px',
+            border: `1px solid ${theme.border}`,
+            backgroundColor: theme.dangerBg,
+            color: theme.dangerText,
+            fontSize: '12px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          🗑️
+        </button>
+      </div>
     </div>
   );
 };
@@ -321,6 +300,8 @@ const EditModal: React.FC<EditModalProps> = ({ grid, isDark, onSave, onCancel })
   const [name, setName] = React.useState(grid.name);
   const [description, setDescription] = React.useState(grid.description);
   const [tags, setTags] = React.useState(grid.tags.join(', '));
+  const nameInputRef = React.useRef<HTMLInputElement>(null);
+  const dialogRef = useModalAccessibility({ onClose: onCancel, initialFocusRef: nameInputRef });
 
   return (
     <div
@@ -335,6 +316,11 @@ const EditModal: React.FC<EditModalProps> = ({ grid, isDark, onSave, onCancel })
       }}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="edit-grid-title"
+        tabIndex={-1}
         style={{
           width: '340px',
           backgroundColor: theme.bg,
@@ -344,6 +330,7 @@ const EditModal: React.FC<EditModalProps> = ({ grid, isDark, onSave, onCancel })
         }}
       >
         <h3
+          id="edit-grid-title"
           style={{
             margin: '0 0 16px 0',
             fontSize: '16px',
@@ -357,6 +344,7 @@ const EditModal: React.FC<EditModalProps> = ({ grid, isDark, onSave, onCancel })
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div>
             <label
+              htmlFor="edit-grid-name"
               style={{
                 display: 'block',
                 marginBottom: '4px',
@@ -369,6 +357,8 @@ const EditModal: React.FC<EditModalProps> = ({ grid, isDark, onSave, onCancel })
               Name
             </label>
             <input
+              id="edit-grid-name"
+              ref={nameInputRef}
               type="text"
               value={name}
               onChange={e => setName(e.target.value)}
@@ -388,6 +378,7 @@ const EditModal: React.FC<EditModalProps> = ({ grid, isDark, onSave, onCancel })
 
           <div>
             <label
+              htmlFor="edit-grid-description"
               style={{
                 display: 'block',
                 marginBottom: '4px',
@@ -400,6 +391,7 @@ const EditModal: React.FC<EditModalProps> = ({ grid, isDark, onSave, onCancel })
               Description
             </label>
             <textarea
+              id="edit-grid-description"
               value={description}
               onChange={e => setDescription(e.target.value)}
               rows={3}
@@ -420,6 +412,7 @@ const EditModal: React.FC<EditModalProps> = ({ grid, isDark, onSave, onCancel })
 
           <div>
             <label
+              htmlFor="edit-grid-tags"
               style={{
                 display: 'block',
                 marginBottom: '4px',
@@ -432,6 +425,7 @@ const EditModal: React.FC<EditModalProps> = ({ grid, isDark, onSave, onCancel })
               Tags (comma-separated)
             </label>
             <input
+              id="edit-grid-tags"
               type="text"
               value={tags}
               onChange={e => setTags(e.target.value)}
@@ -518,6 +512,8 @@ interface DeleteModalProps {
 
 const DeleteModal: React.FC<DeleteModalProps> = ({ gridName, isDark, onConfirm, onCancel }) => {
   const theme = isDark ? styles.dark : styles.light;
+  const cancelButtonRef = React.useRef<HTMLButtonElement>(null);
+  const dialogRef = useModalAccessibility({ onClose: onCancel, initialFocusRef: cancelButtonRef });
 
   return (
     <div
@@ -532,6 +528,12 @@ const DeleteModal: React.FC<DeleteModalProps> = ({ gridName, isDark, onConfirm, 
       }}
     >
       <div
+        ref={dialogRef}
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="delete-grid-title"
+        aria-describedby="delete-grid-description"
+        tabIndex={-1}
         style={{
           width: '300px',
           backgroundColor: theme.bg,
@@ -543,6 +545,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({ gridName, isDark, onConfirm, 
       >
         <div style={{ fontSize: '32px', marginBottom: '12px' }}>🗑️</div>
         <h3
+          id="delete-grid-title"
           style={{
             margin: '0 0 8px 0',
             fontSize: '16px',
@@ -553,6 +556,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({ gridName, isDark, onConfirm, 
           Delete Grid?
         </h3>
         <p
+          id="delete-grid-description"
           style={{
             margin: '0 0 20px 0',
             fontSize: '13px',
@@ -564,6 +568,7 @@ const DeleteModal: React.FC<DeleteModalProps> = ({ gridName, isDark, onConfirm, 
 
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
+            ref={cancelButtonRef}
             onClick={onCancel}
             style={{
               flex: 1,
@@ -608,15 +613,17 @@ const DeleteModal: React.FC<DeleteModalProps> = ({ gridName, isDark, onConfirm, 
 export const MyGrids: React.FC<MyGridsProps> = ({ isDark }) => {
   const theme = isDark ? styles.dark : styles.light;
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const nextApplyRequestIdRef = React.useRef(0);
+  const pendingApplyRef = React.useRef<{ grid: SavedGrid; requestId: string } | null>(null);
+  const pendingApplyResultRef = React.useRef<{ gridName: string; requestId: string } | null>(null);
 
   // State
   const [grids, setGrids] = React.useState<SavedGrid[]>([]);
   const [searchQuery, setSearchQuery] = React.useState('');
-  const [selectedGrid, setSelectedGrid] = React.useState<SavedGrid | null>(null);
   const [editingGrid, setEditingGrid] = React.useState<SavedGrid | null>(null);
   const [deletingGrid, setDeletingGrid] = React.useState<SavedGrid | null>(null);
   const [notification, setNotification] = React.useState<{
-    type: 'success' | 'error';
+    type: 'success' | 'warning' | 'error';
     message: string;
   } | null>(null);
 
@@ -632,32 +639,122 @@ export const MyGrids: React.FC<MyGridsProps> = ({ isDark }) => {
   }, [grids, searchQuery]);
 
   // Show notification
-  const showNotification = (type: 'success' | 'error', message: string) => {
-    setNotification({ type, message });
-    setTimeout(() => setNotification(null), 3000);
-  };
+  const showNotification = React.useCallback(
+    (type: 'success' | 'warning' | 'error', message: string) => {
+      setNotification({ type, message });
+      setTimeout(() => setNotification(null), 3000);
+    },
+    []
+  );
+
+  const notifyApplyFailure = React.useCallback(
+    (message: string) => {
+      showNotification('error', message);
+      parent.postMessage({ pluginMessage: { type: 'notify', text: message } }, '*');
+    },
+    [showNotification]
+  );
+
+  const applyGridToSelection = React.useCallback(
+    (grid: SavedGrid, currentSelection: SelectionInfoMessage, requestId: string) => {
+      if (!currentSelection.hasSelection) {
+        notifyApplyFailure('Please select a frame first');
+        return;
+      }
+
+      const currentTargets = currentSelection.eligibleTargets;
+      if (currentTargets.length === 0) {
+        notifyApplyFailure('No selected elements can accept layout grids.');
+        return;
+      }
+
+      const fit = analyzeResolvedPresetFits(grid, currentTargets);
+      if (fit.status === 'fail') {
+        const failedTarget = fit.representative.frame;
+        notifyApplyFailure(
+          fit.representative.recommendations[0]?.message ??
+            `This grid does not fit ${failedTarget.name ?? 'one selected target'}.`
+        );
+        return;
+      }
+
+      const message = buildApplyGridMessage({
+        requestId,
+        config: grid.config,
+        expectedTargetIds: currentTargets.map(target => target.id),
+        replaceExisting: true,
+      });
+
+      pendingApplyResultRef.current = {
+        gridName: grid.name,
+        requestId,
+      };
+      parent.postMessage({ pluginMessage: message }, '*');
+    },
+    [notifyApplyFailure]
+  );
+
+  React.useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      const msg = event.data?.pluginMessage;
+
+      if (msg?.type === 'selection-info') {
+        const pendingApply = pendingApplyRef.current;
+        if (!pendingApply || msg.requestId !== pendingApply.requestId) return;
+
+        pendingApplyRef.current = null;
+        const currentSelection: SelectionInfoMessage = {
+          type: 'selection-info',
+          requestId: msg.requestId,
+          hasSelection: msg.hasSelection,
+          isFrame: msg.isFrame,
+          selectedCount: msg.selectedCount,
+          eligibleTargets: Array.isArray(msg.eligibleTargets) ? msg.eligibleTargets : [],
+          ineligibleCount: msg.ineligibleCount,
+          width: msg.width,
+          height: msg.height,
+          name: msg.name,
+        };
+
+        applyGridToSelection(pendingApply.grid, currentSelection, pendingApply.requestId);
+        return;
+      }
+
+      if (msg?.type === 'grid-applied') {
+        const pendingResult = pendingApplyResultRef.current;
+        if (!pendingResult || msg.requestId !== pendingResult.requestId) return;
+
+        pendingApplyResultRef.current = null;
+
+        showNotification(
+          msg.success ? 'success' : 'error',
+          msg.message ||
+            msg.error ||
+            (msg.success
+              ? `Applied "${pendingResult.gridName}"`
+              : `Failed to apply "${pendingResult.gridName}"`)
+        );
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [applyGridToSelection, showNotification]);
 
   // Apply grid to selection
   const handleApplyGrid = (grid: SavedGrid) => {
+    const requestId = `saved-grid-apply-${++nextApplyRequestIdRef.current}`;
+    pendingApplyResultRef.current = null;
+    pendingApplyRef.current = { grid, requestId };
     parent.postMessage(
       {
         pluginMessage: {
           type: 'get-selection-for-grid',
+          requestId,
         },
       },
       '*'
     );
-
-    // We'll send the apply message after getting selection info
-    // For now, just send directly with default dimensions
-    const message = buildApplyGridMessage({
-      config: grid.config,
-      width: 800,
-      height: 600,
-      replaceExisting: true,
-    });
-    parent.postMessage({ pluginMessage: message }, '*');
-    showNotification('success', `Applied "${grid.name}"`);
   };
 
   // Create new frame with grid
@@ -671,35 +768,46 @@ export const MyGrids: React.FC<MyGridsProps> = ({ isDark }) => {
       positionNearSelection: true,
     });
     parent.postMessage({ pluginMessage: message }, '*');
-    showNotification('success', `Created frame with "${grid.name}"`);
   };
 
   // Edit grid
   const handleEditGrid = (grid: SavedGrid, updates: Partial<SavedGrid>) => {
-    const updated = updateSavedGrid(grid.id, updates);
-    setGrids(updated);
-    setEditingGrid(null);
-    showNotification('success', 'Grid updated');
+    try {
+      const updated = updateSavedGrid(grid.id, updates);
+      setGrids(updated);
+      setEditingGrid(null);
+      showNotification('success', 'Grid updated');
+    } catch (error) {
+      showNotification('error', error instanceof Error ? error.message : 'Failed to update grid');
+    }
   };
 
   // Duplicate grid
   const handleDuplicateGrid = (grid: SavedGrid) => {
-    const duplicate = duplicateSavedGrid(grid.id);
-    if (duplicate) {
-      setGrids(loadSavedGrids());
-      showNotification('success', `Created copy of "${grid.name}"`);
+    try {
+      const duplicate = duplicateSavedGrid(grid.id);
+      if (duplicate) {
+        setGrids(loadSavedGrids());
+        showNotification('success', `Created copy of "${grid.name}"`);
+      }
+    } catch (error) {
+      showNotification(
+        'error',
+        error instanceof Error ? error.message : 'Failed to duplicate grid'
+      );
     }
   };
 
   // Delete grid
   const handleDeleteGrid = (grid: SavedGrid) => {
-    const updated = deleteSavedGrid(grid.id);
-    setGrids(updated);
-    setDeletingGrid(null);
-    if (selectedGrid?.id === grid.id) {
-      setSelectedGrid(null);
+    try {
+      const updated = deleteSavedGrid(grid.id);
+      setGrids(updated);
+      setDeletingGrid(null);
+      showNotification('success', `Deleted "${grid.name}"`);
+    } catch (error) {
+      showNotification('error', error instanceof Error ? error.message : 'Failed to delete grid');
     }
-    showNotification('success', `Deleted "${grid.name}"`);
   };
 
   // Export grids
@@ -721,7 +829,19 @@ export const MyGrids: React.FC<MyGridsProps> = ({ isDark }) => {
 
     if (result.success) {
       setGrids(result.grids || []);
-      showNotification('success', `Imported ${result.count} grid(s)`);
+      const importedCount = result.count ?? 0;
+      const rejectedCount = result.rejectedCount ?? 0;
+      if (rejectedCount > 0) {
+        const totalCount = result.totalCount ?? importedCount + rejectedCount;
+        showNotification(
+          'warning',
+          `Imported ${importedCount} of ${totalCount} grids. ${rejectedCount} invalid grid${
+            rejectedCount === 1 ? ' was' : 's were'
+          } rejected.`
+        );
+      } else {
+        showNotification('success', `Imported ${importedCount} grid(s)`);
+      }
     } else {
       showNotification('error', result.error || 'Import failed');
     }
@@ -831,10 +951,21 @@ export const MyGrids: React.FC<MyGridsProps> = ({ isDark }) => {
       {/* Notification */}
       {notification && (
         <div
+          role={notification.type === 'success' ? 'status' : 'alert'}
           style={{
             padding: '10px 16px',
-            backgroundColor: notification.type === 'success' ? theme.successBg : theme.dangerBg,
-            color: notification.type === 'success' ? theme.successText : theme.dangerText,
+            backgroundColor:
+              notification.type === 'success'
+                ? theme.successBg
+                : notification.type === 'warning'
+                  ? theme.warningBg
+                  : theme.dangerBg,
+            color:
+              notification.type === 'success'
+                ? theme.successText
+                : notification.type === 'warning'
+                  ? theme.warningText
+                  : theme.dangerText,
             fontSize: '12px',
             fontWeight: 500,
             textAlign: 'center',
@@ -865,8 +996,6 @@ export const MyGrids: React.FC<MyGridsProps> = ({ isDark }) => {
                 key={grid.id}
                 grid={grid}
                 isDark={isDark}
-                isSelected={selectedGrid?.id === grid.id}
-                onClick={() => setSelectedGrid(grid)}
                 onApply={() => handleApplyGrid(grid)}
                 onCreateFrame={() => handleCreateFrame(grid)}
                 onEdit={() => setEditingGrid(grid)}
