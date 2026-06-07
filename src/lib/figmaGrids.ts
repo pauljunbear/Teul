@@ -13,6 +13,8 @@ import type {
   FigmaRowsColsLayoutGrid,
   FigmaUniformLayoutGrid,
   GridColor,
+  GridApplicationMode,
+  GridDimensions,
   GridPreset,
 } from '../types/grid';
 import { toPixels } from './gridUtils';
@@ -253,6 +255,10 @@ export function getPresetFrameDimensions(
   preset: GridPreset,
   baseWidth: number = 800
 ): { width: number; height: number } {
+  if (preset.referenceDimensions) {
+    return { ...preset.referenceDimensions };
+  }
+
   if (preset.aspectRatio) {
     return parseAspectRatio(preset.aspectRatio, baseWidth);
   }
@@ -268,6 +274,18 @@ export function getPresetFrameDimensions(
     default:
       return { width: baseWidth, height: Math.round(baseWidth * 1.414) };
   }
+}
+
+/** Resolve backward-compatible pixel-measurement behavior for any preset. */
+export function getPresetApplicationMode(preset: GridPreset): GridApplicationMode {
+  return preset.applicationMode ?? (preset.isCustom ? 'fixed' : 'scale-from-reference');
+}
+
+/** Source dimensions to use when resolving a preset for another target frame. */
+export function getPresetSourceDimensions(preset: GridPreset): GridDimensions | undefined {
+  return getPresetApplicationMode(preset) === 'fixed'
+    ? undefined
+    : getPresetFrameDimensions(preset);
 }
 
 // ============================================

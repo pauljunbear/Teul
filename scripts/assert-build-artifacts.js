@@ -5,7 +5,7 @@ const { JSDOM } = require('jsdom');
 const rootDir = path.resolve(__dirname, '..');
 const distDir = path.resolve(rootDir, process.env.TEUL_DIST_DIR || 'dist');
 const uiPath = path.join(distDir, 'ui.html');
-const maxUiBytes = 400 * 1024;
+const maxUiBytes = 440 * 1024;
 
 function fail(message) {
   console.error(`Build artifact assertion failed: ${message}`);

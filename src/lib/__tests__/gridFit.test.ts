@@ -214,19 +214,43 @@ describe('bundled preset provenance and matrix fit', () => {
   });
 
   it('gives every bundled preset conservative provenance and adaptation notes', () => {
-    expect(GRID_PRESETS).toHaveLength(34);
+    expect(GRID_PRESETS).toHaveLength(65);
     expect(new Set(GRID_PRESETS.map(preset => preset.id)).size).toBe(GRID_PRESETS.length);
 
     for (const preset of GRID_PRESETS) {
-      expect(preset.provenance, preset.id).toEqual({
-        classification: 'teul-modern-adaptation',
-        source: 'Teul preset catalog',
-        evidence: 'unsourced',
-        adaptationNotes: expect.any(String),
-      });
+      expect(preset.provenance, preset.id).toBeDefined();
       expect(preset.provenance?.adaptationNotes.length, preset.id).toBeGreaterThan(20);
+
+      if (preset.provenance?.sourceUrl) {
+        expect(preset.provenance.sourceUrl, preset.id).toMatch(/^https:\/\//);
+        expect(preset.provenance.evidence, preset.id).not.toBe('unsourced');
+        expect(preset.provenance.source, preset.id).not.toBe('Teul preset catalog');
+        expect(preset.referenceDimensions, preset.id).toBeDefined();
+        expect(preset.applicationMode, preset.id).toBe('fixed');
+        expect(analyzePresetFit(preset, preset.referenceDimensions!).status, preset.id).not.toBe(
+          'fail'
+        );
+      } else {
+        expect(preset.provenance, preset.id).toMatchObject({
+          classification: 'teul-modern-adaptation',
+          source: 'Teul preset catalog',
+          evidence: 'unsourced',
+        });
+      }
     }
 
+    expect(GRID_PRESETS.filter(preset => preset.provenance?.sourceUrl)).toHaveLength(31);
+    expect(GRID_PRESETS.map(preset => preset.id)).toEqual(
+      expect.arrayContaining([
+        'gerstner-capital-6x6',
+        'brockmann-32-field',
+        'crouwel-10px-lattice',
+        'nps-unigrid-b6-modules',
+        'material-compact-4col',
+        'carbon-dashboard-16col',
+        'apple-tv-9col',
+      ])
+    );
     expect(getPresetsByCategory('classic-swiss').every(preset => preset.provenance)).toBe(true);
   });
 
@@ -270,10 +294,10 @@ describe('bundled preset provenance and matrix fit', () => {
       { fit: 0, warning: 0, fail: 0 }
     );
 
-    expect(GRID_PRESETS).toHaveLength(34);
+    expect(GRID_PRESETS).toHaveLength(65);
     expect(GRID_FIT_FRAME_MATRIX).toHaveLength(12);
-    expect(totals).toEqual({ fit: 375, warning: 14, fail: 19 });
-    expect(totals.fit + totals.warning + totals.fail).toBe(408);
+    expect(totals).toEqual({ fit: 692, warning: 32, fail: 56 });
+    expect(totals.fit + totals.warning + totals.fail).toBe(780);
   });
 
   it('summarizes a single preset across the matrix', () => {

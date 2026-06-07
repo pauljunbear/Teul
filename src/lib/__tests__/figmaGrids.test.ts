@@ -7,7 +7,9 @@ import {
   generateGridFrameName,
   gridConfigToFrameName,
   parseAspectRatio,
+  getPresetApplicationMode,
   getPresetFrameDimensions,
+  getPresetSourceDimensions,
   buildCreateGridFrameMessage,
   buildApplyGridMessage,
   validateGridForFigma,
@@ -491,6 +493,22 @@ describe('parseAspectRatio', () => {
 // ============================================
 
 describe('getPresetFrameDimensions', () => {
+  it('uses explicit reference dimensions before inferred category or aspect dimensions', () => {
+    const preset: GridPreset = {
+      id: 'documented-format',
+      name: 'Documented Format',
+      description: 'Test',
+      category: 'poster',
+      aspectRatio: '1:1',
+      referenceDimensions: { width: 650, height: 950 },
+      tags: [],
+      isCustom: false,
+      config: {},
+    };
+
+    expect(getPresetFrameDimensions(preset)).toEqual({ width: 650, height: 950 });
+  });
+
   it('uses preset aspect ratio when available', () => {
     const preset: GridPreset = {
       id: 'test',
@@ -575,6 +593,58 @@ describe('getPresetFrameDimensions', () => {
 
     expect(result.width).toBe(800);
     expect(result.height).toBe(1131); // 800 * 1.414
+  });
+});
+
+describe('preset application behavior', () => {
+  const makePreset = (overrides: Partial<GridPreset> = {}): GridPreset => ({
+    id: 'preset',
+    name: 'Preset',
+    description: 'Test preset',
+    category: 'custom',
+    tags: [],
+    config: {
+      columns: {
+        count: 4,
+        gutterSize: 20,
+        gutterUnit: 'px',
+        margin: 40,
+        marginUnit: 'px',
+        alignment: 'STRETCH',
+        visible: true,
+        color: FIGMA_GRID_COLORS.column,
+      },
+    },
+    isCustom: false,
+    ...overrides,
+  });
+
+  it('keeps legacy bundled presets scaling and legacy saved grids fixed', () => {
+    const bundled = makePreset({ referenceDimensions: { width: 1200, height: 800 } });
+    const saved = makePreset({
+      isCustom: true,
+      referenceDimensions: { width: 1200, height: 800 },
+    });
+
+    expect(getPresetApplicationMode(bundled)).toBe('scale-from-reference');
+    expect(getPresetSourceDimensions(bundled)).toEqual({ width: 1200, height: 800 });
+    expect(getPresetApplicationMode(saved)).toBe('fixed');
+    expect(getPresetSourceDimensions(saved)).toBeUndefined();
+  });
+
+  it('respects explicit fixed and scale-from-reference modes', () => {
+    const fixed = makePreset({
+      applicationMode: 'fixed',
+      referenceDimensions: { width: 1200, height: 800 },
+    });
+    const scalableSaved = makePreset({
+      isCustom: true,
+      applicationMode: 'scale-from-reference',
+      referenceDimensions: { width: 1200, height: 800 },
+    });
+
+    expect(getPresetSourceDimensions(fixed)).toBeUndefined();
+    expect(getPresetSourceDimensions(scalableSaved)).toEqual({ width: 1200, height: 800 });
   });
 });
 

@@ -370,6 +370,19 @@ describe('gridStorage', () => {
 
       expect(grid.tags).toEqual([]);
     });
+
+    it('preserves the preset application contract when saving a copy', () => {
+      const grid = createSavedGrid({
+        name: 'Documented Grid',
+        description: 'A description',
+        config: createMockGridConfig(),
+        referenceDimensions: { width: 1200, height: 800 },
+        applicationMode: 'scale-from-reference',
+      });
+
+      expect(grid.referenceDimensions).toEqual({ width: 1200, height: 800 });
+      expect(grid.applicationMode).toBe('scale-from-reference');
+    });
   });
 
   describe('addSavedGrid', () => {

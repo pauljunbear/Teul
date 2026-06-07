@@ -5,6 +5,7 @@
 // inspired by Swiss/International Typographic Style
 
 import type { GridPreset, GridCategory, GridColor } from '../types/grid';
+import { RESEARCH_GRID_PRESETS } from './researchGridPresets';
 
 // Default colors for grid visualization
 const COLUMN_COLOR: GridColor = { r: 1, g: 0.2, b: 0.2, a: 0.1 };
@@ -72,6 +73,10 @@ const PRESET_ADAPTATION_NOTES: Record<string, string> = {
 };
 
 function addBundledPresetProvenance(preset: GridPreset): GridPreset {
+  if (preset.provenance) {
+    return preset;
+  }
+
   const adaptationNotes = PRESET_ADAPTATION_NOTES[preset.id];
 
   if (!adaptationNotes) {
@@ -924,6 +929,7 @@ export const GRID_PRESETS: GridPreset[] = [
   ...modularGrids,
   ...baselineGrids,
   ...combinedGrids,
+  ...RESEARCH_GRID_PRESETS,
 ].map(addBundledPresetProvenance);
 
 /** Grid presets organized by category for easy filtering */
