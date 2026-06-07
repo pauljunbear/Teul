@@ -12,7 +12,7 @@ Teul brings together three worlds:
 
 - **Sanzo Wada's color combinations** — 159 normalized colors used across 348 combinations from 1930s Japan
 - **Werner's Nomenclature of Colours** — Patrick Syme's 110-color 1821 second edition, adapted from Werner's nomenclature
-- **Radix color scales** — Exact Match scales pinned to `@radix-ui/colors` 3.0.0, plus Radix-inspired generated scales
+- **Color-system modes** — Exact Radix Colors pinned to `@radix-ui/colors` 3.0.0, source-preserving Teul Generated scales, and blocking WCAG-constrained semantic tokens
 
 The result: historically sourced color relationships, clearly labeled digital approximations, and modern design tools. Generated systems should be validated for their intended color pairings and use cases.
 
@@ -32,11 +32,19 @@ Browse two historically sourced color collections represented by digital approxi
 
 Turn any palette into a complete design system:
 
+- **Exact Radix Colors** — selects the closest unmodified, versioned Radix family
+- **Teul Generated** — preserves the selected source color and reports tested structural and contrast guarantees
+- **WCAG-Constrained Tokens** — derives semantic tokens and blocks output unless every declared WCAG 2.2 color pairing passes
 - **12-step scales** for each color role (primary, secondary, tertiary, accent, neutral)
 - **Semantic tokens** — backgrounds, borders, interactive states, text colors
 - **Light and dark modes** generated automatically
 - **Usage proportions** — guidance on how to balance your palette
 - **Export options** — CSS variables, Tailwind config, JSON
+
+WCAG-Constrained Tokens guarantees the declared semantic color-pairing policy. It
+does not claim that a complete design or product is universally WCAG conformant;
+full conformance also depends on content, semantics, keyboard behavior, focus,
+media, interactions, and complete user flows.
 
 ### 📐 Swiss-Style Grids
 

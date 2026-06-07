@@ -4,6 +4,8 @@ import { generateColorScale, type ColorScale } from '../lib/colorScale';
 import { copyToClipboard } from '../lib/clipboard';
 import { useModalAccessibility } from '../lib/useModalAccessibility';
 import { ColorScaleValidationSummary } from './ColorScaleValidationSummary';
+import { SemanticPolicySummary } from './SemanticPolicySummary';
+import { buildSemanticColorPolicy } from '../lib/semanticColorPolicy';
 import type {
   ColorSystemOperationResultMessage,
   NormalizedDocumentColorProfile,
@@ -11,6 +13,7 @@ import type {
 import {
   findClosestRadixFamily,
   getNeutralForAccent,
+  RADIX_COLORS_VERSION,
   radixColors,
   neutralFamilies,
   type NeutralName,
@@ -26,7 +29,7 @@ import {
 
 // Types
 type ColorRole = 'primary' | 'secondary' | 'tertiary' | 'accent';
-type ScaleMethod = 'custom' | 'radix-match';
+type ScaleMethod = 'custom' | 'radix-match' | 'wcag-constrained';
 type OutputDetailLevel = 'minimal' | 'detailed' | 'presentation';
 const MAX_SYSTEM_NAME_LENGTH = 512;
 
@@ -199,7 +202,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
     const primary = roleAssignments.find(r => r.role === 'primary' || r.roles?.includes('primary'));
     if (!primary) return null;
 
-    if (scaleMethod === 'custom') {
+    if (scaleMethod !== 'radix-match') {
       return generateColorScale(primary.hex, 'light', 'Primary');
     } else {
       const family = findClosestRadixFamily(primary.hex);
@@ -222,7 +225,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
     const primary = roleAssignments.find(r => r.role === 'primary' || r.roles?.includes('primary'));
     if (!primary) return null;
 
-    if (scaleMethod === 'custom') {
+    if (scaleMethod !== 'radix-match') {
       return generateColorScale(primary.hex, 'dark', 'Primary');
     } else {
       const family = findClosestRadixFamily(primary.hex);
@@ -266,7 +269,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
       mode: 'light' | 'dark'
     ): ExportScale | undefined => {
       if (!assignment) return undefined;
-      if (scaleMethod === 'custom') {
+      if (scaleMethod !== 'radix-match') {
         const scale = generateColorScale(assignment.hex, mode, assignment.name);
         return {
           name: assignment.name,
@@ -286,6 +289,9 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
           method: 'Radix Colors',
           profile: 'sRGB',
           mode,
+          sourceVersion: RADIX_COLORS_VERSION,
+          sourceFamily: family.name,
+          sourceInputHex: assignment.hex.toLowerCase(),
           steps: Object.entries(radixScale).map(([step, hex]) => ({ step: parseInt(step), hex })),
         };
       }
@@ -298,6 +304,8 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
         profile: 'sRGB',
         method: 'Radix Colors',
         mode: 'light',
+        sourceVersion: RADIX_COLORS_VERSION,
+        sourceFamily: neutralScale.name,
         steps: Object.entries(neutralScale.light).map(([step, hex]) => ({
           step: parseInt(step),
           hex,
@@ -333,6 +341,8 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
             profile: 'sRGB',
             method: 'Radix Colors',
             mode: 'dark',
+            sourceVersion: RADIX_COLORS_VERSION,
+            sourceFamily: neutralScale.name,
             steps: Object.entries(neutralScale.dark).map(([step, hex]) => ({
               step: parseInt(step),
               hex,
@@ -351,19 +361,47 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
     return { light, dark };
   }, [getColorsForRole, scaleMethod, effectiveNeutral, includeDarkMode]);
 
+  const semanticPolicy = useMemo(
+    () =>
+      scaleMethod === 'wcag-constrained'
+        ? buildSemanticColorPolicy(exportScales.light, exportScales.dark)
+        : undefined,
+    [exportScales, scaleMethod]
+  );
+
+  const primaryRadixMatch = useMemo(() => {
+    if (scaleMethod !== 'radix-match') return null;
+    const primary = getColorsForRole('primary')[0];
+    if (!primary) return null;
+    const family = findClosestRadixFamily(primary.hex);
+    return {
+      inputHex: primary.hex.toUpperCase(),
+      familyName: family.displayName,
+      familyStep9: family.light[9].toUpperCase(),
+    };
+  }, [getColorsForRole, scaleMethod]);
+
   // Generate export content
   const exportContent = useMemo(() => {
-    switch (exportFormat) {
-      case 'css':
-        return exportAsCSS(exportScales.light, exportScales.dark, systemName);
-      case 'tailwind':
-        return exportAsTailwind(exportScales.light, exportScales.dark, systemName);
-      case 'json':
-        return exportAsJSON(exportScales.light, exportScales.dark, systemName);
-      default:
-        return '';
+    const exportOptions = {
+      scaleMethod,
+      semanticPolicy: semanticPolicy?.valid ? semanticPolicy : undefined,
+    };
+    try {
+      switch (exportFormat) {
+        case 'css':
+          return exportAsCSS(exportScales.light, exportScales.dark, systemName, exportOptions);
+        case 'tailwind':
+          return exportAsTailwind(exportScales.light, exportScales.dark, systemName, exportOptions);
+        case 'json':
+          return exportAsJSON(exportScales.light, exportScales.dark, systemName, exportOptions);
+        default:
+          return '';
+      }
+    } catch (error) {
+      return error instanceof Error ? error.message : 'Export unavailable';
     }
-  }, [exportFormat, exportScales, systemName]);
+  }, [exportFormat, exportScales, scaleMethod, semanticPolicy, systemName]);
 
   // Handle role assignment
   const assignRole = (colorHex: string, role: ColorRole | null) => {
@@ -421,7 +459,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
   // Generate scale data for a color
   const generateScaleData = useCallback(
     (hex: string, role: string, name: string, mode: 'light' | 'dark') => {
-      if (scaleMethod === 'custom') {
+      if (scaleMethod !== 'radix-match') {
         const scale = generateColorScale(hex, mode, name);
         return {
           name,
@@ -441,6 +479,9 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
           method: 'Radix Colors' as const,
           profile: 'sRGB' as const,
           mode,
+          sourceVersion: RADIX_COLORS_VERSION,
+          sourceFamily: family.name,
+          sourceInputHex: hex.toLowerCase(),
           steps: radixScaleToSteps(radixScale),
         };
       }
@@ -469,6 +510,8 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
         profile: 'sRGB',
         method: 'Radix Colors',
         mode: 'light',
+        sourceVersion: RADIX_COLORS_VERSION,
+        sourceFamily: neutralScale.name,
         steps: radixScaleToSteps(neutralScale.light),
       },
     };
@@ -551,6 +594,8 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
           profile: 'sRGB',
           method: 'Radix Colors',
           mode: 'dark',
+          sourceVersion: RADIX_COLORS_VERSION,
+          sourceFamily: neutralScale.name,
           steps: radixScaleToSteps(neutralScale.dark),
         },
       };
@@ -667,6 +712,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
         tertiary: tertiaries.length,
         accent: accents.length,
       },
+      semanticPolicy,
     };
 
     const requestId = `color-system-${Date.now()}-${++nextRequestIdRef.current}`;
@@ -700,10 +746,15 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
     ...Object.values(exportScales.light),
     ...Object.values(exportScales.dark ?? {}),
   ].filter(scale => scale?.method === 'Teul OKLCH v2');
-  const canGenerate =
+  const generatedScalesValid =
     scaleMethod === 'radix-match' ||
     generatedOutputScales.every(scale => scale?.validation?.valid === true);
+  const semanticPolicyValid = scaleMethod !== 'wcag-constrained' || semanticPolicy?.valid === true;
+  const canGenerate = generatedScalesValid && semanticPolicyValid;
   const canSubmit = canGenerate && !systemNameError && !isSubmitting;
+  const generationErrorMessage = !generatedScalesValid
+    ? 'Generated scale fails structural or required contrast validation. Choose Exact Radix Colors or another source color.'
+    : 'The declared WCAG 2.2 semantic-token policy has failing pairings. Choose another source color or Exact Radix Colors.';
   const generatedValidationItems = generatedOutputScales.flatMap(scale =>
     scale?.validation && scale.mode
       ? [{ name: scale.name, mode: scale.mode, validation: scale.validation }]
@@ -1034,7 +1085,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
             <div
               role="group"
               aria-labelledby="scale-generation-method-label"
-              style={{ display: 'flex', gap: '8px' }}
+              style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
             >
               <button
                 onClick={() => setScaleMethod('custom')}
@@ -1048,9 +1099,9 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
                   padding: '12px',
                 }}
               >
-                <span style={{ fontSize: '13px', fontWeight: 700 }}>Custom Scales</span>
+                <span style={{ fontSize: '13px', fontWeight: 700 }}>Teul Generated</span>
                 <span style={{ fontSize: '10px', opacity: 0.7, marginTop: '4px' }}>
-                  Generate from your exact colors
+                  Preserve your source colors and report tested guarantees
                 </span>
               </button>
               <button
@@ -1065,9 +1116,25 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
                   padding: '12px',
                 }}
               >
-                <span style={{ fontSize: '13px', fontWeight: 700 }}>Radix Match</span>
+                <span style={{ fontSize: '13px', fontWeight: 700 }}>Exact Radix Colors</span>
                 <span style={{ fontSize: '10px', opacity: 0.7, marginTop: '4px' }}>
-                  Use closest Radix UI scale
+                  Use the closest unmodified @radix-ui/colors v{RADIX_COLORS_VERSION} family
+                </span>
+              </button>
+              <button
+                onClick={() => setScaleMethod('wcag-constrained')}
+                aria-pressed={scaleMethod === 'wcag-constrained'}
+                style={{
+                  ...buttonStyle(scaleMethod === 'wcag-constrained'),
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-start',
+                  padding: '12px',
+                }}
+              >
+                <span style={{ fontSize: '13px', fontWeight: 700 }}>WCAG-Constrained Tokens</span>
+                <span style={{ fontSize: '10px', opacity: 0.7, marginTop: '4px' }}>
+                  Derive semantic tokens and block output unless every declared pairing passes
                 </span>
               </button>
             </div>
@@ -1136,7 +1203,14 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
             >
               {(
                 [
-                  { id: 'minimal', label: 'Minimal', desc: 'Scales only' },
+                  {
+                    id: 'minimal',
+                    label: 'Minimal',
+                    desc:
+                      scaleMethod === 'wcag-constrained'
+                        ? 'Scales and required policy report'
+                        : 'Scales only',
+                  },
                   { id: 'detailed', label: 'Detailed', desc: 'Scales + labels' },
                   { id: 'presentation', label: 'Presentation', desc: 'Full framework' },
                 ] as const
@@ -1168,9 +1242,31 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
             <label style={labelStyle}>Scale Preview</label>
             <p style={{ fontSize: '11px', color: theme.textMuted, margin: '0 0 12px' }}>
               {scaleMethod === 'radix-match'
-                ? 'Matched to closest Radix scale'
-                : 'Radix-inspired generated scale; only the pairings below have been tested'}
+                ? `Exact unmodified Radix Colors v${RADIX_COLORS_VERSION}; the source color selects the closest family`
+                : scaleMethod === 'wcag-constrained'
+                  ? 'Teul-generated candidate scales plus a blocking WCAG 2.2 semantic-token policy'
+                  : 'Teul-generated scale; only the reported pairings and structural guarantees have been tested'}
             </p>
+
+            {primaryRadixMatch && (
+              <div
+                role="status"
+                style={{
+                  marginBottom: '12px',
+                  padding: '8px',
+                  borderRadius: '6px',
+                  backgroundColor: theme.inputBg,
+                  color: theme.textMuted,
+                  fontSize: '10px',
+                  lineHeight: 1.4,
+                }}
+              >
+                Primary input {primaryRadixMatch.inputHex} selects{' '}
+                <strong style={{ color: theme.text }}>{primaryRadixMatch.familyName}</strong>. Exact
+                Radix step 9 is {primaryRadixMatch.familyStep9}; the input color is not inserted
+                into the exact Radix scale.
+              </div>
+            )}
 
             <div style={{ display: 'flex', gap: '8px' }}>
               {/* Light Mode Preview */}
@@ -1287,9 +1383,10 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
                 </div>
               )}
             </div>
-            {scaleMethod === 'custom' && generatedValidationItems.length > 0 && (
+            {scaleMethod !== 'radix-match' && generatedValidationItems.length > 0 && (
               <ColorScaleValidationSummary items={generatedValidationItems} isDark={isDark} />
             )}
+            {semanticPolicy && <SemanticPolicySummary report={semanticPolicy} isDark={isDark} />}
           </div>
 
           {/* Include Dark Mode Toggle */}
@@ -1510,8 +1607,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
               role="alert"
               style={{ width: '100%', color: theme.textMuted, fontSize: '10px' }}
             >
-              Generated scale fails structural or required contrast validation. Choose Radix Match
-              or another source color.
+              {generationErrorMessage}
             </span>
           )}
         </div>

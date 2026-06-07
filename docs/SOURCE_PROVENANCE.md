@@ -153,13 +153,13 @@ guarantees.
 
 - Teul bundles 31 complete light/dark solid-color families, 62 scales, and 744
   values.
-- `RADIX_COLORS_VERSION` pins Exact Radix Match data to
+- `RADIX_COLORS_VERSION` pins Exact Radix Colors data to
   `@radix-ui/colors@3.0.0`.
 - The sorted bundled solid-scale payload exactly matches the reviewed package
   payload and its pinned SHA-256 integrity fixture.
 - Current focused Radix integrity tests pass.
 
-Exact Radix Match is current exact-library data for the pinned package version.
+Exact Radix Colors is current exact-library data for the pinned package version.
 This does not transfer Radix's APCA guidance to generated Teul scales.
 
 ## 4. Color Science And Accessibility

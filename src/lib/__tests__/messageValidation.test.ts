@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { generateColorScale } from '../colorScale';
 import { isUIToPluginMessage, validateUIToPluginMessage } from '../messageValidation';
+import { radixColors } from '../radixColors';
+import { buildSemanticColorPolicy } from '../semanticColorPolicy';
 
 const backendMocks = vi.hoisted(() => ({
   sendSelectionInfo: vi.fn(),
@@ -59,11 +61,15 @@ const scale = {
   profile: 'sRGB',
   method: 'Radix Colors',
   mode: 'light',
-  steps: Array.from({ length: 12 }, (_, index) => ({
-    step: index + 1,
-    hex: '#123456',
+  sourceVersion: '3.0.0',
+  sourceFamily: 'slate',
+  steps: Object.entries(radixColors.slate.light).map(([step, hex]) => ({
+    step: Number(step),
+    hex,
   })),
 };
+
+const constrainedNeutralScale = scale;
 
 const styleData = {
   systemName: 'Test System',
@@ -188,6 +194,189 @@ describe('validateUIToPluginMessage', () => {
     };
 
     expect(validateUIToPluginMessage(message).valid).toBe(true);
+  });
+
+  it('rejects forged Exact Radix values or provenance metadata', () => {
+    const baseMessage = {
+      type: 'generate-color-system',
+      ...generationRequest,
+      config: { ...colorSystemConfig, scaleMethod: 'radix-match' },
+      scales: {
+        ...colorSystemData,
+        scaleMethod: 'radix-match',
+        scales: { light: { neutral: scale } },
+      },
+    };
+
+    expect(
+      validateUIToPluginMessage({
+        ...baseMessage,
+        scales: {
+          ...baseMessage.scales,
+          scales: {
+            light: {
+              neutral: {
+                ...scale,
+                steps: scale.steps.map(step =>
+                  step.step === 9 ? { ...step, hex: '#123456' } : step
+                ),
+              },
+            },
+          },
+        },
+      }).valid
+    ).toBe(false);
+    expect(
+      validateUIToPluginMessage({
+        ...baseMessage,
+        scales: {
+          ...baseMessage.scales,
+          scales: { light: { neutral: { ...scale, sourceFamily: 'blue' } } },
+        },
+      }).valid
+    ).toBe(false);
+    expect(() =>
+      validateUIToPluginMessage({
+        ...baseMessage,
+        scales: {
+          ...baseMessage.scales,
+          scales: { light: { neutral: { ...scale, sourceFamily: 'toString' } } },
+        },
+      })
+    ).not.toThrow();
+    expect(
+      validateUIToPluginMessage({
+        ...baseMessage,
+        scales: {
+          ...baseMessage.scales,
+          scales: { light: { neutral: { ...scale, sourceFamily: 'toString' } } },
+        },
+      }).valid
+    ).toBe(false);
+
+    const blueScale = {
+      ...scale,
+      name: 'Blue',
+      role: 'Primary',
+      sourceFamily: 'blue',
+      sourceInputHex: '#ff0000',
+      steps: Object.entries(radixColors.blue.light).map(([step, hex]) => ({
+        step: Number(step),
+        hex,
+      })),
+    };
+    expect(
+      validateUIToPluginMessage({
+        ...baseMessage,
+        scales: {
+          ...baseMessage.scales,
+          scales: { light: { neutral: scale, primary: blueScale } },
+        },
+      }).valid
+    ).toBe(false);
+  });
+
+  it('rejects Radix provenance metadata on generated non-Radix scales', () => {
+    const message = {
+      type: 'generate-color-system',
+      ...generationRequest,
+      config: colorSystemConfig,
+      scales: {
+        ...colorSystemData,
+        scales: {
+          light: {
+            neutral: scale,
+            primary: {
+              ...customScale,
+              sourceVersion: '3.0.0',
+              sourceFamily: 'blue',
+              sourceInputHex: '#3366cc',
+            },
+          },
+        },
+      },
+    };
+
+    expect(validateUIToPluginMessage(message).valid).toBe(false);
+  });
+
+  it('accepts a recomputed passing WCAG-constrained semantic policy', () => {
+    const scales = {
+      light: {
+        neutral: constrainedNeutralScale,
+        primary: customScale,
+      },
+    };
+    const semanticPolicy = buildSemanticColorPolicy(scales.light);
+    const message = {
+      type: 'generate-color-system',
+      ...generationRequest,
+      config: { ...colorSystemConfig, scaleMethod: 'wcag-constrained' },
+      scales: {
+        ...colorSystemData,
+        scaleMethod: 'wcag-constrained',
+        scales,
+        semanticPolicy,
+      },
+    };
+
+    expect(semanticPolicy.valid).toBe(true);
+    expect(validateUIToPluginMessage(message).valid).toBe(true);
+  });
+
+  it('rejects missing, failing, or forged WCAG-constrained semantic policies', () => {
+    const scales = {
+      light: {
+        neutral: constrainedNeutralScale,
+        primary: customScale,
+      },
+    };
+    const semanticPolicy = buildSemanticColorPolicy(scales.light);
+    const baseMessage = {
+      type: 'generate-color-system',
+      ...generationRequest,
+      config: { ...colorSystemConfig, scaleMethod: 'wcag-constrained' },
+      scales: {
+        ...colorSystemData,
+        scaleMethod: 'wcag-constrained',
+        scales,
+      },
+    };
+
+    expect(validateUIToPluginMessage(baseMessage).valid).toBe(false);
+    expect(
+      validateUIToPluginMessage({
+        ...baseMessage,
+        scales: {
+          ...baseMessage.scales,
+          semanticPolicy: { ...semanticPolicy, valid: false },
+        },
+      }).valid
+    ).toBe(false);
+    expect(
+      validateUIToPluginMessage({
+        ...baseMessage,
+        scales: {
+          ...baseMessage.scales,
+          semanticPolicy: {
+            ...semanticPolicy,
+            modes: {
+              ...semanticPolicy.modes,
+              light: {
+                ...semanticPolicy.modes.light,
+                tokens: {
+                  ...semanticPolicy.modes.light.tokens,
+                  'action.text': {
+                    ...semanticPolicy.modes.light.tokens['action.text'],
+                    value: '#ffffff',
+                  },
+                },
+              },
+            },
+          },
+        },
+      }).valid
+    ).toBe(false);
   });
 
   it('rejects the retired radix scale method even when config and scales agree', () => {

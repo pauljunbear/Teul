@@ -126,8 +126,8 @@ module.exports = (env, argv) => ({
   // 244 KiB web-page recommendation.
   performance: {
     hints: 'warning',
-    maxAssetSize: 400 * 1024,
-    maxEntrypointSize: 400 * 1024,
+    maxAssetSize: 440 * 1024,
+    maxEntrypointSize: 440 * 1024,
   },
 
   optimization: {
@@ -135,6 +135,9 @@ module.exports = (env, argv) => ({
       new TerserPlugin({
         extractComments: false,
         terserOptions: {
+          compress: {
+            passes: 3,
+          },
           format: {
             comments: false,
           },

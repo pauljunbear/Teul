@@ -3,6 +3,8 @@
 
 import { hexToFigmaRgb } from './figmaHelpers';
 import { getOrderedScaleKeys, stepToStyleSuffix } from '../lib/colorExport';
+import { isExactRadixScale } from '../lib/radixColors';
+import { isSemanticColorPolicyCurrent } from '../lib/semanticColorPolicy';
 import type { CreateStylesData } from '../types/colorSystem';
 export type { CreateStylesData } from '../types/colorSystem';
 
@@ -15,6 +17,14 @@ interface RequestedStyle {
   hex: string;
   color: RGB;
   description?: string;
+}
+
+type SemanticMode = 'light' | 'dark';
+
+function getDeclaredSemanticTokens(scalesData: CreateStylesData, mode: SemanticMode) {
+  if (scalesData.scaleMethod !== 'wcag-constrained') return [];
+  const report = scalesData.semanticPolicy?.modes[mode];
+  return report ? Object.values(report.tokens) : [];
 }
 
 function getErrorMessage(error: unknown): string {
@@ -85,6 +95,17 @@ async function createColorStylesOperation(
   scalesData: CreateStylesData,
   systemName: string
 ): Promise<void> {
+  if (
+    scalesData.scaleMethod === 'wcag-constrained' &&
+    !isSemanticColorPolicyCurrent(
+      scalesData.scales.light,
+      scalesData.scales.dark,
+      scalesData.semanticPolicy
+    )
+  ) {
+    throw new Error('WCAG-constrained semantic token policy is stale or invalid');
+  }
+
   const existingStyles = await figma.getLocalPaintStylesAsync();
   const existingStylesByName = new Map<string, PaintStyle[]>();
   for (const style of existingStyles) {
@@ -129,8 +150,13 @@ async function createColorStylesOperation(
       if (scale) {
         for (const step of scale.steps) {
           const styleName = `${modePath}/${scale.role}/${stepToStyleSuffix(step.step)}`;
+          const sourceLabel =
+            scale.method === 'Radix Colors' &&
+            !isExactRadixScale(scale.sourceVersion, scale.sourceFamily, scale.mode, scale.steps)
+              ? 'Unverified color scale'
+              : scale.method;
           const description = [
-            scale.method,
+            sourceLabel,
             scale.profile,
             scale.validation
               ? scale.validation.valid
@@ -156,9 +182,32 @@ async function createColorStylesOperation(
     queueScaleStyles(scalesData.scales.dark, darkPath);
   }
 
-  // Queue semantic aliases
+  // Queue semantic aliases. Constrained systems only expose policy-declared aliases.
   const lightScales = scalesData.scales.light;
   const basePath = scalesData.includeDarkMode ? `${systemName}/Light` : systemName;
+  const lightSemanticTokens = getDeclaredSemanticTokens(scalesData, 'light');
+  const darkSemanticTokens = getDeclaredSemanticTokens(scalesData, 'dark');
+  const isConstrained = scalesData.scaleMethod === 'wcag-constrained';
+
+  if (isConstrained) {
+    const queueDeclaredTokens = (
+      tokens: ReturnType<typeof getDeclaredSemanticTokens>,
+      modePath: string
+    ) => {
+      for (const token of tokens) {
+        queueStyle(
+          `${modePath}/Semantic/${token.name}`,
+          token.value,
+          `WCAG-constrained semantic token · ${token.source.scale} step ${token.source.step}`
+        );
+      }
+    };
+
+    queueDeclaredTokens(lightSemanticTokens, basePath);
+    if (scalesData.includeDarkMode) {
+      queueDeclaredTokens(darkSemanticTokens, `${systemName}/Dark`);
+    }
+  }
 
   const semanticAliases = [
     // Backgrounds
@@ -175,30 +224,32 @@ async function createColorStylesOperation(
     { name: 'border-strong', scale: 'neutral', step: 8 },
   ];
 
-  for (const alias of semanticAliases) {
-    const scale = lightScales[alias.scale as keyof typeof lightScales];
-    if (scale) {
-      const step = scale.steps.find(s => s.step === alias.step);
-      if (step) {
-        queueStyle(`${basePath}/Semantic/${alias.name}`, step.hex);
+  if (!isConstrained) {
+    for (const alias of semanticAliases) {
+      const scale = lightScales[alias.scale as keyof typeof lightScales];
+      if (scale) {
+        const step = scale.steps.find(s => s.step === alias.step);
+        if (step) {
+          queueStyle(`${basePath}/Semantic/${alias.name}`, step.hex);
+        }
       }
     }
-  }
 
-  // Queue primary color semantic aliases if available
-  if (lightScales.primary) {
-    const primaryAliases = [
-      { name: 'primary-bg', step: 3 },
-      { name: 'primary-bg-hover', step: 4 },
-      { name: 'primary-solid', step: 9 },
-      { name: 'primary-solid-hover', step: 10 },
-      { name: 'primary-text', step: 11 },
-    ];
+    // Queue primary color semantic aliases if available
+    if (lightScales.primary) {
+      const primaryAliases = [
+        { name: 'primary-bg', step: 3 },
+        { name: 'primary-bg-hover', step: 4 },
+        { name: 'primary-solid', step: 9 },
+        { name: 'primary-solid-hover', step: 10 },
+        { name: 'primary-text', step: 11 },
+      ];
 
-    for (const alias of primaryAliases) {
-      const step = lightScales.primary.steps.find(s => s.step === alias.step);
-      if (step) {
-        queueStyle(`${basePath}/Semantic/${alias.name}`, step.hex);
+      for (const alias of primaryAliases) {
+        const step = lightScales.primary.steps.find(s => s.step === alias.step);
+        if (step) {
+          queueStyle(`${basePath}/Semantic/${alias.name}`, step.hex);
+        }
       }
     }
   }

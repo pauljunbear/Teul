@@ -657,7 +657,7 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({
                 gap: '8px',
               }}
             >
-              🎨 Generate Radix-inspired System
+              🎨 Generate Color System
             </button>
 
             {/* Credits */}

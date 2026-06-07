@@ -143,10 +143,10 @@ Every bundled dataset and preset must have a versioned provenance record with:
 
 ### DATA-004: Radix data
 
-- Exact Radix Match mode must use values from a pinned `@radix-ui/colors`
+- Exact Radix Colors mode must use values from a pinned `@radix-ui/colors`
   version.
 - The UI must show that version.
-- Generated 12-step scales must be called "Radix-inspired" rather than Radix.
+- Generated 12-step scales must be called "Teul Generated" rather than Radix.
 - A source-integrity test must compare bundled exact values with the pinned
   package.
 
@@ -186,7 +186,7 @@ Each displayed color must show:
 - Any generated RGB-to-CMYK output must be omitted, profile-driven, or labeled
   as estimated/unprofiled.
 
-### COLOR-004: Exact Radix Match
+### COLOR-004: Exact Radix Colors
 
 - Match a source color to an exact, pinned Radix family.
 - Explain that the source color is an input to family selection, not necessarily
@@ -207,6 +207,22 @@ Generated scales must:
 - Report passed, failed, and untested guarantees.
 
 Generated scales must not inherit Radix guarantees.
+
+### COLOR-005A: Explicit generation modes
+
+The color-system generator must present three distinct modes:
+
+- **Exact Radix Colors:** unmodified values from the pinned Radix package. The
+  selected source color chooses the closest family but is not inserted into it.
+- **Teul Generated:** source-preserving generated scales with explicit
+  structural and tested-pairing results.
+- **WCAG-Constrained Tokens:** generated candidate scales plus semantic tokens.
+  Creation and export are blocked unless every declared light/dark semantic
+  color pairing passes the versioned WCAG 2.2 color policy.
+
+WCAG-Constrained Tokens must never be described as universal WCAG conformance.
+The UI and exports must state that the guarantee covers only the declared color
+pairings, not complete pages, products, or user flows.
 
 ### COLOR-006: Accessibility
 
