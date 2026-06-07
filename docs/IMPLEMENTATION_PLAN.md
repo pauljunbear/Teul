@@ -8,7 +8,7 @@ Correctness and source truth come before visual refactoring.
 
 ## Current Automated Evidence
 
-- Exact Radix Match pins `@radix-ui/colors@3.0.0` and exactly matches all 31
+- Exact Radix Colors pins `@radix-ui/colors@3.0.0` and exactly matches all 31
   light/dark solid-color families, 62 scales, and 744 values.
 - The generated-scale matrix covers 269 historical source colors in both modes:
   536 of 538 outputs validate and build successfully. Wada `White` returns the
@@ -44,6 +44,9 @@ Correctness and source truth come before visual refactoring.
   explicit success/failure results, source-anchor preservation, final-output
   validation, and exact WCAG pairing reports. Current bundled-source results
   are 536 valid outputs and two explicit Wada `White` failures.
+- Added explicit Exact Radix Colors, Teul Generated, and WCAG-Constrained Tokens
+  modes. The constrained mode derives semantic tokens and blocks creation and
+  export unless every declared WCAG 2.2 color pairing passes.
 - Preserved dynamic numbered color roles across exports, styles, and generated
   Figma frames.
 - Preserved the established export and Figma-style step-name contracts
@@ -102,7 +105,7 @@ core behavior.
 - Replace "exact/accessibile/classic/foundational/standard" claims where evidence
   does not support them.
 - Label APCA experimental and WCAG 2.2 normative.
-- Label generated scales Radix-inspired; reserve Radix Match for exact package
+- Label generated scales as Teul Generated; reserve Exact Radix Colors for exact package
   data.
 - Relabel current historical grid claims as Swiss-inspired modern adaptations.
 - Add source/license/derivation documentation to the repository.
@@ -130,7 +133,7 @@ Goal: remove silent wrong-output paths before deeper refactoring.
 ### Color hotfixes
 
 - Reject invalid hex instead of coercing to black.
-- Pin Exact Radix Match values to the reviewed package and integrity-test the
+- Pin Exact Radix Colors values to the reviewed package and integrity-test the
   complete payload.
 - Preserve existing style/export token meanings; require a versioned migration
   before adopting a unified naming scheme.

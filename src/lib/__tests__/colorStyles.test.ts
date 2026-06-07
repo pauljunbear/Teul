@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createColorStyles, type CreateStylesData } from '../../backend/colorStyles';
+import { radixColors } from '../radixColors';
+import { buildSemanticColorPolicy } from '../semanticColorPolicy';
 
 interface CreatedStyle {
   name: string;
@@ -46,6 +48,59 @@ function solidPaint(hex: string): Paint {
       g: parseInt(cleanHex.slice(2, 4), 16) / 255,
       b: parseInt(cleanHex.slice(4, 6), 16) / 255,
     },
+  };
+}
+
+function makeConstrainedScale(mode: 'light' | 'dark') {
+  const background = mode === 'light' ? '#ffffff' : '#000000';
+  const foreground = mode === 'light' ? '#111111' : '#eeeeee';
+  return {
+    name: 'Neutral',
+    role: 'Neutral',
+    profile: 'sRGB' as const,
+    method: 'Teul OKLCH v2' as const,
+    mode,
+    steps: Array.from({ length: 12 }, (_, index) => ({
+      step: index + 1,
+      hex:
+        index + 1 === 10
+          ? mode === 'light'
+            ? '#222222'
+            : '#dddddd'
+          : index + 1 === 8
+            ? '#777777'
+            : index < 6
+              ? background
+              : foreground,
+    })),
+  };
+}
+
+function makeConstrainedStylesData(includeDark = true): CreateStylesData {
+  const light = { neutral: makeConstrainedScale('light') };
+  const dark = includeDark ? { neutral: makeConstrainedScale('dark') } : undefined;
+  return {
+    systemName: 'Brand',
+    includeDarkMode: includeDark,
+    scaleMethod: 'wcag-constrained',
+    scales: { light, dark },
+    semanticPolicy: buildSemanticColorPolicy(light, dark),
+  };
+}
+
+function makeExactRadixScale(role: string, family: 'blue' | 'slate' = 'slate') {
+  return {
+    name: role,
+    role,
+    profile: 'sRGB' as const,
+    method: 'Radix Colors' as const,
+    mode: 'light' as const,
+    sourceVersion: '3.0.0',
+    sourceFamily: family,
+    steps: Object.entries(radixColors[family].light).map(([step, hex]) => ({
+      step: Number(step),
+      hex,
+    })),
   };
 }
 
@@ -242,11 +297,7 @@ describe('createColorStyles', () => {
       scaleMethod: 'radix-match',
       scales: {
         light: {
-          neutral: {
-            ...makeScale('Neutral'),
-            method: 'Radix Colors',
-            profile: 'sRGB',
-          },
+          neutral: makeExactRadixScale('Neutral'),
         },
       },
     };
@@ -254,6 +305,62 @@ describe('createColorStyles', () => {
     await createColorStyles(data, 'Brand');
 
     expect(createdStyles[0].description).toBe('Radix Colors · sRGB');
+  });
+
+  it('does not label unverified direct Radix-method style data as official Radix', async () => {
+    const data: CreateStylesData = {
+      systemName: 'Brand',
+      includeDarkMode: false,
+      scaleMethod: 'radix-match',
+      scales: {
+        light: {
+          neutral: makeScale('Neutral'),
+        },
+      },
+    };
+
+    await createColorStyles(data, 'Brand');
+
+    expect(createdStyles[0].description).toBe('Unverified color scale · sRGB');
+  });
+
+  it('creates declared constrained semantic styles for both modes without heuristic aliases', async () => {
+    const data = makeConstrainedStylesData();
+
+    await createColorStyles(data, 'Brand');
+
+    const semanticStyles = createdStyles.filter(style => style.name.includes('/Semantic/'));
+    expect(semanticStyles.map(style => style.name)).toEqual(
+      expect.arrayContaining([
+        'Brand/Light/Semantic/background.canvas',
+        'Brand/Light/Semantic/text.primary',
+        'Brand/Dark/Semantic/background.canvas',
+        'Brand/Dark/Semantic/text.primary',
+      ])
+    );
+    expect(semanticStyles).toHaveLength(20);
+    expect(
+      semanticStyles.every(style =>
+        style.description?.startsWith('WCAG-constrained semantic token · ')
+      )
+    ).toBe(true);
+    expect(semanticStyles.map(style => style.name)).not.toContain('Brand/Light/Semantic/bg-app');
+  });
+
+  it('rejects a constrained semantic style collision before creating any styles', async () => {
+    vi.mocked(figma.getLocalPaintStylesAsync).mockResolvedValue([
+      {
+        name: 'Brand/Semantic/background.canvas',
+        paints: [solidPaint('#000000')],
+      } as unknown as PaintStyle,
+    ]);
+    const data = makeConstrainedStylesData(false);
+
+    await expect(createColorStyles(data, 'Brand')).rejects.toThrow(
+      'Color style conflict for "Brand/Semantic/background.canvas": existing paint does not match requested #ffffff'
+    );
+    expect(createdStyles).toEqual([]);
+    expect(figma.notify).not.toHaveBeenCalled();
   });
 
   it('rolls back newly created styles after a Figma API exception and preserves existing styles', async () => {

@@ -79,7 +79,7 @@ describe('ColorSystemModal submission', () => {
   ])('blocks %s system names before posting', (_, invalidName, expectedError) => {
     renderModal('Test System');
 
-    act(() => findButton('Radix Match')?.click());
+    act(() => findButton('Exact Radix Colors')?.click());
 
     const nameInput = container.querySelector<HTMLInputElement>('#color-system-name');
     expect(nameInput).not.toBeNull();
@@ -102,7 +102,7 @@ describe('ColorSystemModal submission', () => {
   it('posts one correlated transaction and blocks duplicate submission until success', () => {
     renderModal('Test System');
 
-    act(() => findButton('Radix Match')?.click());
+    act(() => findButton('Exact Radix Colors')?.click());
 
     const createStylesToggle = Array.from(container.querySelectorAll('label'))
       .find(label => label.textContent?.includes('Create Figma Color Styles'))
@@ -147,7 +147,7 @@ describe('ColorSystemModal submission', () => {
   it('re-enables submission after a correlated failure acknowledgement', () => {
     renderModal('Test System');
 
-    act(() => findButton('Radix Match')?.click());
+    act(() => findButton('Exact Radix Colors')?.click());
     act(() => findButton('Generate Color System')?.click());
 
     const firstRequest = (
@@ -172,5 +172,78 @@ describe('ColorSystemModal submission', () => {
     ).pluginMessage;
     expect(secondRequest.requestId).not.toBe(firstRequest.requestId);
     expect(postMessage).toHaveBeenCalledTimes(2);
+  });
+
+  it('presents three distinct generation modes with accurate claims', () => {
+    renderModal('Test System');
+
+    expect(findButton('Teul Generated')).toBeDefined();
+    expect(findButton('Exact Radix Colors')).toBeDefined();
+    expect(findButton('WCAG-Constrained Tokens')).toBeDefined();
+    expect(container.textContent).toContain('unmodified @radix-ui/colors v3.0.0');
+    expect(container.textContent).toContain('block output unless every declared pairing passes');
+  });
+
+  it('posts exact Radix source metadata instead of inserting the input color into the scale', () => {
+    renderModal('Test System');
+
+    act(() => findButton('Exact Radix Colors')?.click());
+    expect(container.textContent).toContain(
+      'the input color is not inserted into the exact Radix scale'
+    );
+
+    act(() => findButton('Generate Color System')?.click());
+
+    const request = (
+      postMessage.mock.calls[0][0] as {
+        pluginMessage: {
+          config: { scaleMethod: string };
+          scales: {
+            scaleMethod: string;
+            scales: {
+              light: {
+                primary: {
+                  sourceVersion: string;
+                  sourceFamily: string;
+                  sourceInputHex: string;
+                };
+              };
+            };
+          };
+        };
+      }
+    ).pluginMessage;
+
+    expect(request.config.scaleMethod).toBe('radix-match');
+    expect(request.scales.scaleMethod).toBe('radix-match');
+    expect(request.scales.scales.light.primary.sourceVersion).toBe('3.0.0');
+    expect(request.scales.scales.light.primary.sourceFamily.length).toBeGreaterThan(0);
+    expect(request.scales.scales.light.primary.sourceInputHex).toBe('#3366cc');
+  });
+
+  it('posts a passing recomputable semantic policy in WCAG-constrained mode', () => {
+    renderModal('Test System');
+
+    act(() => findButton('WCAG-Constrained Tokens')?.click());
+    expect(container.textContent).toContain('WCAG 2.2 semantic color policy: Passed');
+
+    act(() => findButton('Generate Color System')?.click());
+
+    const request = (
+      postMessage.mock.calls[0][0] as {
+        pluginMessage: {
+          config: { scaleMethod: string };
+          scales: {
+            scaleMethod: string;
+            semanticPolicy: { valid: boolean; modes: { light: { pairings: unknown[] } } };
+          };
+        };
+      }
+    ).pluginMessage;
+
+    expect(request.config.scaleMethod).toBe('wcag-constrained');
+    expect(request.scales.scaleMethod).toBe('wcag-constrained');
+    expect(request.scales.semanticPolicy.valid).toBe(true);
+    expect(request.scales.semanticPolicy.modes.light.pairings.length).toBeGreaterThan(0);
   });
 });

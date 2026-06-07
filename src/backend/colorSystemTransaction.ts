@@ -2,6 +2,8 @@ import type {
   ColorSystemOperationResultMessage,
   GenerateColorSystemMessage,
 } from '../types/messages';
+import { isSemanticColorPolicyCurrent } from '../lib/semanticColorPolicy';
+import { areAllScalesExactRadix, haveExactRadixScaleClaims } from '../lib/radixColors';
 import { createColorStyles } from './colorStyles';
 import { generateColorSystemFrames } from './colorSystemGeneration';
 
@@ -125,6 +127,28 @@ function withRollbackFailures(error: unknown, failures: readonly string[]): Erro
 }
 
 async function runColorSystemTransaction(message: GenerateColorSystemMessage): Promise<void> {
+  const scales = message.scales.scales;
+  if (scales && !haveExactRadixScaleClaims(scales.light, scales.dark)) {
+    throw new Error('Exact Radix Colors claims must match the pinned bundled values');
+  }
+  if (
+    message.scales.scaleMethod === 'radix-match' &&
+    (!scales || !areAllScalesExactRadix(scales.light, scales.dark))
+  ) {
+    throw new Error('Exact Radix Colors mode requires only pinned bundled values');
+  }
+
+  if (message.scales.scaleMethod === 'wcag-constrained') {
+    if (
+      !scales ||
+      !isSemanticColorPolicyCurrent(scales.light, scales.dark, message.scales.semanticPolicy)
+    ) {
+      throw new Error(
+        'WCAG-constrained semantic token policy must be current and pass before generation'
+      );
+    }
+  }
+
   const pageView = capturePageView();
   let generatedFrame: FrameNode | undefined;
 

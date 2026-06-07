@@ -1,4 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { radixColors } from '../../lib/radixColors';
+import { buildSemanticColorPolicy } from '../../lib/semanticColorPolicy';
 import type { GenerateColorSystemMessage } from '../../types/messages';
 
 const backendMocks = vi.hoisted(() => ({
@@ -27,6 +29,51 @@ function createMessage(requestId: string, createStyles = false): GenerateColorSy
     scales: {
       systemName: 'Transaction Test',
     } as GenerateColorSystemMessage['scales'],
+  };
+}
+
+function createConstrainedMessage(requestId: string): GenerateColorSystemMessage {
+  const toScale = (mode: 'light' | 'dark', name: 'gray' | 'blue') => ({
+    name,
+    role: name === 'gray' ? 'neutral' : 'primary',
+    profile: 'sRGB' as const,
+    method: 'Radix Colors' as const,
+    mode,
+    sourceVersion: '3.0.0',
+    sourceFamily: name,
+    steps: Object.entries(radixColors[name][mode]).map(([step, hex]) => ({
+      step: Number(step),
+      hex,
+    })),
+  });
+  const scales = {
+    light: {
+      neutral: toScale('light', 'gray'),
+      primary: toScale('light', 'blue'),
+    },
+    dark: {
+      neutral: toScale('dark', 'gray'),
+      primary: toScale('dark', 'blue'),
+    },
+  };
+
+  return {
+    ...createMessage(requestId, true),
+    scales: {
+      systemName: 'Transaction Test',
+      detailLevel: 'detailed',
+      includeDarkMode: true,
+      scaleMethod: 'wcag-constrained',
+      scales,
+      usageProportions: {
+        primary: 35,
+        secondary: 0,
+        tertiary: 0,
+        accent: 0,
+        neutral: 65,
+      },
+      semanticPolicy: buildSemanticColorPolicy(scales.light, scales.dark),
+    },
   };
 }
 
@@ -139,6 +186,70 @@ describe('handleGenerateColorSystem', () => {
       requestId: message.requestId,
       success: false,
       error: frameError.message,
+    });
+  });
+
+  it('rejects a WCAG-constrained request unless its semantic policy passed', async () => {
+    const message = createMessage('transaction-invalid-semantic-policy', true);
+    message.scales.scaleMethod = 'wcag-constrained';
+
+    await handleGenerateColorSystem(message);
+
+    expect(backendMocks.generateColorSystemFrames).not.toHaveBeenCalled();
+    expect(backendMocks.createColorStyles).not.toHaveBeenCalled();
+    expect(figma.ui.postMessage).toHaveBeenCalledWith({
+      type: 'color-system-operation-result',
+      requestId: message.requestId,
+      success: false,
+      error: 'WCAG-constrained semantic token policy must be current and pass before generation',
+    });
+  });
+
+  it('recomputes the WCAG-constrained policy before starting any mutations', async () => {
+    const message = createConstrainedMessage('transaction-forged-semantic-policy');
+    message.scales.semanticPolicy = {
+      ...message.scales.semanticPolicy!,
+      valid: true,
+      modes: {
+        ...message.scales.semanticPolicy!.modes,
+        light: {
+          ...message.scales.semanticPolicy!.modes.light,
+          tokens: {
+            ...message.scales.semanticPolicy!.modes.light.tokens,
+            'action.text': {
+              ...message.scales.semanticPolicy!.modes.light.tokens['action.text'],
+              value: '#ffffff',
+            },
+          },
+        },
+      },
+    };
+
+    await handleGenerateColorSystem(message);
+
+    expect(backendMocks.generateColorSystemFrames).not.toHaveBeenCalled();
+    expect(backendMocks.createColorStyles).not.toHaveBeenCalled();
+    expect(figma.ui.postMessage).toHaveBeenCalledWith({
+      type: 'color-system-operation-result',
+      requestId: message.requestId,
+      success: false,
+      error: 'WCAG-constrained semantic token policy must be current and pass before generation',
+    });
+  });
+
+  it('rejects forged Exact Radix values before starting any mutations', async () => {
+    const message = createConstrainedMessage('transaction-forged-radix');
+    message.scales.scales.light.neutral!.steps[8].hex = '#123456';
+
+    await handleGenerateColorSystem(message);
+
+    expect(backendMocks.generateColorSystemFrames).not.toHaveBeenCalled();
+    expect(backendMocks.createColorStyles).not.toHaveBeenCalled();
+    expect(figma.ui.postMessage).toHaveBeenCalledWith({
+      type: 'color-system-operation-result',
+      requestId: message.requestId,
+      success: false,
+      error: 'Exact Radix Colors claims must match the pinned bundled values',
     });
   });
 

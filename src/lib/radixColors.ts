@@ -1321,6 +1321,109 @@ export const accentColors: RadixColorName[] = [
   'sky',
 ];
 
+export function isExactRadixScale(
+  sourceVersion: unknown,
+  sourceFamily: unknown,
+  mode: unknown,
+  steps: readonly { step: number; hex: string }[]
+): boolean {
+  if (
+    sourceVersion !== RADIX_COLORS_VERSION ||
+    typeof sourceFamily !== 'string' ||
+    !isRadixColorName(sourceFamily) ||
+    (mode !== 'light' && mode !== 'dark') ||
+    steps.length !== 12
+  ) {
+    return false;
+  }
+
+  const expected = radixColors[sourceFamily][mode];
+  return steps.every(
+    ({ step, hex }, index) =>
+      step === index + 1 &&
+      typeof hex === 'string' &&
+      hex.toLowerCase() === expected[step as keyof RadixScale].toLowerCase()
+  );
+}
+
+export function haveExactRadixScaleClaims(
+  ...scaleMaps: Array<
+    | Record<
+        string,
+        | {
+            method?: unknown;
+            sourceVersion?: unknown;
+            sourceFamily?: unknown;
+            mode?: unknown;
+            steps: readonly { step: number; hex: string }[];
+          }
+        | undefined
+      >
+    | undefined
+  >
+): boolean {
+  return scaleMaps.every(scaleMap =>
+    Object.values(scaleMap ?? {}).every(
+      scale =>
+        scale?.method !== 'Radix Colors' ||
+        isExactRadixScale(scale.sourceVersion, scale.sourceFamily, scale.mode, scale.steps)
+    )
+  );
+}
+
+export function areAllScalesExactRadix(
+  ...scaleMaps: Array<
+    | Record<
+        string,
+        | {
+            sourceVersion?: unknown;
+            sourceFamily?: unknown;
+            mode?: unknown;
+            steps: readonly { step: number; hex: string }[];
+          }
+        | undefined
+      >
+    | undefined
+  >
+): boolean {
+  const scales = scaleMaps.reduce<
+    Array<{
+      sourceVersion?: unknown;
+      sourceFamily?: unknown;
+      mode?: unknown;
+      steps: readonly { step: number; hex: string }[];
+    }>
+  >((allScales, scaleMap) => {
+    for (const scale of Object.values(scaleMap ?? {})) {
+      if (scale) allScales.push(scale);
+    }
+    return allScales;
+  }, []);
+  return (
+    scales.length > 0 &&
+    scales.every(scale =>
+      isExactRadixScale(scale.sourceVersion, scale.sourceFamily, scale.mode, scale.steps)
+    )
+  );
+}
+
+export function doesRadixSourceInputMatchFamily(
+  sourceInputHex: unknown,
+  sourceFamily: unknown
+): boolean {
+  return (
+    typeof sourceInputHex === 'string' &&
+    /^#[0-9a-f]{6}$/i.test(sourceInputHex) &&
+    typeof sourceFamily === 'string' &&
+    isRadixColorName(sourceFamily) &&
+    findClosestRadixFamily(sourceInputHex).name === sourceFamily
+  );
+}
+
+function isRadixColorName(sourceFamily: string): sourceFamily is RadixColorName {
+  return Object.prototype.hasOwnProperty.call(radixColors, sourceFamily);
+}
+
 // ============================================
 // Color Matching Functions
 // ============================================

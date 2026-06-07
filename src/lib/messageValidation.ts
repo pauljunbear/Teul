@@ -1,5 +1,7 @@
 import type { UIToPluginMessage } from '../types/messages';
 import { calculateContrastRatio, getLuminance, hexToOklch, hexToRgb } from './utils';
+import { isSemanticColorPolicyCurrent } from './semanticColorPolicy';
+import { doesRadixSourceInputMatchFamily, isExactRadixScale } from './radixColors';
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -14,7 +16,7 @@ const GRID_UNITS = ['px', 'percent'] as const;
 const GRID_ENTRY_KEYS = ['columns', 'rows', 'baseline'] as const;
 const GRADIENT_TYPES = ['LINEAR', 'RADIAL', 'ANGULAR', 'DIAMOND'] as const;
 const DETAIL_LEVELS = ['minimal', 'detailed', 'presentation'] as const;
-const SCALE_METHODS = ['custom', 'radix-match'] as const;
+const SCALE_METHODS = ['custom', 'radix-match', 'wcag-constrained'] as const;
 const COLOR_SCALE_METHODS = ['Teul OKLCH v2', 'Radix Colors'] as const;
 const COLOR_ROLES = ['primary', 'secondary', 'tertiary', 'accent'] as const;
 const NEUTRAL_FAMILIES = ['auto', 'gray', 'mauve', 'slate', 'sage', 'olive', 'sand'] as const;
@@ -352,7 +354,7 @@ function validateFinalCustomScale(
 function validateScale(
   value: unknown,
   expectedMode: 'light' | 'dark',
-  systemScaleMethod: 'custom' | 'radix-match',
+  systemScaleMethod: 'custom' | 'radix-match' | 'wcag-constrained',
   scaleKey: string
 ): boolean {
   if (
@@ -365,7 +367,12 @@ function validateScale(
     value.steps.some((step, index) => step.step !== index + 1) ||
     value.profile !== 'sRGB' ||
     value.mode !== expectedMode ||
-    !isOneOf(value.method, COLOR_SCALE_METHODS)
+    !isOneOf(value.method, COLOR_SCALE_METHODS) ||
+    (value.sourceVersion !== undefined && !isBoundedString(value.sourceVersion)) ||
+    (value.sourceFamily !== undefined && !isBoundedString(value.sourceFamily)) ||
+    (value.sourceInputHex !== undefined &&
+      (typeof value.sourceInputHex !== 'string' ||
+        !SERIALIZED_HEX_COLOR.test(value.sourceInputHex)))
   ) {
     return false;
   }
@@ -376,9 +383,23 @@ function validateScale(
       : 'Teul OKLCH v2';
   if (value.method !== expectedMethod) return false;
 
+  const hasRadixSourceMetadata =
+    value.sourceVersion !== undefined ||
+    value.sourceFamily !== undefined ||
+    value.sourceInputHex !== undefined;
+
   if (value.method === 'Radix Colors') {
-    return value.validation === undefined;
+    return (
+      value.validation === undefined &&
+      isExactRadixScale(value.sourceVersion, value.sourceFamily, value.mode, value.steps) &&
+      (systemScaleMethod !== 'radix-match' ||
+        (scaleKey === 'neutral'
+          ? value.sourceInputHex === undefined
+          : doesRadixSourceInputMatchFamily(value.sourceInputHex, value.sourceFamily)))
+    );
   }
+
+  if (hasRadixSourceMetadata) return false;
 
   return (
     validateScaleValidation(value.validation, value.steps) &&
@@ -389,7 +410,7 @@ function validateScale(
 function validateScaleMap(
   value: unknown,
   expectedMode: 'light' | 'dark',
-  systemScaleMethod: 'custom' | 'radix-match'
+  systemScaleMethod: 'custom' | 'radix-match' | 'wcag-constrained'
 ): boolean {
   if (!isRecord(value)) return false;
 
@@ -415,7 +436,7 @@ function validateScaleMap(
 function validateScalesContainer(
   value: unknown,
   includeDarkMode: boolean,
-  systemScaleMethod: 'custom' | 'radix-match'
+  systemScaleMethod: 'custom' | 'radix-match' | 'wcag-constrained'
 ): boolean {
   return (
     isRecord(value) &&
@@ -458,7 +479,25 @@ function validateColorSystemData(value: unknown): boolean {
       isOneOf(value.documentColorProfile, DOCUMENT_COLOR_PROFILES)) &&
     validateUsageProportions(value.usageProportions) &&
     (value.multiSelectMode === undefined || typeof value.multiSelectMode === 'boolean') &&
-    (value.colorCounts === undefined || validateColorCounts(value.colorCounts))
+    (value.colorCounts === undefined || validateColorCounts(value.colorCounts)) &&
+    validateSemanticColorPolicy(value)
+  );
+}
+
+function validateSemanticColorPolicy(value: UnknownRecord): boolean {
+  if (value.scaleMethod !== 'wcag-constrained') return value.semanticPolicy === undefined;
+  if (
+    !isRecord(value.scales) ||
+    !isRecord(value.scales.light) ||
+    value.semanticPolicy === undefined
+  ) {
+    return false;
+  }
+
+  return isSemanticColorPolicyCurrent(
+    value.scales.light as Parameters<typeof isSemanticColorPolicyCurrent>[0],
+    value.scales.dark as Parameters<typeof isSemanticColorPolicyCurrent>[1],
+    value.semanticPolicy
   );
 }
 

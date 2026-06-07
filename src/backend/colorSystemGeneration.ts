@@ -2,6 +2,12 @@
 // Generates visual color system layouts in Figma
 
 import { hexToFigmaRgb } from './figmaHelpers';
+import type {
+  SemanticColorModeReport,
+  SemanticColorPolicyReport,
+} from '../lib/semanticColorPolicy';
+import { isSemanticColorPolicyCurrent } from '../lib/semanticColorPolicy';
+import { areAllScalesExactRadix, haveExactRadixScaleClaims } from '../lib/radixColors';
 import type { ColorScaleData, ColorSystemData } from '../types/colorSystem';
 export type { ColorScaleData, ColorSystemData } from '../types/colorSystem';
 
@@ -17,6 +23,8 @@ interface ColorInfo {
   saturation: number;
   hue: number;
 }
+
+type SemanticMode = 'light' | 'dark';
 
 // ============================================
 // Constants
@@ -432,6 +440,102 @@ function createBWSwatches(size: number = 60): FrameNode {
 
   container.appendChild(blackFrame);
   container.appendChild(whiteFrame);
+
+  return container;
+}
+
+function createSemanticPolicyReport(
+  policy: SemanticColorPolicyReport,
+  report: SemanticColorModeReport,
+  mode: SemanticMode
+): FrameNode {
+  const container = createOwnedFrame();
+  container.name = `WCAG Policy Report (${mode})`;
+  container.layoutMode = 'VERTICAL';
+  container.primaryAxisSizingMode = 'AUTO';
+  container.counterAxisSizingMode = 'AUTO';
+  container.itemSpacing = 8;
+  container.paddingLeft = 16;
+  container.paddingRight = 16;
+  container.paddingTop = 16;
+  container.paddingBottom = 16;
+  container.cornerRadius = 8;
+  container.fills = [
+    {
+      type: 'SOLID',
+      color: mode === 'dark' ? { r: 0.15, g: 0.15, b: 0.15 } : { r: 0.95, g: 0.95, b: 0.95 },
+    },
+  ];
+
+  const textColor = mode === 'dark' ? { r: 0.95, g: 0.95, b: 0.95 } : { r: 0.1, g: 0.1, b: 0.1 };
+  const mutedColor = mode === 'dark' ? { r: 0.7, g: 0.7, b: 0.7 } : { r: 0.4, g: 0.4, b: 0.4 };
+  const statusColor = report.valid ? { r: 0.13, g: 0.55, b: 0.13 } : { r: 0.8, g: 0.2, b: 0.2 };
+
+  container.appendChild(createText('WCAG 2.2 SEMANTIC TOKEN POLICY', 11, 'Bold', textColor));
+  container.appendChild(
+    createText(`${policy.standard} · ${policy.level}`, 10, 'Semi Bold', textColor)
+  );
+  container.appendChild(
+    createText(report.valid ? 'MODE PASS' : 'MODE FAIL', 9, 'Bold', statusColor)
+  );
+  container.appendChild(
+    createText(
+      'Scope: declared semantic token pairings only; this is not whole-design WCAG conformance.',
+      8,
+      'Regular',
+      mutedColor
+    )
+  );
+
+  const tokens = Object.values(report.tokens);
+  if (tokens.length > 0) {
+    container.appendChild(
+      createText(`${mode.toUpperCase()} TOKENS (${tokens.length})`, 9, 'Bold', textColor)
+    );
+    for (const token of tokens) {
+      const row = createOwnedFrame();
+      row.name = `Semantic Token - ${token.name}`;
+      row.layoutMode = 'HORIZONTAL';
+      row.primaryAxisSizingMode = 'AUTO';
+      row.counterAxisSizingMode = 'AUTO';
+      row.itemSpacing = 8;
+      row.fills = [];
+      row.counterAxisAlignItems = 'CENTER';
+      row.appendChild(createColorSwatch(token.value, 16, 16, 3));
+      row.appendChild(
+        createText(`${token.name} · ${token.value.toUpperCase()}`, 8, 'Regular', textColor)
+      );
+      container.appendChild(row);
+    }
+  }
+
+  if (report.pairings.length > 0) {
+    const passedPairings = report.pairings.filter(pairing => pairing.pass).length;
+    container.appendChild(
+      createText(
+        `TESTED PAIRINGS (${passedPairings}/${report.pairings.length} pass)`,
+        9,
+        'Bold',
+        textColor
+      )
+    );
+    for (const pairing of report.pairings) {
+      const details = [
+        pairing.useCase,
+        `${pairing.ratio.toFixed(2)}:1`,
+        `required ${pairing.minimumRatio.toFixed(1)}:1`,
+        pairing.pass ? 'PASS' : 'FAIL',
+      ];
+      container.appendChild(
+        createText(
+          details.join(' · '),
+          8,
+          'Regular',
+          pairing.pass ? mutedColor : { r: 0.8, g: 0.2, b: 0.2 }
+        )
+      );
+    }
+  }
 
   return container;
 }
@@ -880,7 +984,8 @@ async function createColorPairingGuide(
 
 async function generateMinimalLayout(
   scales: ColorSystemData['scales']['light'],
-  mode: 'light' | 'dark'
+  mode: 'light' | 'dark',
+  semanticPolicy?: SemanticColorPolicyReport
 ): Promise<FrameNode> {
   const frame = createOwnedFrame();
   frame.name = `Color Scales (${mode})`;
@@ -908,13 +1013,19 @@ async function generateMinimalLayout(
     }
   }
 
+  const modePolicy = semanticPolicy?.modes[mode];
+  if (modePolicy) {
+    frame.appendChild(createSemanticPolicyReport(semanticPolicy, modePolicy, mode));
+  }
+
   return frame;
 }
 
 async function generateDetailedLayout(
   scales: ColorSystemData['scales']['light'],
   proportions: ColorSystemData['usageProportions'],
-  mode: 'light' | 'dark'
+  mode: 'light' | 'dark',
+  semanticPolicy?: SemanticColorPolicyReport
 ): Promise<FrameNode> {
   const frame = createOwnedFrame();
   frame.name = `Color System (${mode})`;
@@ -975,6 +1086,11 @@ async function generateDetailedLayout(
   const pairingGuide = await createColorPairingGuide(scales, mode);
   frame.appendChild(pairingGuide);
 
+  const modePolicy = semanticPolicy?.modes[mode];
+  if (modePolicy) {
+    frame.appendChild(createSemanticPolicyReport(semanticPolicy, modePolicy, mode));
+  }
+
   return frame;
 }
 
@@ -982,7 +1098,8 @@ async function generatePresentationLayout(
   systemName: string,
   scales: ColorSystemData['scales']['light'],
   proportions: ColorSystemData['usageProportions'],
-  mode: 'light' | 'dark'
+  mode: 'light' | 'dark',
+  semanticPolicy?: SemanticColorPolicyReport
 ): Promise<FrameNode> {
   const frame = createOwnedFrame();
   frame.name = `${systemName} - ${mode === 'dark' ? 'Dark' : 'Light'} Mode`;
@@ -1234,6 +1351,11 @@ async function generatePresentationLayout(
   const pairingGuide = await createColorPairingGuide(scales, mode);
   frame.appendChild(pairingGuide);
 
+  const modePolicy = semanticPolicy?.modes[mode];
+  if (modePolicy) {
+    frame.appendChild(createSemanticPolicyReport(semanticPolicy, modePolicy, mode));
+  }
+
   return frame;
 }
 
@@ -1246,6 +1368,27 @@ export async function generateColorSystemFrames(
   scalesData: ColorSystemData,
   options: GenerateColorSystemFramesOptions = {}
 ): Promise<FrameNode> {
+  if (!haveExactRadixScaleClaims(scalesData.scales.light, scalesData.scales.dark)) {
+    throw new Error('Exact Radix Colors claims must match the pinned bundled values');
+  }
+  if (
+    scalesData.scaleMethod === 'radix-match' &&
+    !areAllScalesExactRadix(scalesData.scales.light, scalesData.scales.dark)
+  ) {
+    throw new Error('Exact Radix Colors mode requires only pinned bundled values');
+  }
+
+  if (
+    scalesData.scaleMethod === 'wcag-constrained' &&
+    !isSemanticColorPolicyCurrent(
+      scalesData.scales.light,
+      scalesData.scales.dark,
+      scalesData.semanticPolicy
+    )
+  ) {
+    throw new Error('WCAG-constrained semantic token policy is stale or invalid');
+  }
+
   const operation = beginGenerationOperation();
   try {
     const fontsLoaded = await loadFonts();
@@ -1256,9 +1399,16 @@ export async function generateColorSystemFrames(
     const { detailLevel, includeDarkMode, systemName, scaleMethod, documentColorProfile } =
       scalesData;
     const { light: lightScales, dark: darkScales } = scalesData.scales;
+    const semanticPolicy =
+      scaleMethod === 'wcag-constrained' ? scalesData.semanticPolicy : undefined;
 
     const container = createOwnedFrame();
-    const methodLabel = scaleMethod === 'custom' ? 'Custom Scales' : 'Radix Matched';
+    const methodLabel =
+      scaleMethod === 'wcag-constrained'
+        ? 'WCAG-Constrained Semantic Tokens'
+        : scaleMethod === 'custom'
+          ? 'Teul Generated'
+          : 'Exact Radix Colors';
     const profileLabel = documentColorProfile ? `, document ${documentColorProfile}` : '';
     container.name = `Color System - ${systemName} (${methodLabel}, source sRGB${profileLabel})`;
     container.layoutMode = 'HORIZONTAL';
@@ -1270,13 +1420,14 @@ export async function generateColorSystemFrames(
     let lightFrame: FrameNode;
     switch (detailLevel) {
       case 'minimal':
-        lightFrame = await generateMinimalLayout(lightScales, 'light');
+        lightFrame = await generateMinimalLayout(lightScales, 'light', semanticPolicy);
         break;
       case 'detailed':
         lightFrame = await generateDetailedLayout(
           lightScales,
           scalesData.usageProportions,
-          'light'
+          'light',
+          semanticPolicy
         );
         break;
       case 'presentation':
@@ -1284,14 +1435,16 @@ export async function generateColorSystemFrames(
           systemName,
           lightScales,
           scalesData.usageProportions,
-          'light'
+          'light',
+          semanticPolicy
         );
         break;
       default:
         lightFrame = await generateDetailedLayout(
           lightScales,
           scalesData.usageProportions,
-          'light'
+          'light',
+          semanticPolicy
         );
     }
     container.appendChild(lightFrame);
@@ -1300,21 +1453,32 @@ export async function generateColorSystemFrames(
       let darkFrame: FrameNode;
       switch (detailLevel) {
         case 'minimal':
-          darkFrame = await generateMinimalLayout(darkScales, 'dark');
+          darkFrame = await generateMinimalLayout(darkScales, 'dark', semanticPolicy);
           break;
         case 'detailed':
-          darkFrame = await generateDetailedLayout(darkScales, scalesData.usageProportions, 'dark');
+          darkFrame = await generateDetailedLayout(
+            darkScales,
+            scalesData.usageProportions,
+            'dark',
+            semanticPolicy
+          );
           break;
         case 'presentation':
           darkFrame = await generatePresentationLayout(
             systemName,
             darkScales,
             scalesData.usageProportions,
-            'dark'
+            'dark',
+            semanticPolicy
           );
           break;
         default:
-          darkFrame = await generateDetailedLayout(darkScales, scalesData.usageProportions, 'dark');
+          darkFrame = await generateDetailedLayout(
+            darkScales,
+            scalesData.usageProportions,
+            'dark',
+            semanticPolicy
+          );
       }
       container.appendChild(darkFrame);
     }
