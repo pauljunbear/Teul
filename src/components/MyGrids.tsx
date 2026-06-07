@@ -14,6 +14,7 @@ import {
   buildApplyGridMessage,
   buildCreateGridFrameMessage,
   getPresetFrameDimensions,
+  getPresetSourceDimensions,
 } from '../lib/figmaGrids';
 import { analyzeResolvedPresetFits } from '../lib/gridFit';
 import { useModalAccessibility } from '../lib/useModalAccessibility';
@@ -668,7 +669,8 @@ export const MyGrids: React.FC<MyGridsProps> = ({ isDark }) => {
         return;
       }
 
-      const fit = analyzeResolvedPresetFits(grid, currentTargets);
+      const sourceDimensions = getPresetSourceDimensions(grid);
+      const fit = analyzeResolvedPresetFits(grid, currentTargets, sourceDimensions);
       if (fit.status === 'fail') {
         const failedTarget = fit.representative.frame;
         notifyApplyFailure(
@@ -682,6 +684,7 @@ export const MyGrids: React.FC<MyGridsProps> = ({ isDark }) => {
         requestId,
         config: grid.config,
         expectedTargetIds: currentTargets.map(target => target.id),
+        sourceDimensions,
         replaceExisting: true,
       });
 

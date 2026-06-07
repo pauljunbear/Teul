@@ -1,5 +1,11 @@
 import * as React from 'react';
-import type { GridConfig, GridCategory, SavedGrid } from '../types/grid';
+import type {
+  GridApplicationMode,
+  GridConfig,
+  GridCategory,
+  GridDimensions,
+  SavedGrid,
+} from '../types/grid';
 import { GridMiniPreview } from './GridPreview';
 import { createSavedGrid, addSavedGrid } from '../lib/gridStorage';
 import { useModalAccessibility } from '../lib/useModalAccessibility';
@@ -13,6 +19,10 @@ interface SaveGridModalProps {
   source?: string;
   /** Suggested aspect ratio */
   aspectRatio?: string;
+  /** Canonical dimensions inherited from a bundled preset */
+  referenceDimensions?: GridDimensions;
+  /** Pixel-measurement behavior inherited from a bundled preset */
+  applicationMode?: GridApplicationMode;
   /** Dark mode */
   isDark: boolean;
   /** Callback when modal is closed */
@@ -64,6 +74,8 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
   suggestedName = '',
   source,
   aspectRatio,
+  referenceDimensions,
+  applicationMode,
   isDark,
   onClose,
   onSave,
@@ -132,6 +144,8 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
         config,
         source,
         aspectRatio,
+        referenceDimensions,
+        applicationMode,
       });
 
       addSavedGrid(savedGrid);
@@ -150,7 +164,20 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
       setSaveError(error instanceof Error ? error.message : 'Failed to save grid');
       setIsSaving(false);
     }
-  }, [name, isSaving, description, category, tags, config, source, aspectRatio, onSave, onClose]);
+  }, [
+    name,
+    isSaving,
+    description,
+    category,
+    tags,
+    config,
+    source,
+    aspectRatio,
+    referenceDimensions,
+    applicationMode,
+    onSave,
+    onClose,
+  ]);
 
   // Save with the platform shortcut
   React.useEffect(() => {

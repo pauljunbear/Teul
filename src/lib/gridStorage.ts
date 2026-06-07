@@ -4,7 +4,13 @@
 // Manages user's saved grids using localStorage (UI side)
 // and communicates with code.ts for Figma clientStorage
 
-import type { SavedGrid, GridConfig, GridCategory } from '../types/grid';
+import type {
+  GridApplicationMode,
+  GridCategory,
+  GridConfig,
+  GridDimensions,
+  SavedGrid,
+} from '../types/grid';
 
 // Storage key for saved grids
 const STORAGE_KEY = 'teul-saved-grids';
@@ -98,6 +104,24 @@ function isNonNegativeNumber(value: unknown): value is number {
 
 function isOptionalString(value: unknown): value is string | undefined {
   return value === undefined || typeof value === 'string';
+}
+
+function isGridApplicationMode(value: unknown): value is GridApplicationMode | undefined {
+  return value === undefined || value === 'fixed' || value === 'scale-from-reference';
+}
+
+function parseGridDimensions(value: unknown): GridDimensions | undefined | null {
+  if (value === undefined) return undefined;
+  if (
+    !isRecord(value) ||
+    !isFiniteNumber(value.width) ||
+    !isFiniteNumber(value.height) ||
+    value.width <= 0 ||
+    value.height <= 0
+  ) {
+    return null;
+  }
+  return { width: value.width, height: value.height };
 }
 
 function isGridCategory(value: unknown): value is GridCategory {
@@ -234,6 +258,7 @@ function parseSavedGrid(value: unknown): SavedGrid | null {
     value.isCustom !== true ||
     !isOptionalString(value.aspectRatio) ||
     !isOptionalString(value.source) ||
+    !isGridApplicationMode(value.applicationMode) ||
     (value.createdAt !== undefined && !isNonNegativeNumber(value.createdAt))
   ) {
     return null;
@@ -241,6 +266,8 @@ function parseSavedGrid(value: unknown): SavedGrid | null {
 
   const config = parseGridConfig(value.config);
   if (!config) return null;
+  const referenceDimensions = parseGridDimensions(value.referenceDimensions);
+  if (referenceDimensions === null) return null;
 
   return {
     id: value.id,
@@ -249,6 +276,8 @@ function parseSavedGrid(value: unknown): SavedGrid | null {
     category: value.category,
     tags: [...value.tags],
     aspectRatio: value.aspectRatio,
+    referenceDimensions,
+    applicationMode: value.applicationMode,
     config,
     isCustom: true,
     createdAt: value.createdAt,
@@ -507,6 +536,8 @@ export function createSavedGrid(params: {
   config: GridConfig;
   source?: string;
   aspectRatio?: string;
+  referenceDimensions?: GridDimensions;
+  applicationMode?: GridApplicationMode;
 }): SavedGrid {
   return {
     id: generateGridId(),
@@ -515,6 +546,8 @@ export function createSavedGrid(params: {
     category: params.category || 'custom',
     tags: params.tags || [],
     aspectRatio: params.aspectRatio,
+    referenceDimensions: params.referenceDimensions,
+    applicationMode: params.applicationMode,
     config: params.config,
     isCustom: true,
     createdAt: Date.now(),
@@ -781,6 +814,8 @@ export function duplicateSavedGrid(id: string): SavedGrid | null {
     config: JSON.parse(JSON.stringify(grid.config)), // Deep clone
     source: grid.source,
     aspectRatio: grid.aspectRatio,
+    referenceDimensions: grid.referenceDimensions,
+    applicationMode: grid.applicationMode,
   });
 
   addSavedGrid(duplicate);

@@ -10,7 +10,9 @@ import {
 import {
   buildCreateGridFrameMessage,
   buildApplyGridMessage,
+  getPresetApplicationMode,
   getPresetFrameDimensions,
+  getPresetSourceDimensions,
   presetToFrameName,
 } from '../lib/figmaGrids';
 import type { GridPreset, GridCategory, GridSelectionTarget } from '../types/grid';
@@ -192,7 +194,7 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
       for (const preset of filteredPresets) {
         fits.set(
           preset.id,
-          analyzeResolvedPresetFits(preset, selectedTargets, getPresetFrameDimensions(preset))
+          analyzeResolvedPresetFits(preset, selectedTargets, getPresetSourceDimensions(preset))
         );
       }
     }
@@ -205,7 +207,7 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
         ? analyzeResolvedPresetFits(
             selectedPreset,
             selectedTargets,
-            getPresetFrameDimensions(selectedPreset)
+            getPresetSourceDimensions(selectedPreset)
           )
         : null,
     [selectedPreset, selectedTargets]
@@ -240,8 +242,8 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
         return;
       }
 
-      const presetDimensions = getPresetFrameDimensions(preset);
-      const fit = analyzeResolvedPresetFits(preset, currentTargets, presetDimensions);
+      const sourceDimensions = getPresetSourceDimensions(preset);
+      const fit = analyzeResolvedPresetFits(preset, currentTargets, sourceDimensions);
       if (fit.status === 'fail') {
         const failedTarget = fit.representative.frame;
         parent.postMessage(
@@ -263,7 +265,7 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
         requestId,
         config: preset.config,
         expectedTargetIds: currentTargets.map(target => target.id),
-        sourceDimensions: presetDimensions,
+        sourceDimensions,
         replaceExisting: true,
       });
 
@@ -737,6 +739,8 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
           suggestedName={`${selectedPreset.name} (Copy)`}
           source={selectedPreset.name}
           aspectRatio={selectedPreset.aspectRatio}
+          referenceDimensions={getPresetFrameDimensions(selectedPreset)}
+          applicationMode={getPresetApplicationMode(selectedPreset)}
           isDark={isDark}
           onClose={() => setShowSaveModal(false)}
           onSave={() => {

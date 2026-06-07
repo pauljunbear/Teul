@@ -217,6 +217,22 @@ colors in light and dark modes, for 538 generated outputs:
   - https://m2.material.io/design/layout/understanding-layout.html
 - Carbon 2x Grid:
   - https://carbondesignsystem.com/elements/2x-grid/overview/
+- Karl Gerstner, _Designing Programmes_:
+  - https://openlab.citytech.cuny.edu/langecomd3504fa2019/files/2018/10/Gerstner_DesigningProgrammes.pdf
+- The Vignelli Canon:
+  - https://www.rit.edu/vignellicenter/sites/rit.edu.vignellicenter/files/documents/The%20Vignelli%20Canon.pdf
+- National Park Service Unigrid standards:
+  - https://www.npshistory.com/brochures/unigrid.pdf
+- Cooper Hewitt, "Gridnik":
+  - https://www.cooperhewitt.org/2013/11/26/gridnik/
+- Bootstrap grid:
+  - https://getbootstrap.com/docs/5.3/layout/grid/
+- U.S. Web Design System layout grid:
+  - https://designsystem.digital.gov/utilities/layout-grid/
+- Apple Human Interface Guidelines, layout:
+  - https://developer.apple.com/design/human-interface-guidelines/layout
+- Microsoft Fluent 2 layout:
+  - https://fluent2.microsoft.design/layout
 
 Muller-Brockmann's grid is a construction method derived from format,
 typography, content, and production constraints. It is not a fixed universal
@@ -224,19 +240,22 @@ preset collection.
 
 ### Local preset findings
 
-- Teul contains 34 presets across seven categories.
-- Every bundled preset carries conservative `teul-modern-adaptation`
-  provenance and adaptation notes. None currently has artifact-level evidence
-  for classification as a historical reconstruction.
+- Teul contains 65 presets across seven categories.
+- The 34 original presets retain conservative `teul-modern-adaptation`
+  provenance. The 31 researched additions carry direct source URLs, evidence
+  strength, and explicit reconstruction or adaptation notes.
 - User-visible historical-category claims use **Swiss-Inspired**, not Classic
   Swiss.
 - Presets backed by native Figma square `GRID` use **Uniform Grid**, not
   Baseline.
+- Sourced presets declare canonical frame dimensions and fixed pixel behavior
+  where changing a documented gutter, margin, or drafting interval would make
+  the construction misleading. Saved copies preserve this application contract.
 - Figma does not retain Teul percentage units; percentages resolve to pixels at
   application time.
-- The current required matrix covers 34 presets across 12 frame sizes, or 408
-  preset/frame cases: 375 fit, 14 warning, and 19 fail.
-- All 19 failed cases return actionable recommendations rather than an
+- The current required matrix covers 65 presets across 12 frame sizes, or 780
+  preset/frame cases: 692 fit, 32 warning, and 56 fail.
+- All 56 failed cases return actionable recommendations rather than an
   applicable invalid grid.
 
 ### Required product wording

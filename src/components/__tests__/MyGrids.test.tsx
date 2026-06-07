@@ -230,6 +230,42 @@ describe('MyGrids apply flow', () => {
     expect(container.querySelector('[role="alert"]')?.textContent).toBeTruthy();
   });
 
+  it('preserves scale-from-reference behavior for saved preset copies', () => {
+    saveGridsToStorage([
+      {
+        ...savedGrid,
+        referenceDimensions: { width: 800, height: 600 },
+        applicationMode: 'scale-from-reference',
+      },
+    ]);
+
+    act(() => {
+      root.render(<MyGrids isDark={false} />);
+    });
+
+    const applyButton = Array.from(container.querySelectorAll('button')).find(
+      button => button.textContent === 'Apply'
+    );
+    act(() => {
+      applyButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+
+    const selectionRequest = (postMessage.mock.calls as unknown as PostMessageCall[]).find(
+      ([payload]) => payload.pluginMessage?.type === 'get-selection-for-grid'
+    );
+    act(() => {
+      sendSelectionInfo(
+        [{ id: 'frame-1', name: 'Frame 1', width: 1000, height: 750 }],
+        selectionRequest?.[0].pluginMessage?.requestId
+      );
+    });
+
+    const applyCall = (postMessage.mock.calls as unknown as PostMessageCall[]).find(
+      ([payload]) => payload.pluginMessage?.type === 'apply-grid'
+    );
+    expect(applyCall?.[0].pluginMessage?.sourceDimensions).toEqual({ width: 800, height: 600 });
+  });
+
   it('does not report create-frame success before backend confirmation', () => {
     act(() => {
       root.render(<MyGrids isDark={false} />);

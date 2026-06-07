@@ -25,6 +25,9 @@ export interface GridDimensions {
   height: number;
 }
 
+/** How a preset's pixel measurements behave when applied to another frame. */
+export type GridApplicationMode = 'fixed' | 'scale-from-reference';
+
 /** Selected Figma node that can accept layout grids. */
 export interface GridSelectionTarget extends GridDimensions {
   id: string;
@@ -155,6 +158,10 @@ export interface GridPreset {
   tags: string[];
   /** Recommended aspect ratio (e.g., "1:1.414", "16:9") */
   aspectRatio?: string;
+  /** Canonical frame used to create the preset and communicate its intended format. */
+  referenceDimensions?: GridDimensions;
+  /** Whether pixel measurements stay fixed or scale from the canonical frame. */
+  applicationMode?: GridApplicationMode;
   /** The actual grid configuration */
   config: GridConfig;
   /**
