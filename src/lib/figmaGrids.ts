@@ -40,24 +40,24 @@ export function columnConfigToFigmaGrid(
 ): FigmaRowsColsLayoutGrid {
   const marginPx = toPixels(config.margin, config.marginUnit, frameWidth);
   const gutterPx = toPixels(config.gutterSize, config.gutterUnit, frameWidth);
-  const sectionSize =
-    config.alignment === 'STRETCH'
-      ? undefined
-      : Math.max(
-          1,
-          Math.round((frameWidth - marginPx * 2 - gutterPx * (config.count - 1)) / config.count)
-        );
-
-  return {
+  const grid: FigmaRowsColsLayoutGrid = {
     pattern: 'COLUMNS',
     alignment: config.alignment,
     gutterSize: Math.round(gutterPx),
     count: config.count,
-    sectionSize,
     offset: Math.round(marginPx),
     visible: config.visible,
     color: config.color,
   };
+
+  if (config.alignment !== 'STRETCH') {
+    grid.sectionSize = Math.max(
+      1,
+      Math.round((frameWidth - marginPx * 2 - gutterPx * (config.count - 1)) / config.count)
+    );
+  }
+
+  return grid;
 }
 
 /**
@@ -72,24 +72,24 @@ export function rowConfigToFigmaGrid(
 ): FigmaRowsColsLayoutGrid {
   const marginPx = toPixels(config.margin, config.marginUnit, frameHeight);
   const gutterPx = toPixels(config.gutterSize, config.gutterUnit, frameHeight);
-  const sectionSize =
-    config.alignment === 'STRETCH'
-      ? undefined
-      : Math.max(
-          1,
-          Math.round((frameHeight - marginPx * 2 - gutterPx * (config.count - 1)) / config.count)
-        );
-
-  return {
+  const grid: FigmaRowsColsLayoutGrid = {
     pattern: 'ROWS',
     alignment: config.alignment,
     gutterSize: Math.round(gutterPx),
     count: config.count,
-    sectionSize,
     offset: Math.round(marginPx),
     visible: config.visible,
     color: config.color,
   };
+
+  if (config.alignment !== 'STRETCH') {
+    grid.sectionSize = Math.max(
+      1,
+      Math.round((frameHeight - marginPx * 2 - gutterPx * (config.count - 1)) / config.count)
+    );
+  }
+
+  return grid;
 }
 
 /**

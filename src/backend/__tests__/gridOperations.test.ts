@@ -29,6 +29,7 @@ const sourceBaseline = {
 type WriteBehavior =
   | 'succeed'
   | 'succeed-without-bound-variables'
+  | 'reject-explicit-undefined'
   | 'fail-before-write'
   | 'fail-after-write';
 
@@ -79,6 +80,12 @@ function createLayoutGridNode(
       const behavior = writeBehaviors[writeIndex++] ?? 'succeed';
       if (behavior === 'fail-before-write') {
         throw new Error('write failed');
+      }
+      if (
+        behavior === 'reject-explicit-undefined' &&
+        value.some(grid => Object.values(grid).some(property => property === undefined))
+      ) {
+        throw new Error('invalid undefined layout grid property');
       }
       layoutGrids =
         behavior === 'succeed-without-bound-variables'
@@ -592,6 +599,50 @@ describe('handleApplyGrid', () => {
     );
     expect(narrow.getLayoutGrids()[0]).toEqual(
       expect.objectContaining({ pattern: 'COLUMNS', gutterSize: 10, offset: 50 })
+    );
+  });
+
+  it('omits optional sectionSize when applying a stretch grid', async () => {
+    const linkedinFrame = createLayoutGridNode('LinkedIn cover', [], ['reject-explicit-undefined']);
+    Object.assign(linkedinFrame, { width: 1584, height: 396 });
+    const { postMessage } = installFigmaMock([linkedinFrame]);
+
+    await handleApplyGrid({
+      type: 'apply-grid',
+      requestId: 'grid-apply-linkedin',
+      sourceConfig: {
+        columns: {
+          count: 6,
+          gutterSize: 2.5,
+          gutterUnit: 'percent',
+          margin: 5,
+          marginUnit: 'percent',
+          alignment: 'STRETCH',
+          visible: true,
+          color,
+        },
+      },
+      expectedTargetIds: ['linkedin-cover'],
+      replaceExisting: true,
+    });
+
+    expect(linkedinFrame.getLayoutGrids()[0]).toEqual(
+      expect.objectContaining({
+        pattern: 'COLUMNS',
+        alignment: 'STRETCH',
+        count: 6,
+        gutterSize: 40,
+        offset: 79,
+      })
+    );
+    expect(linkedinFrame.getLayoutGrids()[0]).not.toHaveProperty('sectionSize');
+    expect(postMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'grid-applied',
+        requestId: 'grid-apply-linkedin',
+        success: true,
+        appliedCount: 1,
+      })
     );
   });
 
