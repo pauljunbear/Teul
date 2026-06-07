@@ -12,9 +12,10 @@ import {
   buildApplyGridMessage,
   getPresetFrameDimensions,
   presetToFrameName,
-  scaleGridForFrameSize,
 } from '../lib/figmaGrids';
-import type { GridPreset, GridCategory } from '../types/grid';
+import type { GridPreset, GridCategory, GridSelectionTarget } from '../types/grid';
+import type { SelectionInfoMessage } from '../types/messages';
+import { analyzeResolvedPresetFits, type GridFitAggregateAnalysis } from '../lib/gridFit';
 
 // CSS keyframe animations injected once
 const injectStyles = (() => {
@@ -144,14 +145,10 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
   const [selectedCategory, setSelectedCategory] = React.useState<GridCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = React.useState('');
   const [selectedPreset, setSelectedPreset] = React.useState<GridPreset | null>(null);
-  const [selectionInfo, setSelectionInfo] = React.useState<{
-    hasSelection: boolean;
-    isFrame: boolean;
-    width?: number;
-    height?: number;
-    name?: string;
-  } | null>(null);
+  const [selectionInfo, setSelectionInfo] = React.useState<SelectionInfoMessage | null>(null);
   const [showSaveModal, setShowSaveModal] = React.useState(false);
+  const nextApplyRequestIdRef = React.useRef(0);
+  const pendingApplyRef = React.useRef<{ preset: GridPreset; requestId: string } | null>(null);
 
   // Inject CSS animations on mount
   React.useEffect(() => {
@@ -184,62 +181,143 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
     return presets;
   }, [selectedCategory, searchQuery]);
 
-  // Listen for selection info from Figma (event-driven, no polling)
+  const selectedTargets = React.useMemo<GridSelectionTarget[]>(() => {
+    if (!selectionInfo?.hasSelection) return [];
+    return selectionInfo.eligibleTargets;
+  }, [selectionInfo]);
+
+  const fitByPresetId = React.useMemo(() => {
+    const fits = new Map<string, GridFitAggregateAnalysis>();
+    if (selectedTargets.length > 0) {
+      for (const preset of filteredPresets) {
+        fits.set(
+          preset.id,
+          analyzeResolvedPresetFits(preset, selectedTargets, getPresetFrameDimensions(preset))
+        );
+      }
+    }
+    return fits;
+  }, [filteredPresets, selectedTargets]);
+
+  const selectedFit = React.useMemo(
+    () =>
+      selectedPreset && selectedTargets.length > 0
+        ? analyzeResolvedPresetFits(
+            selectedPreset,
+            selectedTargets,
+            getPresetFrameDimensions(selectedPreset)
+          )
+        : null,
+    [selectedPreset, selectedTargets]
+  );
+
+  const applyGridToSelection = React.useCallback(
+    (preset: GridPreset, currentSelection: SelectionInfoMessage, requestId: string) => {
+      if (!currentSelection.hasSelection) {
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: 'notify',
+              text: 'Please select a frame first',
+            },
+          },
+          '*'
+        );
+        return;
+      }
+
+      const currentTargets = currentSelection.eligibleTargets;
+      if (currentTargets.length === 0) {
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: 'notify',
+              text: 'No selected elements can accept layout grids.',
+            },
+          },
+          '*'
+        );
+        return;
+      }
+
+      const presetDimensions = getPresetFrameDimensions(preset);
+      const fit = analyzeResolvedPresetFits(preset, currentTargets, presetDimensions);
+      if (fit.status === 'fail') {
+        const failedTarget = fit.representative.frame;
+        parent.postMessage(
+          {
+            pluginMessage: {
+              type: 'notify',
+              text:
+                fit.representative.recommendations[0]?.message ??
+                `This grid does not fit ${failedTarget.name ?? 'one selected target'}.`,
+            },
+          },
+          '*'
+        );
+        setSelectedPreset(preset);
+        return;
+      }
+
+      const message = buildApplyGridMessage({
+        requestId,
+        config: preset.config,
+        expectedTargetIds: currentTargets.map(target => target.id),
+        sourceDimensions: presetDimensions,
+        replaceExisting: true,
+      });
+
+      parent.postMessage({ pluginMessage: message }, '*');
+    },
+    []
+  );
+
+  // Listen for live selection geometry and consume a freshly requested snapshot before apply.
   React.useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      const msg = event.data.pluginMessage;
-      if (msg?.type === 'selection-info') {
-        setSelectionInfo({
-          hasSelection: msg.hasSelection,
-          isFrame: msg.isFrame,
-          width: msg.width,
-          height: msg.height,
-          name: msg.name,
-        });
+      const msg = event.data?.pluginMessage;
+      if (msg?.type !== 'selection-info') return;
+
+      const currentSelection: SelectionInfoMessage = {
+        type: 'selection-info',
+        requestId: typeof msg.requestId === 'string' ? msg.requestId : undefined,
+        hasSelection: msg.hasSelection,
+        isFrame: msg.isFrame,
+        selectedCount: msg.selectedCount,
+        eligibleTargets: Array.isArray(msg.eligibleTargets) ? msg.eligibleTargets : [],
+        ineligibleCount: msg.ineligibleCount,
+        width: msg.width,
+        height: msg.height,
+        name: msg.name,
+      };
+
+      setSelectionInfo(currentSelection);
+
+      const pendingApply = pendingApplyRef.current;
+      if (pendingApply && msg.requestId === pendingApply.requestId) {
+        pendingApplyRef.current = null;
+        applyGridToSelection(pendingApply.preset, currentSelection, pendingApply.requestId);
       }
     };
 
+    window.addEventListener('message', handleMessage);
     parent.postMessage({ pluginMessage: { type: 'get-selection-for-grid' } }, '*');
 
-    window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, []);
+  }, [applyGridToSelection]);
 
   const handleApplyGrid = (preset: GridPreset) => {
-    if (!selectionInfo?.hasSelection) {
-      parent.postMessage(
-        {
-          pluginMessage: {
-            type: 'notify',
-            text: 'Please select a frame first',
-          },
+    const requestId = `grid-apply-${++nextApplyRequestIdRef.current}`;
+    pendingApplyRef.current = { preset, requestId };
+    parent.postMessage(
+      {
+        pluginMessage: {
+          type: 'get-selection-for-grid',
+          requestId,
         },
-        '*'
-      );
-      return;
-    }
-
-    const targetWidth = selectionInfo.width || 800;
-    const targetHeight = selectionInfo.height || 600;
-    const presetDimensions = getPresetFrameDimensions(preset);
-
-    const scaledConfig = scaleGridForFrameSize(
-      preset.config,
-      presetDimensions.width,
-      presetDimensions.height,
-      targetWidth,
-      targetHeight,
-      true
+      },
+      '*'
     );
-
-    const message = buildApplyGridMessage({
-      config: scaledConfig,
-      width: targetWidth,
-      height: targetHeight,
-      replaceExisting: true,
-    });
-
-    parent.postMessage({ pluginMessage: message }, '*');
   };
 
   const handleCreateFrame = (preset: GridPreset) => {
@@ -414,24 +492,10 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
               >
                 <GridPresetCard
                   preset={preset}
+                  fit={fitByPresetId.get(preset.id)?.representative}
                   isSelected={selectedPreset?.id === preset.id}
                   onClick={() => setSelectedPreset(preset)}
-                  onApply={() => {
-                    if (selectionInfo?.hasSelection) {
-                      handleApplyGrid(preset);
-                    } else {
-                      parent.postMessage(
-                        {
-                          pluginMessage: {
-                            type: 'notify',
-                            text: 'Select a frame first, or use "Create Frame"',
-                          },
-                        },
-                        '*'
-                      );
-                      setSelectedPreset(preset);
-                    }
-                  }}
+                  onApply={() => handleApplyGrid(preset)}
                   isDark={isDark}
                 />
               </div>
@@ -492,9 +556,86 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
               >
                 {selectedPreset.description}
               </p>
+              {selectedPreset.provenance && (
+                <div
+                  style={{
+                    margin: '6px 0 0',
+                    fontSize: '9px',
+                    color: theme.textMuted,
+                    lineHeight: 1.4,
+                  }}
+                >
+                  <div>
+                    <strong>{selectedPreset.provenance.classification.replace(/-/g, ' ')}:</strong>{' '}
+                    {selectedPreset.provenance.adaptationNotes}
+                  </div>
+                  <div>
+                    Source: {selectedPreset.provenance.source} · evidence:{' '}
+                    {selectedPreset.provenance.evidence.replace(/-/g, ' ')}
+                  </div>
+                  {selectedPreset.provenance.sourceUrl && (
+                    <a
+                      href={selectedPreset.provenance.sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ color: 'inherit' }}
+                    >
+                      Open source reference
+                    </a>
+                  )}
+                </div>
+              )}
+              {selectedFit && (
+                <div
+                  role={selectedFit.status === 'fail' ? 'alert' : 'status'}
+                  style={{
+                    marginTop: '8px',
+                    padding: '8px',
+                    borderRadius: '6px',
+                    backgroundColor: theme.inputBg,
+                    color: theme.textMuted,
+                    fontSize: '9px',
+                    lineHeight: 1.4,
+                  }}
+                >
+                  <strong style={{ color: theme.text }}>
+                    {selectedFit.status.toUpperCase()} across {selectedFit.targetCount}{' '}
+                    {selectedFit.targetCount === 1 ? 'target' : 'targets'}
+                  </strong>
+                  {selectedFit.representative.frame.name && (
+                    <span> · worst: {selectedFit.representative.frame.name}</span>
+                  )}
+                  {selectedFit.representative.columns && (
+                    <span>
+                      {' '}
+                      · {selectedFit.representative.columns.sectionSize.toFixed(1)}px columns
+                    </span>
+                  )}
+                  {selectedFit.representative.rows && (
+                    <span> · {selectedFit.representative.rows.sectionSize.toFixed(1)}px rows</span>
+                  )}
+                  {selectedFit.representative.issues.length > 0 && (
+                    <ul style={{ margin: '5px 0 0', paddingLeft: '14px' }}>
+                      {selectedFit.representative.issues.map(issue => (
+                        <li key={`${issue.axis}-${issue.code}`}>{issue.message}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {selectedFit.representative.recommendations.length > 0 && (
+                    <ul style={{ margin: '5px 0 0', paddingLeft: '14px' }}>
+                      {selectedFit.representative.recommendations.map(recommendation => (
+                        <li key={`${recommendation.axis}-${recommendation.action}`}>
+                          Recommendation: {recommendation.message}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
             </div>
             <button
               onClick={() => setSelectedPreset(null)}
+              aria-label="Close selected grid details"
               style={{
                 padding: '4px 8px',
                 border: 'none',
@@ -517,37 +658,35 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
             }}
           >
             <button
-              onClick={() => {
-                if (selectionInfo?.hasSelection) {
-                  handleApplyGrid(selectedPreset);
-                } else {
-                  parent.postMessage(
-                    {
-                      pluginMessage: { type: 'notify', text: 'Select a frame first' },
-                    },
-                    '*'
-                  );
-                }
-              }}
-              disabled={!selectionInfo?.hasSelection}
+              onClick={() => handleApplyGrid(selectedPreset)}
+              disabled={selectedTargets.length === 0 || selectedFit?.status === 'fail'}
               style={{
                 flex: 1,
                 padding: '10px 16px',
                 border: 'none',
                 borderRadius: '8px',
-                backgroundColor: selectionInfo?.hasSelection
-                  ? '#3b82f6'
-                  : isDark
-                    ? '#404040'
-                    : '#d4d4d4',
-                color: selectionInfo?.hasSelection ? '#ffffff' : isDark ? '#666' : '#999',
+                backgroundColor:
+                  selectedTargets.length > 0 && selectedFit?.status !== 'fail'
+                    ? '#3b82f6'
+                    : isDark
+                      ? '#404040'
+                      : '#d4d4d4',
+                color:
+                  selectedTargets.length > 0 && selectedFit?.status !== 'fail'
+                    ? '#ffffff'
+                    : isDark
+                      ? '#666'
+                      : '#999',
                 fontSize: '12px',
                 fontWeight: 600,
-                cursor: selectionInfo?.hasSelection ? 'pointer' : 'not-allowed',
+                cursor:
+                  selectedTargets.length > 0 && selectedFit?.status !== 'fail'
+                    ? 'pointer'
+                    : 'not-allowed',
                 transition: 'all 0.15s ease',
               }}
             >
-              ✓ Apply
+              {selectedFit?.status === 'fail' ? 'Cannot apply' : '✓ Apply'}
             </button>
 
             <button

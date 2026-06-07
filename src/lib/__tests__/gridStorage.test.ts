@@ -3,7 +3,7 @@
  * Grid persistence and CRUD operations
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   loadSavedGrids,
   saveGridsToStorage,
@@ -17,9 +17,13 @@ import {
   searchSavedGrids,
   exportGridsToJSON,
   importGridsFromJSON,
+  importGridsFromFile,
+  getGridStorageDiagnostics,
   getSavedGridCount,
   clearAllSavedGrids,
   duplicateSavedGrid,
+  MAX_GRID_IMPORT_FILE_BYTES,
+  MAX_GRID_IMPORT_RECORDS,
 } from '../gridStorage';
 import type { SavedGrid, GridConfig } from '../../types/grid';
 
@@ -126,6 +130,52 @@ describe('gridStorage', () => {
       expect(grids).toEqual([]);
     });
 
+    it('should discard malformed stored records before consumers receive them', () => {
+      localStorage.setItem(
+        'teul-saved-grids',
+        JSON.stringify({
+          version: 1,
+          grids: [
+            createMockSavedGrid(),
+            {
+              ...createMockSavedGrid({ id: 'invalid-grid' }),
+              tags: 'not-an-array',
+            },
+          ],
+          lastUpdated: Date.now(),
+        })
+      );
+
+      const grids = loadSavedGrids();
+
+      expect(grids).toHaveLength(1);
+      expect(grids[0].id).toBe('test-grid-1');
+      expect(() => searchSavedGrids('test')).not.toThrow();
+    });
+
+    it('should discard stored records with malformed nested configs', () => {
+      localStorage.setItem(
+        'teul-saved-grids',
+        JSON.stringify({
+          version: 1,
+          grids: [
+            {
+              ...createMockSavedGrid(),
+              config: {
+                columns: {
+                  ...createMockGridConfig().columns,
+                  count: 0,
+                },
+              },
+            },
+          ],
+          lastUpdated: Date.now(),
+        })
+      );
+
+      expect(loadSavedGrids()).toEqual([]);
+    });
+
     it('should trigger migration for different version', () => {
       localStorage.setItem(
         'teul-saved-grids',
@@ -170,6 +220,73 @@ describe('gridStorage', () => {
       expect(parsed).toHaveProperty('grids');
       expect(parsed).toHaveProperty('lastUpdated');
       expect(parsed.grids).toHaveLength(1);
+    });
+
+    it('should reject malformed runtime data without overwriting valid storage', () => {
+      const existing = createMockSavedGrid({ id: 'existing' });
+      saveGridsToStorage([existing]);
+
+      const result = saveGridsToStorage([
+        {
+          ...createMockSavedGrid({ id: 'invalid' }),
+          config: { columns: { count: 12 } },
+        } as unknown as SavedGrid,
+      ]);
+
+      expect(result).toBe(false);
+      expect(loadSavedGrids()).toEqual([existing]);
+    });
+
+    it('should quarantine invalid legacy entries instead of deleting them on a normal write', () => {
+      const invalidLegacyGrid = {
+        ...createMockSavedGrid({ id: 'invalid-legacy', name: 'Invalid legacy grid' }),
+        tags: 'legacy-tag',
+      };
+      localStorage.setItem(
+        'teul-saved-grids',
+        JSON.stringify({
+          version: 0,
+          grids: [createMockSavedGrid({ id: 'legacy-valid' }), invalidLegacyGrid],
+          lastUpdated: Date.now(),
+        })
+      );
+
+      expect(loadSavedGrids().map(grid => grid.id)).toEqual(['legacy-valid']);
+      addSavedGrid(createMockSavedGrid({ id: 'new-grid' }));
+
+      const stored = JSON.parse(localStorage.getItem('teul-saved-grids')!);
+      expect(stored.version).toBe(1);
+      expect(stored.grids.map((grid: SavedGrid) => grid.id)).toEqual(['new-grid', 'legacy-valid']);
+      expect(stored.quarantinedGrids).toHaveLength(1);
+      expect(stored.quarantinedGrids[0]).toMatchObject({
+        reason: 'invalid-saved-grid',
+        value: invalidLegacyGrid,
+      });
+      expect(stored.diagnostics).toMatchObject({
+        quarantinedCount: 1,
+        migratedFromVersion: 0,
+      });
+      expect(getGridStorageDiagnostics()).toMatchObject({
+        quarantinedCount: 1,
+        rejectedStoredGridCount: 0,
+        migratedFromVersion: 0,
+      });
+    });
+
+    it('should preserve unparseable prior storage when writing a valid grid', () => {
+      localStorage.setItem('teul-saved-grids', 'not valid json{{{');
+
+      saveGridsToStorage([createMockSavedGrid({ id: 'new-grid' })]);
+
+      const stored = JSON.parse(localStorage.getItem('teul-saved-grids')!);
+      expect(stored.grids[0].id).toBe('new-grid');
+      expect(stored.quarantinedGrids).toEqual([
+        expect.objectContaining({
+          reason: 'unparseable-storage',
+          value: 'not valid json{{{',
+        }),
+      ]);
+      expect(stored.diagnostics.quarantinedCount).toBe(1);
     });
   });
 
@@ -483,6 +600,42 @@ describe('gridStorage', () => {
       expect(result.grids).toHaveLength(1);
     });
 
+    it('should import a valid version-1 export', () => {
+      const result = importGridsFromJSON(exportGridsToJSON([createMockSavedGrid()]));
+
+      expect(result.success).toBe(true);
+      expect(result.count).toBe(1);
+      expect(result.rejectedCount).toBe(0);
+      expect(result.grids![0].config).toEqual(createMockGridConfig());
+    });
+
+    it('should preserve valid row and baseline configs from a version-1 export', () => {
+      const config: GridConfig = {
+        ...createMockGridConfig(),
+        rows: {
+          count: 8,
+          gutterSize: 12,
+          gutterUnit: 'px',
+          margin: 5,
+          marginUnit: 'percent',
+          alignment: 'CENTER',
+          visible: false,
+          color: { r: 0, g: 0.5, b: 1, a: 0.2 },
+        },
+        baseline: {
+          height: 8,
+          offset: 4,
+          visible: true,
+          color: { r: 0, g: 1, b: 1, a: 0.15 },
+        },
+      };
+
+      const result = importGridsFromJSON(exportGridsToJSON([createMockSavedGrid({ config })]));
+
+      expect(result.success).toBe(true);
+      expect(result.grids![0].config).toEqual(config);
+    });
+
     it('should reject invalid file format', () => {
       const result = importGridsFromJSON(JSON.stringify({ type: 'wrong-type', grids: [] }));
 
@@ -490,11 +643,25 @@ describe('gridStorage', () => {
       expect(result.error).toBe('Invalid file format');
     });
 
-    it('should reject missing grids array', () => {
+    it('should reject a missing grids array before checking version', () => {
       const result = importGridsFromJSON(JSON.stringify({ type: 'teul-grids' }));
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('No grids found in file');
+    });
+
+    it('should reject unsupported or legacy versions when a grids array is present', () => {
+      const unsupported = importGridsFromJSON(
+        JSON.stringify({ type: 'teul-grids', version: 2, grids: [] })
+      );
+      const legacy = importGridsFromJSON(
+        JSON.stringify({ type: 'teul-grids', version: 0, grids: [] })
+      );
+      const missing = importGridsFromJSON(JSON.stringify({ type: 'teul-grids', grids: [] }));
+
+      expect(unsupported).toEqual({ success: false, error: 'Unsupported file version' });
+      expect(legacy).toEqual({ success: false, error: 'Unsupported file version' });
+      expect(missing).toEqual({ success: false, error: 'Unsupported file version' });
     });
 
     it('should reject invalid JSON', () => {
@@ -547,6 +714,174 @@ describe('gridStorage', () => {
       expect(result.grids![0].name).toBe('Imported');
       expect(result.grids![1].name).toBe('Existing');
     });
+
+    it('should partially import valid records and report rejected records', () => {
+      const exportData = {
+        type: 'teul-grids',
+        version: 1,
+        grids: [
+          createMockSavedGrid({ id: 'valid', name: 'Valid' }),
+          {
+            ...createMockSavedGrid({ id: 'invalid', name: 'Invalid' }),
+            config: {
+              columns: {
+                ...createMockGridConfig().columns,
+                color: { r: 2, g: 0, b: 0, a: 0.1 },
+              },
+            },
+          },
+        ],
+      };
+
+      const result = importGridsFromJSON(JSON.stringify(exportData));
+
+      expect(result.success).toBe(true);
+      expect(result.count).toBe(1);
+      expect(result.rejectedCount).toBe(1);
+      expect(result.totalCount).toBe(2);
+      expect(result.grids).toHaveLength(1);
+      expect(result.grids![0].name).toBe('Valid');
+    });
+
+    it('should reject a non-empty import with no valid records without changing storage', () => {
+      const existing = createMockSavedGrid({ id: 'existing', name: 'Existing' });
+      saveGridsToStorage([existing]);
+
+      const result = importGridsFromJSON(
+        JSON.stringify({
+          type: 'teul-grids',
+          version: 1,
+          grids: [
+            null,
+            {
+              ...createMockSavedGrid({ id: 'invalid-config' }),
+              config: {},
+            },
+          ],
+        })
+      );
+
+      expect(result).toEqual({
+        success: false,
+        error: 'No valid grids found in file',
+        count: 0,
+        rejectedCount: 2,
+        totalCount: 2,
+      });
+      expect(loadSavedGrids()).toEqual([existing]);
+    });
+
+    it('should reject config values that could hang grid previews', () => {
+      const result = importGridsFromJSON(
+        JSON.stringify({
+          type: 'teul-grids',
+          version: 1,
+          grids: [
+            {
+              ...createMockSavedGrid({ id: 'excessive-columns' }),
+              config: {
+                columns: {
+                  ...createMockGridConfig().columns,
+                  count: 1_000_000,
+                },
+              },
+            },
+            {
+              ...createMockSavedGrid({ id: 'tiny-baseline' }),
+              config: {
+                baseline: {
+                  height: 0.0001,
+                  offset: 0,
+                  visible: true,
+                  color: { r: 0, g: 1, b: 1, a: 0.15 },
+                },
+              },
+            },
+          ],
+        })
+      );
+
+      expect(result).toEqual({
+        success: false,
+        error: 'No valid grids found in file',
+        count: 0,
+        rejectedCount: 2,
+        totalCount: 2,
+      });
+    });
+
+    it('should ignore untrusted extra fields instead of merging them', () => {
+      const result = importGridsFromJSON(
+        JSON.stringify({
+          type: 'teul-grids',
+          version: 1,
+          grids: [
+            {
+              ...createMockSavedGrid(),
+              unexpected: 'not preserved',
+              config: {
+                ...createMockGridConfig(),
+                unexpected: 'not preserved',
+              },
+            },
+          ],
+        })
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.grids![0]).not.toHaveProperty('unexpected');
+      expect(result.grids![0].config).not.toHaveProperty('unexpected');
+    });
+
+    it('should reject imports that exceed the record limit without changing storage', () => {
+      const existing = createMockSavedGrid({ id: 'existing' });
+      saveGridsToStorage([existing]);
+
+      const result = importGridsFromJSON(
+        JSON.stringify({
+          type: 'teul-grids',
+          version: 1,
+          grids: Array.from({ length: MAX_GRID_IMPORT_RECORDS + 1 }, () => null),
+        })
+      );
+
+      expect(result).toEqual({
+        success: false,
+        error: `Import contains too many grids (maximum ${MAX_GRID_IMPORT_RECORDS})`,
+        count: 0,
+        totalCount: MAX_GRID_IMPORT_RECORDS + 1,
+      });
+      expect(loadSavedGrids()).toEqual([existing]);
+    });
+
+    it('should reject oversized JSON before parsing or changing storage', () => {
+      const existing = createMockSavedGrid({ id: 'existing' });
+      saveGridsToStorage([existing]);
+
+      const result = importGridsFromJSON('x'.repeat(MAX_GRID_IMPORT_FILE_BYTES + 1));
+
+      expect(result).toEqual({
+        success: false,
+        error: `Import file is too large (maximum ${MAX_GRID_IMPORT_FILE_BYTES} bytes)`,
+      });
+      expect(loadSavedGrids()).toEqual([existing]);
+    });
+  });
+
+  describe('importGridsFromFile', () => {
+    it('should reject oversized files before creating a FileReader', async () => {
+      const fileReader = vi.spyOn(globalThis, 'FileReader');
+      const oversizedFile = { size: MAX_GRID_IMPORT_FILE_BYTES + 1 } as File;
+
+      const result = await importGridsFromFile(oversizedFile);
+
+      expect(result).toEqual({
+        success: false,
+        error: `Import file is too large (maximum ${MAX_GRID_IMPORT_FILE_BYTES} bytes)`,
+      });
+      expect(fileReader).not.toHaveBeenCalled();
+      fileReader.mockRestore();
+    });
   });
 
   // ============================================
@@ -576,6 +911,15 @@ describe('gridStorage', () => {
 
       expect(result).toBe(true);
       expect(localStorage.getItem('teul-saved-grids')).toBeNull();
+    });
+
+    it('should clear the in-memory cache immediately', () => {
+      saveGridsToStorage([createMockSavedGrid()]);
+      expect(loadSavedGrids()).toHaveLength(1);
+
+      clearAllSavedGrids();
+
+      expect(loadSavedGrids()).toEqual([]);
     });
   });
 

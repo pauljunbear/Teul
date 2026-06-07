@@ -2,6 +2,7 @@ import * as React from 'react';
 import type { GridConfig, GridCategory, SavedGrid } from '../types/grid';
 import { GridMiniPreview } from './GridPreview';
 import { createSavedGrid, addSavedGrid } from '../lib/gridStorage';
+import { useModalAccessibility } from '../lib/useModalAccessibility';
 
 interface SaveGridModalProps {
   /** Grid configuration to save */
@@ -43,14 +44,20 @@ const styles = {
 
 const CATEGORY_OPTIONS: { value: GridCategory; label: string; icon: string }[] = [
   { value: 'custom', label: 'Custom', icon: '✨' },
-  { value: 'classic-swiss', label: 'Classic Swiss', icon: '🇨🇭' },
+  { value: 'classic-swiss', label: 'Swiss-Inspired', icon: '🇨🇭' },
   { value: 'editorial', label: 'Editorial', icon: '📰' },
   { value: 'poster', label: 'Poster', icon: '🎨' },
   { value: 'web-ui', label: 'Web/UI', icon: '💻' },
   { value: 'modular', label: 'Modular', icon: '🔲' },
-  { value: 'baseline', label: 'Baseline', icon: '📏' },
+  { value: 'baseline', label: 'Uniform Grid', icon: '📏' },
   { value: 'combined', label: 'Combined', icon: '🎯' },
 ];
+
+const SAVE_GRID_TITLE_ID = 'save-grid-dialog-title';
+const SAVE_GRID_NAME_ID = 'save-grid-name';
+const SAVE_GRID_DESCRIPTION_ID = 'save-grid-description';
+const SAVE_GRID_CATEGORY_ID = 'save-grid-category';
+const SAVE_GRID_TAGS_ID = 'save-grid-tags';
 
 export const SaveGridModal: React.FC<SaveGridModalProps> = ({
   config,
@@ -70,6 +77,19 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
   const [tags, setTags] = React.useState('');
   const [isSaving, setIsSaving] = React.useState(false);
   const [isSaved, setIsSaved] = React.useState(false);
+  const [saveError, setSaveError] = React.useState<string | null>(null);
+  const nameInputRef = React.useRef<HTMLInputElement>(null);
+  const dialogRef = useModalAccessibility({
+    onClose,
+    closeOnEscape: !isSaving || isSaved,
+    initialFocusRef: nameInputRef,
+  });
+
+  React.useEffect(() => {
+    if (isSaved) {
+      dialogRef.current?.focus();
+    }
+  }, [dialogRef, isSaved]);
 
   // Auto-generate tags based on config
   React.useEffect(() => {
@@ -83,7 +103,7 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
       autoTags.push('modular');
     }
     if (config.baseline) {
-      autoTags.push('baseline');
+      autoTags.push('uniform-grid');
       autoTags.push(`${config.baseline.height}px`);
     }
     if (source) {
@@ -95,11 +115,14 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
 
   // Handle save
   const handleSave = React.useCallback(() => {
+    if (!name.trim() || isSaving) return;
+
     setIsSaving(true);
+    setSaveError(null);
 
     try {
       const savedGrid = createSavedGrid({
-        name: name.trim() || 'Untitled Grid',
+        name: name.trim(),
         description: description.trim(),
         category,
         tags: tags
@@ -124,24 +147,29 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
       }, 1000);
     } catch (error) {
       console.error('Failed to save grid:', error);
+      setSaveError(error instanceof Error ? error.message : 'Failed to save grid');
       setIsSaving(false);
     }
-  }, [name, description, category, tags, config, source, aspectRatio, onSave, onClose]);
+  }, [name, isSaving, description, category, tags, config, source, aspectRatio, onSave, onClose]);
 
-  // Close on escape key
+  // Save with the platform shortcut
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !isSaving) {
-        onClose();
-      }
-      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && !isSaving) {
+      if (
+        e.key === 'Enter' &&
+        (e.metaKey || e.ctrlKey) &&
+        !isSaving &&
+        Boolean(name.trim()) &&
+        dialogRef.current?.contains(document.activeElement)
+      ) {
+        e.preventDefault();
         handleSave();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isSaving, onClose, handleSave]);
+  }, [dialogRef, isSaving, name, handleSave]);
 
   if (isSaved) {
     return (
@@ -158,6 +186,11 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
         onClick={onClose}
       >
         <div
+          ref={dialogRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={SAVE_GRID_TITLE_ID}
+          tabIndex={-1}
           style={{
             width: '280px',
             backgroundColor: theme.bg,
@@ -183,6 +216,7 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
             ✓
           </div>
           <h3
+            id={SAVE_GRID_TITLE_ID}
             style={{
               margin: '0 0 8px 0',
               fontSize: '16px',
@@ -224,6 +258,11 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
       }}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={SAVE_GRID_TITLE_ID}
+        tabIndex={-1}
         style={{
           width: '360px',
           backgroundColor: theme.bg,
@@ -243,6 +282,7 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
           }}
         >
           <h3
+            id={SAVE_GRID_TITLE_ID}
             style={{
               margin: 0,
               fontSize: '16px',
@@ -255,6 +295,7 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
           <button
             onClick={onClose}
             disabled={isSaving}
+            aria-label="Close save grid dialog"
             style={{
               width: '28px',
               height: '28px',
@@ -291,9 +332,25 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
 
           {/* Form Fields */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {saveError && (
+              <div
+                role="alert"
+                style={{
+                  padding: '8px 10px',
+                  borderRadius: '6px',
+                  backgroundColor: isDark ? '#451a1a' : '#fef2f2',
+                  color: isDark ? '#fca5a5' : '#b91c1c',
+                  fontSize: '11px',
+                }}
+              >
+                {saveError}
+              </div>
+            )}
+
             {/* Name */}
             <div>
               <label
+                htmlFor={SAVE_GRID_NAME_ID}
                 style={{
                   display: 'block',
                   marginBottom: '4px',
@@ -306,11 +363,12 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
                 Name *
               </label>
               <input
+                id={SAVE_GRID_NAME_ID}
+                ref={nameInputRef}
                 type="text"
                 value={name}
                 onChange={e => setName(e.target.value)}
                 placeholder="My Custom Grid"
-                autoFocus
                 style={{
                   width: '100%',
                   padding: '10px 12px',
@@ -328,6 +386,7 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
             {/* Description */}
             <div>
               <label
+                htmlFor={SAVE_GRID_DESCRIPTION_ID}
                 style={{
                   display: 'block',
                   marginBottom: '4px',
@@ -340,6 +399,7 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
                 Description
               </label>
               <textarea
+                id={SAVE_GRID_DESCRIPTION_ID}
                 value={description}
                 onChange={e => setDescription(e.target.value)}
                 placeholder="Describe when to use this grid..."
@@ -362,6 +422,7 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
             {/* Category */}
             <div>
               <label
+                htmlFor={SAVE_GRID_CATEGORY_ID}
                 style={{
                   display: 'block',
                   marginBottom: '4px',
@@ -374,6 +435,7 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
                 Category
               </label>
               <select
+                id={SAVE_GRID_CATEGORY_ID}
                 value={category}
                 onChange={e => setCategory(e.target.value as GridCategory)}
                 style={{
@@ -400,6 +462,7 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
             {/* Tags */}
             <div>
               <label
+                htmlFor={SAVE_GRID_TAGS_ID}
                 style={{
                   display: 'block',
                   marginBottom: '4px',
@@ -412,6 +475,7 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
                 Tags (comma-separated)
               </label>
               <input
+                id={SAVE_GRID_TAGS_ID}
                 type="text"
                 value={tags}
                 onChange={e => setTags(e.target.value)}

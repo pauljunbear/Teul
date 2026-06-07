@@ -10,16 +10,18 @@ import type {
   RowGridConfig,
   BaselineGridConfig,
   FigmaLayoutGrid,
+  FigmaRowsColsLayoutGrid,
+  FigmaUniformLayoutGrid,
   GridColor,
   GridPreset,
 } from '../types/grid';
-import { toPixels, scaleGrid } from './gridUtils';
+import { toPixels } from './gridUtils';
 
 // Type for the Figma-formatted grid config passed to the plugin backend
 interface FigmaGridConfigs {
-  columns?: FigmaLayoutGrid;
-  rows?: FigmaLayoutGrid;
-  baseline?: FigmaLayoutGrid;
+  columns?: FigmaRowsColsLayoutGrid;
+  rows?: FigmaRowsColsLayoutGrid;
+  baseline?: FigmaUniformLayoutGrid;
 }
 
 // ============================================
@@ -35,15 +37,23 @@ interface FigmaGridConfigs {
 export function columnConfigToFigmaGrid(
   config: ColumnGridConfig,
   frameWidth: number
-): FigmaLayoutGrid {
+): FigmaRowsColsLayoutGrid {
   const marginPx = toPixels(config.margin, config.marginUnit, frameWidth);
   const gutterPx = toPixels(config.gutterSize, config.gutterUnit, frameWidth);
+  const sectionSize =
+    config.alignment === 'STRETCH'
+      ? undefined
+      : Math.max(
+          1,
+          Math.round((frameWidth - marginPx * 2 - gutterPx * (config.count - 1)) / config.count)
+        );
 
   return {
     pattern: 'COLUMNS',
     alignment: config.alignment,
     gutterSize: Math.round(gutterPx),
     count: config.count,
+    sectionSize,
     offset: Math.round(marginPx),
     visible: config.visible,
     color: config.color,
@@ -56,15 +66,26 @@ export function columnConfigToFigmaGrid(
  * @param frameHeight - Frame height for percentage calculations
  * @returns Figma LayoutGrid object
  */
-export function rowConfigToFigmaGrid(config: RowGridConfig, frameHeight: number): FigmaLayoutGrid {
+export function rowConfigToFigmaGrid(
+  config: RowGridConfig,
+  frameHeight: number
+): FigmaRowsColsLayoutGrid {
   const marginPx = toPixels(config.margin, config.marginUnit, frameHeight);
   const gutterPx = toPixels(config.gutterSize, config.gutterUnit, frameHeight);
+  const sectionSize =
+    config.alignment === 'STRETCH'
+      ? undefined
+      : Math.max(
+          1,
+          Math.round((frameHeight - marginPx * 2 - gutterPx * (config.count - 1)) / config.count)
+        );
 
   return {
     pattern: 'ROWS',
     alignment: config.alignment,
     gutterSize: Math.round(gutterPx),
     count: config.count,
+    sectionSize,
     offset: Math.round(marginPx),
     visible: config.visible,
     color: config.color,
@@ -76,14 +97,10 @@ export function rowConfigToFigmaGrid(config: RowGridConfig, frameHeight: number)
  * @param config - Baseline grid configuration
  * @returns Figma LayoutGrid object
  */
-export function baselineConfigToFigmaGrid(config: BaselineGridConfig): FigmaLayoutGrid {
+export function baselineConfigToFigmaGrid(config: BaselineGridConfig): FigmaUniformLayoutGrid {
   return {
     pattern: 'GRID',
-    alignment: 'MIN', // Baseline grids always align to top
-    gutterSize: 0,
-    count: 1,
     sectionSize: config.height,
-    offset: config.offset,
     visible: config.visible,
     color: config.color,
   };
@@ -179,61 +196,6 @@ export function presetToFrameName(preset: GridPreset): string {
     rows: preset.config.rows?.count,
     isModular: !!(preset.config.columns && preset.config.rows),
   });
-}
-
-// ============================================
-// Grid Scaling for Different Frame Sizes
-// ============================================
-
-/**
- * Scale a grid configuration to fit a new frame size while maintaining proportions
- * @param config - Original grid configuration
- * @param originalWidth - Original frame width
- * @param originalHeight - Original frame height
- * @param targetWidth - Target frame width
- * @param targetHeight - Target frame height
- * @param preserveColumnCount - Whether to keep the same number of columns (default: true)
- * @returns Scaled grid configuration
- */
-export function scaleGridForFrameSize(
-  config: GridConfig,
-  originalWidth: number,
-  originalHeight: number,
-  targetWidth: number,
-  targetHeight: number,
-  preserveColumnCount: boolean = true
-): GridConfig {
-  // Use the utility from gridUtils for basic scaling
-  const scaled = scaleGrid(config, originalWidth, originalHeight, targetWidth, targetHeight);
-
-  // If we want to preserve column count, ensure it's unchanged
-  if (preserveColumnCount) {
-    if (scaled.columns && config.columns) {
-      scaled.columns.count = config.columns.count;
-    }
-    if (scaled.rows && config.rows) {
-      scaled.rows.count = config.rows.count;
-    }
-  }
-
-  return scaled;
-}
-
-/**
- * Check if a grid needs scaling for a target frame
- */
-export function needsScaling(
-  config: GridConfig,
-  originalWidth: number,
-  originalHeight: number,
-  targetWidth: number,
-  targetHeight: number,
-  tolerance: number = 1 // pixels
-): boolean {
-  return (
-    Math.abs(originalWidth - targetWidth) > tolerance ||
-    Math.abs(originalHeight - targetHeight) > tolerance
-  );
 }
 
 // ============================================
@@ -366,35 +328,25 @@ export function buildCreateGridFrameMessage(params: {
  * Build the message payload for applying a grid to selection
  */
 export function buildApplyGridMessage(params: {
+  requestId: string;
   config: GridConfig;
-  width: number;
-  height: number;
+  expectedTargetIds: readonly string[];
   replaceExisting?: boolean;
+  sourceDimensions?: { width: number; height: number };
 }): {
   type: 'apply-grid';
-  config: FigmaGridConfigs;
+  requestId: string;
+  sourceConfig: GridConfig;
+  sourceDimensions?: { width: number; height: number };
+  expectedTargetIds: string[];
   replaceExisting: boolean;
 } {
-  const { config, width, height } = params;
-
-  // Convert to Figma-friendly format
-  const figmaConfig: FigmaGridConfigs = {};
-
-  if (config.columns) {
-    figmaConfig.columns = columnConfigToFigmaGrid(config.columns, width);
-  }
-
-  if (config.rows) {
-    figmaConfig.rows = rowConfigToFigmaGrid(config.rows, height);
-  }
-
-  if (config.baseline) {
-    figmaConfig.baseline = baselineConfigToFigmaGrid(config.baseline);
-  }
-
   return {
     type: 'apply-grid',
-    config: figmaConfig,
+    requestId: params.requestId,
+    sourceConfig: params.config,
+    sourceDimensions: params.sourceDimensions,
+    expectedTargetIds: [...params.expectedTargetIds],
     replaceExisting: params.replaceExisting !== false,
   };
 }
@@ -419,10 +371,6 @@ export function validateGridForFigma(
     if (config.columns.count < 1) {
       errors.push('Column count must be at least 1');
     }
-    if (config.columns.count > 100) {
-      errors.push('Column count exceeds Figma maximum (100)');
-    }
-
     const marginPx = toPixels(config.columns.margin, config.columns.marginUnit, frameWidth);
     if (marginPx * 2 >= frameWidth) {
       errors.push('Column margins exceed frame width');
@@ -432,6 +380,9 @@ export function validateGridForFigma(
     if (gutterPx >= frameWidth) {
       errors.push('Column gutter exceeds frame width');
     }
+    if (frameWidth - marginPx * 2 - gutterPx * (config.columns.count - 1) <= 0) {
+      errors.push('Columns and gutters do not fit within the frame width');
+    }
   }
 
   // Check rows
@@ -439,13 +390,13 @@ export function validateGridForFigma(
     if (config.rows.count < 1) {
       errors.push('Row count must be at least 1');
     }
-    if (config.rows.count > 100) {
-      errors.push('Row count exceeds Figma maximum (100)');
-    }
-
     const marginPx = toPixels(config.rows.margin, config.rows.marginUnit, frameHeight);
     if (marginPx * 2 >= frameHeight) {
       errors.push('Row margins exceed frame height');
+    }
+    const gutterPx = toPixels(config.rows.gutterSize, config.rows.gutterUnit, frameHeight);
+    if (frameHeight - marginPx * 2 - gutterPx * (config.rows.count - 1) <= 0) {
+      errors.push('Rows and gutters do not fit within the frame height');
     }
   }
 
@@ -457,8 +408,8 @@ export function validateGridForFigma(
     if (config.baseline.height > frameHeight) {
       warnings.push('Baseline height exceeds frame height');
     }
-    if (config.baseline.offset < 0) {
-      warnings.push('Baseline offset is negative');
+    if (config.baseline.offset !== 0) {
+      warnings.push('Figma uniform GRID ignores baseline offsets and starts at 0px');
     }
   }
 

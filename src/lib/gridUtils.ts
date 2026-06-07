@@ -8,8 +8,8 @@ import type {
   RowGridConfig,
   BaselineGridConfig,
   GridUnit,
-  FigmaLayoutGrid,
   GridColor,
+  GridDimensions,
 } from '../types/grid';
 import { DEFAULT_COLUMN_COLOR, DEFAULT_ROW_COLOR, DEFAULT_BASELINE_COLOR } from '../types/grid';
 
@@ -264,13 +264,52 @@ export function scaleGrid(
   if (config.baseline) {
     scaled.baseline = {
       ...config.baseline,
-      // Scale baseline proportionally
-      height: config.baseline.height * Math.min(widthScale, heightScale),
-      offset: config.baseline.offset * heightScale,
+      // Uniform spacing grids retain their pixel rhythm when a frame resizes.
+      height: config.baseline.height,
+      offset: config.baseline.offset,
     };
   }
 
   return scaled;
+}
+
+function hasValidDimensions(dimensions: GridDimensions): boolean {
+  return (
+    Number.isFinite(dimensions.width) &&
+    Number.isFinite(dimensions.height) &&
+    dimensions.width > 0 &&
+    dimensions.height > 0
+  );
+}
+
+/**
+ * Resolve the source grid configuration for one target using the same geometry
+ * contract used by fit analysis and backend application.
+ */
+export function resolveGridConfigForTarget(
+  config: GridConfig,
+  sourceDimensions: GridDimensions | undefined,
+  targetDimensions: GridDimensions
+): GridConfig {
+  if (!sourceDimensions) {
+    return config;
+  }
+
+  if (!hasValidDimensions(sourceDimensions)) {
+    throw new Error('Source grid dimensions must be finite positive numbers.');
+  }
+
+  if (!hasValidDimensions(targetDimensions)) {
+    throw new Error('Target grid dimensions must be finite positive numbers.');
+  }
+
+  return scaleGrid(
+    config,
+    sourceDimensions.width,
+    sourceDimensions.height,
+    targetDimensions.width,
+    targetDimensions.height
+  );
 }
 
 // ============================================
@@ -331,73 +370,6 @@ export function getTypographySuggestions(baseline: number): {
     bodyLineHeight: lineHeight,
     headingSizes,
   };
-}
-
-// ============================================
-// GridConfig to Figma LayoutGrid Conversion
-// ============================================
-
-/**
- * Convert a GridConfig to Figma's layoutGrids array
- * @param config - Grid configuration
- * @param frameWidth - Frame width for unit conversion
- * @param frameHeight - Frame height for unit conversion
- * @returns Array of Figma LayoutGrid objects
- */
-export function gridConfigToFigmaLayoutGrids(
-  config: GridConfig,
-  frameWidth: number,
-  frameHeight: number
-): FigmaLayoutGrid[] {
-  const layoutGrids: FigmaLayoutGrid[] = [];
-
-  // Add column grid
-  if (config.columns) {
-    const marginPx = toPixels(config.columns.margin, config.columns.marginUnit, frameWidth);
-    const gutterPx = toPixels(config.columns.gutterSize, config.columns.gutterUnit, frameWidth);
-
-    layoutGrids.push({
-      pattern: 'COLUMNS',
-      alignment: config.columns.alignment,
-      gutterSize: Math.round(gutterPx),
-      count: config.columns.count,
-      offset: Math.round(marginPx),
-      visible: config.columns.visible,
-      color: config.columns.color,
-    });
-  }
-
-  // Add row grid
-  if (config.rows) {
-    const marginPx = toPixels(config.rows.margin, config.rows.marginUnit, frameHeight);
-    const gutterPx = toPixels(config.rows.gutterSize, config.rows.gutterUnit, frameHeight);
-
-    layoutGrids.push({
-      pattern: 'ROWS',
-      alignment: config.rows.alignment,
-      gutterSize: Math.round(gutterPx),
-      count: config.rows.count,
-      offset: Math.round(marginPx),
-      visible: config.rows.visible,
-      color: config.rows.color,
-    });
-  }
-
-  // Add baseline grid
-  if (config.baseline) {
-    layoutGrids.push({
-      pattern: 'GRID',
-      alignment: 'MIN',
-      gutterSize: 0,
-      count: 1,
-      sectionSize: config.baseline.height,
-      offset: config.baseline.offset,
-      visible: config.baseline.visible,
-      color: config.baseline.color,
-    });
-  }
-
-  return layoutGrids;
 }
 
 // ============================================

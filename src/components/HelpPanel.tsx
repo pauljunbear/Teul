@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useModalAccessibility } from '../lib/useModalAccessibility';
 
 // ============================================
 // Help Panel Component
@@ -55,16 +56,6 @@ const HELP_SECTIONS = [
     ],
   },
   {
-    id: 'keyboard-shortcuts',
-    title: '⌨️ Keyboard Shortcuts',
-    shortcuts: [
-      { keys: ['Enter'], action: 'Apply current grid to selection' },
-      { keys: ['⌘/Ctrl', 'S'], action: 'Save current grid to My Grids' },
-      { keys: ['Escape'], action: 'Close modal / Cancel action' },
-      { keys: ['⌘/Ctrl', 'Enter'], action: 'Create new frame with grid' },
-    ],
-  },
-  {
     id: 'grid-terminology',
     title: '📐 Grid Terminology',
     definitions: [
@@ -82,8 +73,9 @@ const HELP_SECTIONS = [
         definition: 'Space between the grid and frame edge. Provides breathing room.',
       },
       {
-        term: 'Baseline Grid',
-        definition: 'Horizontal lines for text alignment. Height typically matches line-height.',
+        term: 'Uniform Grid',
+        definition:
+          'Figma square cells used for spacing. This is not a horizontal-only typographic baseline grid.',
       },
       {
         term: 'Modular Grid',
@@ -92,7 +84,7 @@ const HELP_SECTIONS = [
       {
         term: 'Swiss Style',
         definition:
-          'Design approach emphasizing mathematical grids, clean typography, and asymmetric balance. Pioneered by Josef Müller-Brockmann.',
+          'A design approach emphasizing systematic grids, clean typography, and asymmetric balance.',
       },
     ],
   },
@@ -102,7 +94,7 @@ const HELP_SECTIONS = [
     content: [
       {
         heading: 'Müller-Brockmann\'s "Grid Systems"',
-        text: 'Our Classic Swiss grids are inspired by Josef Müller-Brockmann\'s seminal 1981 book "Grid Systems in Graphic Design." This book established the mathematical principles behind Swiss design.',
+        text: 'The Swiss-inspired presets are modern adaptations, not historical reconstructions. Müller-Brockmann describes grids as systems derived from format, typography, and content constraints.',
       },
       {
         heading: 'International Typographic Style',
@@ -110,7 +102,7 @@ const HELP_SECTIONS = [
       },
       {
         heading: 'Modern Applications',
-        text: 'These classic proportions translate perfectly to digital design. The 4, 6, 8, and 12-column systems remain foundational for web and UI design today.',
+        text: 'Modern screen grids should be checked against each target frame. Dense desktop presets may not fit narrow frames.',
       },
     ],
   },
@@ -119,28 +111,25 @@ const HELP_SECTIONS = [
     title: '💡 Pro Tips',
     tips: [
       'Use % for gutters/margins when designing responsive layouts.',
-      'Combine column grids with baseline grids for perfect typography.',
-      'Start with a classic 4 or 6-column grid, then customize as needed.',
+      'Figma uniform grids create square cells; use rows for horizontal layout guides.',
+      'Start with a 4 or 6-column preset, then check the resulting column width.',
       'Save grids to My Grids for quick reuse.',
       'Export your grid library as JSON backup before major Figma updates.',
     ],
   },
 ];
 
+const HELP_TITLE_ID = 'grid-system-guide-title';
+
 export const HelpPanel: React.FC<HelpPanelProps> = ({ isOpen, onClose, isDark }) => {
   const theme = isDark ? styles.dark : styles.light;
   const [expandedSection, setExpandedSection] = React.useState<string | null>('getting-started');
-
-  // Close on Escape
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    if (isOpen) {
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-    }
-  }, [isOpen, onClose]);
+  const closeButtonRef = React.useRef<HTMLButtonElement>(null);
+  const dialogRef = useModalAccessibility({
+    isOpen,
+    onClose,
+    initialFocusRef: closeButtonRef,
+  });
 
   if (!isOpen) return null;
 
@@ -161,6 +150,11 @@ export const HelpPanel: React.FC<HelpPanelProps> = ({ isOpen, onClose, isDark })
       }}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={HELP_TITLE_ID}
+        tabIndex={-1}
         style={{
           width: '100%',
           maxWidth: '480px',
@@ -184,6 +178,7 @@ export const HelpPanel: React.FC<HelpPanelProps> = ({ isOpen, onClose, isDark })
           }}
         >
           <h2
+            id={HELP_TITLE_ID}
             style={{
               margin: 0,
               fontSize: '18px',
@@ -197,7 +192,9 @@ export const HelpPanel: React.FC<HelpPanelProps> = ({ isOpen, onClose, isDark })
             <span>📚</span> Grid System Guide
           </h2>
           <button
+            ref={closeButtonRef}
             onClick={onClose}
+            aria-label="Close grid system guide"
             style={{
               width: '32px',
               height: '32px',
@@ -231,6 +228,8 @@ export const HelpPanel: React.FC<HelpPanelProps> = ({ isOpen, onClose, isDark })
                 onClick={() =>
                   setExpandedSection(expandedSection === section.id ? null : section.id)
                 }
+                aria-expanded={expandedSection === section.id}
+                aria-controls={`${section.id}-content`}
                 style={{
                   width: '100%',
                   padding: '12px 16px',
@@ -261,6 +260,7 @@ export const HelpPanel: React.FC<HelpPanelProps> = ({ isOpen, onClose, isDark })
               {/* Section Content */}
               {expandedSection === section.id && (
                 <div
+                  id={`${section.id}-content`}
                   style={{
                     padding: '16px',
                     marginTop: '8px',
@@ -294,59 +294,6 @@ export const HelpPanel: React.FC<HelpPanelProps> = ({ isOpen, onClose, isDark })
                       >
                         {item.text}
                       </p>
-                    </div>
-                  ))}
-
-                  {/* Keyboard shortcuts */}
-                  {section.shortcuts?.map((shortcut, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        padding: '8px 0',
-                        borderBottom:
-                          idx < section.shortcuts!.length - 1
-                            ? `1px solid ${theme.border}`
-                            : 'none',
-                      }}
-                    >
-                      <span
-                        style={{
-                          display: 'flex',
-                          gap: '4px',
-                        }}
-                      >
-                        {shortcut.keys.map((key, i) => (
-                          <React.Fragment key={i}>
-                            <kbd
-                              style={{
-                                padding: '3px 8px',
-                                borderRadius: '4px',
-                                backgroundColor: theme.codeBg,
-                                color: theme.text,
-                                fontSize: '10px',
-                                fontWeight: 600,
-                                fontFamily: 'monospace',
-                              }}
-                            >
-                              {key}
-                            </kbd>
-                            {i < shortcut.keys.length - 1 && (
-                              <span style={{ color: theme.textMuted, fontSize: '10px' }}>+</span>
-                            )}
-                          </React.Fragment>
-                        ))}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: '11px',
-                          color: theme.textMuted,
-                        }}
-                      >
-                        {shortcut.action}
-                      </span>
                     </div>
                   ))}
 
@@ -434,40 +381,6 @@ export const HelpPanel: React.FC<HelpPanelProps> = ({ isOpen, onClose, isDark })
         </div>
       </div>
     </div>
-  );
-};
-
-// ============================================
-// Help Button Component
-// ============================================
-
-interface HelpButtonProps {
-  onClick: () => void;
-  isDark: boolean;
-}
-
-export const HelpButton: React.FC<HelpButtonProps> = ({ onClick, isDark }) => {
-  return (
-    <button
-      onClick={onClick}
-      title="Help & Documentation"
-      aria-label="Open help and documentation panel"
-      style={{
-        width: '32px',
-        height: '32px',
-        borderRadius: '8px',
-        border: `1px solid ${isDark ? '#404040' : '#e5e5e5'}`,
-        backgroundColor: 'transparent',
-        color: isDark ? '#a3a3a3' : '#666666',
-        fontSize: '14px',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      ?
-    </button>
   );
 };
 

@@ -1,6 +1,7 @@
 /**
  * Radix UI Colors - Complete color scale data
  * https://www.radix-ui.com/colors
+ * Exact values pinned to @radix-ui/colors 3.0.0.
  *
  * Each scale has 12 steps designed for specific UI purposes:
  * 1-2: Backgrounds
@@ -12,6 +13,8 @@
  */
 
 import { hexToHsl, colorDistance, rgbToLab, hexToRgb } from './utils';
+
+export const RADIX_COLORS_VERSION = '3.0.0';
 
 // ============================================
 // Types
@@ -638,7 +641,7 @@ const sandDark: RadixScale = {
   9: '#6f6d66',
   10: '#7c7b74',
   11: '#b5b3ad',
-  12: '#eeede9',
+  12: '#eeeeec',
 };
 
 const tomatoDark: RadixScale = {
@@ -709,7 +712,7 @@ const pinkDark: RadixScale = {
   5: '#591c47',
   6: '#692955',
   7: '#833869',
-  8: '#a84c83',
+  8: '#a84885',
   9: '#d6409f',
   10: '#de51a8',
   11: '#ff8dcc',
@@ -751,10 +754,10 @@ const violetDark: RadixScale = {
   2: '#1b1525',
   3: '#291f43',
   4: '#33255b',
-  5: '#3c2e6c',
-  6: '#47397d',
-  7: '#574896',
-  8: '#6d5eb7',
+  5: '#3c2e69',
+  6: '#473876',
+  7: '#56468b',
+  8: '#6958ad',
   9: '#6e56cf',
   10: '#7d66d9',
   11: '#baa7ff',
@@ -1391,34 +1394,4 @@ export function getNeutralForAccent(hex: string): NeutralName {
   }
 
   return 'gray';
-}
-
-/**
- * Get a Radix scale for a color, either by matching or generating
- */
-export function getRadixScale(
-  hex: string,
-  mode: 'light' | 'dark' = 'light',
-  method: 'match' | 'custom' = 'match'
-): RadixScale {
-  if (method === 'match') {
-    const family = findClosestRadixFamily(hex);
-    return mode === 'light' ? family.light : family.dark;
-  }
-
-  // For custom, we'd use generateColorScale from utils
-  // This is a placeholder - actual implementation uses utils.generateColorScale
-  const family = findClosestRadixFamily(hex);
-  return mode === 'light' ? family.light : family.dark;
-}
-
-/**
- * Get neutral scale by name
- */
-export function getNeutralScale(
-  neutralName: NeutralName,
-  mode: 'light' | 'dark' = 'light'
-): RadixScale {
-  const family = radixColors[neutralName];
-  return mode === 'light' ? family.light : family.dark;
 }

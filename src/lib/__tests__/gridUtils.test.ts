@@ -7,7 +7,6 @@
  * - Grid dimension calculations
  * - Grid scaling
  * - Baseline typography utilities
- * - GridConfig to Figma conversion
  * - Grid validation
  * - SVG path generation
  * - Color conversions
@@ -37,11 +36,10 @@ import {
   calculateModuleDimensions,
   // Grid scaling
   scaleGrid,
+  resolveGridConfigForTarget,
   // Baseline utilities
   calculateBaselineFromTypography,
   getTypographySuggestions,
-  // Figma conversion
-  gridConfigToFigmaLayoutGrids,
   // Validation
   validateGridConfig,
   // SVG generation
@@ -400,7 +398,7 @@ describe('Grid Scaling Utilities', () => {
       expect(scaled.rows?.margin).toBe(40);
     });
 
-    it('scales baseline using minimum of width/height scale', () => {
+    it('preserves uniform grid rhythm when frame dimensions change', () => {
       const config: GridConfig = {
         baseline: createBaselineConfig({
           height: 8,
@@ -409,9 +407,8 @@ describe('Grid Scaling Utilities', () => {
       };
 
       const scaled = scaleGrid(config, 1000, 1000, 2000, 1500);
-      // Width scale: 2, Height scale: 1.5, min = 1.5
-      expect(scaled.baseline?.height).toBe(12);
-      expect(scaled.baseline?.offset).toBe(24);
+      expect(scaled.baseline?.height).toBe(8);
+      expect(scaled.baseline?.offset).toBe(16);
     });
 
     it('handles empty config', () => {
@@ -434,6 +431,45 @@ describe('Grid Scaling Utilities', () => {
       expect(scaled.columns?.count).toBe(12);
       expect(scaled.columns?.alignment).toBe('CENTER');
       expect(scaled.columns?.visible).toBe(false);
+    });
+  });
+
+  describe('resolveGridConfigForTarget', () => {
+    it('resolves pixel geometry from source dimensions for one target', () => {
+      const config: GridConfig = {
+        columns: createColumnConfig({
+          gutterSize: 24,
+          margin: 20,
+        }),
+      };
+
+      const resolved = resolveGridConfigForTarget(
+        config,
+        { width: 1440, height: 900 },
+        { width: 320, height: 568 }
+      );
+
+      expect(resolved.columns?.gutterSize).toBeCloseTo(24 * (320 / 1440));
+      expect(resolved.columns?.margin).toBeCloseTo(20 * (320 / 1440));
+    });
+
+    it('preserves source geometry when there are no source dimensions', () => {
+      const config: GridConfig = { columns: createColumnConfig() };
+
+      expect(resolveGridConfigForTarget(config, undefined, { width: 320, height: 568 })).toBe(
+        config
+      );
+    });
+
+    it('rejects invalid source and target dimensions', () => {
+      const config: GridConfig = { columns: createColumnConfig() };
+
+      expect(() =>
+        resolveGridConfigForTarget(config, { width: 0, height: 900 }, { width: 320, height: 568 })
+      ).toThrow('Source grid dimensions');
+      expect(() =>
+        resolveGridConfigForTarget(config, { width: 1440, height: 900 }, { width: 0, height: 568 })
+      ).toThrow('Target grid dimensions');
     });
   });
 });
@@ -500,122 +536,6 @@ describe('Baseline Typography Utilities', () => {
       const large = getTypographySuggestions(36);
 
       expect(small.bodySize).toBeLessThan(large.bodySize);
-    });
-  });
-});
-
-// ============================================
-// Figma Conversion Tests
-// ============================================
-
-describe('GridConfig to Figma Conversion', () => {
-  describe('gridConfigToFigmaLayoutGrids', () => {
-    it('converts column config to COLUMNS pattern', () => {
-      const config: GridConfig = {
-        columns: createColumnConfig({ count: 12, gutterSize: 20, margin: 40 }),
-      };
-
-      const result = gridConfigToFigmaLayoutGrids(config, 1440, 900);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].pattern).toBe('COLUMNS');
-      expect(result[0].count).toBe(12);
-      expect(result[0].gutterSize).toBe(20);
-      expect(result[0].offset).toBe(40);
-    });
-
-    it('converts row config to ROWS pattern', () => {
-      const config: GridConfig = {
-        rows: createRowConfig({ count: 6, gutterSize: 20, margin: 40 }),
-      };
-
-      const result = gridConfigToFigmaLayoutGrids(config, 1440, 900);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].pattern).toBe('ROWS');
-      expect(result[0].count).toBe(6);
-    });
-
-    it('converts baseline config to GRID pattern', () => {
-      const config: GridConfig = {
-        baseline: createBaselineConfig({ height: 8, offset: 4 }),
-      };
-
-      const result = gridConfigToFigmaLayoutGrids(config, 1440, 900);
-
-      expect(result).toHaveLength(1);
-      expect(result[0].pattern).toBe('GRID');
-      expect(result[0].sectionSize).toBe(8);
-      expect(result[0].offset).toBe(4);
-      expect(result[0].alignment).toBe('MIN');
-    });
-
-    it('converts full grid config to multiple layout grids', () => {
-      const config: GridConfig = {
-        columns: createColumnConfig(),
-        rows: createRowConfig(),
-        baseline: createBaselineConfig(),
-      };
-
-      const result = gridConfigToFigmaLayoutGrids(config, 1440, 900);
-
-      expect(result).toHaveLength(3);
-      expect(result.map(g => g.pattern)).toContain('COLUMNS');
-      expect(result.map(g => g.pattern)).toContain('ROWS');
-      expect(result.map(g => g.pattern)).toContain('GRID');
-    });
-
-    it('converts percentage values to pixels', () => {
-      const config: GridConfig = {
-        columns: createColumnConfig({
-          gutterSize: 2,
-          gutterUnit: 'percent',
-          margin: 5,
-          marginUnit: 'percent',
-        }),
-      };
-
-      const result = gridConfigToFigmaLayoutGrids(config, 1000, 800);
-
-      expect(result[0].gutterSize).toBe(20); // 2% of 1000
-      expect(result[0].offset).toBe(50); // 5% of 1000
-    });
-
-    it('rounds pixel values', () => {
-      const config: GridConfig = {
-        columns: createColumnConfig({
-          gutterSize: 33.33,
-          gutterUnit: 'percent',
-          margin: 100,
-          marginUnit: 'px',
-        }),
-      };
-
-      const result = gridConfigToFigmaLayoutGrids(config, 300, 200);
-
-      expect(Number.isInteger(result[0].gutterSize)).toBe(true);
-      expect(Number.isInteger(result[0].offset)).toBe(true);
-    });
-
-    it('preserves visibility and color', () => {
-      const customColor: GridColor = { r: 0, g: 1, b: 0, a: 0.5 };
-      const config: GridConfig = {
-        columns: createColumnConfig({
-          visible: false,
-          color: customColor,
-        }),
-      };
-
-      const result = gridConfigToFigmaLayoutGrids(config, 1000, 800);
-
-      expect(result[0].visible).toBe(false);
-      expect(result[0].color).toEqual(customColor);
-    });
-
-    it('returns empty array for empty config', () => {
-      const config: GridConfig = {};
-      const result = gridConfigToFigmaLayoutGrids(config, 1000, 800);
-      expect(result).toEqual([]);
     });
   });
 });

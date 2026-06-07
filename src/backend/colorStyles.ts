@@ -2,62 +2,75 @@
 // Creates Figma color styles from a color system
 
 import { hexToFigmaRgb } from './figmaHelpers';
+import { getOrderedScaleKeys, stepToStyleSuffix } from '../lib/colorExport';
+import type { CreateStylesData } from '../types/colorSystem';
+export type { CreateStylesData } from '../types/colorSystem';
 
 // ============================================
 // Type Definitions
 // ============================================
 
-interface CreateStylesScaleData {
+interface RequestedStyle {
   name: string;
-  role: string;
-  steps: { step: number; hex: string }[];
+  hex: string;
+  color: RGB;
+  description?: string;
 }
 
-export interface CreateStylesData {
-  systemName: string;
-  includeDarkMode: boolean;
-  scales: {
-    light: {
-      primary?: CreateStylesScaleData;
-      secondary?: CreateStylesScaleData;
-      tertiary?: CreateStylesScaleData;
-      accent?: CreateStylesScaleData;
-      neutral: CreateStylesScaleData;
-      [key: string]: CreateStylesScaleData | undefined;
-    };
-    dark?: {
-      primary?: CreateStylesScaleData;
-      secondary?: CreateStylesScaleData;
-      tertiary?: CreateStylesScaleData;
-      accent?: CreateStylesScaleData;
-      neutral: CreateStylesScaleData;
-      [key: string]: CreateStylesScaleData | undefined;
-    };
-  };
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error && error.message ? error.message : 'Color style creation failed';
 }
 
-// ============================================
-// Helper Functions
-// ============================================
-
-// Convert step number to Radix-style name (1-12 → 50-1200)
-function stepToStyleNumber(step: number): string {
-  const mapping: Record<number, string> = {
-    1: '50',
-    2: '100',
-    3: '200',
-    4: '300',
-    5: '400',
-    6: '500',
-    7: '600',
-    8: '700',
-    9: '800',
-    10: '900',
-    11: '1000',
-    12: '1100',
-  };
-  return mapping[step] || step.toString();
+function colorsMatch(a: RGB, b: RGB): boolean {
+  const tolerance = 1e-6;
+  return (
+    Math.abs(a.r - b.r) <= tolerance &&
+    Math.abs(a.g - b.g) <= tolerance &&
+    Math.abs(a.b - b.b) <= tolerance
+  );
 }
+
+function hasBoundVariables(boundVariables: object | undefined): boolean {
+  return boundVariables !== undefined && Object.keys(boundVariables).length > 0;
+}
+
+function styleMatchesRequestedPaint(style: PaintStyle, requestedColor: RGB): boolean {
+  if (hasBoundVariables(style.boundVariables)) return false;
+  if (style.paints.length !== 1) return false;
+
+  const paint = style.paints[0];
+  return (
+    paint.type === 'SOLID' &&
+    paint.visible !== false &&
+    (paint.opacity === undefined || paint.opacity === 1) &&
+    (paint.blendMode === undefined || paint.blendMode === 'NORMAL') &&
+    !hasBoundVariables(paint.boundVariables) &&
+    colorsMatch(paint.color, requestedColor)
+  );
+}
+
+function rollbackCreatedStyles(createdStyles: PaintStyle[]): number {
+  let failedRemovalCount = 0;
+
+  for (const style of [...createdStyles].reverse()) {
+    try {
+      style.remove();
+    } catch (error) {
+      failedRemovalCount++;
+      console.error('Failed to roll back color style:', error);
+    }
+  }
+
+  return failedRemovalCount;
+}
+
+function withStyleRollbackFailure(error: unknown, failedRemovalCount: number): Error {
+  return new Error(
+    `${getErrorMessage(error)}; failed to roll back ${failedRemovalCount} created color style${failedRemovalCount === 1 ? '' : 's'}`
+  );
+}
+
+let colorStyleCreationQueue: Promise<void> = Promise.resolve();
 
 // ============================================
 // Main Public Function
@@ -68,37 +81,66 @@ function stepToStyleNumber(step: number): string {
  * Naming convention: [System Name]/[Mode]/[Role]/[Step]
  * e.g., "Brand Colors/Light/Primary/800"
  */
-export async function createColorStyles(
+async function createColorStylesOperation(
   scalesData: CreateStylesData,
   systemName: string
 ): Promise<void> {
   const existingStyles = await figma.getLocalPaintStylesAsync();
-  const existingStyleNames = new Set(existingStyles.map(s => s.name));
+  const existingStylesByName = new Map<string, PaintStyle[]>();
+  for (const style of existingStyles) {
+    const stylesWithName = existingStylesByName.get(style.name) ?? [];
+    stylesWithName.push(style);
+    existingStylesByName.set(style.name, stylesWithName);
+  }
 
   // Collect all styles to create (batch processing for better performance)
-  interface StyleToCreate {
-    name: string;
-    hex: string;
-  }
-  const stylesToCreate: StyleToCreate[] = [];
+  const queuedStyles = new Map<string, RequestedStyle>();
+  let existingNameSkips = 0;
+  let duplicateNameSkips = 0;
 
   // Helper to queue a style for creation
-  const queueStyle = (styleName: string, hex: string) => {
-    if (!existingStyleNames.has(styleName)) {
-      stylesToCreate.push({ name: styleName, hex });
+  const queueStyle = (styleName: string, hex: string, description?: string) => {
+    const requestedStyle = {
+      name: styleName,
+      hex,
+      color: hexToFigmaRgb(hex),
+      description,
+    };
+    const queuedStyle = queuedStyles.get(styleName);
+
+    if (queuedStyle) {
+      if (!colorsMatch(queuedStyle.color, requestedStyle.color)) {
+        throw new Error(
+          `Color style conflict for "${styleName}": duplicate queued name requests both ${queuedStyle.hex} and ${hex}`
+        );
+      }
+
+      duplicateNameSkips++;
+      return;
     }
+
+    queuedStyles.set(styleName, requestedStyle);
   };
 
   // Queue scale styles
   const queueScaleStyles = (scales: CreateStylesData['scales']['light'], modePath: string) => {
-    const styleScaleOrder = ['primary', 'secondary', 'tertiary', 'accent', 'neutral'] as const;
-
-    for (const key of styleScaleOrder) {
+    for (const key of getOrderedScaleKeys(scales)) {
       const scale = scales[key];
       if (scale) {
         for (const step of scale.steps) {
-          const styleName = `${modePath}/${scale.role}/${stepToStyleNumber(step.step)}`;
-          queueStyle(styleName, step.hex);
+          const styleName = `${modePath}/${scale.role}/${stepToStyleSuffix(step.step)}`;
+          const description = [
+            scale.method,
+            scale.profile,
+            scale.validation
+              ? scale.validation.valid
+                ? 'Generated scale validation passed'
+                : 'Generated scale validation failed'
+              : undefined,
+          ]
+            .filter(Boolean)
+            .join(' · ');
+          queueStyle(styleName, step.hex, description || undefined);
         }
       }
     }
@@ -161,22 +203,71 @@ export async function createColorStyles(
     }
   }
 
+  const stylesToCreate: RequestedStyle[] = [];
+  for (const requestedStyle of queuedStyles.values()) {
+    const sameNameStyles = existingStylesByName.get(requestedStyle.name);
+    if (!sameNameStyles) {
+      stylesToCreate.push(requestedStyle);
+      continue;
+    }
+
+    if (!sameNameStyles.every(style => styleMatchesRequestedPaint(style, requestedStyle.color))) {
+      throw new Error(
+        `Color style conflict for "${requestedStyle.name}": existing paint does not match requested ${requestedStyle.hex}`
+      );
+    }
+
+    existingNameSkips++;
+  }
+
   // Create all styles in batches for better performance
   const BATCH_SIZE = 20;
   let created = 0;
+  const createdStyles: PaintStyle[] = [];
 
-  for (let i = 0; i < stylesToCreate.length; i += BATCH_SIZE) {
-    const batch = stylesToCreate.slice(i, i + BATCH_SIZE);
-    await Promise.all(
-      batch.map(({ name, hex }) => {
-        const style = figma.createPaintStyle();
-        style.name = name;
-        style.paints = [{ type: 'SOLID', color: hexToFigmaRgb(hex) }];
-        created++;
-        return Promise.resolve();
-      })
+  try {
+    for (let i = 0; i < stylesToCreate.length; i += BATCH_SIZE) {
+      const batch = stylesToCreate.slice(i, i + BATCH_SIZE);
+      await Promise.all(
+        batch.map(({ name, color, description }) => {
+          const style = figma.createPaintStyle();
+          createdStyles.push(style);
+          style.name = name;
+          if (description) style.description = description;
+          style.paints = [{ type: 'SOLID', color }];
+          created++;
+          return Promise.resolve();
+        })
+      );
+    }
+
+    const skipSummary = [
+      existingNameSkips > 0
+        ? `${existingNameSkips} existing name${existingNameSkips === 1 ? '' : 's'}`
+        : undefined,
+      duplicateNameSkips > 0
+        ? `${duplicateNameSkips} duplicate queued name${duplicateNameSkips === 1 ? '' : 's'}`
+        : undefined,
+    ].filter(Boolean);
+    figma.notify(
+      `Created ${created} color styles${skipSummary.length > 0 ? `; skipped ${skipSummary.join(', ')}` : ''}`
     );
+  } catch (error) {
+    const failedRemovalCount = rollbackCreatedStyles(createdStyles);
+    if (failedRemovalCount > 0) {
+      throw withStyleRollbackFailure(error, failedRemovalCount);
+    }
+    throw error;
   }
+}
 
-  figma.notify(`Created ${created} color styles`);
+export function createColorStyles(scalesData: CreateStylesData, systemName: string): Promise<void> {
+  const creation = colorStyleCreationQueue.then(() =>
+    createColorStylesOperation(scalesData, systemName)
+  );
+  colorStyleCreationQueue = creation.then(
+    () => undefined,
+    () => undefined
+  );
+  return creation;
 }

@@ -2,13 +2,11 @@ import * as React from 'react';
 import { useState, useCallback, useMemo } from 'react';
 import {
   analyzeContrast,
-  getAPCARating,
   getFontRecommendations,
   type ContrastResult,
   type APCARating,
 } from '../lib/accessibility';
 import { simulateCVDHex, CVD_INFO, type CVDType } from '../lib/colorBlindness';
-import { hexToRgb, rgbToHex } from '../lib/utils';
 
 // ============================================
 // Types
@@ -160,7 +158,7 @@ const APCARatingBadge: React.FC<{
     gold: { color: styles.gold, label: 'Gold' },
     silver: { color: styles.silver, label: 'Silver' },
     bronze: { color: styles.bronze, label: 'Bronze' },
-    fail: { color: styles.error, label: 'Fail' },
+    fail: { color: styles.error, label: 'Below guide' },
   };
 
   return (
@@ -285,7 +283,7 @@ const ContrastChecker: React.FC<{
       {/* Results */}
       {contrastResult && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {/* WCAG 2.1 */}
+          {/* WCAG 2.2 */}
           <div>
             <div
               style={{
@@ -295,7 +293,7 @@ const ContrastChecker: React.FC<{
                 marginBottom: '6px',
               }}
             >
-              WCAG 2.1
+              WCAG 2.2 pair thresholds
             </div>
             <div
               style={{
@@ -315,13 +313,13 @@ const ContrastChecker: React.FC<{
                 {contrastResult.wcag.ratio.toFixed(2)}:1
               </span>
               <Badge variant={contrastResult.wcag.aaa ? 'success' : 'neutral'} styles={styles}>
-                AAA
+                AAA {contrastResult.wcag.aaa ? 'pass' : 'fail'}
               </Badge>
               <Badge variant={contrastResult.wcag.aa ? 'success' : 'neutral'} styles={styles}>
-                AA
+                AA {contrastResult.wcag.aa ? 'pass' : 'fail'}
               </Badge>
               <Badge variant={contrastResult.wcag.aaLarge ? 'success' : 'error'} styles={styles}>
-                Large Text
+                AA large text {contrastResult.wcag.aaLarge ? 'pass' : 'fail'}
               </Badge>
             </div>
           </div>
@@ -336,7 +334,7 @@ const ContrastChecker: React.FC<{
                 marginBottom: '6px',
               }}
             >
-              APCA (WCAG 3.0)
+              APCA SAPC 0.0.98G-4g-base (experimental)
             </div>
             <div
               style={{
@@ -352,9 +350,13 @@ const ContrastChecker: React.FC<{
                   color: styles.text,
                 }}
               >
-                Lc {Math.abs(contrastResult.apca.lc).toFixed(1)}
+                Lc {contrastResult.apca.lc > 0 ? '+' : ''}
+                {contrastResult.apca.lc.toFixed(1)}
               </span>
               <APCARatingBadge rating={contrastResult.apca.rating} styles={styles} />
+            </div>
+            <div style={{ marginTop: '6px', fontSize: '10px', color: styles.textMuted }}>
+              Supplemental metric only; not WCAG 3 conformance.
             </div>
           </div>
 
@@ -369,7 +371,7 @@ const ContrastChecker: React.FC<{
                   marginBottom: '6px',
                 }}
               >
-                Font Recommendations
+                Experimental Font Guidance
               </div>
               <div style={{ fontSize: '12px', color: styles.text }}>
                 {fontRecs.map((rec, i) => (
@@ -635,8 +637,8 @@ const CVDSimulator: React.FC<{
           borderRadius: '6px',
         }}
       >
-        <strong>Tip:</strong> Blue and orange are safe color combinations for most forms of color
-        blindness.
+        <strong>Tip:</strong> Blue and orange can remain distinguishable for many viewers, but
+        verify the specific colors and do not rely on color alone.
       </div>
     </Card>
   );

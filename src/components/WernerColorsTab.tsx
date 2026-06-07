@@ -1,14 +1,18 @@
 import * as React from 'react';
 import { useState, useMemo } from 'react';
-import { wernerColors, WERNER_GROUPS, WernerColor, getRelatedColors } from '../wernerColorData';
+import { wernerColors, WERNER_GROUPS, WernerColor, getWernerTextRecord } from '../wernerColorData';
 import { ColorSystemModal } from './ColorSystemModal';
 import { AboutPanel, WERNER_ABOUT_CONTENT } from './AboutPanel';
 import { copyToClipboard } from '../lib/clipboard';
 import { styles } from '../lib/theme';
 import { getWCAGContrastHex, getWCAGRating } from '../lib/accessibility';
+import { WERNER_SOURCE_PROVENANCE } from '../lib/sourceProvenance';
+import type { NormalizedDocumentColorProfile } from '../types/messages';
+import { SourceProvenanceDisclosure } from './SourceProvenanceDisclosure';
 
 interface WernerColorsTabProps {
   isDark: boolean;
+  documentColorProfile?: NormalizedDocumentColorProfile;
 }
 
 const getTextColor = (hex: string): string => {
@@ -19,7 +23,10 @@ const getTextColor = (hex: string): string => {
   return luminance > 0.5 ? '#1a1a1a' : '#ffffff';
 };
 
-export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
+export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({
+  isDark,
+  documentColorProfile = 'unknown',
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedColor, setSelectedColor] = useState<WernerColor | null>(null);
   const [selectedGroup, setSelectedGroup] = useState(-1);
@@ -44,14 +51,15 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
           c.name.toLowerCase().includes(term) ||
           c.hex.toLowerCase().includes(term) ||
           c.group.toLowerCase().includes(term) ||
-          c.description.toLowerCase().includes(term)
+          Object.values(c.text.normalized).some(value => value.toLowerCase().includes(term)) ||
+          Object.values(c.text.source).some(value => value.toLowerCase().includes(term))
       );
     }
     return filtered;
-  }, [wernerColors, searchTerm, selectedGroup]);
+  }, [searchTerm, selectedGroup]);
 
-  const relatedColors = useMemo(
-    () => (selectedColor ? getRelatedColors(selectedColor) : []),
+  const selectedText = useMemo(
+    () => (selectedColor ? getWernerTextRecord(selectedColor) : null),
     [selectedColor]
   );
 
@@ -179,6 +187,7 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
             ))}
           </div>
         )}
+        <SourceProvenanceDisclosure provenance={WERNER_SOURCE_PROVENANCE} isDark={isDark} />
       </div>
 
       {/* Back button when viewing detail */}
@@ -217,12 +226,21 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
                 : wcagRating.aa
                   ? 'AA'
                   : wcagRating.aaLarge
-                    ? 'A'
+                    ? 'AA Large'
                     : '';
               return (
                 <div
                   key={color.id}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Open ${color.name}, ${color.hex}`}
                   onClick={() => setSelectedColor(color)}
+                  onKeyDown={event => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      setSelectedColor(color);
+                    }
+                  }}
                   style={{
                     backgroundColor: color.hex,
                     borderRadius: '8px',
@@ -284,36 +302,22 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
                     >
                       {color.hex.toUpperCase()}
                     </span>
-                    <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
-                      {wcagLabel && (
-                        <span
-                          style={{
-                            fontSize: '7px',
-                            color: textColor,
-                            backgroundColor: 'rgba(255,255,255,0.2)',
-                            padding: '1px 3px',
-                            borderRadius: '3px',
-                            fontWeight: 700,
-                            opacity: 0.9,
-                          }}
-                          title={`WCAG ${wcagLabel} (${bestContrast.toFixed(1)}:1)`}
-                        >
-                          {wcagLabel}
-                        </span>
-                      )}
+                    {wcagLabel && (
                       <span
                         style={{
-                          fontSize: '8px',
+                          fontSize: '7px',
                           color: textColor,
-                          backgroundColor: 'rgba(0,0,0,0.15)',
-                          padding: '1px 4px',
-                          borderRadius: '6px',
-                          fontWeight: 600,
+                          backgroundColor: 'rgba(255,255,255,0.2)',
+                          padding: '1px 3px',
+                          borderRadius: '3px',
+                          fontWeight: 700,
+                          opacity: 0.9,
                         }}
+                        title={`WCAG 2.2 ${wcagLabel} contrast threshold with black or white text (${bestContrast.toFixed(1)}:1)`}
                       >
-                        {color.relatedColors.length}
+                        {wcagLabel}
                       </span>
-                    </div>
+                    )}
                   </div>
                 </div>
               );
@@ -433,9 +437,54 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
                   fontStyle: 'italic',
                 }}
               >
-                &ldquo;{selectedColor.description}&rdquo;
+                &ldquo;{selectedText?.normalized.description}&rdquo;
               </p>
+              <div style={{ marginTop: '8px', color: theme.textMuted, fontSize: '9px' }}>
+                Reviewed source transcription is preserved separately from normalized display text.
+                Every difference is recorded below.
+              </div>
             </div>
+
+            {selectedText && selectedText.normalizations.length > 0 && (
+              <details
+                style={{
+                  backgroundColor: theme.cardBg,
+                  border: `1px solid ${theme.border}`,
+                  borderRadius: '12px',
+                  padding: '12px 14px',
+                  marginBottom: '12px',
+                  color: theme.text,
+                }}
+              >
+                <summary style={{ cursor: 'pointer', fontSize: '10px', fontWeight: 700 }}>
+                  Source/display differences ({selectedText.normalizations.length})
+                </summary>
+                <div style={{ marginTop: '10px', display: 'grid', gap: '10px' }}>
+                  {selectedText.normalizations.map(normalization => (
+                    <div
+                      key={normalization.field}
+                      style={{
+                        borderTop: `1px solid ${theme.border}`,
+                        paddingTop: '8px',
+                        fontSize: '9px',
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      <strong style={{ textTransform: 'capitalize' }}>{normalization.field}</strong>
+                      <div style={{ color: theme.textMuted }}>
+                        Source: &ldquo;{normalization.source}&rdquo;
+                      </div>
+                      <div>Display: &ldquo;{normalization.normalized}&rdquo;</div>
+                      <div style={{ marginTop: '4px', color: theme.textMuted }}>
+                        {normalization.reasons.join(' ')}
+                        {normalization.evidence.length > 0 &&
+                          ` Evidence: ${normalization.evidence.join(' ')}`}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </details>
+            )}
 
             {/* Natural Examples */}
             <div
@@ -447,9 +496,9 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
               }}
             >
               {[
-                { label: '🦁 Animal', value: selectedColor.animal },
-                { label: '🌿 Vegetable', value: selectedColor.vegetable },
-                { label: '💎 Mineral', value: selectedColor.mineral },
+                { label: '🦁 Animal', value: selectedText?.normalized.animal },
+                { label: '🌿 Vegetable', value: selectedText?.normalized.vegetable },
+                { label: '💎 Mineral', value: selectedText?.normalized.mineral },
               ]
                 .filter(item => item.value)
                 .map(item => (
@@ -590,11 +639,7 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
             {/* Color System Button */}
             <button
               onClick={() => {
-                const allColors = [
-                  { hex: selectedColor.hex, name: selectedColor.name },
-                  ...relatedColors.map(c => ({ hex: c.hex, name: c.name })),
-                ];
-                setColorSystemColors(allColors);
+                setColorSystemColors([{ hex: selectedColor.hex, name: selectedColor.name }]);
                 setColorSystemName(`Werner/${selectedColor.name}`);
                 setShowColorSystem(true);
               }}
@@ -612,107 +657,8 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
                 gap: '8px',
               }}
             >
-              🎨 Generate Color System (Radix)
+              🎨 Generate Radix-inspired System
             </button>
-
-            {/* Related Colors */}
-            {relatedColors.length > 0 && (
-              <>
-                <h3
-                  style={{
-                    fontSize: '12px',
-                    fontWeight: 700,
-                    color: theme.textMuted,
-                    marginBottom: '10px',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                  }}
-                >
-                  {relatedColors.length} Related Colors
-                </h3>
-
-                <div
-                  style={{
-                    backgroundColor: theme.cardBg,
-                    border: `1px solid ${theme.border}`,
-                    borderRadius: '12px',
-                    padding: '14px',
-                  }}
-                >
-                  {/* Swatches */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      gap: '8px',
-                      marginBottom: '12px',
-                      flexWrap: 'wrap',
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: '44px',
-                        height: '44px',
-                        borderRadius: '8px',
-                        backgroundColor: selectedColor.hex,
-                        cursor: 'pointer',
-                        boxShadow: `0 0 0 3px ${theme.bg}, 0 0 0 5px ${selectedColor.hex}`,
-                        flexShrink: 0,
-                      }}
-                      onClick={() => copyToClipboard(selectedColor.hex, selectedColor.hex)}
-                      title={`${selectedColor.name} - Click to copy`}
-                    />
-                    {relatedColors.map(c => (
-                      <div
-                        key={c.id}
-                        style={{
-                          width: '44px',
-                          height: '44px',
-                          borderRadius: '8px',
-                          backgroundColor: c.hex,
-                          cursor: 'pointer',
-                          transition: 'transform 0.1s ease',
-                          flexShrink: 0,
-                        }}
-                        onClick={() => setSelectedColor(c)}
-                        onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.1)')}
-                        onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
-                        title={`${c.name} - Click to view`}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Related color names */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      gap: '6px',
-                      flexWrap: 'wrap',
-                    }}
-                  >
-                    {relatedColors.map(c => (
-                      <span
-                        key={c.id}
-                        onClick={() => setSelectedColor(c)}
-                        style={{
-                          fontSize: '10px',
-                          fontWeight: 600,
-                          padding: '4px 8px',
-                          borderRadius: '6px',
-                          backgroundColor: theme.inputBg,
-                          color: theme.text,
-                          cursor: 'pointer',
-                          transition: 'background-color 0.15s ease',
-                        }}
-                        onMouseEnter={e => (e.currentTarget.style.backgroundColor = theme.btnHover)}
-                        onMouseLeave={e => (e.currentTarget.style.backgroundColor = theme.inputBg)}
-                      >
-                        {c.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
 
             {/* Credits */}
             <div
@@ -732,9 +678,9 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
                   lineHeight: 1.4,
                 }}
               >
-                From Werner&apos;s Nomenclature of Colours (1814)
+                Patrick Syme&apos;s 1821 second edition
                 <br />
-                Digitized by Nicholas Rougeux
+                Independently transcribed and sampled from the public-domain Getty scan
               </p>
             </div>
           </div>
@@ -748,9 +694,7 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({ isDark }) => {
         colors={colorSystemColors}
         combinationName={colorSystemName}
         isDark={isDark}
-        onGenerate={() => {
-          // Modal handles sending the message with computed scales
-        }}
+        documentColorProfile={documentColorProfile}
       />
 
       {/* About Panel */}

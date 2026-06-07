@@ -4,10 +4,10 @@
 
 Teul (틀) is a Figma plugin combining historic color palettes with modern design tools:
 
-- **Sanzo Wada** - 348 colors, 159 combinations from 1930s Japan
-- **Werner's Nomenclature** - 110 colors from 1814 with nature references
-- **Radix Scales** - Modern 12-step accessible color systems
-- **Swiss Grids** - Müller-Brockmann inspired grid presets
+- **Sanzo Wada** - 159 normalized colors used across 348 combinations from 1930s Japan
+- **Werner's Nomenclature** - Patrick Syme's 110-color 1821 second edition with nature references
+- **Radix Scales** - Exact pinned Radix scales and validated Radix-inspired generation
+- **Swiss Grids** - Swiss-inspired modern grid presets
 
 ## Quick Reference
 
@@ -33,29 +33,29 @@ Teul (틀) is a Figma plugin combining historic color palettes with modern desig
 - `src/ui.tsx` - React UI (runs in iframe)
 - Communication via `parent.postMessage()` and `figma.ui.onmessage`
 
-**Message types:** `apply-fill`, `apply-stroke`, `create-style`, `apply-grid`, `generate-color-system`, `create-palette`
+**Message types:** Defined and runtime-validated in `src/types/messages.ts` and
+`src/lib/messageValidation.ts`.
 
 ## Project Structure
 
 ```
 src/
-├── code.ts              # Figma backend entry (1992 lines)
-├── ui.tsx               # React UI entry (912 lines)
+├── code.ts              # Figma backend entry and message router
+├── ui.tsx               # React UI entry
 ├── components/          # React components
-│   ├── ui/              # Radix UI wrappers (button, dialog, etc.)
 │   ├── ColorSystemModal.tsx  # Color system generator
 │   ├── GridSystemTab.tsx     # Grid system UI
 │   ├── WernerColorsTab.tsx   # Werner colors browser
 │   └── ...
 ├── lib/
 │   ├── utils.ts         # Color math (contrast, conversions, OKLCH)
-│   ├── radixColors.ts   # 28 color families × 12 steps × 2 modes
+│   ├── radixColors.ts   # 31 color families × 12 steps × 2 modes
 │   ├── gridPresets.ts   # 20+ Swiss grid presets
 │   ├── gridStorage.ts   # localStorage for custom grids
 │   └── figmaGrids.ts    # Figma LayoutGrid API helpers
 ├── types/
 │   └── grid.ts          # Grid TypeScript definitions
-├── colors.json          # Sanzo Wada data (348 colors)
+├── colors.json          # Sanzo Wada data (159 colors, 348 combinations)
 └── wernerColors.json    # Werner data (110 colors)
 ```
 
@@ -77,16 +77,16 @@ src/
 - Functional components with hooks
 - Props interface defined inline or in types/
 - Theme passed as `isDark` prop
-- Inline styles for dynamic theming, Tailwind for utilities
+- Inline styles for dynamic theming
 
 ### Message Handling
 
 ```typescript
 // Backend (code.ts)
-figma.ui.onmessage = async msg => {
-  if (msg.type === 'apply-fill') {
-    /* ... */
-  }
+figma.ui.onmessage = async (msg: unknown) => {
+  const validation = validateUIToPluginMessage(msg);
+  if (!validation.valid) return;
+  // Route the validated discriminated union.
 };
 
 // Frontend
@@ -97,27 +97,23 @@ parent.postMessage({ pluginMessage: { type: 'apply-fill', hex, name } }, '*');
 
 - `hexToRgb()`, `rgbToHex()` - Basic conversion
 - `getContrastRatio()` - WCAG contrast
-- `generateColorScale()` - 12-step scale from base color
-- `clampToGamut()` - Ensure sRGB validity
+- `src/lib/colorScale.ts` - Validated, gamut-mapped 12-step scale generation
 
 ## Tech Stack
 
-- React 18.3.1, TypeScript 5.2.2
-- Tailwind CSS 4.0.8
-- Radix UI (dialog, dropdown, switch, tooltip)
-- Framer Motion, Lucide icons
-- Webpack 5.89.0
+- React 18, TypeScript 5
+- Webpack 5
 
 ## Testing
 
 - **Framework:** Vitest (fast, native TypeScript support)
 - **Test location:** `src/lib/__tests__/`
-- **Coverage:** Color math functions in `utils.ts` (72 tests)
+- **Coverage:** Color, grid, protocol, backend, and component regressions
 - Run `npm run test:run` before committing
 
 ## Code Quality
 
-- **ESLint:** Flat config in `eslint.config.js`
+- **ESLint:** Flat config in `eslint.config.mjs`
 - **Prettier:** Config in `.prettierrc`
 - **Pre-commit hooks:** Husky + lint-staged runs ESLint and Prettier on staged files
 - **CI:** GitHub Actions runs lint, typecheck, tests, and build on every PR

@@ -42,13 +42,6 @@ export const darkTheme: ThemeTokens = {
 };
 
 /**
- * Get theme tokens based on dark mode preference
- */
-export function getTheme(isDark: boolean): ThemeTokens {
-  return isDark ? darkTheme : lightTheme;
-}
-
-/**
  * Consolidated styles object for backward compatibility
  */
 export const styles = {

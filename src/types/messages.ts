@@ -2,21 +2,39 @@
  * Type-safe message protocol between UI and Figma plugin backend
  */
 
-import type { GridConfig } from './grid';
+import type {
+  ColorSystemConfig,
+  ColorSystemData,
+  NormalizedDocumentColorProfile,
+} from './colorSystem';
+import type {
+  FigmaRowsColsLayoutGrid,
+  FigmaUniformLayoutGrid,
+  GridConfig,
+  GridSelectionTarget,
+} from './grid';
 
 // ============================================
 // Color Message Types
 // ============================================
 
-export interface ColorPayload {
-  hex: string;
-  name: string;
-  rgb?: number[];
-}
-
 export interface GradientColor {
   hex: string;
   name: string;
+}
+
+export interface FigmaGridConfig {
+  columns?: FigmaRowsColsLayoutGrid;
+  rows?: FigmaRowsColsLayoutGrid;
+  baseline?: FigmaUniformLayoutGrid;
+}
+
+export type { NormalizedDocumentColorProfile } from './colorSystem';
+
+export function isNormalizedDocumentColorProfile(
+  value: unknown
+): value is NormalizedDocumentColorProfile {
+  return value === 'legacy' || value === 'srgb' || value === 'display-p3' || value === 'unknown';
 }
 
 // ============================================
@@ -44,20 +62,13 @@ export interface CreateStyleMessage {
   rgb?: number[];
 }
 
-export interface GetSelectionColorMessage {
-  type: 'get-selection-color';
-}
-
 export interface GetSelectionForGridMessage {
   type: 'get-selection-for-grid';
+  requestId?: string;
 }
 
-export interface CreateColorMessage {
-  type: 'create-color';
-  color: {
-    rgb_array: number[];
-    name: string;
-  };
+export interface GetDocumentColorProfileMessage {
+  type: 'get-document-color-profile';
 }
 
 export interface ApplyGradientMessage {
@@ -66,52 +77,37 @@ export interface ApplyGradientMessage {
   colors: GradientColor[];
 }
 
-export interface CreatePaletteMessage {
-  type: 'create-palette';
-  colors: ColorPayload[];
-  name?: string;
-}
-
 export interface NotifyMessage {
   type: 'notify';
   text: string;
 }
 
-export interface CopyMessage {
-  type: 'copy';
-  text: string;
-}
-
 export interface GenerateColorSystemMessage {
   type: 'generate-color-system';
-  config: unknown; // Complex config object
-  scales: unknown; // ColorSystemData
-}
-
-export interface CreateColorStylesMessage {
-  type: 'create-color-styles';
-  scales: unknown; // CreateStylesData
-  systemName: string;
+  requestId: string;
+  createStyles: boolean;
+  config: ColorSystemConfig;
+  scales: ColorSystemData;
 }
 
 export interface CreateGridFrameMessage {
   type: 'create-grid-frame';
-  config: GridConfig;
+  config: FigmaGridConfig;
   frameName: string;
   width: number;
   height: number;
   includeImage?: boolean;
-  imageBytes?: Uint8Array;
+  imageData?: string;
+  positionNearSelection?: boolean;
 }
 
 export interface ApplyGridMessage {
   type: 'apply-grid';
-  config: GridConfig;
+  requestId: string;
+  sourceConfig: GridConfig;
+  sourceDimensions?: { width: number; height: number };
+  expectedTargetIds: string[];
   replaceExisting: boolean;
-}
-
-export interface ClearGridsMessage {
-  type: 'clear-grids';
 }
 
 /**
@@ -121,65 +117,53 @@ export type UIToPluginMessage =
   | ApplyFillMessage
   | ApplyStrokeMessage
   | CreateStyleMessage
-  | GetSelectionColorMessage
   | GetSelectionForGridMessage
-  | CreateColorMessage
+  | GetDocumentColorProfileMessage
   | ApplyGradientMessage
-  | CreatePaletteMessage
   | NotifyMessage
-  | CopyMessage
   | GenerateColorSystemMessage
-  | CreateColorStylesMessage
   | CreateGridFrameMessage
-  | ApplyGridMessage
-  | ClearGridsMessage;
+  | ApplyGridMessage;
 
 // ============================================
 // Plugin → UI Messages
 // ============================================
 
-export interface SelectionColorMessage {
-  type: 'selection-color';
-  rgb: number[];
-}
-
 export interface SelectionInfoMessage {
   type: 'selection-info';
+  requestId?: string;
   hasSelection: boolean;
   isFrame: boolean;
+  selectedCount: number;
+  eligibleTargets: GridSelectionTarget[];
+  ineligibleCount: number;
   width?: number;
   height?: number;
   name?: string;
 }
 
-export interface GridAppliedMessage {
-  type: 'grid-applied';
+export interface DocumentColorProfileMessage {
+  type: 'document-color-profile';
+  profile: NormalizedDocumentColorProfile;
+}
+
+export interface ColorSystemOperationResultMessage {
+  type: 'color-system-operation-result';
+  requestId: string;
   success: boolean;
-  frameName?: string;
   error?: string;
 }
 
-/**
- * All messages that can be sent from Plugin to UI
- */
-export type PluginToUIMessage = SelectionColorMessage | SelectionInfoMessage | GridAppliedMessage;
-
-// ============================================
-// Type Guards
-// ============================================
-
-export function isPluginMessage(msg: unknown): msg is PluginToUIMessage {
-  return typeof msg === 'object' && msg !== null && 'type' in msg;
-}
-
-export function isSelectionInfoMessage(msg: PluginToUIMessage): msg is SelectionInfoMessage {
-  return msg.type === 'selection-info';
-}
-
-export function isSelectionColorMessage(msg: PluginToUIMessage): msg is SelectionColorMessage {
-  return msg.type === 'selection-color';
-}
-
-export function isGridAppliedMessage(msg: PluginToUIMessage): msg is GridAppliedMessage {
-  return msg.type === 'grid-applied';
+export interface GridAppliedMessage {
+  type: 'grid-applied';
+  requestId: string;
+  success: boolean;
+  appliedCount: number;
+  skippedCount: number;
+  failedCount: number;
+  message: string;
+  frameName?: string;
+  frameWidth?: number;
+  frameHeight?: number;
+  error?: string;
 }
