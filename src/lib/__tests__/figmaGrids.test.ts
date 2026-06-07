@@ -49,6 +49,7 @@ describe('columnConfigToFigmaGrid', () => {
     expect(result.offset).toBe(32);
     expect(result.visible).toBe(true);
     expect(result.color).toEqual(defaultColor);
+    expect(result).not.toHaveProperty('sectionSize');
   });
 
   it('converts column config with percentage margins', () => {
@@ -133,6 +134,7 @@ describe('rowConfigToFigmaGrid', () => {
     expect(result.count).toBe(8);
     expect(result.gutterSize).toBe(16);
     expect(result.offset).toBe(24);
+    expect(result).not.toHaveProperty('sectionSize');
   });
 
   it('converts row config with percentage values', () => {
