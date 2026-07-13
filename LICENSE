@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 Paul Jun and Teul contributors
+Copyright (c) 2026 Paul Jun
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,7 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
-This license applies to Teul's plugin code. It does not relicense bundled
-third-party libraries, source data, scans, transcriptions, modern recreations,
-or other third-party material. See THIRD_PARTY_NOTICES.md.

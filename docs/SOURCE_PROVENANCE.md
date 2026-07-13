@@ -1,11 +1,12 @@
 # Teul Source And Provenance Ledger
 
-Status: Current automated evidence; manual Figma acceptance remains
+Status: Current automated and manual release evidence
 Date: 2026-07-12
 
 This ledger records what Teul can currently prove about its source material.
 It is intentionally stricter than the product's previous wording.
-Automated results below do not record manual Figma acceptance as passed.
+Automated results below are supplemented by the manual Figma checks recorded in
+`docs/RELEASE_ACCEPTANCE_2026-07-12.md`.
 
 ## 1. Sanzo Wada
 

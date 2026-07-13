@@ -60,7 +60,7 @@ export function getRelativeLuminance(r: number, g: number, b: number): number {
 }
 
 /**
- * Calculate WCAG 2.1 contrast ratio between two colors
+ * Calculate WCAG 2.2 contrast ratio between two colors
  * Returns a value between 1:1 and 21:1
  */
 export function getWCAGContrast(fg: RGB, bg: RGB): number {

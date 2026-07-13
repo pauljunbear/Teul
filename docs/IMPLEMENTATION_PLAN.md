@@ -1,6 +1,6 @@
 # Teul End-To-End Implementation Plan
 
-Status: Current automated remediation recorded; source-dependent and manual acceptance work remains
+Status: Remediation and release acceptance recorded; source-dependent work remains
 Date: 2026-07-12
 
 This plan is governed by `docs/PRD.md` and `docs/SOURCE_PROVENANCE.md`.
@@ -16,9 +16,9 @@ Correctness and source truth come before visual refactoring.
 - The grid-fit matrix covers 65 presets across 12 required frame sizes: 555 of
   780 cases fit, 22 warn, and 203 intentional canonical/width-contract failures
   with actionable recommendations.
-- These are automated results only. Manual Figma acceptance is not recorded as
-  passing. Werner's bundled data is now independently derived from a pinned
-  public-domain Getty scan.
+- Werner's bundled data is independently derived from a pinned public-domain
+  Getty scan. Manual Figma acceptance is recorded in
+  `docs/RELEASE_ACCEPTANCE_2026-07-12.md`.
 
 ## Completed In This Audit
 
@@ -82,8 +82,8 @@ Correctness and source truth come before visual refactoring.
 - Continue splitting the largest presentation/backend modules; color-system
   submission now reuses the canonical export-scale model instead of rebuilding
   a second payload.
-- Complete the manual Figma acceptance matrix for profiles, mixed selections,
-  locks, rotations, existing guides/styles, and resize behavior.
+- Keep the manual Figma acceptance record current when profile, selection,
+  guide, style, storage, or resize behavior changes.
 
 ## Delivery Rules
 
@@ -298,7 +298,7 @@ Goal: reduce maintenance cost after contracts and behavior are stable.
 - Unused `components/ui/` branch, duplicate tooltip/theme components, stale CSS,
   stale message types, dormant accessibility code, and dead router branches.
 - Unused Radix UI, Tailwind, PostCSS, Lucide, loader, and lint dependencies.
-- Unused `ANTHROPIC_API_KEY` injection and unused manifest network access.
+- Unused API-key injection and unused manifest network access.
 - Extraneous Framer Motion lockfile entries.
 
 ### Consolidate

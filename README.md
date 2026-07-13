@@ -1,87 +1,97 @@
 # Teul
 
-**Timeless design foundations.**
+**Color gives work a voice. A grid gives it structure.**
 
-<img width="2790" height="1704" alt="CleanShot 2025-12-22 at 18 38 29@2x" src="https://github.com/user-attachments/assets/c113f18a-76b2-4af8-bda9-1a195b91df7c" />
+<img width="2790" height="1704" alt="Teul color browser in Figma" src="https://github.com/user-attachments/assets/c113f18a-76b2-4af8-bda9-1a195b91df7c" />
 
-## What is Teul?
+Teul (틀) is the Korean word for _frame_, _mold_, or _pattern_—the structure
+that shapes what comes next. Teul is a Figma plugin for building with color and
+grids: explore historical palettes from Sanzo Wada and Patrick Syme, turn
+colors into tested systems, and apply documented layout guides to real frames.
 
-**틀 (Teul)** is the Korean word for _frame_, _mold_, or _pattern_—a foundational structure that shapes what comes next. In Taekwondo, the forms are called _Tul_. In design, it's the framework that gives your work structure.
+History is the source. Teul is the tool.
 
-Teul brings together three worlds:
+## What Teul Does
 
-- **Sanzo Wada's color combinations** — 159 normalized colors used across 348 combinations from 1930s Japan
-- **Werner's Nomenclature of Colours** — Patrick Syme's 110-color 1821 second edition, adapted from Werner's nomenclature
-- **Color-system modes** — Exact Radix Colors pinned to `@radix-ui/colors` 3.0.0, source-preserving Teul Generated scales, and blocking WCAG-constrained semantic tokens
+### Explore Historical Color Relationships
 
-The result: historically sourced color relationships, clearly labeled digital approximations, and modern design tools. Generated systems should be validated for their intended color pairings and use cases.
+- **Sanzo Wada** — 159 normalized colors used across 348 combinations from a
+  modern selection of the original 360-combination series.
+- **Werner's Nomenclature of Colours** — Patrick Syme's 110-color 1821 second
+  edition, adapted from Werner's nomenclature and independently sampled from
+  the Getty Research Institute's public-domain scan.
 
-<img width="3888" height="2382" alt="CleanShot 2025-12-22 at 18 35 31@2x" src="https://github.com/user-attachments/assets/e1b04881-c29b-4691-8c9e-7867724328ff" />
+The bundled RGB and hex values are documented digital approximations. Teul
+does not present a screen color as an exact match for a printed recipe, painted
+swatch, or historical pigment.
 
-## Features
+### Build Color Systems
 
-### 🎨 Historic Color Palettes
+- **Exact Radix Colors** selects an unmodified family from the pinned
+  `@radix-ui/colors` 3.0.0 library.
+- **Teul Generated** builds a 12-step light and dark system while preserving
+  the selected source color and reporting what was tested.
+- **WCAG-Constrained Tokens** creates semantic tokens only when every declared
+  WCAG 2.2 color pairing passes.
+- Export CSS variables, Tailwind configuration, JSON, Figma styles, and visual
+  reference frames.
 
-Browse two historically sourced color collections represented by digital approximations:
+Passing color-pair tests does not make an entire product accessible. Teul names
+the guarantee it can prove and stops there.
 
-**Sanzo Wada** — 159 normalized colors used across 348 combinations. Bundled sRGB values are digital approximations based on modern Seigensha CMYK recipes.
+### Apply Grids That Fit
 
-**Werner's Nomenclature** — Patrick Syme's 1821 second edition adapts Werner's nomenclature into 110 colors with references from nature. Teul independently transcribes the public-domain edition and reproducibly samples the Getty scan's aged painted swatches.
+Browse 65 documented presets spanning Swiss-inspired constructions,
+historically informed editorial systems, modern product grids, and named
+systems such as Material, Carbon, Bootstrap, and USWDS.
 
-### ⚡ Color System Generator
+Teul resolves each grid against the selected frame. A preset fits, warns you,
+or explains why it cannot be applied. Source-faithful reconstructions keep
+their canonical dimensions instead of quietly stretching history to fit a
+different canvas.
 
-Turn any palette into a complete design system:
+Save custom grids, move them between files with JSON import and export, and
+store them through Figma's plugin storage.
 
-- **Exact Radix Colors** — selects the closest unmodified, versioned Radix family
-- **Teul Generated** — preserves the selected source color and reports tested structural and contrast guarantees
-- **WCAG-Constrained Tokens** — derives semantic tokens and blocks output unless every declared WCAG 2.2 color pairing passes
-- **12-step scales** for each color role (primary, secondary, tertiary, accent, neutral)
-- **Semantic tokens** — backgrounds, borders, interactive states, text colors
-- **Light and dark modes** generated automatically
-- **Usage proportions** — guidance on how to balance your palette
-- **Export options** — CSS variables, Tailwind config, JSON
+<img width="3888" height="2382" alt="Teul color system generator in Figma" src="https://github.com/user-attachments/assets/e1b04881-c29b-4691-8c9e-7867724328ff" />
 
-WCAG-Constrained Tokens guarantees the declared semantic color-pairing policy. It
-does not claim that a complete design or product is universally WCAG conformant;
-full conformance also depends on content, semantics, keyboard behavior, focus,
-media, interactions, and complete user flows.
+## Why Teul Exists
 
-### 📐 Swiss-Style Grids
+Most tools flatten the source. Historical palettes become loose hex codes.
+Grid theory becomes a dropdown of magic numbers. Teul keeps source,
+approximation, and generated output separate—then gives you practical ways to
+use all three.
 
-Swiss-inspired modern grid adaptations:
+Know where the reference came from. Know what the tool changed. Make the work
+your own.
 
-- 4, 6, 8, and 12-column presets
-- Modular grids with rows and columns
-- Uniform square Figma grids for spacing
-- Save and reuse custom configurations
+## Install
 
-## Installation
-
-1. Open Figma Desktop
-2. Go to **Plugins → Browse plugins in Community**
-3. Search "Teul"
-4. Click Install
+1. Open Figma Desktop.
+2. Go to **Plugins → Browse plugins in Community**.
+3. Search for **Teul**.
+4. Select **Install**.
 
 ## Quick Start
 
-**Generate a color system:**
+To build a color system:
 
-1. Browse Wada or Werner colors
-2. Find a combination you like
-3. Click "System" to open the generator
-4. Assign roles and generate
-5. Export to your codebase or create Figma frames
+1. Browse the Wada or Werner collection.
+2. Choose a color or combination.
+3. Select **System**.
+4. Assign roles and generate.
+5. Export the result or create it in Figma.
 
-**Apply a grid:**
+To apply a grid:
 
-1. Select a frame
-2. Switch to Grids tab
-3. Pick a preset
-4. Apply
+1. Select a supported frame, component, or instance.
+2. Open the **Grids** tab.
+3. Choose a preset.
+4. Review the fit result and apply it.
 
 ## Development
 
-Requires Node.js 22 or 24 and npm 10.9.8.
+Teul requires Node.js 22 or 24 and npm 10.9.8.
 
 ```bash
 git clone https://github.com/pauljunbear/Teul.git
@@ -90,27 +100,41 @@ npm ci
 npm run dev
 ```
 
-Import in Figma: **Plugins → Development → Import plugin from manifest**
+Import `manifest.json` through **Plugins → Development → Import plugin from
+manifest**.
 
-## Credits
+Before committing:
 
-### Color Data
+```bash
+npm run lint
+npm run typecheck
+npm run test:run
+npm run build
+npm run assert:artifacts
+```
 
-**Sanzo Wada** — Modern Seigensha CMYK recipes, converted to sRGB by [dictionary-of-colour-combinations](https://github.com/mattdesl/dictionary-of-colour-combinations), which credits [Dain M. Blodorn Kim's](https://sanzo-wada.dmbk.io/) original digital compilation.
+## Sources And Credits
 
-**Werner's Nomenclature of Colours** — Patrick Syme's 1821 second edition, adapted from Werner's nomenclature; independently transcribed and sampled from the [Getty Research Institute public-domain scan](https://archive.org/details/gri_c00033125012743312).
+**Sanzo Wada** — Modern Seigensha CMYK recipes converted to sRGB by
+[dictionary-of-colour-combinations](https://github.com/mattdesl/dictionary-of-colour-combinations),
+which credits [Dain M. Blodorn Kim's](https://sanzo-wada.dmbk.io/) original
+digital compilation.
 
-### Color System Generation
+**Werner's Nomenclature of Colours** — Patrick Syme's 1821 second edition,
+independently transcribed and sampled from the
+[Getty Research Institute public-domain scan](https://archive.org/details/gri_c00033125012743312).
 
-**Radix UI Colors** — Exact Match data pinned to [`@radix-ui/colors` 3.0.0](https://www.radix-ui.com/colors).
+**Radix Colors** — Exact library data pinned to
+[`@radix-ui/colors` 3.0.0](https://www.radix-ui.com/colors).
+
+The complete source record, uncertainty notes, derivation methods, and grid
+references live in the
+[source and provenance ledger](docs/SOURCE_PROVENANCE.md).
 
 ## License And Data Rights
 
 Teul's plugin code is MIT-licensed under [LICENSE](LICENSE). Bundled libraries,
-source data, and third-party rights retain their own terms; see
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and
-[the source and provenance ledger](docs/SOURCE_PROVENANCE.md). Werner's
-independent derivation is documented in
-[docs/WERNER_DERIVATION.md](docs/WERNER_DERIVATION.md), with source/display
-text differences pinned in
-[`scripts/werner-sampling/transcription-audit.json`](scripts/werner-sampling/transcription-audit.json).
+source data, and third-party material retain their own terms. See
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md),
+[APCA_LICENSE.md](APCA_LICENSE.md), and
+[the Werner derivation](docs/WERNER_DERIVATION.md).

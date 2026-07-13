@@ -1,7 +1,7 @@
 # Teul Product Requirements Document
 
-Status: Draft implementation contract
-Date: 2026-06-06
+Status: Implemented release contract; retained as the audit baseline
+Date: 2026-07-12
 
 ## 1. Product Definition
 
@@ -24,20 +24,23 @@ Teul must distinguish source material from interpretation:
 Teul must not describe digital approximations, generated scales, or unsourced
 grid presets as historically exact.
 
-## 2. Problem Statement
+## 2. Audit Baseline
 
-The current product combines useful source material with modern generated
-outputs, but it does not consistently disclose where values came from or which
-guarantees apply. Several active workflows also produce incorrect or incomplete
-results:
+Before the June–July 2026 remediation, Teul combined useful source material
+with modern generated outputs without consistently disclosing where values came
+from or which guarantees applied. Several active workflows also produced
+incorrect or incomplete results:
 
-- Saved percentage grids can be applied using hard-coded dimensions.
-- Baseline presets become uniform square grids and can silently become 8px.
-- Several grid descriptions promise geometry the data model cannot represent.
-- Custom generated color scales do not reliably meet semantic or contrast goals.
-- Multi-select color systems silently omit scales in exports and Figma output.
+- Saved percentage grids could be applied using hard-coded dimensions.
+- Baseline presets became uniform square grids and could silently become 8px.
+- Several grid descriptions promised geometry the data model could not represent.
+- Custom generated color scales did not reliably meet semantic or contrast goals.
+- Multi-select color systems silently omitted scales in exports and Figma output.
 - Historical, publisher-derived, scan-sampled, converted, and generated values
-  are presented without sufficient distinction.
+  were presented without sufficient distinction.
+
+The implementation and release evidence now close these findings. This document
+remains the contract for preventing them from returning.
 
 ## 3. Product Goals
 
