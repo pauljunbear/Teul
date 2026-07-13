@@ -25,8 +25,22 @@ export interface GridDimensions {
   height: number;
 }
 
-/** How a preset's pixel measurements behave when applied to another frame. */
-export type GridApplicationMode = 'fixed' | 'scale-from-reference';
+/** How a preset's measurements behave when applied to another frame. */
+export type GridApplicationMode =
+  | 'fixed'
+  | 'scale-from-reference'
+  | 'responsive-width'
+  | 'canonical-only';
+
+/** Width contract for a responsive named system; height remains unconstrained. */
+export interface GridResponsiveWidth {
+  min: number;
+  max?: number;
+  /** Optional centered body/container width used to recompute the content-guide margin. */
+  maxContentWidth?: number;
+  /** Fixed inset inside the centered body before the first content guide. */
+  contentInset?: number;
+}
 
 /** Selected Figma node that can accept layout grids. */
 export interface GridSelectionTarget extends GridDimensions {
@@ -158,10 +172,12 @@ export interface GridPreset {
   tags: string[];
   /** Recommended aspect ratio (e.g., "1:1.414", "16:9") */
   aspectRatio?: string;
-  /** Canonical frame used to create the preset and communicate its intended format. */
+  /** Preview/reference frame; canonical only when applicationMode is canonical-only. */
   referenceDimensions?: GridDimensions;
-  /** Whether pixel measurements stay fixed or scale from the canonical frame. */
+  /** Whether measurements stay fixed, scale, follow a width contract, or require the canonical frame. */
   applicationMode?: GridApplicationMode;
+  /** Responsive width range and optional centered-content rule. */
+  responsiveWidth?: GridResponsiveWidth;
   /** The actual grid configuration */
   config: GridConfig;
   /**

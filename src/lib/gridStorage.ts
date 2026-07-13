@@ -9,6 +9,7 @@ import type {
   GridCategory,
   GridConfig,
   GridDimensions,
+  GridResponsiveWidth,
   SavedGrid,
 } from '../types/grid';
 
@@ -87,6 +88,7 @@ const GRID_UNITS = ['px', 'percent'] as const;
 const GRID_ALIGNMENTS = ['MIN', 'CENTER', 'MAX', 'STRETCH'] as const;
 const MAX_GRID_COUNT = 1000;
 const MIN_BASELINE_HEIGHT = 1;
+const MAX_GRID_MEASUREMENT = 100_000;
 export const MAX_GRID_IMPORT_FILE_BYTES = 2 * 1024 * 1024;
 export const MAX_GRID_IMPORT_RECORDS = 1000;
 
@@ -102,12 +104,22 @@ function isNonNegativeNumber(value: unknown): value is number {
   return isFiniteNumber(value) && value >= 0;
 }
 
+function isNonNegativeMeasurement(value: unknown): value is number {
+  return isNonNegativeNumber(value) && value <= MAX_GRID_MEASUREMENT;
+}
+
 function isOptionalString(value: unknown): value is string | undefined {
   return value === undefined || typeof value === 'string';
 }
 
 function isGridApplicationMode(value: unknown): value is GridApplicationMode | undefined {
-  return value === undefined || value === 'fixed' || value === 'scale-from-reference';
+  return (
+    value === undefined ||
+    value === 'fixed' ||
+    value === 'scale-from-reference' ||
+    value === 'responsive-width' ||
+    value === 'canonical-only'
+  );
 }
 
 function parseGridDimensions(value: unknown): GridDimensions | undefined | null {
@@ -117,11 +129,39 @@ function parseGridDimensions(value: unknown): GridDimensions | undefined | null 
     !isFiniteNumber(value.width) ||
     !isFiniteNumber(value.height) ||
     value.width <= 0 ||
-    value.height <= 0
+    value.height <= 0 ||
+    value.width > MAX_GRID_MEASUREMENT ||
+    value.height > MAX_GRID_MEASUREMENT
   ) {
     return null;
   }
   return { width: value.width, height: value.height };
+}
+
+function parseResponsiveWidth(value: unknown): GridResponsiveWidth | undefined | null {
+  if (value === undefined) return undefined;
+  if (
+    !isRecord(value) ||
+    !isFiniteNumber(value.min) ||
+    value.min <= 0 ||
+    value.min > MAX_GRID_MEASUREMENT ||
+    (value.max !== undefined &&
+      (!isFiniteNumber(value.max) || value.max < value.min || value.max > MAX_GRID_MEASUREMENT)) ||
+    (value.maxContentWidth !== undefined &&
+      (!isFiniteNumber(value.maxContentWidth) ||
+        value.maxContentWidth <= 0 ||
+        value.maxContentWidth > MAX_GRID_MEASUREMENT)) ||
+    (value.contentInset !== undefined && !isNonNegativeMeasurement(value.contentInset))
+  ) {
+    return null;
+  }
+
+  return {
+    min: value.min,
+    ...(value.max === undefined ? {} : { max: value.max }),
+    ...(value.maxContentWidth === undefined ? {} : { maxContentWidth: value.maxContentWidth }),
+    ...(value.contentInset === undefined ? {} : { contentInset: value.contentInset }),
+  };
 }
 
 function isGridCategory(value: unknown): value is GridCategory {
@@ -169,9 +209,9 @@ function parseColumnOrRowConfig(
     !Number.isInteger(value.count) ||
     value.count <= 0 ||
     value.count > MAX_GRID_COUNT ||
-    !isNonNegativeNumber(value.gutterSize) ||
+    !isNonNegativeMeasurement(value.gutterSize) ||
     !isGridUnit(value.gutterUnit) ||
-    !isNonNegativeNumber(value.margin) ||
+    !isNonNegativeMeasurement(value.margin) ||
     !isGridUnit(value.marginUnit) ||
     !isGridAlignment(value.alignment) ||
     typeof value.visible !== 'boolean'
@@ -199,7 +239,8 @@ function parseBaselineConfig(value: unknown): NonNullable<GridConfig['baseline']
     !isRecord(value) ||
     !isFiniteNumber(value.height) ||
     value.height < MIN_BASELINE_HEIGHT ||
-    !isNonNegativeNumber(value.offset) ||
+    value.height > MAX_GRID_MEASUREMENT ||
+    !isNonNegativeMeasurement(value.offset) ||
     typeof value.visible !== 'boolean'
   ) {
     return null;
@@ -268,6 +309,14 @@ function parseSavedGrid(value: unknown): SavedGrid | null {
   if (!config) return null;
   const referenceDimensions = parseGridDimensions(value.referenceDimensions);
   if (referenceDimensions === null) return null;
+  const responsiveWidth = parseResponsiveWidth(value.responsiveWidth);
+  if (responsiveWidth === null) return null;
+  if (
+    (value.applicationMode === 'responsive-width' && responsiveWidth === undefined) ||
+    (value.applicationMode !== 'responsive-width' && responsiveWidth !== undefined)
+  ) {
+    return null;
+  }
 
   return {
     id: value.id,
@@ -278,6 +327,7 @@ function parseSavedGrid(value: unknown): SavedGrid | null {
     aspectRatio: value.aspectRatio,
     referenceDimensions,
     applicationMode: value.applicationMode,
+    responsiveWidth,
     config,
     isCustom: true,
     createdAt: value.createdAt,
@@ -538,6 +588,7 @@ export function createSavedGrid(params: {
   aspectRatio?: string;
   referenceDimensions?: GridDimensions;
   applicationMode?: GridApplicationMode;
+  responsiveWidth?: GridResponsiveWidth;
 }): SavedGrid {
   return {
     id: generateGridId(),
@@ -548,6 +599,7 @@ export function createSavedGrid(params: {
     aspectRatio: params.aspectRatio,
     referenceDimensions: params.referenceDimensions,
     applicationMode: params.applicationMode,
+    responsiveWidth: params.responsiveWidth,
     config: params.config,
     isCustom: true,
     createdAt: Date.now(),
@@ -816,6 +868,7 @@ export function duplicateSavedGrid(id: string): SavedGrid | null {
     aspectRatio: grid.aspectRatio,
     referenceDimensions: grid.referenceDimensions,
     applicationMode: grid.applicationMode,
+    responsiveWidth: grid.responsiveWidth,
   });
 
   addSavedGrid(duplicate);

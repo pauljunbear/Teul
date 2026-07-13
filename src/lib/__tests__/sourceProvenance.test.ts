@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import wadaSourceAudit from '../../wadaSourceAudit.json';
 import {
   getHistoricalSourceProvenance,
   HISTORICAL_SOURCE_PROVENANCE,
@@ -34,7 +35,13 @@ describe('Sanzo Wada provenance', () => {
     expect(WADA_SOURCE_PROVENANCE.profile).toMatchObject({
       colorCount: 159,
       combinationCount: 348,
-      publisherDerivedFields: ['CMYK'],
+      originalCombinationCount: 360,
+      historicalSourceFields: ['reviewed primary-card excerpts', 'original A-series counts'],
+      publisherDerivedFields: [
+        'modern normalized color names',
+        '348-combination selection',
+        'CMYK',
+      ],
       digitalApproximationFields: ['RGB', 'hex', 'D50 Lab'],
       digitalColorSpace: 'sRGB IEC61966-2.1',
       sourceColorProfile: 'U.S. Web Coated (SWOP) v2',
@@ -49,6 +56,21 @@ describe('Sanzo Wada provenance', () => {
       "Bundled data converted by mattdesl's dictionary-of-colour-combinations project, which credits Dain M. Blodorn Kim's original digital compilation."
     );
     expect(WADA_SOURCE_PROVENANCE.uncertainty.knownIssues.join(' ')).toContain('Dull Violet Black');
+    expect(WADA_SOURCE_PROVENANCE.uncertainty.knownIssues.join(' ')).toContain('Nos. 109-120');
+    expect(WADA_SOURCE_PROVENANCE.transcription).toMatchObject({
+      status: 'partially-reviewed',
+      ledgerPath: 'src/wadaSourceAudit.json',
+    });
+    expect(WADA_SOURCE_PROVENANCE.transcription?.summary).toContain(
+      'not classified wholesale as verified primary-source text'
+    );
+    expect(WADA_SOURCE_PROVENANCE.profile.originalCombinationCount).toBe(
+      wadaSourceAudit.corpusComparison.originalASeries.combinationCount
+    );
+    expect(WADA_SOURCE_PROVENANCE.profile.combinationCount).toBe(
+      wadaSourceAudit.corpusComparison.modernSeigenshaSelection.combinationCount
+    );
+    expect(WADA_SOURCE_PROVENANCE.transcription?.summary).toBe(wadaSourceAudit.disclosureSummary);
     expect(WADA_SOURCE_PROVENANCE.source.period).toBe('1930s');
     expect(WADA_SOURCE_PROVENANCE.disclosure.detail).toContain('U.S. Web Coated (SWOP) v2');
   });
@@ -64,6 +86,7 @@ describe("Werner's Nomenclature provenance", () => {
     expect(WERNER_SOURCE_PROVENANCE.profile).toMatchObject({
       colorCount: 110,
       combinationCount: null,
+      originalCombinationCount: null,
       digitalApproximationFields: ['hex'],
       digitalColorSpace: '8-bit sRGB (decoder interpretation)',
       sourceColorProfile: null,

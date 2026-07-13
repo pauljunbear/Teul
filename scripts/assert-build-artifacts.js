@@ -42,9 +42,27 @@ if (!fs.existsSync(path.join(distDir, 'code.js'))) {
   fail('dist/code.js is missing.');
 }
 
+const manifest = JSON.parse(fs.readFileSync(path.join(rootDir, 'manifest.json'), 'utf8'));
+if (manifest.documentAccess !== 'dynamic-page') {
+  fail('manifest.json must use dynamic-page document access.');
+}
+if (
+  !manifest.networkAccess ||
+  manifest.networkAccess.allowedDomains?.length !== 1 ||
+  manifest.networkAccess.allowedDomains[0] !== 'none'
+) {
+  fail('manifest.json must explicitly deny network access.');
+}
+
+const packageMetadata = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
+if (packageMetadata.license !== 'SEE LICENSE IN LICENSE') {
+  fail('package.json must defer to the mixed-license project LICENSE file.');
+}
+
 const distributedDocuments = [
   { source: 'LICENSE', output: 'LICENSE' },
   { source: 'THIRD_PARTY_NOTICES.md', output: 'THIRD_PARTY_NOTICES.md' },
+  { source: 'APCA_LICENSE.md', output: 'APCA_LICENSE.md' },
   { source: 'docs/SOURCE_PROVENANCE.md', output: 'SOURCE_PROVENANCE.md' },
 ];
 

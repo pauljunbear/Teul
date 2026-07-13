@@ -22,6 +22,7 @@ export interface HistoricalSourceProvenance {
   readonly profile: {
     readonly colorCount: number;
     readonly combinationCount: number | null;
+    readonly originalCombinationCount: number | null;
     readonly historicalSourceFields: readonly string[];
     readonly publisherDerivedFields: readonly string[];
     readonly modernRecreationFields: readonly string[];
@@ -29,6 +30,11 @@ export interface HistoricalSourceProvenance {
     readonly digitalColorSpace: string;
     readonly sourceColorProfile: string | null;
     readonly renderingIntent: string | null;
+    readonly summary: string;
+  };
+  readonly transcription?: {
+    readonly status: 'partially-reviewed' | 'fully-reviewed';
+    readonly ledgerPath: string;
     readonly summary: string;
   };
   readonly derivation: {
@@ -67,7 +73,7 @@ export const WADA_SOURCE_PROVENANCE = {
   source: {
     title: 'Sanzo Wada color-combination corpus',
     creators: ['Sanzo Wada'],
-    edition: '1930s original series; modern normalized corpus based on the Seigensha edition',
+    edition: '1930s 360-combination A-series; modern 348-combination Seigensha selection',
     year: null,
     period: '1930s',
     primaryUrl: 'https://ndlsearch.ndl.go.jp/books/R100000002-I000001085468',
@@ -76,19 +82,28 @@ export const WADA_SOURCE_PROVENANCE = {
       'https://en.seigensha.com/books/978-4-86152-247-5/',
       'https://sanzo-wada.dmbk.io/',
     ],
-    citation: "Sanzo Wada's 1930s color-combination work; modern Seigensha edition",
+    citation:
+      "Sanzo Wada's original 360-combination A-series; modern 348-combination Seigensha selection",
   },
   profile: {
     colorCount: 159,
     combinationCount: 348,
-    historicalSourceFields: ['names', 'combination membership', 'combination ordering'],
-    publisherDerivedFields: ['CMYK'],
+    originalCombinationCount: 360,
+    historicalSourceFields: ['reviewed primary-card excerpts', 'original A-series counts'],
+    publisherDerivedFields: ['modern normalized color names', '348-combination selection', 'CMYK'],
     modernRecreationFields: [],
     digitalApproximationFields: ['RGB', 'hex', 'D50 Lab'],
     digitalColorSpace: 'sRGB IEC61966-2.1',
     sourceColorProfile: 'U.S. Web Coated (SWOP) v2',
     renderingIntent: 'relative colorimetric with black-point compensation',
-    summary: '159 normalized colors across 348 combinations; bundled RGB and hex are sRGB.',
+    summary:
+      '159 normalized colors in a modern 348-of-360 selection; bundled names are upstream transcriptions, and RGB/hex are sRGB approximations.',
+  },
+  transcription: {
+    status: 'partially-reviewed',
+    ledgerPath: 'src/wadaSourceAudit.json',
+    summary:
+      'The original A-series has 360 combinations; the modern Seigensha selection has 348 and omits A.XII four-color Nos. 109-120. Bundled names are modern upstream transcriptions and are not classified wholesale as verified primary-source text.',
   },
   derivation: {
     classification: 'digital-approximation',
@@ -108,8 +123,10 @@ export const WADA_SOURCE_PROVENANCE = {
     level: 'material',
     knownIssues: [
       'The conversion is not an exact match to the printed book or original painted material.',
-      'Dull Violet Black preserves the source CMYK exception M=106.',
+      'Dull Violet Black preserves the unresolved bundled CMYK exception M=106 pending publisher-edition verification.',
       'The corpus uses modern flattened combination IDs rather than original series numbering.',
+      'The modern selection omits original A.XII four-color Nos. 109-120.',
+      'Bundled names are not classified wholesale as verified primary-source transcriptions.',
     ],
     summary: 'Screen values are modern approximations, not exact historical RGB colors.',
   },
@@ -120,9 +137,9 @@ export const WADA_SOURCE_PROVENANCE = {
   },
   disclosure: {
     label: 'Digital approximation',
-    compact: 'Seigensha CMYK converted through SWOP v2 to sRGB; not an exact historical color.',
+    compact: '348 of 360 original combinations; names are qualified and sRGB is approximate.',
     detail:
-      'Digital sRGB approximation based on Seigensha CMYK, converted with U.S. Web Coated (SWOP) v2 to sRGB using relative colorimetric intent and black-point compensation.',
+      'Modern Seigensha selection of 348 of the original 360 combinations; A.XII four-color Nos. 109-120 are omitted. Names are upstream transcriptions with reviewed variants logged separately. Color values are digital sRGB approximations based on Seigensha CMYK, converted with U.S. Web Coated (SWOP) v2 using relative colorimetric intent and black-point compensation.',
   },
 } as const satisfies HistoricalSourceProvenance;
 
@@ -147,6 +164,7 @@ export const WERNER_SOURCE_PROVENANCE = {
   profile: {
     colorCount: 110,
     combinationCount: null,
+    originalCombinationCount: null,
     historicalSourceFields: [
       'collection identity',
       'color names',

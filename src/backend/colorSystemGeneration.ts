@@ -8,8 +8,9 @@ import type {
 } from '../lib/semanticColorPolicy';
 import { isSemanticColorPolicyCurrent } from '../lib/semanticColorPolicy';
 import { areAllScalesExactRadix, haveExactRadixScaleClaims } from '../lib/radixColors';
+import { getLuminance, hexToRgb } from '../lib/utils';
 import type { ColorScaleData, ColorSystemData } from '../types/colorSystem';
-export type { ColorScaleData, ColorSystemData } from '../types/colorSystem';
+export type { ColorSystemData } from '../types/colorSystem';
 
 // ============================================
 // Type Definitions
@@ -148,13 +149,8 @@ function getOrderedScaleKeys(scales: ColorSystemData['scales']['light']): string
 }
 
 function getRelativeLuminance(hex: string): number {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-
-  const toLinear = (c: number) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
-
-  return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+  const { r, g, b } = hexToRgb(hex);
+  return getLuminance(r, g, b);
 }
 
 function calculateContrastRatio(hex1: string, hex2: string): number {

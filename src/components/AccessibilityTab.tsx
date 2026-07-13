@@ -1,11 +1,6 @@
 import * as React from 'react';
 import { useState, useCallback, useMemo } from 'react';
-import {
-  analyzeContrast,
-  getFontRecommendations,
-  type ContrastResult,
-  type APCARating,
-} from '../lib/accessibility';
+import { analyzeContrast, type ContrastResult, type APCAUseCase } from '../lib/accessibility';
 import { simulateCVDHex, CVD_INFO, type CVDType } from '../lib/colorBlindness';
 
 // ============================================
@@ -31,9 +26,6 @@ const getStyles = (isDark: boolean) => ({
   success: isDark ? '#22c55e' : '#16a34a',
   warning: isDark ? '#eab308' : '#ca8a04',
   error: isDark ? '#ef4444' : '#dc2626',
-  gold: '#fbbf24',
-  silver: '#9ca3af',
-  bronze: '#d97706',
 });
 
 // ============================================
@@ -148,17 +140,20 @@ const Badge: React.FC<{
 };
 
 /**
- * APCA Rating Badge
+ * APCA use-case guide badge
  */
-const APCARatingBadge: React.FC<{
-  rating: APCARating;
+const APCAUseCaseBadge: React.FC<{
+  useCase: APCAUseCase;
   styles: ReturnType<typeof getStyles>;
-}> = ({ rating, styles }) => {
+}> = ({ useCase, styles }) => {
   const config = {
-    gold: { color: styles.gold, label: 'Gold' },
-    silver: { color: styles.silver, label: 'Silver' },
-    bronze: { color: styles.bronze, label: 'Bronze' },
-    fail: { color: styles.error, label: 'Below guide' },
+    'preferred-body': { color: styles.success, label: 'Preferred body text' },
+    'minimum-body': { color: styles.success, label: 'Minimum body text' },
+    'fluent-text': { color: styles.warning, label: 'Fluent text' },
+    'large-text': { color: styles.warning, label: 'Large text only' },
+    'non-content-text': { color: styles.warning, label: 'Non-content text only' },
+    'non-text': { color: styles.textMuted, label: 'Non-text only' },
+    'below-guide': { color: styles.error, label: 'Below guide' },
   };
 
   return (
@@ -168,11 +163,11 @@ const APCARatingBadge: React.FC<{
         borderRadius: '4px',
         fontSize: '10px',
         fontWeight: 600,
-        backgroundColor: `${config[rating].color}20`,
-        color: config[rating].color,
+        backgroundColor: `${config[useCase].color}20`,
+        color: config[useCase].color,
       }}
     >
-      {config[rating].label}
+      {config[useCase].label}
     </span>
   );
 };
@@ -215,6 +210,15 @@ const Card: React.FC<{
   </div>
 );
 
+const APCA_BASIC_REFERENCE_LEVELS = [
+  { lc: 90, label: 'Preferred Body Text', detail: '14px' },
+  { lc: 75, label: 'Minimum Body Text', detail: '16px' },
+  { lc: 60, label: 'Minimum Fluent text', detail: '24px' },
+  { lc: 45, label: 'Minimum Large text', detail: '42px' },
+  { lc: 30, label: 'Minimum Any text', detail: 'non-content text only' },
+  { lc: 15, label: 'Invisibility point', detail: 'certain non-text only' },
+] as const;
+
 // ============================================
 // Contrast Checker Section
 // ============================================
@@ -233,10 +237,8 @@ const ContrastChecker: React.FC<{
     }
   }, [foreground, background]);
 
-  const fontRecs = useMemo(() => {
-    if (!contrastResult) return [];
-    return getFontRecommendations(contrastResult.apca.lc);
-  }, [contrastResult]);
+  const referencePreviewSize = contrastResult?.apca.minimumFontSize ?? null;
+  const showReferencePreview = referencePreviewSize !== null && referencePreviewSize <= 48;
 
   return (
     <Card styles={styles}>
@@ -264,20 +266,56 @@ const ContrastChecker: React.FC<{
         />
       </div>
 
-      {/* Preview */}
+      <div
+        style={{
+          marginBottom: '6px',
+          fontSize: '11px',
+          fontWeight: 600,
+          color: styles.textMuted,
+        }}
+      >
+        Fluent Text Minimum Reference Font Sizes at Normal Weight (Arial 400)
+      </div>
+
+      {/* APCA-compatible reference-size preview */}
       <div
         style={{
           padding: '16px',
           borderRadius: '8px',
-          backgroundColor: background,
-          color: foreground,
+          backgroundColor: showReferencePreview ? background : styles.bg,
+          color: showReferencePreview ? foreground : styles.text,
           textAlign: 'center',
           marginBottom: '16px',
           border: `1px solid ${styles.border}`,
         }}
       >
-        <div style={{ fontSize: '16px', fontWeight: 600, marginBottom: '4px' }}>Sample Text</div>
-        <div style={{ fontSize: '12px' }}>The quick brown fox jumps over the lazy dog</div>
+        {showReferencePreview ? (
+          <div
+            data-apca-reference-sample="true"
+            style={{
+              fontSize: `${referencePreviewSize}px`,
+              fontWeight: 400,
+              fontFamily: 'Arial, Helvetica, sans-serif',
+            }}
+          >
+            Reference-size sample
+          </div>
+        ) : (
+          <div style={{ fontSize: '12px' }}>
+            No practical normal-weight content-text preview at this Lc.
+          </div>
+        )}
+      </div>
+      <div
+        style={{
+          marginTop: '-10px',
+          marginBottom: '16px',
+          fontSize: '10px',
+          color: styles.textMuted,
+        }}
+      >
+        Preview uses the required Arial/Helvetica 400 reference at the current Lc level when a
+        content-text example is permitted. It is not approval for another typeface or context.
       </div>
 
       {/* Results */}
@@ -334,7 +372,7 @@ const ContrastChecker: React.FC<{
                 marginBottom: '6px',
               }}
             >
-              APCA SAPC 0.0.98G-4g-base (experimental)
+              APCA 0.1.9 perceptual Lc (experimental)
             </div>
             <div
               style={{
@@ -353,35 +391,63 @@ const ContrastChecker: React.FC<{
                 Lc {contrastResult.apca.lc > 0 ? '+' : ''}
                 {contrastResult.apca.lc.toFixed(1)}
               </span>
-              <APCARatingBadge rating={contrastResult.apca.rating} styles={styles} />
+              <APCAUseCaseBadge useCase={contrastResult.apca.useCase} styles={styles} />
             </div>
             <div style={{ marginTop: '6px', fontSize: '10px', color: styles.textMuted }}>
-              Supplemental metric only; not WCAG 3 conformance.
+              Supplemental beta metric for self-illuminated sRGB web content; not a WCAG conformance
+              method. Text/background order and polarity matter.{' '}
+              <a
+                href="https://git.apcacontrast.com/documentation/WhyAPCA"
+                target="_blank"
+                rel="noreferrer"
+                style={{ color: styles.text }}
+              >
+                Why APCA
+              </a>
+              {' · '}
+              <a
+                href="https://git.apcacontrast.com/documentation/APCAeasyIntro"
+                target="_blank"
+                rel="noreferrer"
+                style={{ color: styles.text }}
+              >
+                use-case guide
+              </a>
+              {' · '}
+              <a
+                href="https://git.apcacontrast.com/documentation/minimum_compliance"
+                target="_blank"
+                rel="noreferrer"
+                style={{ color: styles.text }}
+              >
+                integration limits
+              </a>
+              {' · '}
+              <a
+                href="https://github.com/Myndex/SAPC-APCA/discussions"
+                target="_blank"
+                rel="noreferrer"
+                style={{ color: styles.text }}
+              >
+                questions and discussion
+              </a>
             </div>
           </div>
 
-          {/* Font Recommendations */}
-          {fontRecs.length > 0 && fontRecs[0].minSize !== Infinity && (
-            <div>
-              <div
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 600,
-                  color: styles.textMuted,
-                  marginBottom: '6px',
-                }}
-              >
-                Experimental Font Guidance
-              </div>
-              <div style={{ fontSize: '12px', color: styles.text }}>
-                {fontRecs.map((rec, i) => (
-                  <div key={i} style={{ marginBottom: '2px' }}>
-                    {rec.minSize}px {rec.weight}: {rec.description}
-                  </div>
-                ))}
-              </div>
+          <div>
+            <div style={{ fontSize: '12px', color: styles.text }}>
+              {APCA_BASIC_REFERENCE_LEVELS.map(level => (
+                <div key={level.lc} style={{ marginBottom: '2px' }}>
+                  Lc {level.lc}: {level.label} — {level.detail}
+                </div>
+              ))}
             </div>
-          )}
+            <div style={{ marginTop: '4px', fontSize: '10px', color: styles.textMuted }}>
+              Basic Latin reference-font levels for Arial 400. Typeface, rendering, spacing,
+              context, and user needs can require more contrast; see the adjacent use-case guide for
+              fuller explanations.
+            </div>
+          </div>
         </div>
       )}
     </Card>
@@ -694,5 +760,3 @@ export const AccessibilityTab: React.FC<AccessibilityTabProps> = ({ isDark }) =>
     </div>
   );
 };
-
-export default AccessibilityTab;

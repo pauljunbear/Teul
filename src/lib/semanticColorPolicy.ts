@@ -3,7 +3,7 @@ import { calculateContrastRatio } from './utils';
 export type SemanticColorMode = 'light' | 'dark';
 export type SemanticColorCategory = 'text' | 'enhanced-text' | 'non-text';
 
-export type SemanticColorTokenName =
+type SemanticColorTokenName =
   | 'background.canvas'
   | 'background.surface'
   | 'background.control'
@@ -24,7 +24,7 @@ export interface SemanticColorToken {
   };
 }
 
-export interface SemanticColorPairingResult {
+interface SemanticColorPairingResult {
   foregroundToken: SemanticColorTokenName;
   backgroundToken: SemanticColorTokenName;
   useCase: string;
@@ -41,8 +41,6 @@ export interface SemanticColorModeReport {
   valid: boolean;
 }
 
-export type SemanticColorPolicyModeReport = SemanticColorModeReport;
-
 export interface SemanticColorPolicyReport {
   standard: 'WCAG 2.2';
   level: 'AA + enhanced primary text';
@@ -53,7 +51,7 @@ export interface SemanticColorPolicyReport {
   valid: boolean;
 }
 
-export interface SemanticColorScale {
+interface SemanticColorScale {
   steps: readonly { step: number; hex: string }[];
 }
 

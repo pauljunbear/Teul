@@ -10,6 +10,8 @@ import type {
 import type {
   FigmaRowsColsLayoutGrid,
   FigmaUniformLayoutGrid,
+  GridApplicationMode,
+  GridResponsiveWidth,
   GridConfig,
   GridSelectionTarget,
 } from './grid';
@@ -45,21 +47,18 @@ export interface ApplyFillMessage {
   type: 'apply-fill';
   hex: string;
   name: string;
-  rgb?: number[];
 }
 
 export interface ApplyStrokeMessage {
   type: 'apply-stroke';
   hex: string;
   name: string;
-  rgb?: number[];
 }
 
 export interface CreateStyleMessage {
   type: 'create-style';
   hex: string;
   name: string;
-  rgb?: number[];
 }
 
 export interface GetSelectionForGridMessage {
@@ -96,8 +95,6 @@ export interface CreateGridFrameMessage {
   frameName: string;
   width: number;
   height: number;
-  includeImage?: boolean;
-  imageData?: string;
   positionNearSelection?: boolean;
 }
 
@@ -106,6 +103,8 @@ export interface ApplyGridMessage {
   requestId: string;
   sourceConfig: GridConfig;
   sourceDimensions?: { width: number; height: number };
+  applicationMode: GridApplicationMode;
+  responsiveWidth?: GridResponsiveWidth;
   expectedTargetIds: string[];
   replaceExisting: boolean;
 }

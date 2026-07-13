@@ -60,7 +60,7 @@ results:
 - Automatically making user content responsive; layout guides do not replace
   constraints or auto layout.
 - Claiming full WCAG conformance for a product based only on color-pair checks.
-- Treating APCA as a normative WCAG 3 conformance method.
+- Treating experimental APCA output as a normative standards-conformance method.
 
 ## 5. Primary Users And Jobs
 
@@ -119,12 +119,15 @@ Every bundled dataset and preset must have a versioned provenance record with:
   combinations.
 - Preserve modern flattened IDs `1-348`, while supporting original-card IDs
   such as `A-2-001`, `A-3-001`, and `A-4-001`.
-- Treat names, palette membership, ordering, and original numbering as
-  historical-source fields.
-- Treat Seigensha CMYK as publisher-derived.
+- Record that the original A-series contains 360 combinations and that the
+  modern 348-combination selection omits A.XII four-color Nos. 109-120.
+- Treat only individually reviewed primary-card text and original counts as
+  historical-source fields. Treat normalized names, the modern selection, and
+  Seigensha CMYK as publisher/upstream-derived until individually verified.
 - Label the bundled SWOP-to-sRGB hex/RGB/Lab values as digital approximations.
-- Preserve the source exception `Dull Violet Black: M=106` in an exception log;
-  do not silently clamp it.
+- Preserve the unresolved bundled-upstream exception
+  `Dull Violet Black: M=106` in an exception log; do not silently clamp it or
+  call it publisher-verified.
 
 ### DATA-003: Werner corpus
 
@@ -231,7 +234,7 @@ pairings, not complete pages, products, or user flows.
 - Test final composited foreground/background colors.
 - Label APCA as an experimental supplemental metric, including version and
   signed `Lc` result.
-- Never label APCA as "WCAG 3 compliance."
+- Never label APCA output as standards compliance.
 - Do not mark palettes globally compliant; report specific tested pairings and
   use cases.
 
@@ -286,21 +289,26 @@ have artifact-level evidence.
 
 Teul must support distinct construction modes:
 
-| Mode                 | Required behavior                                                                  |
-| -------------------- | ---------------------------------------------------------------------------------- |
-| Responsive stretch   | Fixed pixel margins/gutters per target frame or breakpoint; section size stretches |
-| Proportional         | Relative inputs resolve independently against each target frame                    |
-| Fixed                | Section size, offset, and count remain fixed                                       |
-| Typographic baseline | Horizontal rhythm derived from leading; never automatically scaled                 |
-| Modular              | Columns and rows derived from content and baseline rhythm                          |
-| Native approximation | Explicitly documents geometry Figma cannot represent directly                      |
+| Mode                      | Required behavior                                                                                   |
+| ------------------------- | --------------------------------------------------------------------------------------------------- |
+| Responsive stretch        | Fixed pixel margins/gutters per target frame or breakpoint; section size stretches                  |
+| Proportional              | Relative inputs resolve independently against each target frame                                     |
+| Fixed                     | Pixel margins, gutters, and baseline inputs stay fixed; stretch sections may absorb remaining space |
+| Source-faithful canonical | Apply only at exact reference dimensions; otherwise block and recommend the canonical frame         |
+| Typographic baseline      | Horizontal rhythm derived from leading; never automatically scaled                                  |
+| Modular                   | Columns and rows derived from content and baseline rhythm                                           |
+| Native approximation      | Explicitly documents geometry Figma cannot represent directly                                       |
 
 ### GRID-003: Arbitrary dimensions
 
-- Apply calculations from each target node's current width and height.
+- Apply calculations from each target node's current width and height. Enforce
+  exact dimensions only for source-faithful canonical constructions. Enforce
+  source-backed width ranges—but not invented heights—for responsive named
+  systems, recalculating centered maximum-width bodies when required.
 - Do not use hard-coded fallback dimensions when applying to a selection.
-- Support portrait, landscape, square, 16:9, 4:3, social, presentation, print-like,
-  component, and arbitrary frames.
+- Support portrait, landscape, square, 16:9, 4:3, social, presentation,
+  print-like, component, and arbitrary frames for fixed constructions and every
+  in-range responsive construction.
 - Use available space and constraints, not aspect-ratio labels alone, to decide
   whether a construction still fits.
 - When a construction fails, recommend a smaller column count or changed

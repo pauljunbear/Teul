@@ -114,7 +114,7 @@ const generationRequest = {
 
 describe('validateUIToPluginMessage', () => {
   it.each([
-    { type: 'apply-fill', ...color, rgb: [18, 52, 86] },
+    { type: 'apply-fill', ...color },
     { type: 'apply-stroke', ...color },
     { type: 'create-style', ...color },
     { type: 'get-selection-for-grid' },
@@ -141,6 +141,7 @@ describe('validateUIToPluginMessage', () => {
       requestId: 'grid-apply-1',
       sourceConfig: { columns: sourceColumns },
       sourceDimensions: { width: 1440, height: 900 },
+      applicationMode: 'scale-from-reference',
       expectedTargetIds: ['1:2', '3:4'],
       replaceExisting: true,
     },
@@ -578,15 +579,6 @@ describe('validateUIToPluginMessage', () => {
       height: 900,
     },
     {
-      type: 'create-grid-frame',
-      config: { columns },
-      frameName: 'Grid',
-      width: 1440,
-      height: 900,
-      includeImage: true,
-      imageData: 'not base64',
-    },
-    {
       type: 'apply-grid',
       requestId: 'grid-apply-invalid-color',
       sourceConfig: {
@@ -625,6 +617,53 @@ describe('validateUIToPluginMessage', () => {
       expect(result.error.length).toBeGreaterThan(0);
     }
   });
+
+  it('requires reference dimensions for canonical and scaling modes', () => {
+    const message = {
+      type: 'apply-grid',
+      requestId: 'grid-apply-canonical',
+      sourceConfig: { columns: sourceColumns },
+      applicationMode: 'canonical-only',
+      expectedTargetIds: ['1:2'],
+      replaceExisting: true,
+    };
+
+    expect(validateUIToPluginMessage(message)).toEqual({
+      valid: false,
+      error: 'apply-grid: canonical-only requires sourceDimensions',
+    });
+  });
+
+  it('accepts a bounded responsive-width contract without reference dimensions', () => {
+    const message = {
+      type: 'apply-grid',
+      requestId: 'grid-apply-responsive',
+      sourceConfig: { columns: sourceColumns },
+      applicationMode: 'responsive-width',
+      responsiveWidth: { min: 600, max: 904 },
+      expectedTargetIds: ['1:2'],
+      replaceExisting: true,
+    };
+
+    expect(validateUIToPluginMessage(message)).toEqual({ valid: true, message });
+  });
+
+  it('rejects an invalid responsive-width contract', () => {
+    const message = {
+      type: 'apply-grid',
+      requestId: 'grid-apply-responsive-invalid',
+      sourceConfig: { columns: sourceColumns },
+      applicationMode: 'responsive-width',
+      responsiveWidth: { min: 905, max: 600 },
+      expectedTargetIds: ['1:2'],
+      replaceExisting: true,
+    };
+
+    expect(validateUIToPluginMessage(message)).toEqual({
+      valid: false,
+      error: 'apply-grid: responsive-width requires a valid responsiveWidth contract',
+    });
+  });
 });
 
 describe('backend message boundary', () => {
@@ -641,6 +680,7 @@ describe('backend message boundary', () => {
         showUI: vi.fn(),
         on: vi.fn(),
         notify: vi.fn(),
+        currentPage: { selection: [], on: vi.fn(), off: vi.fn() },
         ui: {
           onmessage: undefined,
           postMessage: vi.fn(),
@@ -678,6 +718,7 @@ describe('backend message boundary', () => {
         showUI: vi.fn(),
         on: vi.fn(),
         notify,
+        currentPage: { selection: [], on: vi.fn(), off: vi.fn() },
         ui: {
           onmessage: undefined,
         },
@@ -715,6 +756,7 @@ describe('backend message boundary', () => {
         showUI: vi.fn(),
         on: vi.fn(),
         notify: vi.fn(),
+        currentPage: { selection: [], on: vi.fn(), off: vi.fn() },
         ui: {
           onmessage: undefined,
           postMessage,
@@ -775,6 +817,7 @@ describe('backend message boundary', () => {
         showUI: vi.fn(),
         on: vi.fn(),
         notify,
+        currentPage: { selection: [], on: vi.fn(), off: vi.fn() },
         ui: {
           onmessage: undefined,
           postMessage,

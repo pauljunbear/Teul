@@ -243,6 +243,7 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
       }
 
       const sourceDimensions = getPresetSourceDimensions(preset);
+      const applicationMode = getPresetApplicationMode(preset);
       const fit = analyzeResolvedPresetFits(preset, currentTargets, sourceDimensions);
       if (fit.status === 'fail') {
         const failedTarget = fit.representative.frame;
@@ -266,6 +267,8 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
         config: preset.config,
         expectedTargetIds: currentTargets.map(target => target.id),
         sourceDimensions,
+        applicationMode,
+        responsiveWidth: preset.responsiveWidth,
         replaceExisting: true,
       });
 
@@ -585,6 +588,20 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
                       Open source reference
                     </a>
                   )}
+                  {selectedPreset.referenceDimensions && (
+                    <div>
+                      Application:{' '}
+                      {getPresetApplicationMode(selectedPreset) === 'canonical-only'
+                        ? 'source-faithful canonical frame only'
+                        : getPresetApplicationMode(selectedPreset) === 'responsive-width'
+                          ? `responsive width ${selectedPreset.responsiveWidth?.min}-${selectedPreset.responsiveWidth?.max ?? '∞'}px; height unconstrained`
+                          : getPresetApplicationMode(selectedPreset) === 'scale-from-reference'
+                            ? 'scaled from reference frame'
+                            : 'fixed measurements'}{' '}
+                      · {selectedPreset.referenceDimensions.width}×
+                      {selectedPreset.referenceDimensions.height}px preview
+                    </div>
+                  )}
                 </div>
               )}
               {selectedFit && (
@@ -741,6 +758,7 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
           aspectRatio={selectedPreset.aspectRatio}
           referenceDimensions={getPresetFrameDimensions(selectedPreset)}
           applicationMode={getPresetApplicationMode(selectedPreset)}
+          responsiveWidth={selectedPreset.responsiveWidth}
           isDark={isDark}
           onClose={() => setShowSaveModal(false)}
           onSave={() => {
@@ -760,5 +778,3 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
     </div>
   );
 };
-
-export default GridLibrary;

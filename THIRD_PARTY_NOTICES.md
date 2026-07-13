@@ -37,6 +37,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
 
+### APCA 0.1.9 Algorithm Port
+
+Teul includes a TypeScript port of the sRGB luminance and contrast operations
+from `apca-w3` 0.1.9, reviewed at upstream commit
+`da50930ba8cf8a5ef85d1b269aeba3d83ad91a5a`. It is restricted in Teul to
+self-illuminated sRGB web-content guidance, preserves the approved algorithm
+constants and polarity, and is presented as experimental supplemental guidance
+rather than a conformance standard.
+
+`apca-w3` is distributed under the Limited W3 License. The full required
+license, use restrictions, modification notice, and disclaimers are included
+in [`APCA_LICENSE.md`](APCA_LICENSE.md) and distributed with Teul builds.
+
 ## Bundled Color And Source Data
 
 ### Sanzo Wada Color Combinations
@@ -113,6 +126,7 @@ SOFTWARE.
 
 ## Detailed Provenance
 
-See [`docs/SOURCE_PROVENANCE.md`](docs/SOURCE_PROVENANCE.md) for reviewed
-sources, derivation methods, known limitations, and unresolved rights.
+See the
+[source provenance ledger](https://github.com/pauljunbear/Teul/blob/main/docs/SOURCE_PROVENANCE.md)
+for reviewed sources, derivation methods, known limitations, and unresolved rights.
 Distributed builds include the same ledger as `SOURCE_PROVENANCE.md`.

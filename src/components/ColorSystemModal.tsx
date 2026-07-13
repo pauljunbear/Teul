@@ -17,7 +17,6 @@ import {
   radixColors,
   neutralFamilies,
   type NeutralName,
-  type RadixScale,
 } from '../lib/radixColors';
 import {
   exportAsCSS,
@@ -448,47 +447,6 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
     }
   };
 
-  // Convert Radix scale to array format
-  const radixScaleToSteps = (scale: RadixScale): { step: number; hex: string }[] => {
-    return Object.entries(scale).map(([step, hex]) => ({
-      step: parseInt(step),
-      hex,
-    }));
-  };
-
-  // Generate scale data for a color
-  const generateScaleData = useCallback(
-    (hex: string, role: string, name: string, mode: 'light' | 'dark') => {
-      if (scaleMethod !== 'radix-match') {
-        const scale = generateColorScale(hex, mode, name);
-        return {
-          name,
-          role,
-          steps: scale.steps.map(s => ({ step: s.step, hex: s.hex })),
-          profile: scale.profile,
-          method: scale.method,
-          mode,
-          validation: scale.validation,
-        };
-      } else {
-        const family = findClosestRadixFamily(hex);
-        const radixScale = mode === 'light' ? family.light : family.dark;
-        return {
-          name: family.displayName,
-          role,
-          method: 'Radix Colors' as const,
-          profile: 'sRGB' as const,
-          mode,
-          sourceVersion: RADIX_COLORS_VERSION,
-          sourceFamily: family.name,
-          sourceInputHex: hex.toLowerCase(),
-          steps: radixScaleToSteps(radixScale),
-        };
-      }
-    },
-    [scaleMethod]
-  );
-
   // Handle generate
   const handleGenerate = () => {
     if (systemNameError || pendingRequestIdRef.current) return;
@@ -498,168 +456,6 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
     const secondaries = getColorsForRole('secondary');
     const tertiaries = getColorsForRole('tertiary');
     const accents = getColorsForRole('accent');
-
-    // Get neutral scale
-    const neutralScale = radixColors[effectiveNeutral];
-
-    // Build light mode scales
-    const lightScales: Record<string, ExportScale> = {
-      neutral: {
-        name: effectiveNeutral.charAt(0).toUpperCase() + effectiveNeutral.slice(1),
-        role: 'Neutral',
-        profile: 'sRGB',
-        method: 'Radix Colors',
-        mode: 'light',
-        sourceVersion: RADIX_COLORS_VERSION,
-        sourceFamily: neutralScale.name,
-        steps: radixScaleToSteps(neutralScale.light),
-      },
-    };
-
-    // Add primary scales (support multiple)
-    if (primaries.length > 0) {
-      lightScales.primary = generateScaleData(
-        primaries[0].hex,
-        'Primary',
-        primaries[0].name,
-        'light'
-      );
-      // Add additional primaries with numbered keys
-      primaries.slice(1).forEach((p, i) => {
-        lightScales[`primary${i + 2}`] = generateScaleData(
-          p.hex,
-          `Primary ${i + 2}`,
-          p.name,
-          'light'
-        );
-      });
-    }
-
-    // Add secondary scales (support multiple)
-    if (secondaries.length > 0) {
-      lightScales.secondary = generateScaleData(
-        secondaries[0].hex,
-        'Secondary',
-        secondaries[0].name,
-        'light'
-      );
-      secondaries.slice(1).forEach((s, i) => {
-        lightScales[`secondary${i + 2}`] = generateScaleData(
-          s.hex,
-          `Secondary ${i + 2}`,
-          s.name,
-          'light'
-        );
-      });
-    }
-
-    // Add tertiary scales (support multiple)
-    if (tertiaries.length > 0) {
-      lightScales.tertiary = generateScaleData(
-        tertiaries[0].hex,
-        'Tertiary',
-        tertiaries[0].name,
-        'light'
-      );
-      tertiaries.slice(1).forEach((t, i) => {
-        lightScales[`tertiary${i + 2}`] = generateScaleData(
-          t.hex,
-          `Tertiary ${i + 2}`,
-          t.name,
-          'light'
-        );
-      });
-    }
-
-    // Add accent scales (support multiple)
-    if (accents.length > 0) {
-      lightScales.accent = generateScaleData(accents[0].hex, 'Accent', accents[0].name, 'light');
-      accents.slice(1).forEach((a, i) => {
-        lightScales[`accent${i + 2}`] = generateScaleData(
-          a.hex,
-          `Accent ${i + 2}`,
-          a.name,
-          'light'
-        );
-      });
-    }
-
-    // Build dark mode scales if needed
-    let darkScales: Record<string, ExportScale> | undefined = undefined;
-    if (includeDarkMode) {
-      darkScales = {
-        neutral: {
-          name: effectiveNeutral.charAt(0).toUpperCase() + effectiveNeutral.slice(1),
-          role: 'Neutral',
-          profile: 'sRGB',
-          method: 'Radix Colors',
-          mode: 'dark',
-          sourceVersion: RADIX_COLORS_VERSION,
-          sourceFamily: neutralScale.name,
-          steps: radixScaleToSteps(neutralScale.dark),
-        },
-      };
-
-      if (primaries.length > 0) {
-        darkScales.primary = generateScaleData(
-          primaries[0].hex,
-          'Primary',
-          primaries[0].name,
-          'dark'
-        );
-        primaries.slice(1).forEach((p, i) => {
-          darkScales![`primary${i + 2}`] = generateScaleData(
-            p.hex,
-            `Primary ${i + 2}`,
-            p.name,
-            'dark'
-          );
-        });
-      }
-      if (secondaries.length > 0) {
-        darkScales.secondary = generateScaleData(
-          secondaries[0].hex,
-          'Secondary',
-          secondaries[0].name,
-          'dark'
-        );
-        secondaries.slice(1).forEach((s, i) => {
-          darkScales![`secondary${i + 2}`] = generateScaleData(
-            s.hex,
-            `Secondary ${i + 2}`,
-            s.name,
-            'dark'
-          );
-        });
-      }
-      if (tertiaries.length > 0) {
-        darkScales.tertiary = generateScaleData(
-          tertiaries[0].hex,
-          'Tertiary',
-          tertiaries[0].name,
-          'dark'
-        );
-        tertiaries.slice(1).forEach((t, i) => {
-          darkScales![`tertiary${i + 2}`] = generateScaleData(
-            t.hex,
-            `Tertiary ${i + 2}`,
-            t.name,
-            'dark'
-          );
-        });
-      }
-      if (accents.length > 0) {
-        darkScales.accent = generateScaleData(accents[0].hex, 'Accent', accents[0].name, 'dark');
-        accents.slice(1).forEach((a, i) => {
-          darkScales![`accent${i + 2}`] = generateScaleData(
-            a.hex,
-            `Accent ${i + 2}`,
-            a.name,
-            'dark'
-          );
-        });
-      }
-    }
 
     // Usage proportions describe the aggregate role, even when it has multiple colors.
     const usageProportions = {
@@ -701,8 +497,8 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
       scaleMethod,
       multiSelectMode,
       scales: {
-        light: lightScales,
-        dark: darkScales,
+        light: exportScales.light,
+        dark: exportScales.dark,
       },
       usageProportions,
       // Include counts for multi-select mode
@@ -1615,5 +1411,3 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
     </div>
   );
 };
-
-export default ColorSystemModal;

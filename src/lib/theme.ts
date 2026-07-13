@@ -2,7 +2,7 @@
  * Shared theme tokens for consistent styling across components
  */
 
-export interface ThemeTokens {
+interface ThemeTokens {
   bg: string;
   cardBg: string;
   text: string;
@@ -15,7 +15,7 @@ export interface ThemeTokens {
   btnActiveText: string;
 }
 
-export const lightTheme: ThemeTokens = {
+const lightTheme: ThemeTokens = {
   bg: '#ffffff',
   cardBg: '#ffffff',
   text: '#1a1a1a',
@@ -28,7 +28,7 @@ export const lightTheme: ThemeTokens = {
   btnActiveText: '#ffffff',
 };
 
-export const darkTheme: ThemeTokens = {
+const darkTheme: ThemeTokens = {
   bg: '#1a1a1a',
   cardBg: '#262626',
   text: '#ffffff',

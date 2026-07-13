@@ -12,7 +12,7 @@ import {
 
 export type ColorScaleMode = 'light' | 'dark';
 
-export interface ColorStep {
+interface ColorStep {
   step: number;
   hex: string;
   oklch: OKLCH;
@@ -20,7 +20,7 @@ export interface ColorStep {
   gamutMapped: boolean;
 }
 
-export interface ScaleContrastCheck {
+interface ScaleContrastCheck {
   foregroundStep: number;
   backgroundStep: number;
   useCase: string;
@@ -30,7 +30,7 @@ export interface ScaleContrastCheck {
   pass: boolean;
 }
 
-export type ScaleValidationIssueCode =
+type ScaleValidationIssueCode =
   | 'anchor-moved'
   | 'duplicate-adjacent'
   | 'non-finite'
@@ -38,7 +38,7 @@ export type ScaleValidationIssueCode =
   | 'non-monotonic-relative-luminance'
   | 'required-contrast-failure';
 
-export interface ScaleValidationIssue {
+interface ScaleValidationIssue {
   code: ScaleValidationIssueCode;
   message: string;
   steps?: number[];

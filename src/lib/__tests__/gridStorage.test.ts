@@ -383,6 +383,38 @@ describe('gridStorage', () => {
       expect(grid.referenceDimensions).toEqual({ width: 1200, height: 800 });
       expect(grid.applicationMode).toBe('scale-from-reference');
     });
+
+    it('preserves canonical-only fidelity when saving a source-faithful copy', () => {
+      const grid = createSavedGrid({
+        name: 'Source-faithful Grid',
+        description: 'A description',
+        config: createMockGridConfig(),
+        referenceDimensions: { width: 580, height: 580 },
+        applicationMode: 'canonical-only',
+      });
+
+      expect(grid.referenceDimensions).toEqual({ width: 580, height: 580 });
+      expect(grid.applicationMode).toBe('canonical-only');
+    });
+
+    it('preserves responsive width behavior when saving and loading a named-system copy', () => {
+      const grid = createSavedGrid({
+        name: 'Responsive Grid',
+        description: 'A description',
+        config: createMockGridConfig(),
+        referenceDimensions: { width: 768, height: 1024 },
+        applicationMode: 'responsive-width',
+        responsiveWidth: { min: 600, max: 904 },
+      });
+
+      addSavedGrid(grid);
+      invalidateGridCache();
+
+      expect(loadSavedGrids()[0]).toMatchObject({
+        applicationMode: 'responsive-width',
+        responsiveWidth: { min: 600, max: 904 },
+      });
+    });
   });
 
   describe('addSavedGrid', () => {
@@ -810,6 +842,21 @@ describe('gridStorage', () => {
                 },
               },
             },
+            {
+              ...createMockSavedGrid({ id: 'huge-baseline' }),
+              config: {
+                baseline: {
+                  height: 1e308,
+                  offset: 0,
+                  visible: true,
+                  color: { r: 0, g: 1, b: 1, a: 0.15 },
+                },
+              },
+            },
+            {
+              ...createMockSavedGrid({ id: 'huge-reference' }),
+              referenceDimensions: { width: 1e308, height: 1e308 },
+            },
           ],
         })
       );
@@ -818,8 +865,8 @@ describe('gridStorage', () => {
         success: false,
         error: 'No valid grids found in file',
         count: 0,
-        rejectedCount: 2,
-        totalCount: 2,
+        rejectedCount: 4,
+        totalCount: 4,
       });
     });
 

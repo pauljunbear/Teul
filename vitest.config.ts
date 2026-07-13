@@ -10,13 +10,10 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json-summary', 'html'],
       reportOnFailure: true,
-      include: [
-        'src/lib/**/*.ts',
-        'src/backend/{colorSystemGeneration,gridOperations,index}.ts',
-        'src/components/{ColorSystemModal,GridLibrary,GridPresetCard,GridSystemTab,HelpPanel,MyGrids,SaveGridModal,SourceProvenanceDisclosure}.tsx',
-        'src/ui.tsx',
-      ],
-      exclude: ['src/lib/__tests__/**', 'src/backend/__tests__/**', 'src/components/__tests__/**'],
+      // Measure the shipped plugin, not a hand-picked subset. Test files and
+      // declarations are excluded, but every production TS/TSX module counts.
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/**/*.d.ts', 'src/**/__tests__/**', 'src/**/*.{test,spec}.{ts,tsx}'],
       thresholds: {
         branches: 65,
         functions: 70,

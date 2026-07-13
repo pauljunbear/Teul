@@ -383,5 +383,3 @@ export const HelpPanel: React.FC<HelpPanelProps> = ({ isOpen, onClose, isDark })
     </div>
   );
 };
-
-export default HelpPanel;
