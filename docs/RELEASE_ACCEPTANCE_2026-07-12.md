@@ -16,11 +16,11 @@ The release candidate must pass all of the following from a clean install:
 - `npm audit --audit-level=moderate`
 - `git diff --check`
 
-The final run produced 37 passing test files and 624 passing tests. Coverage includes every production TypeScript and TSX file: 81.89% statements, 73.15% branches, 77.29% functions, and 82.81% lines. The production UI artifact is 427,652 bytes against a 450,560-byte ceiling, leaving 22,908 bytes of headroom. The pinned Wada corpus matches the audited upstream commit and semantic digest. The dependency audit reports zero vulnerabilities.
+The final run for follow-up commit `186e79a` produced 39 passing test files and 651 passing tests. Coverage includes every production TypeScript and TSX file: 82.07% statements, 73.51% branches, 77.37% functions, and 82.93% lines. The production UI artifact is 431,833 bytes against a 450,560-byte ceiling, leaving 18,727 bytes of headroom; the plugin-main artifact is 89,050 bytes. The pinned Wada corpus matches upstream commit `c142bd0bc8049ea48db4da5eb397981f047e8ef4` and semantic digest `a24e7b0101c5f1e7eed104d84b27a7c9bba147017589302d78c2992c37c2d853`. The dependency audit reports zero vulnerabilities.
 
 ## Figma desktop acceptance
 
-Acceptance was exercised in an isolated draft rather than an existing project: [Teul acceptance file](https://figma.com/design/raVgxMZWdXo27fwR7eE6WV/Untitled).
+Acceptance was exercised in isolated drafts rather than an existing project: the original [sRGB acceptance file](https://figma.com/design/raVgxMZWdXo27fwR7eE6WV/Untitled) and the final [Display P3 and persistence file](https://figma.com/design/IVTRYRAobQpqtf9GcK2kvX/Untitled). The release-critical follow-up paths were rerun with the production bundle built from commit `186e79a`.
 
 Verified manually:
 
@@ -38,15 +38,13 @@ Verified manually:
 - A too-small frame fails with recommendations and disables application.
 - Canonical-only historical presets reject noncanonical frame sizes and name the required dimensions.
 - Changing pages clears the stale selection and keeps the plugin running.
+- A new Display P3 document reports the correct profile and warns that bundled/generated values remain labeled sRGB approximations. Applying Hermosa Pink preserves the exact numeric `F9C1CE` value; Teul does not claim to convert the source palette to P3.
+- Bootstrap XXL accepts a 1601 × 1234 frame with height unconstrained, resolves a centered 153px content-guide offset and 24px gutter, and rejects a 1398px-wide frame below its 1400px minimum.
+- A contrasting four-column apply attempt leaves a locked 12-column frame unchanged.
+- An unlocked main component accepts a four-column grid replacement, and a linked component instance accepts a responsive USWDS 12-column override.
+- A USWDS copy persists through `figma.clientStorage`; JSON export produces the expected responsive-width record; re-import increases the collection from one to two grids; and a second export confirms regenerated unique IDs with identical behavior and grid configuration.
 
-Not yet verified manually:
-
-- Display P3 badge and conversion behavior in a new P3 document.
-- Responsive named-system width ranges and centered-container calculations in the live Figma runtime.
-- Locked frames, components, instances, and multi-selection rollback in the live Figma runtime.
-- Import/export round trips through the desktop file chooser.
-
-Those paths have automated unit/integration coverage where practical, but the draft pull request must not be promoted to a release tag until this remaining desktop matrix is completed.
+The all-or-nothing mixed locked/unlocked batch is verified by backend tests because Figma's editor will not keep a locked layer in a normal mixed selection. Runtime-write rollback is also fault-injection tested. Saved-grid mutations serialize within one UI and refresh shared client storage before every mutation; Figma exposes no compare-and-set operation, so truly simultaneous writes from separate plugin contexts remain a documented platform boundary rather than an atomic guarantee.
 
 ## Known source boundary
 
