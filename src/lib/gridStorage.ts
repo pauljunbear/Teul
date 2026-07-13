@@ -1,8 +1,8 @@
 // ============================================
 // Grid Storage Service
 // ============================================
-// Manages user's saved grids using localStorage (UI side)
-// and communicates with code.ts for Figma clientStorage
+// Manages user's saved grids through the UI-to-main bridge backed by
+// figma.clientStorage. A browser localStorage adapter is used only by tests.
 
 import type {
   GridApplicationMode,
@@ -12,9 +12,9 @@ import type {
   GridResponsiveWidth,
   SavedGrid,
 } from '../types/grid';
+import { deleteGridStorageItem, getGridStorageItem, setGridStorageItem } from './gridStorageBridge';
 
 // Storage key for saved grids
-const STORAGE_KEY = 'teul-saved-grids';
 const STORAGE_VERSION = 1;
 
 // ============================================
@@ -23,13 +23,31 @@ const STORAGE_VERSION = 1;
 // Avoids JSON.parse on every operation - 10-20x faster for users with many grids
 
 let cachedGrids: SavedGrid[] | null = null;
+let cachedStoredState: StoredGridState | null = null;
+let pendingLoad: Promise<SavedGrid[]> | null = null;
+let mutationQueue: Promise<void> = Promise.resolve();
 export const SAVED_GRIDS_CHANGED_EVENT = 'teul-saved-grids-change';
+
+// Serializes mutations in this UI instance. Each mutation also refreshes from
+// shared clientStorage so a completed write from another open plugin instance
+// is not overwritten by stale cache. Figma clientStorage has no compare-and-set,
+// so truly simultaneous writes from separate plugin instances can still race.
+function enqueueGridMutation<T>(operation: () => Promise<T>): Promise<T> {
+  const result = mutationQueue.then(operation, operation);
+  mutationQueue = result.then(
+    () => undefined,
+    () => undefined
+  );
+  return result;
+}
 
 /**
  * Invalidate the in-memory cache (call after external storage changes)
  */
 export function invalidateGridCache(): void {
   cachedGrids = null;
+  cachedStoredState = null;
+  pendingLoad = null;
 }
 
 // ============================================
@@ -399,13 +417,12 @@ function parseQuarantinedGridList(value: unknown): QuarantinedGridEntry[] {
   });
 }
 
-function readStoredGridState(): StoredGridState {
+function parseStoredGridState(raw: string | null): StoredGridState {
   const emptyDiagnostics: GridStorageDiagnostics = {
     quarantinedCount: 0,
     rejectedStoredGridCount: 0,
     unparseableStorage: false,
   };
-  const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) {
     return { grids: [], quarantinedGrids: [], diagnostics: emptyDiagnostics };
   }
@@ -469,6 +486,10 @@ function readStoredGridState(): StoredGridState {
   };
 }
 
+async function readStoredGridState(): Promise<StoredGridState> {
+  return parseStoredGridState(await getGridStorageItem());
+}
+
 function reportStorageDiagnostics(diagnostics: GridStorageDiagnostics): void {
   if (diagnostics.quarantinedCount === 0 && diagnostics.migratedFromVersion === undefined) return;
 
@@ -493,34 +514,55 @@ function notifySavedGridsChanged(): void {
 }
 
 // ============================================
-// Local Storage Operations (for UI persistence)
+// Persistent Storage Operations
 // ============================================
 
 /**
- * Load saved grids from localStorage (with in-memory caching)
+ * Load saved grids from figma.clientStorage (with in-memory caching)
  */
-export function loadSavedGrids(): SavedGrid[] {
+export async function loadSavedGrids(): Promise<SavedGrid[]> {
   // Return cached data if available
   if (cachedGrids !== null) {
     return cachedGrids;
   }
 
-  try {
-    const stored = readStoredGridState();
-    reportStorageDiagnostics(stored.diagnostics);
-    cachedGrids = stored.grids;
-    return cachedGrids;
-  } catch (error) {
-    console.error('Failed to load saved grids:', error);
-    cachedGrids = [];
-    return [];
+  if (pendingLoad) return pendingLoad;
+
+  pendingLoad = (async () => {
+    try {
+      const stored = await readStoredGridState();
+      reportStorageDiagnostics(stored.diagnostics);
+      cachedStoredState = stored;
+      cachedGrids = stored.grids;
+      return cachedGrids;
+    } catch (error) {
+      console.error('Failed to load saved grids:', error);
+      throw error;
+    } finally {
+      pendingLoad = null;
+    }
+  })();
+
+  return pendingLoad;
+}
+
+async function refreshSavedGridsBeforeMutation(): Promise<SavedGrid[]> {
+  if (pendingLoad) {
+    try {
+      await pendingLoad;
+    } catch {
+      // Retry the authoritative read below.
+    }
   }
+  cachedGrids = null;
+  cachedStoredState = null;
+  return loadSavedGrids();
 }
 
 /**
- * Save grids to localStorage (and update cache)
+ * Save grids to figma.clientStorage (and update cache)
  */
-export function saveGridsToStorage(grids: SavedGrid[]): boolean {
+export async function saveGridsToStorage(grids: SavedGrid[]): Promise<boolean> {
   const parsed = parseSavedGridList(grids);
   if (parsed.rejectedCount > 0 || parsed.grids.length !== grids.length) {
     console.error('Failed to save grids: invalid grid data');
@@ -529,7 +571,7 @@ export function saveGridsToStorage(grids: SavedGrid[]): boolean {
   }
 
   try {
-    const stored = readStoredGridState();
+    const stored = cachedStoredState ?? (await readStoredGridState());
     const diagnostics: StoredGridDiagnostics | undefined =
       stored.quarantinedGrids.length > 0 || stored.diagnostics.migratedFromVersion !== undefined
         ? {
@@ -547,9 +589,19 @@ export function saveGridsToStorage(grids: SavedGrid[]): boolean {
       ...(stored.quarantinedGrids.length > 0 ? { quarantinedGrids: stored.quarantinedGrids } : {}),
       ...(diagnostics ? { diagnostics } : {}),
     };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    await setGridStorageItem(JSON.stringify(data));
     // Update cache with the saved data
     cachedGrids = parsed.grids;
+    cachedStoredState = {
+      grids: parsed.grids,
+      quarantinedGrids: stored.quarantinedGrids,
+      diagnostics: {
+        ...stored.diagnostics,
+        quarantinedCount: stored.quarantinedGrids.length,
+        rejectedStoredGridCount: 0,
+        unparseableStorage: false,
+      },
+    };
     reportStorageDiagnostics({
       ...stored.diagnostics,
       quarantinedCount: stored.quarantinedGrids.length,
@@ -560,7 +612,12 @@ export function saveGridsToStorage(grids: SavedGrid[]): boolean {
     console.error('Failed to save grids:', error);
     // Invalidate cache on error to force reload next time
     cachedGrids = null;
-    return false;
+    cachedStoredState = null;
+    throw new Error(
+      `Failed to persist saved grids: ${
+        error instanceof Error ? error.message : 'Unknown storage error'
+      }`
+    );
   }
 }
 
@@ -610,56 +667,62 @@ export function createSavedGrid(params: {
 /**
  * Add a new grid to saved grids
  */
-export function addSavedGrid(grid: SavedGrid): SavedGrid[] {
-  const grids = [grid, ...loadSavedGrids()];
-  if (!saveGridsToStorage(grids)) {
-    throw new Error('Failed to save grid');
-  }
-  return grids;
+export function addSavedGrid(grid: SavedGrid): Promise<SavedGrid[]> {
+  return enqueueGridMutation(async () => {
+    const grids = [grid, ...(await refreshSavedGridsBeforeMutation())];
+    if (!(await saveGridsToStorage(grids))) {
+      throw new Error('Failed to save grid');
+    }
+    return grids;
+  });
 }
 
 /**
  * Update an existing saved grid
  */
-export function updateSavedGrid(id: string, updates: Partial<SavedGrid>): SavedGrid[] {
-  const grids = loadSavedGrids().map(grid => ({ ...grid }));
-  const index = grids.findIndex(g => g.id === id);
+export function updateSavedGrid(id: string, updates: Partial<SavedGrid>): Promise<SavedGrid[]> {
+  return enqueueGridMutation(async () => {
+    const grids = (await refreshSavedGridsBeforeMutation()).map(grid => ({ ...grid }));
+    const index = grids.findIndex(g => g.id === id);
 
-  if (index !== -1) {
-    grids[index] = { ...grids[index], ...updates };
-    if (!saveGridsToStorage(grids)) {
-      throw new Error('Failed to update grid');
+    if (index !== -1) {
+      grids[index] = { ...grids[index], ...updates };
+      if (!(await saveGridsToStorage(grids))) {
+        throw new Error('Failed to update grid');
+      }
     }
-  }
 
-  return grids;
+    return grids;
+  });
 }
 
 /**
  * Delete a saved grid
  */
-export function deleteSavedGrid(id: string): SavedGrid[] {
-  const grids = loadSavedGrids();
-  const filtered = grids.filter(g => g.id !== id);
-  if (filtered.length !== grids.length && !saveGridsToStorage(filtered)) {
-    throw new Error('Failed to delete grid');
-  }
-  return filtered;
+export function deleteSavedGrid(id: string): Promise<SavedGrid[]> {
+  return enqueueGridMutation(async () => {
+    const grids = await refreshSavedGridsBeforeMutation();
+    const filtered = grids.filter(g => g.id !== id);
+    if (filtered.length !== grids.length && !(await saveGridsToStorage(filtered))) {
+      throw new Error('Failed to delete grid');
+    }
+    return filtered;
+  });
 }
 
 /**
  * Get a saved grid by ID
  */
-export function getSavedGridById(id: string): SavedGrid | undefined {
-  const grids = loadSavedGrids();
+export async function getSavedGridById(id: string): Promise<SavedGrid | undefined> {
+  const grids = await loadSavedGrids();
   return grids.find(g => g.id === id);
 }
 
 /**
  * Search saved grids
  */
-export function searchSavedGrids(query: string): SavedGrid[] {
-  const grids = loadSavedGrids();
+export async function searchSavedGrids(query: string): Promise<SavedGrid[]> {
+  const grids = await loadSavedGrids();
   const normalizedQuery = query.toLowerCase().trim();
 
   if (!normalizedQuery) return grids;
@@ -679,8 +742,8 @@ export function searchSavedGrids(query: string): SavedGrid[] {
 /**
  * Export saved grids as JSON string
  */
-export function exportGridsToJSON(grids?: SavedGrid[]): string {
-  const data = grids || loadSavedGrids();
+export async function exportGridsToJSON(grids?: SavedGrid[]): Promise<string> {
+  const data = grids || (await loadSavedGrids());
 
   const exportData = {
     type: 'teul-grids',
@@ -695,8 +758,8 @@ export function exportGridsToJSON(grids?: SavedGrid[]): string {
 /**
  * Download grids as a JSON file
  */
-export function downloadGridsAsJSON(grids?: SavedGrid[], filename?: string): void {
-  const json = exportGridsToJSON(grids);
+export async function downloadGridsAsJSON(grids?: SavedGrid[], filename?: string): Promise<void> {
+  const json = await exportGridsToJSON(grids);
   const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
 
@@ -712,83 +775,85 @@ export function downloadGridsAsJSON(grids?: SavedGrid[], filename?: string): voi
 /**
  * Import grids from JSON string
  */
-export function importGridsFromJSON(jsonString: string): ImportResult {
-  if (new Blob([jsonString]).size > MAX_GRID_IMPORT_FILE_BYTES) {
-    return {
-      success: false,
-      error: `Import file is too large (maximum ${MAX_GRID_IMPORT_FILE_BYTES} bytes)`,
-    };
-  }
-
-  try {
-    const data: unknown = JSON.parse(jsonString);
-
-    // Validate structure
-    if (!isRecord(data) || data.type !== 'teul-grids') {
-      return { success: false, error: 'Invalid file format' };
-    }
-
-    if (!Array.isArray(data.grids)) {
-      return { success: false, error: 'No grids found in file' };
-    }
-
-    if (data.version !== STORAGE_VERSION) {
-      return { success: false, error: 'Unsupported file version' };
-    }
-
-    if (data.grids.length > MAX_GRID_IMPORT_RECORDS) {
+export function importGridsFromJSON(jsonString: string): Promise<ImportResult> {
+  return enqueueGridMutation(async () => {
+    if (new Blob([jsonString]).size > MAX_GRID_IMPORT_FILE_BYTES) {
       return {
         success: false,
-        error: `Import contains too many grids (maximum ${MAX_GRID_IMPORT_RECORDS})`,
-        count: 0,
-        totalCount: data.grids.length,
+        error: `Import file is too large (maximum ${MAX_GRID_IMPORT_FILE_BYTES} bytes)`,
       };
     }
 
-    const parsed = parseSavedGridList(data.grids);
-    if (data.grids.length > 0 && parsed.grids.length === 0) {
+    try {
+      const data: unknown = JSON.parse(jsonString);
+
+      // Validate structure
+      if (!isRecord(data) || data.type !== 'teul-grids') {
+        return { success: false, error: 'Invalid file format' };
+      }
+
+      if (!Array.isArray(data.grids)) {
+        return { success: false, error: 'No grids found in file' };
+      }
+
+      if (data.version !== STORAGE_VERSION) {
+        return { success: false, error: 'Unsupported file version' };
+      }
+
+      if (data.grids.length > MAX_GRID_IMPORT_RECORDS) {
+        return {
+          success: false,
+          error: `Import contains too many grids (maximum ${MAX_GRID_IMPORT_RECORDS})`,
+          count: 0,
+          totalCount: data.grids.length,
+        };
+      }
+
+      const parsed = parseSavedGridList(data.grids);
+      if (data.grids.length > 0 && parsed.grids.length === 0) {
+        return {
+          success: false,
+          error: 'No valid grids found in file',
+          count: 0,
+          rejectedCount: parsed.rejectedCount,
+          totalCount: data.grids.length,
+        };
+      }
+
+      // Regenerate IDs for imported grids to avoid conflicts.
+      const importedGrids: SavedGrid[] = parsed.grids.map(grid => ({
+        ...grid,
+        id: generateGridId(),
+        createdAt: grid.createdAt ?? Date.now(),
+      }));
+
+      // Merge with existing grids
+      const existingGrids = await refreshSavedGridsBeforeMutation();
+      const mergedGrids = [...importedGrids, ...existingGrids];
+      if (!(await saveGridsToStorage(mergedGrids))) {
+        return {
+          success: false,
+          error: 'Failed to save imported grids',
+          count: 0,
+          rejectedCount: parsed.rejectedCount,
+          totalCount: data.grids.length,
+        };
+      }
+
       return {
-        success: false,
-        error: 'No valid grids found in file',
-        count: 0,
+        success: true,
+        grids: mergedGrids,
+        count: importedGrids.length,
         rejectedCount: parsed.rejectedCount,
         totalCount: data.grids.length,
       };
-    }
-
-    // Regenerate IDs for imported grids to avoid conflicts.
-    const importedGrids: SavedGrid[] = parsed.grids.map(grid => ({
-      ...grid,
-      id: generateGridId(),
-      createdAt: grid.createdAt ?? Date.now(),
-    }));
-
-    // Merge with existing grids
-    const existingGrids = loadSavedGrids();
-    const mergedGrids = [...importedGrids, ...existingGrids];
-    if (!saveGridsToStorage(mergedGrids)) {
+    } catch (error) {
       return {
         success: false,
-        error: 'Failed to save imported grids',
-        count: 0,
-        rejectedCount: parsed.rejectedCount,
-        totalCount: data.grids.length,
+        error: error instanceof Error ? error.message : 'Failed to parse JSON',
       };
     }
-
-    return {
-      success: true,
-      grids: mergedGrids,
-      count: importedGrids.length,
-      rejectedCount: parsed.rejectedCount,
-      totalCount: data.grids.length,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to parse JSON',
-    };
-  }
+  });
 }
 
 /**
@@ -807,7 +872,7 @@ export function importGridsFromFile(file: File): Promise<ImportResult> {
 
     reader.onload = e => {
       const content = e.target?.result as string;
-      resolve(importGridsFromJSON(content));
+      void importGridsFromJSON(content).then(resolve);
     };
 
     reader.onerror = () => {
@@ -825,52 +890,69 @@ export function importGridsFromFile(file: File): Promise<ImportResult> {
 /**
  * Get count of saved grids
  */
-export function getSavedGridCount(): number {
-  return loadSavedGrids().length;
+export async function getSavedGridCount(): Promise<number> {
+  return (await loadSavedGrids()).length;
 }
 
 /**
  * Inspect storage preservation state without exposing quarantined values.
  */
-export function getGridStorageDiagnostics(): GridStorageDiagnostics {
-  return readStoredGridState().diagnostics;
+export async function getGridStorageDiagnostics(): Promise<GridStorageDiagnostics> {
+  return (cachedStoredState ?? (await readStoredGridState())).diagnostics;
 }
 
 /**
  * Clear all saved grids (with confirmation)
  */
-export function clearAllSavedGrids(): boolean {
-  try {
-    localStorage.removeItem(STORAGE_KEY);
-    cachedGrids = [];
-    notifySavedGridsChanged();
-    return true;
-  } catch {
-    cachedGrids = null;
-    return false;
-  }
+export function clearAllSavedGrids(): Promise<boolean> {
+  return enqueueGridMutation(async () => {
+    try {
+      await deleteGridStorageItem();
+      cachedGrids = [];
+      cachedStoredState = {
+        grids: [],
+        quarantinedGrids: [],
+        diagnostics: {
+          quarantinedCount: 0,
+          rejectedStoredGridCount: 0,
+          unparseableStorage: false,
+        },
+      };
+      notifySavedGridsChanged();
+      return true;
+    } catch {
+      cachedGrids = null;
+      cachedStoredState = null;
+      return false;
+    }
+  });
 }
 
 /**
  * Duplicate a saved grid
  */
-export function duplicateSavedGrid(id: string): SavedGrid | null {
-  const grid = getSavedGridById(id);
-  if (!grid) return null;
+export function duplicateSavedGrid(id: string): Promise<SavedGrid | null> {
+  return enqueueGridMutation(async () => {
+    const grids = await refreshSavedGridsBeforeMutation();
+    const grid = grids.find(candidate => candidate.id === id);
+    if (!grid) return null;
 
-  const duplicate = createSavedGrid({
-    name: `${grid.name} (Copy)`,
-    description: grid.description,
-    category: grid.category as GridCategory,
-    tags: [...grid.tags],
-    config: JSON.parse(JSON.stringify(grid.config)), // Deep clone
-    source: grid.source,
-    aspectRatio: grid.aspectRatio,
-    referenceDimensions: grid.referenceDimensions,
-    applicationMode: grid.applicationMode,
-    responsiveWidth: grid.responsiveWidth,
+    const duplicate = createSavedGrid({
+      name: `${grid.name} (Copy)`,
+      description: grid.description,
+      category: grid.category as GridCategory,
+      tags: [...grid.tags],
+      config: JSON.parse(JSON.stringify(grid.config)), // Deep clone
+      source: grid.source,
+      aspectRatio: grid.aspectRatio,
+      referenceDimensions: grid.referenceDimensions,
+      applicationMode: grid.applicationMode,
+      responsiveWidth: grid.responsiveWidth,
+    });
+
+    if (!(await saveGridsToStorage([duplicate, ...grids]))) {
+      throw new Error('Failed to duplicate grid');
+    }
+    return duplicate;
   });
-
-  addSavedGrid(duplicate);
-  return duplicate;
 }

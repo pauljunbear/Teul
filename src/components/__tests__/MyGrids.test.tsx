@@ -82,11 +82,11 @@ describe('MyGrids apply flow', () => {
   let root: Root;
   let postMessage: ReturnType<typeof vi.spyOn>;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
     vi.useFakeTimers();
     invalidateGridCache();
-    saveGridsToStorage([savedGrid]);
+    await saveGridsToStorage([savedGrid]);
     postMessage = vi.spyOn(window.parent, 'postMessage').mockImplementation(() => {});
     container = document.createElement('div');
     document.body.appendChild(container);
@@ -102,9 +102,10 @@ describe('MyGrids apply flow', () => {
     (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = false;
   });
 
-  it('uses only the correlated live selection snapshot and waits for backend confirmation', () => {
-    act(() => {
+  it('uses only the correlated live selection snapshot and waits for backend confirmation', async () => {
+    await act(async () => {
       root.render(<MyGrids isDark={false} />);
+      await Promise.resolve();
     });
 
     expect(container.querySelector('[role="button"] button')).toBeNull();
@@ -197,9 +198,10 @@ describe('MyGrids apply flow', () => {
     expect(container.textContent).toContain('Grid apply confirmed');
   });
 
-  it('analyzes every eligible target and blocks the apply when any target fails', () => {
-    act(() => {
+  it('analyzes every eligible target and blocks the apply when any target fails', async () => {
+    await act(async () => {
       root.render(<MyGrids isDark={false} />);
+      await Promise.resolve();
     });
 
     const applyButton = Array.from(container.querySelectorAll('button')).find(
@@ -230,8 +232,8 @@ describe('MyGrids apply flow', () => {
     expect(container.querySelector('[role="alert"]')?.textContent).toBeTruthy();
   });
 
-  it('preserves scale-from-reference behavior for saved preset copies', () => {
-    saveGridsToStorage([
+  it('preserves scale-from-reference behavior for saved preset copies', async () => {
+    await saveGridsToStorage([
       {
         ...savedGrid,
         referenceDimensions: { width: 800, height: 600 },
@@ -239,8 +241,9 @@ describe('MyGrids apply flow', () => {
       },
     ]);
 
-    act(() => {
+    await act(async () => {
       root.render(<MyGrids isDark={false} />);
+      await Promise.resolve();
     });
 
     const applyButton = Array.from(container.querySelectorAll('button')).find(
@@ -266,9 +269,10 @@ describe('MyGrids apply flow', () => {
     expect(applyCall?.[0].pluginMessage?.sourceDimensions).toEqual({ width: 800, height: 600 });
   });
 
-  it('does not report create-frame success before backend confirmation', () => {
-    act(() => {
+  it('does not report create-frame success before backend confirmation', async () => {
+    await act(async () => {
       root.render(<MyGrids isDark={false} />);
+      await Promise.resolve();
     });
 
     const createFrameButton = Array.from(container.querySelectorAll('button')).find(
@@ -287,9 +291,10 @@ describe('MyGrids apply flow', () => {
     expect(container.textContent).not.toContain(`Created frame with "${savedGrid.name}"`);
   });
 
-  it('associates Edit Grid labels with their fields', () => {
-    act(() => {
+  it('associates Edit Grid labels with their fields', async () => {
+    await act(async () => {
       root.render(<MyGrids isDark={false} />);
+      await Promise.resolve();
     });
 
     const editButton = Array.from(container.querySelectorAll('button')).find(
@@ -323,8 +328,9 @@ describe('MyGrids apply flow', () => {
       } as unknown as ProgressEvent<FileReader>);
     });
 
-    act(() => {
+    await act(async () => {
       root.render(<MyGrids isDark={false} />);
+      await Promise.resolve();
     });
 
     const fileInput = container.querySelector<HTMLInputElement>('input[type="file"]');

@@ -39,6 +39,9 @@ const MAX_GRID_TARGETS = 1000;
 const MAX_TARGET_ID_LENGTH = 256;
 const MAX_DIMENSION = 100000;
 const MAX_GRID_MEASUREMENT = 100000;
+// Figma clientStorage has a 5 MB per-plugin quota. Keep a small envelope for
+// other plugin preferences and let setAsync report the authoritative quota error.
+const MAX_GRID_STORAGE_STRING_LENGTH = 4 * 1024 * 1024;
 
 function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -274,6 +277,24 @@ function validateGetSelectionForGrid(message: UnknownRecord): string | null {
   return message.requestId === undefined || isBoundedString(message.requestId, 128)
     ? null
     : 'requestId must be a non-empty bounded string';
+}
+
+function validateGridStorageRequest(message: UnknownRecord): string | null {
+  if (!isBoundedString(message.requestId, 128)) {
+    return 'requestId must be a non-empty bounded string';
+  }
+
+  if (message.type === 'set-grid-storage') {
+    if (
+      typeof message.value !== 'string' ||
+      message.value.length === 0 ||
+      message.value.length > MAX_GRID_STORAGE_STRING_LENGTH
+    ) {
+      return `value must be a non-empty string no longer than ${MAX_GRID_STORAGE_STRING_LENGTH} characters`;
+    }
+  }
+
+  return null;
 }
 
 function validateScaleStep(value: unknown): value is { step: number; hex: string } {
@@ -646,6 +667,11 @@ export function validateUIToPluginMessage(message: unknown): MessageValidationRe
       break;
     case 'get-document-color-profile':
       error = null;
+      break;
+    case 'get-grid-storage':
+    case 'set-grid-storage':
+    case 'delete-grid-storage':
+      error = validateGridStorageRequest(message);
       break;
     case 'apply-gradient':
       error = validateGradient(message);

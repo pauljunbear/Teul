@@ -109,6 +109,22 @@ export interface ApplyGridMessage {
   replaceExisting: boolean;
 }
 
+export interface GetGridStorageMessage {
+  type: 'get-grid-storage';
+  requestId: string;
+}
+
+export interface SetGridStorageMessage {
+  type: 'set-grid-storage';
+  requestId: string;
+  value: string;
+}
+
+export interface DeleteGridStorageMessage {
+  type: 'delete-grid-storage';
+  requestId: string;
+}
+
 /**
  * All messages that can be sent from UI to Plugin
  */
@@ -122,7 +138,10 @@ export type UIToPluginMessage =
   | NotifyMessage
   | GenerateColorSystemMessage
   | CreateGridFrameMessage
-  | ApplyGridMessage;
+  | ApplyGridMessage
+  | GetGridStorageMessage
+  | SetGridStorageMessage
+  | DeleteGridStorageMessage;
 
 // ============================================
 // Plugin → UI Messages
@@ -164,5 +183,14 @@ export interface GridAppliedMessage {
   frameName?: string;
   frameWidth?: number;
   frameHeight?: number;
+  error?: string;
+}
+
+export interface GridStorageResultMessage {
+  type: 'grid-storage-result';
+  requestId: string;
+  operation: 'get' | 'set' | 'delete';
+  success: boolean;
+  value?: string | null;
   error?: string;
 }

@@ -4,6 +4,7 @@
 import { gridConfigToFigmaLayoutGrids } from '../lib/figmaGrids';
 import { analyzeResolvedGridFit } from '../lib/gridFit';
 import { resolveGridConfigForTarget } from '../lib/gridUtils';
+import { isNodeOrAncestorLocked } from './figmaHelpers';
 import type {
   GridApplicationMode,
   GridConfig as SourceGridConfig,
@@ -342,6 +343,21 @@ export async function handleApplyGrid(msg: ApplyGridMessage): Promise<void> {
       failedCount: 0,
       message,
       error: 'Selection changed after the grid target snapshot',
+    });
+    return;
+  }
+
+  const lockedNodes = eligibleNodes.filter(isNodeOrAncestorLocked);
+  if (lockedNodes.length > 0) {
+    const message = `Grid apply rejected: unlock ${lockedNodes.length === 1 ? 'the selected target' : `${lockedNodes.length} selected targets`} first`;
+    figma.notify(message);
+    postResult({
+      success: false,
+      appliedCount: 0,
+      skippedCount,
+      failedCount: eligibleNodes.length,
+      message,
+      error: 'Locked grid targets cannot be edited',
     });
     return;
   }

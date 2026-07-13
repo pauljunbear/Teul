@@ -44,13 +44,27 @@ export const GridSystemTab: React.FC<GridSystemTabProps> = ({ isDark }) => {
 
   // Update saved grid count when tab changes
   React.useEffect(() => {
-    setSavedGridCount(getSavedGridCount());
+    let cancelled = false;
+    void getSavedGridCount()
+      .then(count => {
+        if (!cancelled) setSavedGridCount(count);
+      })
+      .catch(error => {
+        console.error('Failed to load saved grid count:', error);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [activeTab]);
 
   // Listen for storage changes
   React.useEffect(() => {
     const handleStorageChange = () => {
-      setSavedGridCount(getSavedGridCount());
+      void getSavedGridCount()
+        .then(setSavedGridCount)
+        .catch(error => {
+          console.error('Failed to refresh saved grid count:', error);
+        });
     };
 
     window.addEventListener('storage', handleStorageChange);

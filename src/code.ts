@@ -16,8 +16,11 @@ import { validateUIToPluginMessage } from './lib/messageValidation';
 import type {
   ColorSystemOperationResultMessage,
   GridAppliedMessage,
+  GridStorageResultMessage,
   UIToPluginMessage,
 } from './types/messages';
+
+const GRID_STORAGE_KEY = 'teul-saved-grids';
 
 // ============================================
 // Plugin Initialization
@@ -118,6 +121,32 @@ figma.ui.onmessage = async (msg: unknown) => {
       };
       figma.ui.postMessage(result);
     }
+    if (
+      typeof msg === 'object' &&
+      msg !== null &&
+      'type' in msg &&
+      (msg.type === 'get-grid-storage' ||
+        msg.type === 'set-grid-storage' ||
+        msg.type === 'delete-grid-storage') &&
+      'requestId' in msg &&
+      typeof msg.requestId === 'string' &&
+      msg.requestId.trim().length > 0 &&
+      msg.requestId.length <= 128
+    ) {
+      const result: GridStorageResultMessage = {
+        type: 'grid-storage-result',
+        requestId: msg.requestId,
+        operation:
+          msg.type === 'get-grid-storage'
+            ? 'get'
+            : msg.type === 'set-grid-storage'
+              ? 'set'
+              : 'delete',
+        success: false,
+        error: 'Invalid saved grid storage request',
+      };
+      figma.ui.postMessage(result);
+    }
     figma.notify('Invalid plugin message');
     return;
   }
@@ -147,6 +176,65 @@ figma.ui.onmessage = async (msg: unknown) => {
 
   if (message.type === 'get-document-color-profile') {
     sendDocumentColorProfile();
+    return;
+  }
+
+  if (message.type === 'get-grid-storage') {
+    const result: GridStorageResultMessage = {
+      type: 'grid-storage-result',
+      requestId: message.requestId,
+      operation: 'get',
+      success: true,
+      value: null,
+    };
+
+    try {
+      const value = await figma.clientStorage.getAsync(GRID_STORAGE_KEY);
+      result.value = typeof value === 'string' ? value : null;
+    } catch (error) {
+      result.success = false;
+      result.error = error instanceof Error ? error.message : 'Failed to load saved grids';
+    }
+
+    figma.ui.postMessage(result);
+    return;
+  }
+
+  if (message.type === 'set-grid-storage') {
+    const result: GridStorageResultMessage = {
+      type: 'grid-storage-result',
+      requestId: message.requestId,
+      operation: 'set',
+      success: true,
+    };
+
+    try {
+      await figma.clientStorage.setAsync(GRID_STORAGE_KEY, message.value);
+    } catch (error) {
+      result.success = false;
+      result.error = error instanceof Error ? error.message : 'Failed to save grids';
+    }
+
+    figma.ui.postMessage(result);
+    return;
+  }
+
+  if (message.type === 'delete-grid-storage') {
+    const result: GridStorageResultMessage = {
+      type: 'grid-storage-result',
+      requestId: message.requestId,
+      operation: 'delete',
+      success: true,
+    };
+
+    try {
+      await figma.clientStorage.deleteAsync(GRID_STORAGE_KEY);
+    } catch (error) {
+      result.success = false;
+      result.error = error instanceof Error ? error.message : 'Failed to clear saved grids';
+    }
+
+    figma.ui.postMessage(result);
     return;
   }
 

@@ -178,7 +178,7 @@ describe('modal accessibility', () => {
     expect(tags?.value).toBe('uniform-grid, 8px');
   });
 
-  it('keeps focus and Escape behavior active in the save success dialog', () => {
+  it('keeps focus and Escape behavior active in the save success dialog', async () => {
     vi.useFakeTimers();
     const onClose = vi.fn();
 
@@ -197,8 +197,9 @@ describe('modal accessibility', () => {
       button.textContent?.includes('Save Grid')
     );
 
-    act(() => {
+    await act(async () => {
       saveButton?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
     });
 
     const successDialog = container.querySelector<HTMLElement>('[role="dialog"]');

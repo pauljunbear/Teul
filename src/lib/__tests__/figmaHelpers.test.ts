@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   getGridSelectionTargets,
   hexToFigmaRgb,
+  isNodeOrAncestorLocked,
   isValidHex,
   sendSelectionInfo,
 } from '../../backend/figmaHelpers';
@@ -26,6 +27,37 @@ describe('hexToFigmaRgb', () => {
 
   it.each(['invalid', '#fff', '##000000', ''])('throws for invalid hex format %j', hex => {
     expect(() => hexToFigmaRgb(hex)).toThrow(`Invalid hex color: ${hex}`);
+  });
+});
+
+describe('isNodeOrAncestorLocked', () => {
+  it('detects a direct node lock', () => {
+    const node = { id: 'locked', locked: true, parent: null } as unknown as SceneNode;
+    expect(isNodeOrAncestorLocked(node)).toBe(true);
+  });
+
+  it('detects a locked ancestor and allows an unlocked component or instance', () => {
+    const lockedComponent = {
+      id: 'component',
+      type: 'COMPONENT',
+      locked: true,
+      parent: null,
+    } as unknown as ComponentNode;
+    const nested = {
+      id: 'nested',
+      type: 'RECTANGLE',
+      locked: false,
+      parent: lockedComponent,
+    } as unknown as RectangleNode;
+    const instance = {
+      id: 'instance',
+      type: 'INSTANCE',
+      locked: false,
+      parent: null,
+    } as unknown as InstanceNode;
+
+    expect(isNodeOrAncestorLocked(nested)).toBe(true);
+    expect(isNodeOrAncestorLocked(instance)).toBe(false);
   });
 });
 
