@@ -51,5 +51,3 @@ export const SemanticPolicySummary: React.FC<SemanticPolicySummaryProps> = ({ re
     </div>
   );
 };
-
-export default SemanticPolicySummary;

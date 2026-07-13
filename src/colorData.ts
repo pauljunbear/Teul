@@ -1,6 +1,6 @@
 import colorJson from './colors.json';
 
-export interface Color {
+interface Color {
   name: string;
   combinations: number[];
   swatch: number;
@@ -10,7 +10,7 @@ export interface Color {
   hex: string;
 }
 
-export interface ColorCombination {
+interface ColorCombination {
   name: string;
   colors: number[];
   type: 'duo' | 'trio' | 'quad';

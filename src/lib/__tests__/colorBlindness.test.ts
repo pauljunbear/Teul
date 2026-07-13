@@ -79,6 +79,18 @@ describe('CVD_INFO', () => {
     expect(CVD_INFO.achromatopsia.affectedCone).toBe('all');
     expect(CVD_INFO.normal.affectedCone).toBe('none');
   });
+
+  it('does not present male prevalence as a population-wide normal-vision statistic', () => {
+    expect(CVD_INFO.normal.prevalence).not.toContain('%');
+    expect(CVD_INFO.protanopia.prevalence).toContain('males');
+    expect(CVD_INFO.deuteranomaly.prevalence).toContain('males');
+  });
+
+  it('describes simulations without biologically absolute perception claims', () => {
+    expect(CVD_INFO.protanopia.description).not.toContain('Cannot perceive');
+    expect(CVD_INFO.deuteranopia.description).not.toContain('Complete absence');
+    expect(CVD_INFO.achromatopsia.description).toContain('approximation');
+  });
 });
 
 // ============================================
@@ -181,21 +193,39 @@ describe('getMachadoMatrix', () => {
     expect(protan[0][0]).not.toBe(1); // Should be the full matrix, not interpolated
   });
 
-  it('interpolates for anomaly types based on severity', () => {
+  it("uses the authors' precomputed matrices at exact 0.1 severity steps", () => {
+    expect(getMachadoMatrix('protanomaly', 0.1)).toEqual([
+      [0.856167, 0.182038, -0.038205],
+      [0.029342, 0.955115, 0.015544],
+      [-0.00288, -0.001563, 1.004443],
+    ]);
+    expect(getMachadoMatrix('deuteranomaly', 0.5)).toEqual([
+      [0.547494, 0.607765, -0.155259],
+      [0.181692, 0.781742, 0.036566],
+      [-0.01041, 0.027275, 0.983136],
+    ]);
+    expect(getMachadoMatrix('tritanomaly', 0.9)).toEqual([
+      [1.278864, -0.125333, -0.153531],
+      [-0.084748, 0.957674, 0.127074],
+      [-0.000989, 0.601151, 0.399838],
+    ]);
+  });
+
+  it('interpolates between the nearest precomputed matrices', () => {
+    const matrix = getMachadoMatrix('protanomaly', 0.873);
+
+    // The source supplement's example: interpolate 0.8 and 0.9 with weight 0.73.
+    expect(matrix[0][0]).toBeCloseTo(0.21887045, 8);
+    expect(matrix[0][1]).toBeCloseTo(0.9721589, 8);
+  });
+
+  it('preserves identity and full-severity endpoints', () => {
     const severityZero = getMachadoMatrix('protanomaly', 0);
-    const severityHalf = getMachadoMatrix('protanomaly', 0.5);
     const severityFull = getMachadoMatrix('protanomaly', 1.0);
 
-    // At severity 0, should be identity
     expect(severityZero[0][0]).toBeCloseTo(1, 3);
     expect(severityZero[1][1]).toBeCloseTo(1, 3);
-
-    // At severity 0.5, should be between identity and full
-    expect(severityHalf[0][0]).not.toBeCloseTo(1, 1);
-    expect(severityHalf[0][0]).not.toBeCloseTo(severityFull[0][0], 1);
-
-    // At severity 1.0, should be full matrix
-    expect(severityFull[0][0]).not.toBeCloseTo(1, 1);
+    expect(severityFull[0][0]).toBe(0.152286);
   });
 
   it('clamps severity to 0-1', () => {
@@ -214,6 +244,10 @@ describe('getMachadoMatrix', () => {
 // ============================================
 
 describe('simulateProtanopia', () => {
+  it('uses the Machado full-severity protan matrix', () => {
+    expect(simulateProtanopia(RED)).toEqual(simulateAnomaly(RED, 'protanopia', 1));
+  });
+
   it('preserves white', () => {
     const result = simulateProtanopia(WHITE);
     expect(result.r).toBeCloseTo(255, 0);
@@ -252,6 +286,10 @@ describe('simulateProtanopia', () => {
 });
 
 describe('simulateDeuteranopia', () => {
+  it('uses the Machado full-severity deutan matrix', () => {
+    expect(simulateDeuteranopia(RED)).toEqual(simulateAnomaly(RED, 'deuteranopia', 1));
+  });
+
   it('preserves white', () => {
     const result = simulateDeuteranopia(WHITE);
     expect(result.r).toBeCloseTo(255, 0);
@@ -281,6 +319,10 @@ describe('simulateDeuteranopia', () => {
 });
 
 describe('simulateTritanopia', () => {
+  it('uses the Machado full-severity tritan matrix', () => {
+    expect(simulateTritanopia(BLUE)).toEqual(simulateAnomaly(BLUE, 'tritanopia', 1));
+  });
+
   it('preserves white', () => {
     const result = simulateTritanopia(WHITE);
     expect(result.r).toBeCloseTo(255, 0);
@@ -338,18 +380,15 @@ describe('simulateAchromatopsia', () => {
     expect(result.r).toBeCloseTo(128, 0);
   });
 
-  it('uses correct luminance formula', () => {
-    // Pure red has luminance ~54 (0.2126 * 255)
+  it('uses linear-light BT.709 luminance and re-encodes to sRGB', () => {
     const redResult = simulateAchromatopsia(RED);
-    expect(redResult.r).toBeCloseTo(54, 0);
+    expect(redResult.r).toBeCloseTo(127, 0);
 
-    // Pure green has luminance ~182 (0.7152 * 255)
     const greenResult = simulateAchromatopsia(GREEN);
-    expect(greenResult.r).toBeCloseTo(182, 0);
+    expect(greenResult.r).toBeCloseTo(220, 0);
 
-    // Pure blue has luminance ~18 (0.0722 * 255)
     const blueResult = simulateAchromatopsia(BLUE);
-    expect(blueResult.r).toBeCloseTo(18, 0);
+    expect(blueResult.r).toBeCloseTo(76, 0);
   });
 });
 
@@ -513,10 +552,8 @@ describe('colorDistance', () => {
 });
 
 describe('wouldConfuse', () => {
-  it('red and green confuse for protanopia at appropriate threshold', () => {
-    // Protanopia reduces red/green distance significantly (from ~361 to ~138)
-    // Using threshold 150 to catch this reduced distance
-    expect(wouldConfuse(RED, GREEN, 'protanopia', 150)).toBe(true);
+  it('red and green confuse for deuteranopia at an appropriate threshold', () => {
+    expect(wouldConfuse(RED, GREEN, 'deuteranopia', 150)).toBe(true);
   });
 
   it('red and blue do not confuse for deuteranopia', () => {
@@ -548,8 +585,7 @@ describe('wouldConfuseAny', () => {
   });
 
   it('returns array of confusing types', () => {
-    // Red and green become more similar under CVD
-    // With threshold 150, protanopia (~138 distance) should be detected
+    // Red and green become more similar under a full-severity Machado simulation.
     const result = wouldConfuseAny(RED, GREEN, 150);
     expect(result.length).toBeGreaterThan(0);
   });
@@ -575,8 +611,7 @@ describe('findConfusingPairs', () => {
 
   it('finds confusing pairs', () => {
     const palette = [RED, GREEN, BLUE];
-    // Use threshold 150 since protanopia reduces red/green distance to ~138
-    const pairs = findConfusingPairs(palette, 'protanopia', 150);
+    const pairs = findConfusingPairs(palette, 'deuteranopia', 150);
     expect(pairs.length).toBeGreaterThan(0);
     expect(pairs.some(([i, j]) => (i === 0 && j === 1) || (i === 1 && j === 0))).toBe(true);
   });
@@ -615,10 +650,9 @@ describe('isColorSafe', () => {
   });
 
   it('returns false when color confuses with a reference', () => {
-    // Red and green-ish colors may confuse
-    const lime: RGB = { r: 50, g: 205, b: 50 };
-    const lightRed: RGB = { r: 200, g: 50, b: 50 };
-    expect(isColorSafe(lime, [lightRed], 80)).toBe(false);
+    const green: RGB = { r: 50, g: 205, b: 50 };
+    const nearGreen: RGB = { r: 55, g: 200, b: 55 };
+    expect(isColorSafe(green, [nearGreen], 30)).toBe(false);
   });
 
   it('checks against multiple CVD types', () => {

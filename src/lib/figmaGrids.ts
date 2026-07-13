@@ -12,10 +12,10 @@ import type {
   FigmaLayoutGrid,
   FigmaRowsColsLayoutGrid,
   FigmaUniformLayoutGrid,
-  GridColor,
   GridApplicationMode,
   GridDimensions,
   GridPreset,
+  GridResponsiveWidth,
 } from '../types/grid';
 import { toPixels } from './gridUtils';
 
@@ -259,6 +259,10 @@ export function getPresetFrameDimensions(
     return { ...preset.referenceDimensions };
   }
 
+  if (!preset.isCustom) {
+    throw new Error(`Bundled grid preset "${preset.id}" is missing reference dimensions.`);
+  }
+
   if (preset.aspectRatio) {
     return parseAspectRatio(preset.aspectRatio, baseWidth);
   }
@@ -300,8 +304,6 @@ export function buildCreateGridFrameMessage(params: {
   frameName?: string;
   width: number;
   height: number;
-  includeImage?: boolean;
-  imageData?: string;
   positionNearSelection?: boolean;
 }): {
   type: 'create-grid-frame';
@@ -309,8 +311,6 @@ export function buildCreateGridFrameMessage(params: {
   frameName: string;
   width: number;
   height: number;
-  includeImage?: boolean;
-  imageData?: string;
   positionNearSelection?: boolean;
 } {
   const { config, width, height } = params;
@@ -336,8 +336,6 @@ export function buildCreateGridFrameMessage(params: {
     frameName: params.frameName || gridConfigToFrameName(config),
     width,
     height,
-    includeImage: params.includeImage,
-    imageData: params.imageData,
     positionNearSelection: params.positionNearSelection !== false,
   };
 }
@@ -351,11 +349,15 @@ export function buildApplyGridMessage(params: {
   expectedTargetIds: readonly string[];
   replaceExisting?: boolean;
   sourceDimensions?: { width: number; height: number };
+  applicationMode?: GridApplicationMode;
+  responsiveWidth?: GridResponsiveWidth;
 }): {
   type: 'apply-grid';
   requestId: string;
   sourceConfig: GridConfig;
   sourceDimensions?: { width: number; height: number };
+  applicationMode: GridApplicationMode;
+  responsiveWidth?: GridResponsiveWidth;
   expectedTargetIds: string[];
   replaceExisting: boolean;
 } {
@@ -364,99 +366,11 @@ export function buildApplyGridMessage(params: {
     requestId: params.requestId,
     sourceConfig: params.config,
     sourceDimensions: params.sourceDimensions,
+    applicationMode:
+      params.applicationMode ??
+      (params.sourceDimensions === undefined ? 'fixed' : 'scale-from-reference'),
+    responsiveWidth: params.responsiveWidth,
     expectedTargetIds: [...params.expectedTargetIds],
     replaceExisting: params.replaceExisting !== false,
   };
 }
-
-// ============================================
-// Grid Validation for Figma
-// ============================================
-
-/**
- * Validate that a grid configuration can be applied to a Figma frame
- */
-export function validateGridForFigma(
-  config: GridConfig,
-  frameWidth: number,
-  frameHeight: number
-): { valid: boolean; errors: string[]; warnings: string[] } {
-  const errors: string[] = [];
-  const warnings: string[] = [];
-
-  // Check columns
-  if (config.columns) {
-    if (config.columns.count < 1) {
-      errors.push('Column count must be at least 1');
-    }
-    const marginPx = toPixels(config.columns.margin, config.columns.marginUnit, frameWidth);
-    if (marginPx * 2 >= frameWidth) {
-      errors.push('Column margins exceed frame width');
-    }
-
-    const gutterPx = toPixels(config.columns.gutterSize, config.columns.gutterUnit, frameWidth);
-    if (gutterPx >= frameWidth) {
-      errors.push('Column gutter exceeds frame width');
-    }
-    if (frameWidth - marginPx * 2 - gutterPx * (config.columns.count - 1) <= 0) {
-      errors.push('Columns and gutters do not fit within the frame width');
-    }
-  }
-
-  // Check rows
-  if (config.rows) {
-    if (config.rows.count < 1) {
-      errors.push('Row count must be at least 1');
-    }
-    const marginPx = toPixels(config.rows.margin, config.rows.marginUnit, frameHeight);
-    if (marginPx * 2 >= frameHeight) {
-      errors.push('Row margins exceed frame height');
-    }
-    const gutterPx = toPixels(config.rows.gutterSize, config.rows.gutterUnit, frameHeight);
-    if (frameHeight - marginPx * 2 - gutterPx * (config.rows.count - 1) <= 0) {
-      errors.push('Rows and gutters do not fit within the frame height');
-    }
-  }
-
-  // Check baseline
-  if (config.baseline) {
-    if (config.baseline.height < 1) {
-      errors.push('Baseline height must be at least 1px');
-    }
-    if (config.baseline.height > frameHeight) {
-      warnings.push('Baseline height exceeds frame height');
-    }
-    if (config.baseline.offset !== 0) {
-      warnings.push('Figma uniform GRID ignores baseline offsets and starts at 0px');
-    }
-  }
-
-  return {
-    valid: errors.length === 0,
-    errors,
-    warnings,
-  };
-}
-
-// ============================================
-// Default Grid Colors (Figma-friendly RGBA)
-// ============================================
-
-export const FIGMA_GRID_COLORS = {
-  column: { r: 1, g: 0.2, b: 0.2, a: 0.1 } as GridColor, // Red
-  row: { r: 0.2, g: 0.4, b: 1, a: 0.1 } as GridColor, // Blue
-  baseline: { r: 0.2, g: 0.8, b: 0.9, a: 0.15 } as GridColor, // Cyan
-
-  // Alternative color schemes
-  mono: {
-    column: { r: 0.4, g: 0.4, b: 0.4, a: 0.1 } as GridColor,
-    row: { r: 0.3, g: 0.3, b: 0.3, a: 0.1 } as GridColor,
-    baseline: { r: 0.5, g: 0.5, b: 0.5, a: 0.15 } as GridColor,
-  },
-
-  vibrant: {
-    column: { r: 1, g: 0, b: 0.5, a: 0.15 } as GridColor, // Magenta
-    row: { r: 0, g: 0.8, b: 1, a: 0.15 } as GridColor, // Cyan
-    baseline: { r: 1, g: 0.8, b: 0, a: 0.2 } as GridColor, // Yellow
-  },
-};

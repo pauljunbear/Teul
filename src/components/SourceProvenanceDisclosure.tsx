@@ -16,6 +16,9 @@ export const SourceProvenanceDisclosure: React.FC<SourceProvenanceDisclosureProp
     { label: 'Disclosure', value: provenance.disclosure.detail },
     { label: 'Source', value: provenance.source.citation },
     { label: 'Profile', value: provenance.profile.summary },
+    ...(provenance.transcription
+      ? [{ label: 'Text review', value: provenance.transcription.summary }]
+      : []),
     { label: 'Derivation', value: provenance.derivation.summary },
     { label: 'Uncertainty', value: provenance.uncertainty.summary },
     { label: 'Credit', value: provenance.credit.full },

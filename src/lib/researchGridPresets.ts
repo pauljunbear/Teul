@@ -75,7 +75,14 @@ const provenance = (
 
 const preset = (input: PresetInput): GridPreset => ({
   ...input,
-  applicationMode: 'fixed',
+  applicationMode:
+    input.provenance?.classification === 'historical-reconstruction'
+      ? 'canonical-only'
+      : input.provenance?.classification === 'modern-named-system'
+        ? input.responsiveWidth
+          ? 'responsive-width'
+          : 'canonical-only'
+        : 'fixed',
   isCustom: false,
 });
 
@@ -117,7 +124,7 @@ const brockmannFieldGrid = (fields: number, columns: number, rows: number): Grid
     provenance: provenance(
       'historically-informed-construction',
       'Grid Systems in Graphic Design teaching examples',
-      'https://www.toledomuseum.org/sites/default/files/2018-10/2018%20Canaday%20Center%20Josef%20Muller-Brockmann%20Catalog.pdf',
+      'https://openlibrary.org/books/OL18177345M/Grid_systems_in_graphic_design',
       'reference-informed',
       `The ${fields}-field count is documented. Equal 5% margins and 2% gutters are Teul parameters because the source method derives them from each format and typographic program.`
     ),
@@ -139,7 +146,7 @@ export const RESEARCH_GRID_PRESETS: GridPreset[] = [
     referenceDimensions: { width: 580, height: 580 },
     config: { baseline: rhythm(10) },
     provenance: provenance(
-      'historical-reconstruction',
+      'historically-informed-construction',
       'Karl Gerstner, Designing Programmes: Programme as Grid',
       'https://openlab.citytech.cuny.edu/langecomd3504fa2019/files/2018/10/Gerstner_DesigningProgrammes.pdf',
       'artifact-level',
@@ -193,11 +200,11 @@ export const RESEARCH_GRID_PRESETS: GridPreset[] = [
     referenceDimensions: { width: 900, height: 900 },
     config: { columns: pxColumns(3, 0, 0), rows: pxRows(3, 0, 0) },
     provenance: provenance(
-      'historical-reconstruction',
+      'historically-informed-construction',
       'The Typography of Order: Emil Ruder',
       'https://www.neugraphic.com/ruder/ruder-text2.html',
       'reference-informed',
-      'Reconstructs the documented nine-square scheme on a nested square content frame. The source does not establish universal outer-page margins.'
+      'Translates the documented nine-square scheme to a nested square content frame. The source does not establish universal outer-page margins or a canonical 900px format.'
     ),
   }),
   preset({
@@ -210,11 +217,11 @@ export const RESEARCH_GRID_PRESETS: GridPreset[] = [
     referenceDimensions: { width: 900, height: 900 },
     config: { columns: pxColumns(6, 0, 0), rows: pxRows(6, 0, 0) },
     provenance: provenance(
-      'historical-reconstruction',
+      'historically-informed-construction',
       'The Typography of Order: Emil Ruder',
       'https://www.neugraphic.com/ruder/ruder-text2.html',
       'reference-informed',
-      'Reconstructs the documented thirty-six-square scheme on a nested square content frame. Outer-page placement remains project-specific.'
+      'Translates the documented thirty-six-square scheme to a nested square content frame. The source does not establish a canonical 900px format, and outer-page placement remains project-specific.'
     ),
   }),
   preset({
@@ -250,7 +257,7 @@ export const RESEARCH_GRID_PRESETS: GridPreset[] = [
     provenance: provenance(
       'teul-modern-adaptation',
       'Munich 1972 archival poster format',
-      'https://www.1972munichsummit.org/archival-catalogue',
+      'https://www.otlaicher.de/beitraege/die-regenbogenspiele/',
       'reference-informed',
       'Uses the documented 60-by-84 cm format and a square lattice suitable for 45- and 90-degree construction. The 5-by-7 field and 10px interval are Teul adaptations.'
     ),
@@ -345,53 +352,56 @@ export const RESEARCH_GRID_PRESETS: GridPreset[] = [
   }),
   preset({
     id: 'material-compact-4col',
-    name: 'Material Compact App',
+    name: 'Material 2 Compact App',
     description: 'Four columns with fixed 16px margins, 16px gutters, and an 8px square rhythm.',
     category: 'combined',
     tags: ['material', 'mobile', 'compact', '4-column', '8px'],
     aspectRatio: '9:20',
     referenceDimensions: { width: 360, height: 800 },
+    responsiveWidth: { min: 1, max: 599 },
     config: { columns: pxColumns(4, 16, 16), baseline: rhythm(8) },
     provenance: provenance(
       'modern-named-system',
       'Material responsive layout grid',
       'https://m2.material.io/design/layout/responsive-layout-grid.html',
       'reference-informed',
-      'Material documents four compact columns and 16dp margins. The 16px gutter is one permitted Material gutter value, and Teul emits the spacing rhythm as a square grid.'
+      'Material 2 documents four columns with 16dp margins and 16dp gutters in the compact range. Teul emits the 8dp spacing rhythm as a square guide; 360×800 is a preview frame, not a canonical height.'
     ),
   }),
   preset({
     id: 'material-tablet-8col',
-    name: 'Material Tablet App',
+    name: 'Material 2 Tablet App',
     description: 'Eight columns with fixed 32px margins, 24px gutters, and an 8px square rhythm.',
     category: 'combined',
     tags: ['material', 'tablet', '8-column', '8px'],
     aspectRatio: '3:4',
     referenceDimensions: { width: 768, height: 1024 },
+    responsiveWidth: { min: 600, max: 904 },
     config: { columns: pxColumns(8, 24, 32), baseline: rhythm(8) },
     provenance: provenance(
       'modern-named-system',
       'Material responsive layout grid',
       'https://m2.material.io/design/layout/responsive-layout-grid.html',
       'reference-informed',
-      'Uses Material’s documented eight-column medium layout and 32dp margins. The 24px gutter is selected from Material’s permitted spacing choices.'
+      'Uses Material 2’s documented eight-column medium layout, 32dp margins, and 24dp gutters. The 768×1024 frame is a preview choice; height is unconstrained.'
     ),
   }),
   preset({
     id: 'material-large-12col',
-    name: 'Material Large App',
+    name: 'Material 2 Large App',
     description: 'A centered 12-column large-screen body with an 8px square rhythm.',
     category: 'combined',
     tags: ['material', 'desktop', 'large-screen', '12-column', '8px'],
     aspectRatio: '16:10',
     referenceDimensions: { width: 1440, height: 900 },
+    responsiveWidth: { min: 1440, maxContentWidth: 1040 },
     config: { columns: pxColumns(12, 24, 200), baseline: rhythm(8) },
     provenance: provenance(
       'modern-named-system',
       'Material responsive layout grid',
       'https://m2.material.io/design/layout/responsive-layout-grid.html',
       'reference-informed',
-      'Reconstructs Material’s published 1040dp large-screen body on a 1440px frame. Pixel values remain fixed when applied to another target.'
+      'Reconstructs Material 2’s published 1040dp large-screen body with 24dp gutters. Teul keeps that body centered as the frame widens; 1440×900 is a preview frame and height is unconstrained.'
     ),
   }),
   preset({
@@ -402,30 +412,33 @@ export const RESEARCH_GRID_PRESETS: GridPreset[] = [
     tags: ['carbon', 'ibm', 'product', '8-column', '8px'],
     aspectRatio: '4:3',
     referenceDimensions: { width: 672, height: 504 },
+    responsiveWidth: { min: 672, max: 1055 },
     config: { columns: pxColumns(8, 32, 16), baseline: rhythm(8) },
     provenance: provenance(
       'modern-named-system',
       'IBM Carbon 2x Grid',
       'https://carbondesignsystem.com/elements/2x-grid/usage/',
       'reference-informed',
-      'Uses Carbon’s documented medium breakpoint, margin, default gutter, and 8px mini unit. A Figma grid cannot also show Carbon’s internal column padding.'
+      'Uses Carbon’s documented medium breakpoint, 16px margin, 32px wide gutter, and 8px mini unit. A Figma guide cannot also show Carbon’s internal column padding; height is unconstrained.'
     ),
   }),
   preset({
     id: 'carbon-dashboard-16col',
-    name: 'Carbon Dashboard',
-    description: 'A 16-column Carbon dashboard grid with an 8px square rhythm.',
+    name: 'Carbon Large Wide',
+    description:
+      'A 16-column Carbon large-breakpoint grid using the official wide gutter mode and 8px square rhythm.',
     category: 'combined',
-    tags: ['carbon', 'ibm', 'dashboard', 'data', '16-column', '8px'],
+    tags: ['carbon', 'ibm', 'wide', 'data', '16-column', '8px'],
     aspectRatio: '16:10',
     referenceDimensions: { width: 1056, height: 660 },
+    responsiveWidth: { min: 1056, max: 1311 },
     config: { columns: pxColumns(16, 32, 16), baseline: rhythm(8) },
     provenance: provenance(
       'modern-named-system',
       'IBM Carbon 2x Grid',
       'https://carbondesignsystem.com/elements/2x-grid/usage/',
       'reference-informed',
-      'Uses Carbon’s documented large-breakpoint 16-column geometry and 8px mini unit. It prioritizes usable content-alignment zones over internal padding.'
+      'Uses Carbon’s documented large-breakpoint 16-column geometry, 32px wide gutter, and 8px mini unit. The 1056×660 frame is a preview choice; height is unconstrained.'
     ),
   }),
   preset({
@@ -436,13 +449,14 @@ export const RESEARCH_GRID_PRESETS: GridPreset[] = [
     tags: ['carbon', 'ibm', 'dashboard', 'condensed', '16-column'],
     aspectRatio: '16:10',
     referenceDimensions: { width: 1056, height: 660 },
+    responsiveWidth: { min: 1056, max: 1311 },
     config: { columns: pxColumns(16, 1, 16) },
     provenance: provenance(
       'modern-named-system',
       'IBM Carbon 2x Grid',
       'https://carbondesignsystem.com/elements/2x-grid/overview/',
       'reference-informed',
-      'Uses Carbon’s condensed 1px gutter mode on the large 16-column breakpoint. Internal component padding remains outside the native Figma grid.'
+      'Uses Carbon’s condensed 1px gutter mode on the large 16-column breakpoint, a documented dashboard/overview use case. Internal component padding remains outside the Figma guide; height is unconstrained.'
     ),
   }),
   preset({
@@ -454,30 +468,32 @@ export const RESEARCH_GRID_PRESETS: GridPreset[] = [
     tags: ['bootstrap', 'web', 'container', '12-column', 'xxl'],
     aspectRatio: '16:10',
     referenceDimensions: { width: 1440, height: 900 },
-    config: { columns: pxColumns(12, 24, 60) },
+    responsiveWidth: { min: 1400, maxContentWidth: 1320, contentInset: 12 },
+    config: { columns: pxColumns(12, 24, 72) },
     provenance: provenance(
       'modern-named-system',
       'Bootstrap 5.3 grid and containers',
       'https://getbootstrap.com/docs/5.3/layout/grid/',
       'reference-informed',
-      'Reconstructs the 1320px XXL container and default 1.5rem gutter on a 1440px frame. The fixed maximum container width cannot persist after arbitrary resizing.'
+      'Models Bootstrap’s content-alignment bands inside the 1320px XXL container: 12px half-gutter padding moves the first content guide to 72px on a 1440px frame, with 24px gaps. Teul recenters the capped container as the frame widens; height is unconstrained.'
     ),
   }),
   preset({
     id: 'uswds-desktop-12col',
-    name: 'USWDS Desktop Service',
-    description: 'A centered 12-column service-layout adaptation for government websites.',
+    name: 'USWDS Desktop Container',
+    description: 'A 1200px preview of the centered USWDS desktop container and layout grid.',
     category: 'web-ui',
     tags: ['uswds', 'government', 'service', '12-column', 'web'],
     aspectRatio: '3:2',
     referenceDimensions: { width: 1200, height: 800 },
+    responsiveWidth: { min: 1024, maxContentWidth: 1024, contentInset: 32 },
     config: { columns: pxColumns(12, 32, 120) },
     provenance: provenance(
       'modern-named-system',
       'U.S. Web Design System layout grid',
       'https://designsystem.digital.gov/utilities/layout-grid/',
       'reference-informed',
-      'Translates USWDS’s flexible 12-column utilities, desktop gaps, and centered maximum content width into one fixed canonical desktop frame.'
+      'Translates USWDS’s customizable 12-column utilities, default 32px desktop padding/gap, and 1024px maximum container into Figma content guides. Teul recenters the capped container as the frame widens; 1200×800 is a preview frame and height is unconstrained.'
     ),
   }),
   preset({
@@ -494,7 +510,7 @@ export const RESEARCH_GRID_PRESETS: GridPreset[] = [
       'Apple Human Interface Guidelines: Layout',
       'https://developer.apple.com/design/human-interface-guidelines/layout',
       'reference-informed',
-      'Uses Apple’s documented 80px tvOS margins, 40px gutters, and common six-column media geometry on a Full HD frame.'
+      'Uses Apple’s 1920×1080pt tvOS logical canvas, 80pt side safe area, 40pt horizontal spacing, and six 260pt media items. Teul maps 1 Figma px to 1 tvOS point; the 60pt vertical safe area and 100pt minimum vertical spacing are disclosed but not emitted.'
     ),
   }),
   preset({
@@ -511,13 +527,14 @@ export const RESEARCH_GRID_PRESETS: GridPreset[] = [
       'Apple Human Interface Guidelines: Layout',
       'https://developer.apple.com/design/human-interface-guidelines/layout',
       'reference-informed',
-      'Uses Apple’s documented 80px tvOS margins, 40px gutters, and common nine-column media geometry on a Full HD frame.'
+      'Uses Apple’s 1920×1080pt tvOS logical canvas, 80pt side safe area, 40pt horizontal spacing, and nine 160pt media items. Teul maps 1 Figma px to 1 tvOS point; the 60pt vertical safe area and 100pt minimum vertical spacing are disclosed but not emitted.'
     ),
   }),
   preset({
     id: 'fluent-product-dashboard',
-    name: 'Fluent Product Dashboard',
-    description: 'A 12-column product dashboard with a fixed 4px square rhythm.',
+    name: 'Fluent-guided Product Dashboard',
+    description:
+      'A Teul-authored 12-column dashboard with a 4px square rhythm, guided by Fluent’s flexible spacing system.',
     category: 'combined',
     tags: ['fluent', 'microsoft', 'dashboard', '12-column', '4px'],
     aspectRatio: '16:10',

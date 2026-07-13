@@ -1,7 +1,7 @@
 /**
  * Tests for accessibility.ts
  *
- * Validates WCAG 2.1 and APCA contrast calculations
+ * Validates WCAG 2.2 and APCA contrast calculations
  * against known reference values.
  */
 
@@ -13,12 +13,10 @@ import {
   getWCAGRating,
   getAPCAContrast,
   getAPCAContrastHex,
-  getAPCARating,
+  getAPCAUseCase,
   getAPCAMinFontSize,
-  getFontRecommendations,
   analyzeContrast,
   meetsWCAGLevel,
-  meetsAPCARating,
   suggestTextColor,
   findAccessibleColor,
 } from '../accessibility';
@@ -57,7 +55,7 @@ describe('getRelativeLuminance', () => {
     expect(lum).toBeLessThan(0.25);
   });
 
-  it('handles low sRGB values (< 0.03928 threshold)', () => {
+  it('handles low sRGB values below the 0.04045 threshold', () => {
     const lum = getRelativeLuminance(10, 10, 10);
     expect(lum).toBeGreaterThan(0);
     expect(lum).toBeLessThan(0.01);
@@ -174,14 +172,25 @@ describe('getWCAGRating', () => {
 // ============================================
 
 describe('getAPCAContrast', () => {
-  it('returns high positive Lc for white on black', () => {
-    const lc = getAPCAContrast({ r: 255, g: 255, b: 255 }, { r: 0, g: 0, b: 0 });
-    expect(lc).toBeGreaterThan(100);
+  it('matches the canonical black-on-white vector and positive polarity', () => {
+    const lc = getAPCAContrast({ r: 0, g: 0, b: 0 }, { r: 255, g: 255, b: 255 });
+    expect(lc).toBe(106.04067321268862);
   });
 
-  it('returns high negative Lc for black on white', () => {
-    const lc = getAPCAContrast({ r: 0, g: 0, b: 0 }, { r: 255, g: 255, b: 255 });
-    expect(lc).toBeLessThan(-100);
+  it('matches the canonical white-on-black vector and negative polarity', () => {
+    const lc = getAPCAContrast({ r: 255, g: 255, b: 255 }, { r: 0, g: 0, b: 0 });
+    expect(lc).toBe(-107.88473318309848);
+  });
+
+  it.each([
+    [{ r: 136, g: 136, b: 136 }, { r: 255, g: 255, b: 255 }, 63.056469930209424],
+    [{ r: 255, g: 255, b: 255 }, { r: 136, g: 136, b: 136 }, -68.54146436644962],
+    [{ r: 17, g: 34, b: 51 }, { r: 221, g: 238, b: 255 }, 91.66830811481631],
+    [{ r: 221, g: 238, b: 255 }, { r: 17, g: 34, b: 51 }, -93.06770049484275],
+    [{ r: 0, g: 0, b: 0 }, { r: 170, g: 170, b: 170 }, 58.146262578561334],
+    [{ r: 170, g: 170, b: 170 }, { r: 0, g: 0, b: 0 }, -56.24113336839742],
+  ])('matches an apca-w3 0.1.9 package vector', (text, background, expected) => {
+    expect(getAPCAContrast(text, background)).toBe(expected);
   });
 
   it('returns 0 for identical colors', () => {
@@ -199,8 +208,8 @@ describe('getAPCAContrast', () => {
     const dark = { r: 0, g: 0, b: 0 };
     const lc1 = getAPCAContrast(light, dark);
     const lc2 = getAPCAContrast(dark, light);
-    expect(lc1).toBeGreaterThan(0);
-    expect(lc2).toBeLessThan(0);
+    expect(lc1).toBeLessThan(0);
+    expect(lc2).toBeGreaterThan(0);
   });
 
   it('handles mid-range contrast correctly', () => {
@@ -219,48 +228,48 @@ describe('getAPCAContrast', () => {
 describe('getAPCAContrastHex', () => {
   it('handles hex colors correctly', () => {
     const lc = getAPCAContrastHex('#ffffff', '#000000');
-    expect(lc).toBeGreaterThan(100);
+    expect(lc).toBe(-107.88473318309848);
   });
 
   it('handles hex without # prefix', () => {
     const lc = getAPCAContrastHex('ffffff', '000000');
-    expect(lc).toBeGreaterThan(100);
+    expect(lc).toBe(-107.88473318309848);
   });
 });
 
-describe('getAPCARating', () => {
-  it('returns gold for |Lc| >= 75', () => {
-    expect(getAPCARating(80)).toBe('gold');
-    expect(getAPCARating(-80)).toBe('gold');
-    expect(getAPCARating(75)).toBe('gold');
-  });
-
-  it('returns silver for |Lc| >= 60 but < 75', () => {
-    expect(getAPCARating(65)).toBe('silver');
-    expect(getAPCARating(-60)).toBe('silver');
-    expect(getAPCARating(74.9)).toBe('silver');
-  });
-
-  it('returns bronze for |Lc| >= 45 but < 60', () => {
-    expect(getAPCARating(50)).toBe('bronze');
-    expect(getAPCARating(-45)).toBe('bronze');
-    expect(getAPCARating(59.9)).toBe('bronze');
-  });
-
-  it('returns fail for |Lc| < 45', () => {
-    expect(getAPCARating(40)).toBe('fail');
-    expect(getAPCARating(-30)).toBe('fail');
-    expect(getAPCARating(0)).toBe('fail');
+describe('getAPCAUseCase', () => {
+  it('maps signed Lc values to contextual use cases instead of conformance grades', () => {
+    expect(getAPCAUseCase(90)).toBe('preferred-body');
+    expect(getAPCAUseCase(-75)).toBe('minimum-body');
+    expect(getAPCAUseCase(60)).toBe('fluent-text');
+    expect(getAPCAUseCase(-45)).toBe('large-text');
+    expect(getAPCAUseCase(30)).toBe('non-content-text');
+    expect(getAPCAUseCase(15)).toBe('non-text');
+    expect(getAPCAUseCase(14.9)).toBe('below-guide');
   });
 });
 
 describe('getAPCAMinFontSize', () => {
-  it('returns 12px for high contrast with normal weight', () => {
-    expect(getAPCAMinFontSize(95)).toBe(12);
+  it('uses the official basic reference size for high contrast at normal weight', () => {
+    expect(getAPCAMinFontSize(95)).toBe(14);
   });
 
-  it('returns 10px for high contrast with bold weight', () => {
-    expect(getAPCAMinFontSize(95, 700)).toBe(10);
+  it('uses the official Arial 400 basic reference size at Lc 75', () => {
+    expect(getAPCAMinFontSize(75, 400)).toBe(16);
+  });
+
+  it('uses the official basic reference size for high contrast at bold weight', () => {
+    expect(getAPCAMinFontSize(95, 700)).toBe(14);
+  });
+
+  it('returns the official Lc 60 reference sizes', () => {
+    expect(getAPCAMinFontSize(60, 400)).toBe(24);
+    expect(getAPCAMinFontSize(60, 700)).toBe(16);
+  });
+
+  it('returns the official Lc 45 reference sizes', () => {
+    expect(getAPCAMinFontSize(45, 400)).toBe(42);
+    expect(getAPCAMinFontSize(45, 700)).toBe(24);
   });
 
   it('returns larger size for lower contrast', () => {
@@ -270,42 +279,17 @@ describe('getAPCAMinFontSize', () => {
   });
 
   it('returns null for insufficient contrast', () => {
-    expect(getAPCAMinFontSize(10)).toBeNull();
+    expect(getAPCAMinFontSize(20)).toBeNull();
   });
 
   it('handles negative Lc values (takes absolute)', () => {
-    expect(getAPCAMinFontSize(-90)).toBe(12);
+    expect(getAPCAMinFontSize(-90)).toBe(14);
   });
 
   it('returns different sizes based on weight', () => {
     const normalSize = getAPCAMinFontSize(60, 400);
     const boldSize = getAPCAMinFontSize(60, 700);
     expect(normalSize).toBeGreaterThan(boldSize!);
-  });
-});
-
-describe('getFontRecommendations', () => {
-  it('returns appropriate recommendations for high contrast', () => {
-    const recs = getFontRecommendations(95);
-    expect(recs.length).toBeGreaterThan(0);
-    expect(recs[0].minSize).toBe(12);
-  });
-
-  it('returns larger minimum for lower contrast', () => {
-    const highRecs = getFontRecommendations(90);
-    const lowRecs = getFontRecommendations(45);
-    expect(lowRecs[0].minSize).toBeGreaterThan(highRecs[0].minSize);
-  });
-
-  it('returns Infinity for insufficient contrast', () => {
-    const recs = getFontRecommendations(20);
-    expect(recs[0].minSize).toBe(Infinity);
-  });
-
-  it('handles negative Lc values', () => {
-    const recs = getFontRecommendations(-75);
-    expect(recs.length).toBeGreaterThan(0);
-    expect(recs[0].minSize).toBeLessThan(Infinity);
   });
 });
 
@@ -330,17 +314,17 @@ describe('analyzeContrast', () => {
     expect(result.wcag.aaaLarge).toBe(true);
   });
 
-  it('includes APCA rating and font size', () => {
+  it('includes APCA use case and canonical font size', () => {
     const result = analyzeContrast('#000000', '#ffffff');
-    expect(result.apca.rating).toBe('gold');
-    expect(result.apca.minimumFontSize).toBe(12);
+    expect(result.apca.useCase).toBe('preferred-body');
+    expect(result.apca.minimumFontSize).toBe(14);
   });
 
   it('handles low contrast colors', () => {
     const result = analyzeContrast('#888888', '#999999');
     expect(result.wcag.ratio).toBeLessThan(2);
     expect(result.wcag.aa).toBe(false);
-    expect(result.apca.rating).toBe('fail');
+    expect(result.apca.useCase).toBe('below-guide');
   });
 });
 
@@ -363,22 +347,6 @@ describe('meetsWCAGLevel', () => {
     const meetsAAA = meetsWCAGLevel('#767676', '#ffffff', 'AAA');
     expect(meetsAA).toBe(true);
     expect(meetsAAA).toBe(false);
-  });
-});
-
-describe('meetsAPCARating', () => {
-  it('returns true for black/white meeting gold', () => {
-    expect(meetsAPCARating('#000000', '#ffffff', 'gold')).toBe(true);
-  });
-
-  it('returns false for low contrast at bronze', () => {
-    expect(meetsAPCARating('#888888', '#999999', 'bronze')).toBe(false);
-  });
-
-  it('correctly identifies silver but not gold', () => {
-    // Mid-gray on white should be silver-ish
-    const meetsSilver = meetsAPCARating('#666666', '#ffffff', 'silver');
-    expect(meetsSilver).toBe(true);
   });
 });
 

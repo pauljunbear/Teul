@@ -2,12 +2,12 @@
  * Accessibility Library for Teul
  *
  * Implements:
- * - WCAG 2.1 contrast ratio calculations
- * - APCA (Accessible Perceptual Contrast Algorithm) for WCAG 3.0
- * - Contrast ratings and recommendations
+ * - WCAG 2.2 contrast ratio calculations
+ * - APCA 0.1.9 as an experimental, supplemental perceptual-contrast metric
+ * - APCA use-case and reference-font guidance
  *
  * References:
- * - WCAG 2.1: https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum
+ * - WCAG 2.2: https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html
  * - APCA: https://git.apcacontrast.com/documentation/APCA_in_a_Nutshell
  */
 
@@ -27,33 +27,34 @@ export interface ContrastResult {
   };
   apca: {
     lc: number;
-    rating: APCARating;
+    useCase: APCAUseCase;
     minimumFontSize: number | null;
   };
 }
 
 export type WCAGLevel = 'AAA' | 'AA' | 'AA Large' | 'Fail';
-export type APCARating = 'gold' | 'silver' | 'bronze' | 'fail';
-
-export interface FontSizeRecommendation {
-  minSize: number;
-  weight: 'normal' | 'bold';
-  description: string;
-}
+export type APCAUseCase =
+  | 'preferred-body'
+  | 'minimum-body'
+  | 'fluent-text'
+  | 'large-text'
+  | 'non-content-text'
+  | 'non-text'
+  | 'below-guide';
 
 // ============================================
-// WCAG 2.1 Contrast Functions
+// WCAG 2.2 Contrast Functions
 // ============================================
 
 /**
- * Calculate relative luminance according to WCAG 2.1
+ * Calculate relative luminance according to WCAG 2.2
  * Formula: L = 0.2126 * R + 0.7152 * G + 0.0722 * B
  * Where R, G, B are linearized sRGB values
  */
 export function getRelativeLuminance(r: number, g: number, b: number): number {
   const [rs, gs, bs] = [r, g, b].map(c => {
     const srgb = c / 255;
-    return srgb <= 0.03928 ? srgb / 12.92 : Math.pow((srgb + 0.055) / 1.055, 2.4);
+    return srgb <= 0.04045 ? srgb / 12.92 : Math.pow((srgb + 0.055) / 1.055, 2.4);
   });
   return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
 }
@@ -78,7 +79,7 @@ export function getWCAGContrastHex(fgHex: string, bgHex: string): number {
 }
 
 /**
- * Get WCAG 2.1 conformance levels for a contrast ratio
+ * Get WCAG 2.2 conformance levels for a contrast ratio
  */
 export function getWCAGRating(ratio: number): {
   aa: boolean;
@@ -97,105 +98,92 @@ export function getWCAGRating(ratio: number): {
 }
 
 // ============================================
-// APCA (WCAG 3.0) Contrast Functions
+// APCA Experimental Contrast Functions
 // ============================================
 
-// APCA constants (SAPC 0.0.98G-4g-base)
-const APCA = {
-  // Exponents
+/**
+ * TypeScript port of the sRGB and contrast operations from canonical apca-w3
+ * 0.1.9 (APCA 0.0.98G-4g constants), copyright © 2019-2022 Andrew Somers
+ * and/or Myndex. Port changes are limited to types, local naming, and numeric
+ * RGB input. Keep these constants and operations current and unmodified; see
+ * APCA_LICENSE.md for the Limited W3 License and web-content-only restriction.
+ */
+const APCA_0_1_9 = {
   mainTRC: 2.4,
-  sRGBtrc: 2.218,
-  // Coefficients for sRGB
   sRco: 0.2126729,
   sGco: 0.7151522,
   sBco: 0.072175,
-  // Clamp values
+  normBG: 0.56,
+  normTXT: 0.57,
+  revTXT: 0.62,
+  revBG: 0.65,
   blkThrs: 0.022,
   blkClmp: 1.414,
   scaleBoW: 1.14,
   scaleWoB: 1.14,
   loBoWoffset: 0.027,
   loWoBoffset: 0.027,
-  loClip: 0.1,
-  // delta Y
   deltaYmin: 0.0005,
-};
+  loClip: 0.1,
+} as const;
 
-/**
- * Soft clamp for APCA black level
- */
-function softClamp(y: number): number {
-  if (y < 0) return 0;
-  if (y < APCA.blkThrs) {
-    return y + Math.pow(APCA.blkThrs - y, APCA.blkClmp);
-  }
-  return y;
+function apcaSRGBtoY(rgb: RGB): number {
+  const simpleExp = (channel: number) => Math.pow(channel / 255, APCA_0_1_9.mainTRC);
+
+  return (
+    APCA_0_1_9.sRco * simpleExp(rgb.r) +
+    APCA_0_1_9.sGco * simpleExp(rgb.g) +
+    APCA_0_1_9.sBco * simpleExp(rgb.b)
+  );
 }
 
-/**
- * Calculate Y (luminance) for APCA from sRGB color
- * Uses different linearization than WCAG
- */
-function apcaY(r: number, g: number, b: number): number {
-  // Linearize sRGB
-  const rLin = Math.pow(r / 255, APCA.mainTRC);
-  const gLin = Math.pow(g / 255, APCA.mainTRC);
-  const bLin = Math.pow(b / 255, APCA.mainTRC);
+function apcaContrastCanonical(textYInput: number, backgroundYInput: number): number {
+  if (
+    Number.isNaN(textYInput) ||
+    Number.isNaN(backgroundYInput) ||
+    Math.min(textYInput, backgroundYInput) < 0 ||
+    Math.max(textYInput, backgroundYInput) > 1.1
+  ) {
+    return 0;
+  }
 
-  // Calculate Y
-  const y = APCA.sRco * rLin + APCA.sGco * gLin + APCA.sBco * bLin;
+  const textY =
+    textYInput > APCA_0_1_9.blkThrs
+      ? textYInput
+      : textYInput + Math.pow(APCA_0_1_9.blkThrs - textYInput, APCA_0_1_9.blkClmp);
+  const backgroundY =
+    backgroundYInput > APCA_0_1_9.blkThrs
+      ? backgroundYInput
+      : backgroundYInput + Math.pow(APCA_0_1_9.blkThrs - backgroundYInput, APCA_0_1_9.blkClmp);
 
-  return y;
+  if (Math.abs(backgroundY - textY) < APCA_0_1_9.deltaYmin) {
+    return 0;
+  }
+
+  if (backgroundY > textY) {
+    const sapc =
+      (Math.pow(backgroundY, APCA_0_1_9.normBG) - Math.pow(textY, APCA_0_1_9.normTXT)) *
+      APCA_0_1_9.scaleBoW;
+    const outputContrast = sapc < APCA_0_1_9.loClip ? 0 : sapc - APCA_0_1_9.loBoWoffset;
+    return outputContrast * 100;
+  }
+
+  const sapc =
+    (Math.pow(backgroundY, APCA_0_1_9.revBG) - Math.pow(textY, APCA_0_1_9.revTXT)) *
+    APCA_0_1_9.scaleWoB;
+  const outputContrast = sapc > -APCA_0_1_9.loClip ? 0 : sapc + APCA_0_1_9.loWoBoffset;
+  return outputContrast * 100;
 }
 
 /**
  * Calculate APCA Lightness Contrast (Lc) value
- * Returns value from roughly -108 to 106
- * Negative = dark text on light bg, Positive = light text on dark bg
+ * using the canonical apca-w3 0.1.9 implementation.
  *
- * The absolute value is what matters for contrast:
- * - |Lc| >= 15: minimum for non-text elements
- * - |Lc| >= 30: minimum for any text
- * - |Lc| >= 45: minimum for body text at large sizes
- * - |Lc| >= 60: preferred for body text
- * - |Lc| >= 75: enhanced/large text
- * - |Lc| >= 90: high contrast preference
+ * Positive = dark text on a light background (BoW).
+ * Negative = light text on a dark background (WoB).
  */
 export function getAPCAContrast(text: RGB, bg: RGB): number {
-  // Calculate Y values
-  let Ytext = apcaY(text.r, text.g, text.b);
-  let Ybg = apcaY(bg.r, bg.g, bg.b);
-
-  // Soft clamp black levels
-  Ytext = softClamp(Ytext);
-  Ybg = softClamp(Ybg);
-
-  // Check for very low contrast
-  if (Math.abs(Ybg - Ytext) < APCA.deltaYmin) {
-    return 0;
-  }
-
-  let SAPC: number;
-  let outputContrast: number;
-
-  // Determine polarity: is this dark-on-light or light-on-dark?
-  if (Ybg > Ytext) {
-    // Dark text on light background (BoW - Black on White)
-    // Returns NEGATIVE value per APCA convention
-    SAPC = (Math.pow(Ybg, 0.56) - Math.pow(Ytext, 0.57)) * APCA.scaleBoW;
-
-    outputContrast =
-      SAPC < APCA.loClip ? 0 : SAPC < APCA.loBoWoffset ? 0 : -(SAPC - APCA.loBoWoffset);
-  } else {
-    // Light text on dark background (WoB - White on Black)
-    // Returns POSITIVE value per APCA convention
-    SAPC = (Math.pow(Ytext, 0.62) - Math.pow(Ybg, 0.65)) * APCA.scaleWoB;
-
-    outputContrast = SAPC < APCA.loClip ? 0 : SAPC < APCA.loWoBoffset ? 0 : SAPC - APCA.loWoBoffset;
-  }
-
-  // Scale to Lc (roughly -108 to 106)
-  return outputContrast * 100;
+  return apcaContrastCanonical(apcaSRGBtoY(text), apcaSRGBtoY(bg));
 }
 
 /**
@@ -206,108 +194,37 @@ export function getAPCAContrastHex(textHex: string, bgHex: string): number {
 }
 
 /**
- * Get APCA rating based on Lc value
- * Uses the APCA Bronze/Silver/Gold conformance model
+ * Classify an Lc value by APCA's basic use-case levels.
+ * These are contextual guides, not pass/fail conformance ratings.
  */
-export function getAPCARating(lc: number): APCARating {
+export function getAPCAUseCase(lc: number): APCAUseCase {
   const absLc = Math.abs(lc);
 
-  if (absLc >= 75) return 'gold';
-  if (absLc >= 60) return 'silver';
-  if (absLc >= 45) return 'bronze';
-  return 'fail';
+  if (absLc >= 90) return 'preferred-body';
+  if (absLc >= 75) return 'minimum-body';
+  if (absLc >= 60) return 'fluent-text';
+  if (absLc >= 45) return 'large-text';
+  if (absLc >= 30) return 'non-content-text';
+  if (absLc >= 15) return 'non-text';
+  return 'below-guide';
 }
 
 /**
  * Get minimum font size for APCA Lc value
- * Returns null if contrast is insufficient for any text
+ * Returns null below the basic content-text use-case levels
  *
- * Based on APCA font lookup tables
+ * Uses APCA's basic reference sizes for its use-case levels. The returned
+ * size is for a reference Latin sans-serif and is not a universal minimum.
  */
 export function getAPCAMinFontSize(lc: number, weight: number = 400): number | null {
   const absLc = Math.abs(lc);
+  const isBold = weight >= 700;
 
-  // APCA font size lookup (simplified)
-  // Format: [Lc threshold, min size for weight 400, min size for weight 700]
-  const sizeTable: [number, number, number][] = [
-    [90, 12, 10],
-    [75, 14, 12],
-    [60, 16, 14],
-    [45, 24, 18],
-    [30, 36, 24],
-    [15, 72, 48], // Non-text only
-  ];
-
-  for (const [threshold, size400, size700] of sizeTable) {
-    if (absLc >= threshold) {
-      return weight >= 600 ? size700 : size400;
-    }
-  }
-
-  return null; // Insufficient contrast
-}
-
-/**
- * Get font size recommendations for an APCA Lc value
- */
-export function getFontRecommendations(lc: number): FontSizeRecommendation[] {
-  const absLc = Math.abs(lc);
-  const recommendations: FontSizeRecommendation[] = [];
-
-  if (absLc >= 90) {
-    recommendations.push({
-      minSize: 12,
-      weight: 'normal',
-      description: 'Excellent: Any text size',
-    });
-  } else if (absLc >= 75) {
-    recommendations.push({
-      minSize: 14,
-      weight: 'normal',
-      description: 'Very good: Body text and larger',
-    });
-    recommendations.push({
-      minSize: 12,
-      weight: 'bold',
-      description: 'Very good: Bold small text',
-    });
-  } else if (absLc >= 60) {
-    recommendations.push({
-      minSize: 16,
-      weight: 'normal',
-      description: 'Good: Standard body text',
-    });
-    recommendations.push({
-      minSize: 14,
-      weight: 'bold',
-      description: 'Good: Bold body text',
-    });
-  } else if (absLc >= 45) {
-    recommendations.push({
-      minSize: 24,
-      weight: 'normal',
-      description: 'Acceptable: Large headings only',
-    });
-    recommendations.push({
-      minSize: 18,
-      weight: 'bold',
-      description: 'Acceptable: Bold headings',
-    });
-  } else if (absLc >= 30) {
-    recommendations.push({
-      minSize: 36,
-      weight: 'normal',
-      description: 'Minimum: Display text only',
-    });
-  } else {
-    recommendations.push({
-      minSize: Infinity,
-      weight: 'normal',
-      description: 'Insufficient contrast for text',
-    });
-  }
-
-  return recommendations;
+  if (absLc >= 90) return 14;
+  if (absLc >= 75) return isBold ? 14 : 16;
+  if (absLc >= 60) return isBold ? 16 : 24;
+  if (absLc >= 45) return isBold ? 24 : 42;
+  return null;
 }
 
 // ============================================
@@ -324,7 +241,7 @@ export function analyzeContrast(fgHex: string, bgHex: string): ContrastResult {
   const wcagRatio = getWCAGContrast(fg, bg);
   const wcagRating = getWCAGRating(wcagRatio);
   const apcaLc = getAPCAContrast(fg, bg);
-  const apcaRating = getAPCARating(apcaLc);
+  const apcaUseCase = getAPCAUseCase(apcaLc);
   const minFontSize = getAPCAMinFontSize(apcaLc);
 
   return {
@@ -334,7 +251,7 @@ export function analyzeContrast(fgHex: string, bgHex: string): ContrastResult {
     },
     apca: {
       lc: apcaLc,
-      rating: apcaRating,
+      useCase: apcaUseCase,
       minimumFontSize: minFontSize,
     },
   };
@@ -346,27 +263,6 @@ export function analyzeContrast(fgHex: string, bgHex: string): ContrastResult {
 export function meetsWCAGLevel(fgHex: string, bgHex: string, level: 'AA' | 'AAA'): boolean {
   const ratio = getWCAGContrastHex(fgHex, bgHex);
   return level === 'AAA' ? ratio >= 7 : ratio >= 4.5;
-}
-
-/**
- * Check if a color pair meets a specific APCA rating
- */
-export function meetsAPCARating(
-  textHex: string,
-  bgHex: string,
-  rating: 'bronze' | 'silver' | 'gold'
-): boolean {
-  const lc = Math.abs(getAPCAContrastHex(textHex, bgHex));
-  switch (rating) {
-    case 'gold':
-      return lc >= 75;
-    case 'silver':
-      return lc >= 60;
-    case 'bronze':
-      return lc >= 45;
-    default:
-      return false;
-  }
 }
 
 /**

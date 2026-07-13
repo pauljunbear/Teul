@@ -159,11 +159,29 @@ describe('analyzeGridFit', () => {
 
     expect(result.columns).toMatchObject({
       frameSize: 320,
-      gutterSize: 24 * (320 / 1440),
-      marginSize: 20 * (320 / 1440),
+      gutterSize: 5,
+      marginSize: 4,
     });
-    expect(result.columns?.sectionSize).toBeCloseTo(21.03703704);
+    expect(result.columns?.sectionSize).toBeCloseTo(21.41666667);
     expect(result.status).not.toBe('fail');
+  });
+
+  it('blocks canonical-only geometry on a noncanonical target', () => {
+    const result = analyzeResolvedGridFit(
+      createColumnGrid({ count: 2, gutterSize: 20, margin: 0 }),
+      { width: 1160, height: 1160 },
+      { width: 580, height: 580 },
+      { applicationMode: 'canonical-only' }
+    );
+
+    expect(result.status).toBe('fail');
+    expect(result.issues).toContainEqual(
+      expect.objectContaining({ code: 'canonical-dimensions-required' })
+    );
+    expect(result.recommendations[0]).toMatchObject({
+      action: 'use-reference-frame',
+      message: 'Use the canonical 580\u00d7580px frame.',
+    });
   });
 
   it('aggregates all target fits using the least-compatible target', () => {
@@ -220,13 +238,25 @@ describe('bundled preset provenance and matrix fit', () => {
     for (const preset of GRID_PRESETS) {
       expect(preset.provenance, preset.id).toBeDefined();
       expect(preset.provenance?.adaptationNotes.length, preset.id).toBeGreaterThan(20);
+      expect(preset.referenceDimensions, preset.id).toBeDefined();
+      expect(preset.applicationMode, preset.id).toMatch(
+        /^(fixed|scale-from-reference|responsive-width|canonical-only)$/
+      );
+
+      const expectedMode =
+        preset.provenance?.classification === 'historical-reconstruction'
+          ? 'canonical-only'
+          : preset.provenance?.classification === 'modern-named-system'
+            ? preset.responsiveWidth
+              ? 'responsive-width'
+              : 'canonical-only'
+            : 'fixed';
+      expect(preset.applicationMode, preset.id).toBe(expectedMode);
 
       if (preset.provenance?.sourceUrl) {
         expect(preset.provenance.sourceUrl, preset.id).toMatch(/^https:\/\//);
         expect(preset.provenance.evidence, preset.id).not.toBe('unsourced');
         expect(preset.provenance.source, preset.id).not.toBe('Teul preset catalog');
-        expect(preset.referenceDimensions, preset.id).toBeDefined();
-        expect(preset.applicationMode, preset.id).toBe('fixed');
         expect(analyzePresetFit(preset, preset.referenceDimensions!).status, preset.id).not.toBe(
           'fail'
         );
@@ -252,6 +282,10 @@ describe('bundled preset provenance and matrix fit', () => {
       ])
     );
     expect(getPresetsByCategory('classic-swiss').every(preset => preset.provenance)).toBe(true);
+    expect(GRID_PRESETS.find(preset => preset.id === 'poster-dramatic')).toMatchObject({
+      name: 'Dramatic Four-Column',
+      tags: expect.not.arrayContaining(['asymmetric']),
+    });
   });
 
   it('produces a valid result or actionable failure for every preset and required frame', () => {
@@ -296,7 +330,7 @@ describe('bundled preset provenance and matrix fit', () => {
 
     expect(GRID_PRESETS).toHaveLength(65);
     expect(GRID_FIT_FRAME_MATRIX).toHaveLength(12);
-    expect(totals).toEqual({ fit: 692, warning: 32, fail: 56 });
+    expect(totals).toEqual({ fit: 555, warning: 22, fail: 203 });
     expect(totals.fit + totals.warning + totals.fail).toBe(780);
   });
 

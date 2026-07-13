@@ -12,8 +12,6 @@ import {
   getPresetSourceDimensions,
   buildCreateGridFrameMessage,
   buildApplyGridMessage,
-  validateGridForFigma,
-  FIGMA_GRID_COLORS,
 } from '../figmaGrids';
 import type {
   ColumnGridConfig,
@@ -517,7 +515,7 @@ describe('getPresetFrameDimensions', () => {
       category: 'poster',
       aspectRatio: '1:1',
       tags: [],
-      isCustom: false,
+      isCustom: true,
       config: {},
     };
 
@@ -534,7 +532,7 @@ describe('getPresetFrameDimensions', () => {
       description: 'Test',
       category: 'poster',
       tags: [],
-      isCustom: false,
+      isCustom: true,
       config: {},
     };
 
@@ -551,7 +549,7 @@ describe('getPresetFrameDimensions', () => {
       description: 'Test',
       category: 'editorial',
       tags: [],
-      isCustom: false,
+      isCustom: true,
       config: {},
     };
 
@@ -568,7 +566,7 @@ describe('getPresetFrameDimensions', () => {
       description: 'Test',
       category: 'web-ui',
       tags: [],
-      isCustom: false,
+      isCustom: true,
       config: {},
     };
 
@@ -585,7 +583,7 @@ describe('getPresetFrameDimensions', () => {
       description: 'Test',
       category: 'classic-swiss',
       tags: [],
-      isCustom: false,
+      isCustom: true,
       config: {},
     };
 
@@ -593,6 +591,20 @@ describe('getPresetFrameDimensions', () => {
 
     expect(result.width).toBe(800);
     expect(result.height).toBe(1131); // 800 * 1.414
+  });
+
+  it('rejects bundled presets that omit an explicit reference frame', () => {
+    const preset: GridPreset = {
+      id: 'invalid-bundled',
+      name: 'Invalid Bundled Grid',
+      description: 'Test',
+      category: 'web-ui',
+      tags: [],
+      isCustom: false,
+      config: {},
+    };
+
+    expect(() => getPresetFrameDimensions(preset)).toThrow('missing reference dimensions');
   });
 });
 
@@ -612,7 +624,7 @@ describe('preset application behavior', () => {
         marginUnit: 'px',
         alignment: 'STRETCH',
         visible: true,
-        color: FIGMA_GRID_COLORS.column,
+        color: { r: 1, g: 0.2, b: 0.2, a: 0.1 },
       },
     },
     isCustom: false,
@@ -632,7 +644,7 @@ describe('preset application behavior', () => {
     expect(getPresetSourceDimensions(saved)).toBeUndefined();
   });
 
-  it('respects explicit fixed and scale-from-reference modes', () => {
+  it('respects explicit fixed, scalable, responsive, and canonical-only modes', () => {
     const fixed = makePreset({
       applicationMode: 'fixed',
       referenceDimensions: { width: 1200, height: 800 },
@@ -642,246 +654,20 @@ describe('preset application behavior', () => {
       applicationMode: 'scale-from-reference',
       referenceDimensions: { width: 1200, height: 800 },
     });
+    const canonical = makePreset({
+      applicationMode: 'canonical-only',
+      referenceDimensions: { width: 580, height: 580 },
+    });
+    const responsive = makePreset({
+      applicationMode: 'responsive-width',
+      responsiveWidth: { min: 600, max: 904 },
+      referenceDimensions: { width: 768, height: 1024 },
+    });
 
     expect(getPresetSourceDimensions(fixed)).toBeUndefined();
     expect(getPresetSourceDimensions(scalableSaved)).toEqual({ width: 1200, height: 800 });
-  });
-});
-
-// ============================================
-// validateGridForFigma Tests
-// ============================================
-
-describe('validateGridForFigma', () => {
-  const defaultColor = { r: 1, g: 0, b: 0, a: 0.1 };
-
-  it('validates valid column config', () => {
-    const config: GridConfig = {
-      columns: {
-        count: 12,
-        gutterSize: 24,
-        gutterUnit: 'px',
-        margin: 32,
-        marginUnit: 'px',
-        alignment: 'STRETCH',
-        visible: true,
-        color: defaultColor,
-      },
-    };
-
-    const result = validateGridForFigma(config, 1440, 900);
-
-    expect(result.valid).toBe(true);
-    expect(result.errors).toHaveLength(0);
-    expect(result.warnings).toHaveLength(0);
-  });
-
-  it('errors when column count is less than 1', () => {
-    const config: GridConfig = {
-      columns: {
-        count: 0,
-        gutterSize: 24,
-        gutterUnit: 'px',
-        margin: 32,
-        marginUnit: 'px',
-        alignment: 'STRETCH',
-        visible: true,
-        color: defaultColor,
-      },
-    };
-
-    const result = validateGridForFigma(config, 1440, 900);
-
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain('Column count must be at least 1');
-  });
-
-  it('does not invent a Figma maximum column count', () => {
-    const config: GridConfig = {
-      columns: {
-        count: 101,
-        gutterSize: 0,
-        gutterUnit: 'px',
-        margin: 0,
-        marginUnit: 'px',
-        alignment: 'STRETCH',
-        visible: true,
-        color: defaultColor,
-      },
-    };
-
-    const result = validateGridForFigma(config, 1440, 900);
-
-    expect(result.valid).toBe(true);
-  });
-
-  it('errors when column margins exceed frame width', () => {
-    const config: GridConfig = {
-      columns: {
-        count: 12,
-        gutterSize: 24,
-        gutterUnit: 'px',
-        margin: 800, // 800 * 2 = 1600 > 1440
-        marginUnit: 'px',
-        alignment: 'STRETCH',
-        visible: true,
-        color: defaultColor,
-      },
-    };
-
-    const result = validateGridForFigma(config, 1440, 900);
-
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain('Column margins exceed frame width');
-  });
-
-  it('errors when column gutter exceeds frame width', () => {
-    const config: GridConfig = {
-      columns: {
-        count: 12,
-        gutterSize: 1500, // > 1440
-        gutterUnit: 'px',
-        margin: 32,
-        marginUnit: 'px',
-        alignment: 'STRETCH',
-        visible: true,
-        color: defaultColor,
-      },
-    };
-
-    const result = validateGridForFigma(config, 1440, 900);
-
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain('Column gutter exceeds frame width');
-  });
-
-  it('errors when row count is less than 1', () => {
-    const config: GridConfig = {
-      rows: {
-        count: 0,
-        gutterSize: 16,
-        gutterUnit: 'px',
-        margin: 24,
-        marginUnit: 'px',
-        alignment: 'STRETCH',
-        visible: true,
-        color: defaultColor,
-      },
-    };
-
-    const result = validateGridForFigma(config, 1440, 900);
-
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain('Row count must be at least 1');
-  });
-
-  it('does not invent a Figma maximum row count', () => {
-    const config: GridConfig = {
-      rows: {
-        count: 150,
-        gutterSize: 0,
-        gutterUnit: 'px',
-        margin: 0,
-        marginUnit: 'px',
-        alignment: 'STRETCH',
-        visible: true,
-        color: defaultColor,
-      },
-    };
-
-    const result = validateGridForFigma(config, 1440, 900);
-
-    expect(result.valid).toBe(true);
-  });
-
-  it('errors when row margins exceed frame height', () => {
-    const config: GridConfig = {
-      rows: {
-        count: 6,
-        gutterSize: 16,
-        gutterUnit: 'px',
-        margin: 500, // 500 * 2 = 1000 > 900
-        marginUnit: 'px',
-        alignment: 'STRETCH',
-        visible: true,
-        color: defaultColor,
-      },
-    };
-
-    const result = validateGridForFigma(config, 1440, 900);
-
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain('Row margins exceed frame height');
-  });
-
-  it('errors when baseline height is less than 1', () => {
-    const config: GridConfig = {
-      baseline: {
-        height: 0,
-        offset: 0,
-        visible: true,
-        color: defaultColor,
-      },
-    };
-
-    const result = validateGridForFigma(config, 1440, 900);
-
-    expect(result.valid).toBe(false);
-    expect(result.errors).toContain('Baseline height must be at least 1px');
-  });
-
-  it('warns when baseline height exceeds frame height', () => {
-    const config: GridConfig = {
-      baseline: {
-        height: 1000, // > 900
-        offset: 0,
-        visible: true,
-        color: defaultColor,
-      },
-    };
-
-    const result = validateGridForFigma(config, 1440, 900);
-
-    expect(result.valid).toBe(true); // Warning, not error
-    expect(result.warnings).toContain('Baseline height exceeds frame height');
-  });
-
-  it('warns when a baseline offset cannot be represented by Figma', () => {
-    const config: GridConfig = {
-      baseline: {
-        height: 8,
-        offset: -10,
-        visible: true,
-        color: defaultColor,
-      },
-    };
-
-    const result = validateGridForFigma(config, 1440, 900);
-
-    expect(result.valid).toBe(true); // Warning, not error
-    expect(result.warnings).toContain(
-      'Figma uniform GRID ignores baseline offsets and starts at 0px'
-    );
-  });
-
-  it('accumulates multiple errors', () => {
-    const config: GridConfig = {
-      columns: {
-        count: 0,
-        gutterSize: 2000,
-        gutterUnit: 'px',
-        margin: 1000,
-        marginUnit: 'px',
-        alignment: 'STRETCH',
-        visible: true,
-        color: defaultColor,
-      },
-    };
-
-    const result = validateGridForFigma(config, 1440, 900);
-
-    expect(result.valid).toBe(false);
-    expect(result.errors.length).toBeGreaterThan(1);
+    expect(getPresetSourceDimensions(canonical)).toEqual({ width: 580, height: 580 });
+    expect(getPresetSourceDimensions(responsive)).toEqual({ width: 768, height: 1024 });
   });
 });
 
@@ -956,21 +742,6 @@ describe('buildCreateGridFrameMessage', () => {
     expect(result.frameName).toContain('6col');
   });
 
-  it('includes image data when provided', () => {
-    const config: GridConfig = {};
-
-    const result = buildCreateGridFrameMessage({
-      config,
-      width: 800,
-      height: 600,
-      includeImage: true,
-      imageData: 'base64data...',
-    });
-
-    expect(result.includeImage).toBe(true);
-    expect(result.imageData).toBe('base64data...');
-  });
-
   it('respects positionNearSelection setting', () => {
     const config: GridConfig = {};
 
@@ -1017,6 +788,7 @@ describe('buildApplyGridMessage', () => {
     expect(result.sourceConfig).toBe(config);
     expect(result.expectedTargetIds).toEqual(['1:2', '3:4']);
     expect(result.replaceExisting).toBe(true); // Default
+    expect(result.applicationMode).toBe('fixed');
   });
 
   it('respects replaceExisting setting', () => {
@@ -1071,43 +843,32 @@ describe('buildApplyGridMessage', () => {
     expect(result.sourceConfig).toBe(config);
     expect(result).not.toHaveProperty('config');
   });
-});
 
-// ============================================
-// FIGMA_GRID_COLORS Tests
-// ============================================
+  it('preserves a canonical-only application contract', () => {
+    const result = buildApplyGridMessage({
+      requestId: 'grid-apply-canonical',
+      config: {},
+      expectedTargetIds: ['1:2'],
+      sourceDimensions: { width: 580, height: 580 },
+      applicationMode: 'canonical-only',
+    });
 
-describe('FIGMA_GRID_COLORS', () => {
-  it('has default colors for column, row, and baseline', () => {
-    expect(FIGMA_GRID_COLORS.column).toBeDefined();
-    expect(FIGMA_GRID_COLORS.row).toBeDefined();
-    expect(FIGMA_GRID_COLORS.baseline).toBeDefined();
+    expect(result.applicationMode).toBe('canonical-only');
+    expect(result.sourceDimensions).toEqual({ width: 580, height: 580 });
   });
 
-  it('has mono color scheme', () => {
-    expect(FIGMA_GRID_COLORS.mono).toBeDefined();
-    expect(FIGMA_GRID_COLORS.mono.column).toBeDefined();
-    expect(FIGMA_GRID_COLORS.mono.row).toBeDefined();
-    expect(FIGMA_GRID_COLORS.mono.baseline).toBeDefined();
-  });
+  it('preserves a responsive-width application contract', () => {
+    const responsiveWidth = { min: 600, max: 904 };
+    const result = buildApplyGridMessage({
+      requestId: 'grid-apply-responsive',
+      config: {},
+      expectedTargetIds: ['1:2'],
+      applicationMode: 'responsive-width',
+      responsiveWidth,
+    });
 
-  it('has vibrant color scheme', () => {
-    expect(FIGMA_GRID_COLORS.vibrant).toBeDefined();
-    expect(FIGMA_GRID_COLORS.vibrant.column).toBeDefined();
-    expect(FIGMA_GRID_COLORS.vibrant.row).toBeDefined();
-    expect(FIGMA_GRID_COLORS.vibrant.baseline).toBeDefined();
-  });
-
-  it('colors have valid RGBA format', () => {
-    const color = FIGMA_GRID_COLORS.column;
-
-    expect(color.r).toBeGreaterThanOrEqual(0);
-    expect(color.r).toBeLessThanOrEqual(1);
-    expect(color.g).toBeGreaterThanOrEqual(0);
-    expect(color.g).toBeLessThanOrEqual(1);
-    expect(color.b).toBeGreaterThanOrEqual(0);
-    expect(color.b).toBeLessThanOrEqual(1);
-    expect(color.a).toBeGreaterThanOrEqual(0);
-    expect(color.a).toBeLessThanOrEqual(1);
+    expect(result.applicationMode).toBe('responsive-width');
+    expect(result.responsiveWidth).toEqual(responsiveWidth);
+    expect(result.sourceDimensions).toBeUndefined();
   });
 });

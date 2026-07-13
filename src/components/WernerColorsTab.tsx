@@ -551,11 +551,6 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({
                         type: 'apply-fill',
                         name: selectedColor.name,
                         hex: selectedColor.hex,
-                        rgb: [
-                          parseInt(selectedColor.hex.slice(1, 3), 16),
-                          parseInt(selectedColor.hex.slice(3, 5), 16),
-                          parseInt(selectedColor.hex.slice(5, 7), 16),
-                        ],
                       },
                     },
                     '*'
@@ -580,11 +575,6 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({
                         type: 'apply-stroke',
                         name: selectedColor.name,
                         hex: selectedColor.hex,
-                        rgb: [
-                          parseInt(selectedColor.hex.slice(1, 3), 16),
-                          parseInt(selectedColor.hex.slice(3, 5), 16),
-                          parseInt(selectedColor.hex.slice(5, 7), 16),
-                        ],
                       },
                     },
                     '*'
@@ -606,11 +596,6 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({
                         type: 'create-style',
                         name: `Werner/${selectedColor.group}/${selectedColor.name}`,
                         hex: selectedColor.hex,
-                        rgb: [
-                          parseInt(selectedColor.hex.slice(1, 3), 16),
-                          parseInt(selectedColor.hex.slice(3, 5), 16),
-                          parseInt(selectedColor.hex.slice(5, 7), 16),
-                        ],
                       },
                     },
                     '*'
@@ -707,5 +692,3 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({
     </div>
   );
 };
-
-export default WernerColorsTab;

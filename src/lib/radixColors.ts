@@ -1293,7 +1293,7 @@ export const radixColors: Record<RadixColorName, RadixColorFamily> = {
 export const neutralFamilies: NeutralName[] = ['gray', 'mauve', 'slate', 'sage', 'olive', 'sand'];
 
 // Accent colors (non-neutral)
-export const accentColors: RadixColorName[] = [
+const accentColors: RadixColorName[] = [
   'tomato',
   'red',
   'ruby',

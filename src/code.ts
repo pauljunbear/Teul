@@ -39,15 +39,16 @@ figma.on('selectionchange', () => {
 });
 
 // Selection does not change when a selected frame is resized, so keep grid-fit
-// diagnostics synchronized with geometry changes as well.
-figma.on('documentchange', event => {
+// diagnostics synchronized with geometry changes as well. A page-scoped
+// listener is required when the plugin uses dynamic-page document access.
+const handleCurrentPageNodeChange = (event: NodeChangeEvent): void => {
   const selectedGridTargetIds = new Set(
     figma.currentPage.selection.filter(node => 'layoutGrids' in node).map(node => node.id)
   );
 
   if (selectedGridTargetIds.size === 0) return;
 
-  const selectedGeometryChanged = event.documentChanges.some(
+  const selectedGeometryChanged = event.nodeChanges.some(
     change =>
       change.type === 'PROPERTY_CHANGE' &&
       selectedGridTargetIds.has(change.id) &&
@@ -57,6 +58,16 @@ figma.on('documentchange', event => {
   if (selectedGeometryChanged) {
     sendSelectionInfo();
   }
+};
+
+let observedPage = figma.currentPage;
+observedPage.on('nodechange', handleCurrentPageNodeChange);
+
+figma.on('currentpagechange', () => {
+  observedPage.off('nodechange', handleCurrentPageNodeChange);
+  observedPage = figma.currentPage;
+  observedPage.on('nodechange', handleCurrentPageNodeChange);
+  sendSelectionInfo();
 });
 
 // ============================================
@@ -115,12 +126,12 @@ figma.ui.onmessage = async (msg: unknown) => {
 
   // Color Operations
   if (message.type === 'apply-fill') {
-    handleApplyFill(message);
+    await handleApplyFill(message);
     return;
   }
 
   if (message.type === 'apply-stroke') {
-    handleApplyStroke(message);
+    await handleApplyStroke(message);
     return;
   }
 
@@ -140,7 +151,7 @@ figma.ui.onmessage = async (msg: unknown) => {
   }
 
   if (message.type === 'apply-gradient') {
-    handleApplyGradient(message);
+    await handleApplyGradient(message);
     return;
   }
 

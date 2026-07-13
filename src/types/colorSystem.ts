@@ -3,19 +3,19 @@ import type { SemanticColorPolicyReport } from '../lib/semanticColorPolicy';
 
 export type NormalizedDocumentColorProfile = 'legacy' | 'srgb' | 'display-p3' | 'unknown';
 
-export type ColorRole = 'primary' | 'secondary' | 'tertiary' | 'accent';
-export type ColorScaleMode = 'light' | 'dark';
-export type ColorScaleMethod = 'Teul OKLCH v2' | 'Radix Colors';
-export type ColorSystemScaleMethod = 'custom' | 'radix-match' | 'wcag-constrained';
-export type ColorSystemDetailLevel = 'minimal' | 'detailed' | 'presentation';
-export type NeutralFamily = 'auto' | 'gray' | 'mauve' | 'slate' | 'sage' | 'olive' | 'sand';
+type ColorRole = 'primary' | 'secondary' | 'tertiary' | 'accent';
+type ColorScaleMode = 'light' | 'dark';
+type ColorScaleMethod = 'Teul OKLCH v2' | 'Radix Colors';
+type ColorSystemScaleMethod = 'custom' | 'radix-match' | 'wcag-constrained';
+type ColorSystemDetailLevel = 'minimal' | 'detailed' | 'presentation';
+type NeutralFamily = 'auto' | 'gray' | 'mauve' | 'slate' | 'sage' | 'olive' | 'sand';
 
-export interface ColorSource {
+interface ColorSource {
   hex: string;
   name: string;
 }
 
-export interface ColorSystemRoleAssignment extends ColorSource {
+interface ColorSystemRoleAssignment extends ColorSource {
   role: ColorRole | null;
   roles?: ColorRole[];
 }
@@ -66,7 +66,7 @@ export interface ColorSystemData {
   semanticPolicy?: SemanticColorPolicyReport;
 }
 
-export interface ColorScaleMap {
+interface ColorScaleMap {
   primary?: ColorScaleData;
   secondary?: ColorScaleData;
   tertiary?: ColorScaleData;
@@ -75,7 +75,7 @@ export interface ColorScaleMap {
   [key: string]: ColorScaleData | undefined;
 }
 
-export type CreateStylesScaleData = ColorScaleData;
+type CreateStylesScaleData = ColorScaleData;
 
 export interface CreateStylesData {
   systemName: string;
@@ -88,7 +88,7 @@ export interface CreateStylesData {
   semanticPolicy?: SemanticColorPolicyReport;
 }
 
-export interface CreateStylesScaleMap {
+interface CreateStylesScaleMap {
   primary?: CreateStylesScaleData;
   secondary?: CreateStylesScaleData;
   tertiary?: CreateStylesScaleData;

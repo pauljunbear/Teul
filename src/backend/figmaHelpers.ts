@@ -47,14 +47,15 @@ export function hexToFigmaRgb(hex: string): RGB {
 // Get current selection with fills
 export function getSelectedNodesWithFills(): (SceneNode & { fills: Paint[] })[] {
   return figma.currentPage.selection.filter(
-    (node): node is SceneNode & { fills: Paint[] } => 'fills' in node
+    (node): node is SceneNode & { fills: Paint[] } => 'fills' in node && Array.isArray(node.fills)
   );
 }
 
 // Get current selection with strokes
 export function getSelectedNodesWithStrokes(): (SceneNode & { strokes: Paint[] })[] {
   return figma.currentPage.selection.filter(
-    (node): node is SceneNode & { strokes: Paint[] } => 'strokes' in node
+    (node): node is SceneNode & { strokes: Paint[] } =>
+      'strokes' in node && Array.isArray(node.strokes)
   );
 }
 

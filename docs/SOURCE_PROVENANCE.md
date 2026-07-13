@@ -1,7 +1,7 @@
 # Teul Source And Provenance Ledger
 
 Status: Current automated evidence; manual Figma acceptance remains
-Date: 2026-06-06
+Date: 2026-07-12
 
 This ledger records what Teul can currently prove about its source material.
 It is intentionally stricter than the product's previous wording.
@@ -17,14 +17,24 @@ Automated results below do not record manual Figma acceptance as passed.
 - Seigensha modern edition:
   - https://en.seigensha.com/books/978-4-86152-247-5/
 
-The modern corpus contains 348 combinations constructed from 159 normalized
-colors. Primary A-series numbering restarts by palette size:
+The original A-series contains **360 combinations**: 120 two-color, 120
+three-color, and 120 four-color cards. The modern Seigensha edition is a
+**348-combination selection** constructed from 159 normalized colors.
+Primary A-series numbering restarts by palette size:
 
-| Original series | Palette size | Original numbers | Modern flattened IDs |
-| --------------- | -----------: | ---------------: | -------------------: |
-| A.I-A.IV        |            2 |            1-120 |                1-120 |
-| A.V-A.VIII      |            3 |            1-120 |              121-240 |
-| A.IX-A.XII      |            4 |            1-108 |              241-348 |
+| Original series | Palette size | Original numbers | Included in modern edition | Modern flattened IDs |
+| --------------- | -----------: | ---------------: | -------------------------: | -------------------: |
+| A.I-A.IV        |            2 |            1-120 |                      1-120 |                1-120 |
+| A.V-A.VIII      |            3 |            1-120 |                      1-120 |              121-240 |
+| A.IX-A.XII      |            4 |            1-120 |                      1-108 |              241-348 |
+
+The modern corpus omits original A.XII four-color Nos. 109-120. This omission
+is a structural comparison, not a quoted publisher claim: the public-domain
+A.XII scan contains cards through No. 120, while the pinned modern corpus ends
+its four-color sequence at original No. 108. The omitted cards appear on PDF
+pages 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, and 62 of the A.XII scan.
+The public-domain A.IV and A.VIII scans likewise show two- and three-color No.
+120 on PDF page 62, establishing all three original 120-card sequences.
 
 ### Bundled dataset
 
@@ -49,18 +59,36 @@ That project documents the following conversion:
 The source project explicitly states that the conversion is not an exact match
 to the printed book.
 
+The local machine-readable comparison, reviewed name entries, unresolved
+exceptions, upstream commit, and semantic hash are stored in
+`src/wadaSourceAudit.json`. Run the opt-in network verification with:
+
+```sh
+npm run verify:wada
+```
+
+Normal tests use the pinned semantic hash and do not require network access.
+
 ### Local integrity findings
 
 - 159 colors.
 - 348 unique combination IDs.
 - Distribution: 120 duo, 120 trio, 108 quad combinations.
 - Local JSON is semantically identical to the reviewed upstream JSON.
-- Names, CMYK, and combinations differ from the currently cited Dain Blodorn Kim
-  digital edition because the latter contains 157 colors and uses a simple CMYK
-  conversion.
-- `Dull Violet Black` contains source CMYK `[95, 106, 38, 50]`. Magenta is over
-  100 and must remain a documented source exception until verified against the
-  publisher edition.
+- The current size of Dain M. Blodorn Kim's separate digital presentation is
+  not used as a source-integrity claim; it is a credited predecessor whose
+  contents can change independently of Teul's pinned upstream commit.
+- Bundled names are modern upstream transcriptions and are not classified
+  wholesale as verified primary-source text. Individually reviewed spellings
+  and possible normalizations are recorded in `src/wadaSourceAudit.json`.
+- The prior audit hypothesis that `Vandar Poel's Blue` should be rewritten as
+  `Vander Poel's Blue` is not supported by the reviewed primary cards. A.I No. 5
+  (PDF page 11) and A.XII No. 103 (PDF page 28) both print `Vandar Poel's Blue`,
+  matching the bundle. `Vanderpoel's Blue` is separately recorded as an
+  external reference spelling; neither variant is silently substituted.
+- `Dull Violet Black` contains bundled CMYK `[95, 106, 38, 50]`. Magenta 106
+  remains **unresolved** and must not be clamped or called publisher-verified
+  until checked against the licensed Seigensha edition.
 
 ### Required product wording
 
@@ -70,11 +98,16 @@ Use:
 > Coated (SWOP) v2 to sRGB using relative colorimetric intent and black-point
 > compensation.
 
+Also disclose that this is the modern 348-of-360 selection and that names are
+modern upstream transcriptions unless an individual ledger entry records a
+primary-card review.
+
 Do not use:
 
 - Exact Wada hex
 - Historically accurate RGB
 - 348 Wada colors
+- A claim that all bundled names are exact primary-source transcriptions
 
 ## 2. Werner's Nomenclature Of Colours
 
@@ -168,8 +201,15 @@ This does not transfer Radix's APCA guidance to generated Teul scales.
 
 - WCAG 2.2:
   - https://www.w3.org/TR/WCAG22/
-- WCAG 3 status:
-  - https://www.w3.org/WAI/standards-guidelines/wcag/wcag3-intro/
+  - https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html
+- APCA 0.1.9 canonical implementation and integration limits:
+  - https://github.com/Myndex/apca-w3/tree/da50930ba8cf8a5ef85d1b269aeba3d83ad91a5a
+  - https://git.apcacontrast.com/documentation/minimum_compliance.html
+- Machado, Oliveira, and Fernandes CVD model and matrix supplement:
+  - https://pubmed.ncbi.nlm.nih.gov/19834201/
+  - https://www.inf.ufrgs.br/~oliveira/pubs_files/CVD_Simulation/CVD_Simulation.html
+- National Eye Institute color-vision-deficiency overview:
+  - https://www.nei.nih.gov/eye-health-information/eye-conditions-and-diseases/color-blindness
 - CSS Color 4 gamut mapping:
   - https://www.w3.org/TR/css-color-4/#gamut-mapping
 - CSS Color 5 device CMYK:
@@ -180,8 +220,26 @@ This does not transfer Radix's APCA guidance to generated Teul scales.
 ### Current conclusions
 
 - WCAG 2.2 is the current conformance basis.
-- WCAG 3 is an incomplete draft; its final contrast algorithm is unresolved.
-- APCA may be shown only as an experimental supplemental metric.
+- Teul uses WCAG 2.2's corrected sRGB linearization breakpoint, `0.04045`.
+- Teul's APCA calculation is an exact TypeScript port of `apca-w3` 0.1.9,
+  base algorithm 0.0.98G-4g. Canonical polarity is preserved: dark text on a
+  light background is positive and light text on a dark background is
+  negative. Reference vectors include black on white at
+  `Lc +106.04067321268862` and white on black at `Lc -107.88473318309848`.
+- APCA is experimental and supplemental, not a WCAG conformance method. Its
+  Teul use is restricted to self-illuminated sRGB web content under the Limited
+  W3 License reproduced in `APCA_LICENSE.md`.
+- Machado simulation uses the authors' complete protan, deutan, and tritan
+  matrices for both full-severity dichromacy and anomalous trichromacy at
+  severity increments of 0.1. Other values interpolate only between the
+  nearest two matrices, following the supplement's documented method.
+- Teul's tested-color APCA reference preview uses Arial/Helvetica 400, lists all
+  required basic Lc levels and warnings, preserves signed polarity, and links
+  the canonical guidance, integration limits, and discussion forum.
+- CVD prevalence text is approximate and explicitly sex-specific where the
+  source data are sex-specific; it is not generalized into a population-wide
+  normal-vision percentage. Simulation labels describe algorithmic previews,
+  not an individual's literal perception.
 - OKLCH is useful for perceptual construction but does not guarantee contrast.
 - RGB channel clipping is not an acceptable primary gamut-mapping strategy.
 - CMYK conversion requires a named profile and print condition.
@@ -214,9 +272,11 @@ colors in light and dark modes, for 538 generated outputs:
 - Figma Plugin API `LayoutGrid`:
   - https://developers.figma.com/docs/plugins/api/LayoutGrid/
 - Material layout:
-  - https://m2.material.io/design/layout/understanding-layout.html
+  - https://m2.material.io/design/layout/responsive-layout-grid.html
+  - https://m2.material.io/page-data/Guidelines/6279712644268032.json
 - Carbon 2x Grid:
   - https://carbondesignsystem.com/elements/2x-grid/overview/
+  - https://carbondesignsystem.com/elements/2x-grid/usage/
 - Karl Gerstner, _Designing Programmes_:
   - https://openlab.citytech.cuny.edu/langecomd3504fa2019/files/2018/10/Gerstner_DesigningProgrammes.pdf
 - The Vignelli Canon:
@@ -227,8 +287,10 @@ colors in light and dark modes, for 538 generated outputs:
   - https://www.cooperhewitt.org/2013/11/26/gridnik/
 - Bootstrap grid:
   - https://getbootstrap.com/docs/5.3/layout/grid/
+  - https://getbootstrap.com/docs/5.3/layout/containers/
 - U.S. Web Design System layout grid:
   - https://designsystem.digital.gov/utilities/layout-grid/
+  - https://designsystem.digital.gov/documentation/settings/
 - Apple Human Interface Guidelines, layout:
   - https://developer.apple.com/design/human-interface-guidelines/layout
 - Microsoft Fluent 2 layout:
@@ -248,14 +310,20 @@ preset collection.
   Swiss.
 - Presets backed by native Figma square `GRID` use **Uniform Grid**, not
   Baseline.
-- Sourced presets declare canonical frame dimensions and fixed pixel behavior
-  where changing a documented gutter, margin, or drafting interval would make
-  the construction misleading. Saved copies preserve this application contract.
+- All 65 bundled presets declare preview dimensions and an explicit application
+  mode. Artifact-level historical reconstructions and Apple tvOS canvases are
+  canonical-only. Material 2, Carbon, Bootstrap, and USWDS presets enforce
+  source-backed responsive width ranges while leaving height unconstrained;
+  centered maximum-width bodies are recalculated as frames widen. Historically
+  informed and Teul-adaptation presets retain fixed measurements unless
+  explicitly classified as scalable. Saved copies preserve this contract.
 - Figma does not retain Teul percentage units; percentages resolve to pixels at
   application time.
+- Fit analysis runs the same production resolver used by backend application,
+  after Figma-bound measurements are quantized to integer pixels.
 - The current required matrix covers 65 presets across 12 frame sizes, or 780
-  preset/frame cases: 692 fit, 32 warning, and 56 fail.
-- All 56 failed cases return actionable recommendations rather than an
+  preset/frame cases: 555 fit, 22 warning, and 203 fail.
+- All 203 failed cases return actionable recommendations rather than an
   applicable invalid grid.
 
 ### Required product wording
@@ -289,8 +357,9 @@ Do not call an unsourced preset "foundational Muller-Brockmann."
 
 ## 7. Provenance Work Remaining
 
-- Verify the Wada `Dull Violet Black` CMYK exception against the publisher
-  edition.
-- Create stable Wada original-card identifiers and primary-scan page links.
+- Verify the Wada `Dull Violet Black` CMYK exception against the licensed
+  publisher edition; it remains unresolved in the source audit.
+- Expand stable Wada original-card identifiers and primary-scan page links
+  beyond the currently reviewed omission and name entries.
 - Add artifact-level evidence for any preset marketed as a historical
   reconstruction.

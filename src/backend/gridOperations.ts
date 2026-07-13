@@ -4,7 +4,11 @@
 import { gridConfigToFigmaLayoutGrids } from '../lib/figmaGrids';
 import { analyzeResolvedGridFit } from '../lib/gridFit';
 import { resolveGridConfigForTarget } from '../lib/gridUtils';
-import type { GridConfig as SourceGridConfig } from '../types/grid';
+import type {
+  GridApplicationMode,
+  GridConfig as SourceGridConfig,
+  GridResponsiveWidth,
+} from '../types/grid';
 import type { ApplyGridMessage, FigmaGridConfig, GridAppliedMessage } from '../types/messages';
 
 type LayoutGridNode = SceneNode & {
@@ -60,12 +64,20 @@ function buildLayoutGrids(config: FigmaGridConfig): LayoutGrid[] {
 function resolveLayoutGridsForNode(
   sourceConfig: SourceGridConfig,
   sourceDimensions: { width: number; height: number } | undefined,
+  applicationMode: GridApplicationMode,
+  responsiveWidth: GridResponsiveWidth | undefined,
   node: SceneNode
 ): LayoutGrid[] {
-  const targetConfig = resolveGridConfigForTarget(sourceConfig, sourceDimensions, {
-    width: node.width,
-    height: node.height,
-  });
+  const targetConfig = resolveGridConfigForTarget(
+    sourceConfig,
+    sourceDimensions,
+    {
+      width: node.width,
+      height: node.height,
+    },
+    applicationMode,
+    responsiveWidth
+  );
 
   return gridConfigToFigmaLayoutGrids(targetConfig, node.width, node.height).map(
     grid => ({ ...grid }) as LayoutGrid
@@ -203,32 +215,17 @@ export async function handleCreateGridFrame(msg: {
   frameName?: string;
   width: number;
   height: number;
-  includeImage?: boolean;
-  imageData?: string;
   positionNearSelection?: boolean;
 }): Promise<void> {
   let frame: FrameNode | undefined;
-  let imageRect: RectangleNode | undefined;
   const originalSelection = [...figma.currentPage.selection];
 
   try {
-    const {
-      config,
-      frameName,
-      width,
-      height,
-      includeImage,
-      imageData,
-      positionNearSelection = true,
-    } = msg;
+    const { config, frameName, width, height, positionNearSelection = true } = msg;
 
     if (!hasGridEntry(config)) {
       throw new Error('Grid frame config must include at least one grid');
     }
-    if (includeImage && !imageData) {
-      throw new Error('Grid frame image data is required when includeImage is true');
-    }
-
     frame = figma.createFrame();
     const resolvedFrameName = frameName || 'Grid Frame';
     frame.name = resolvedFrameName;
@@ -236,37 +233,6 @@ export async function handleCreateGridFrame(msg: {
 
     // Apply layout grids
     frame.layoutGrids = buildLayoutGrids(config);
-
-    // Include original image as reference layer if requested
-    if (includeImage && imageData) {
-      // Decode base64 to Uint8Array
-      const binaryString = atob(imageData);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-
-      // Create image hash
-      const imageHash = figma.createImage(bytes).hash;
-
-      // Create rectangle with image fill
-      imageRect = figma.createRectangle();
-      imageRect.name = 'Reference Image';
-      imageRect.resize(width, height);
-      imageRect.x = 0;
-      imageRect.y = 0;
-      imageRect.fills = [
-        {
-          type: 'IMAGE',
-          scaleMode: 'FILL',
-          imageHash: imageHash,
-        },
-      ];
-      imageRect.opacity = 0.5; // Semi-transparent for reference
-      imageRect.locked = true; // Lock to prevent accidental edits
-
-      frame.appendChild(imageRect);
-    }
 
     // Position near selection or in viewport center
     const selection = figma.currentPage.selection;
@@ -303,7 +269,6 @@ export async function handleCreateGridFrame(msg: {
     figma.notify(`Created: ${resolvedFrameName}${infoStr}`);
   } catch (error) {
     console.error('Error creating grid frame:', error);
-    removeNodeOnFailure(imageRect, 'reference image');
     removeNodeOnFailure(frame, 'grid frame');
     try {
       figma.currentPage.selection = originalSelection;
@@ -327,10 +292,11 @@ export async function handleApplyGrid(msg: ApplyGridMessage): Promise<void> {
     requestId,
     sourceConfig,
     sourceDimensions,
+    applicationMode,
+    responsiveWidth,
     expectedTargetIds,
     replaceExisting = true,
   } = msg;
-  const scaledToFit = sourceDimensions !== undefined;
   const payloadError = getApplyGridPayloadError(sourceConfig, expectedTargetIds);
   const postResult = (result: Omit<GridAppliedMessage, 'type' | 'requestId'>): void => {
     figma.ui.postMessage({ type: 'grid-applied', requestId, ...result });
@@ -386,7 +352,8 @@ export async function handleApplyGrid(msg: ApplyGridMessage): Promise<void> {
       const fit = analyzeResolvedGridFit(
         sourceConfig,
         { id: node.id, name: node.name, width: node.width, height: node.height },
-        sourceDimensions
+        sourceDimensions,
+        { applicationMode, responsiveWidth }
       );
       if (!fit.fits) {
         throw new Error(
@@ -396,7 +363,13 @@ export async function handleApplyGrid(msg: ApplyGridMessage): Promise<void> {
         );
       }
 
-      const resolvedGrids = resolveLayoutGridsForNode(sourceConfig, sourceDimensions, node);
+      const resolvedGrids = resolveLayoutGridsForNode(
+        sourceConfig,
+        sourceDimensions,
+        applicationMode,
+        responsiveWidth,
+        node
+      );
       if (resolvedGrids.length === 0) {
         throw new Error('Resolved grid payload contained no layout grids');
       }
@@ -441,14 +414,21 @@ export async function handleApplyGrid(msg: ApplyGridMessage): Promise<void> {
     if (sourceConfig.baseline) gridInfo.push('uniform');
 
     const infoStr = gridInfo.length > 0 ? ` (${gridInfo.join(', ')})` : '';
-    const scaleNote = scaledToFit ? ' [scaled]' : '';
+    const resolutionNote =
+      applicationMode === 'scale-from-reference'
+        ? ' [scaled]'
+        : applicationMode === 'responsive-width'
+          ? ' [responsive]'
+          : applicationMode === 'canonical-only'
+            ? ' [source-faithful]'
+            : '';
     const appliedCount = plans.length;
     const firstPlan = plans[0];
     const firstAppliedNode = firstPlan?.node;
     const message =
       selection.length === 1 && appliedCount === 1
-        ? `${replaceExisting ? (firstPlan.previousGrids.length > 0 ? 'Replaced' : 'Applied') : 'Added'} grid on "${firstAppliedNode.name}"${infoStr}${scaleNote}`
-        : `Grid apply: ${appliedCount} applied, ${skippedCount} skipped, 0 failed${infoStr}${scaleNote}`;
+        ? `${replaceExisting ? (firstPlan.previousGrids.length > 0 ? 'Replaced' : 'Applied') : 'Added'} grid on "${firstAppliedNode.name}"${infoStr}${resolutionNote}`
+        : `Grid apply: ${appliedCount} applied, ${skippedCount} skipped, 0 failed${infoStr}${resolutionNote}`;
 
     figma.notify(message);
 

@@ -1,8 +1,10 @@
 import type {
   ColumnGridConfig,
+  GridApplicationMode,
   GridConfig,
   GridDimensions,
   GridPreset,
+  GridResponsiveWidth,
   GridUnit,
   RowGridConfig,
 } from '../types/grid';
@@ -28,7 +30,10 @@ export type GridFitIssueCode =
   | 'section-below-preferred'
   | 'invalid-baseline'
   | 'baseline-exceeds-frame'
-  | 'baseline-offset-ignored';
+  | 'baseline-offset-ignored'
+  | 'reference-dimensions-required'
+  | 'responsive-width-required'
+  | 'canonical-dimensions-required';
 
 export interface GridFitIssue {
   code: GridFitIssueCode;
@@ -45,6 +50,8 @@ export type GridFitRecommendationAction =
   | 'reduce-gutter'
   | 'increase-frame'
   | 'adjust-baseline'
+  | 'use-supported-width'
+  | 'use-reference-frame'
   | 'review-grid';
 
 export interface GridFitRecommendation {
@@ -95,6 +102,10 @@ export interface GridFitOptions {
   minimumSectionSize?: number;
   /** Warning threshold for a comfortable column or row. Defaults to 24px. */
   preferredSectionSize?: number;
+  /** Application contract used by the production resolver. */
+  applicationMode?: GridApplicationMode;
+  /** Width range and optional centered-content rule for responsive named systems. */
+  responsiveWidth?: GridResponsiveWidth;
 }
 
 export interface GridPresetMatrixAnalysis {
@@ -324,11 +335,15 @@ function analyzeAxis(
     return undefined;
   }
 
-  const marginSize = toPixels(config.margin, config.marginUnit, frameSize);
-  const gutterSize = toPixels(config.gutterSize, config.gutterUnit, frameSize);
+  // Figma receives integer offsets and gutters. Fit the emitted geometry, not
+  // the higher-precision editor values that are discarded during conversion.
+  const marginSize = Math.round(toPixels(config.margin, config.marginUnit, frameSize));
+  const gutterSize = Math.round(toPixels(config.gutterSize, config.gutterUnit, frameSize));
   const totalGutterSize = gutterSize * Math.max(0, config.count - 1);
   const availableSize = frameSize - marginSize * 2 - totalGutterSize;
-  const sectionSize = availableSize / config.count;
+  const rawSectionSize = availableSize / config.count;
+  const sectionSize =
+    config.alignment === 'STRETCH' ? rawSectionSize : Math.max(1, Math.round(rawSectionSize));
   const metrics: GridAxisFitMetrics = {
     axis,
     frameSize,
@@ -586,11 +601,59 @@ export function analyzeResolvedGridFit(
     return analyzeGridFit(config, frame, options);
   }
 
-  return analyzeGridFit(
-    resolveGridConfigForTarget(config, sourceDimensions, frame),
-    frame,
-    options
-  );
+  const applicationMode =
+    options.applicationMode ?? (sourceDimensions ? 'scale-from-reference' : 'fixed');
+
+  try {
+    return analyzeGridFit(
+      resolveGridConfigForTarget(
+        config,
+        sourceDimensions,
+        frame,
+        applicationMode,
+        options.responsiveWidth
+      ),
+      frame,
+      options
+    );
+  } catch (error) {
+    const base = analyzeGridFit(config, frame, options);
+    const isCanonicalMismatch = applicationMode === 'canonical-only' && sourceDimensions;
+    const isResponsiveMismatch = applicationMode === 'responsive-width';
+    const message =
+      error instanceof Error ? error.message : 'Grid reference dimensions could not be resolved.';
+    const issue: GridFitIssue = {
+      code: isCanonicalMismatch
+        ? 'canonical-dimensions-required'
+        : isResponsiveMismatch
+          ? 'responsive-width-required'
+          : 'reference-dimensions-required',
+      severity: 'error',
+      axis: 'frame',
+      message,
+    };
+    const recommendation: GridFitRecommendation = {
+      action: isResponsiveMismatch ? 'use-supported-width' : 'use-reference-frame',
+      axis: 'frame',
+      minimumDimension: sourceDimensions
+        ? Math.max(sourceDimensions.width, sourceDimensions.height)
+        : undefined,
+      message: isResponsiveMismatch
+        ? message
+        : sourceDimensions
+          ? `Use the canonical ${sourceDimensions.width}\u00d7${sourceDimensions.height}px frame.`
+          : 'Add valid reference dimensions before applying this preset.',
+    };
+
+    return {
+      ...base,
+      status: 'fail',
+      fits: false,
+      score: Math.min(49, base.score),
+      issues: [...base.issues, issue],
+      recommendations: [recommendation, ...base.recommendations],
+    };
+  }
 }
 
 /** Analyze a preset and preserve its identity in the result. */
@@ -607,14 +670,25 @@ export function analyzePresetFit(
 }
 
 /** Analyze the exact geometry that application resolves for one preset target. */
-export function analyzeResolvedPresetFit(
+function analyzeResolvedPresetFit(
   preset: GridPreset,
   frame: GridFitFrame,
   sourceDimensions?: GridDimensions,
   options: GridFitOptions = {}
 ): GridFitAnalysis {
+  const applicationMode =
+    options.applicationMode ??
+    preset.applicationMode ??
+    (sourceDimensions ? 'scale-from-reference' : 'fixed');
+  const resolvedSourceDimensions =
+    sourceDimensions ?? (applicationMode === 'fixed' ? undefined : preset.referenceDimensions);
+
   return {
-    ...analyzeResolvedGridFit(preset.config, frame, sourceDimensions, options),
+    ...analyzeResolvedGridFit(preset.config, frame, resolvedSourceDimensions, {
+      ...options,
+      applicationMode,
+      responsiveWidth: options.responsiveWidth ?? preset.responsiveWidth,
+    }),
     presetId: preset.id,
     presetName: preset.name,
   };
@@ -667,7 +741,7 @@ export function analyzePresetAcrossFrameMatrix(
   matrix: readonly GridFitFrame[] = GRID_FIT_FRAME_MATRIX,
   options: GridFitOptions = {}
 ): GridPresetMatrixAnalysis {
-  const results = matrix.map(frame => analyzePresetFit(preset, frame, options));
+  const results = matrix.map(frame => analyzeResolvedPresetFit(preset, frame, undefined, options));
 
   return {
     presetId: preset.id,
@@ -723,7 +797,7 @@ export function recommendGridPresets(
 
   return presets
     .map((preset, index) => {
-      const analysis = analyzePresetFit(preset, frame, fitOptions);
+      const analysis = analyzeResolvedPresetFit(preset, frame, undefined, fitOptions);
       const aspectScore = getAspectScore(preset, frame);
       const score = Math.round(analysis.score * 0.9 + aspectScore * 0.1);
       const reasons = [

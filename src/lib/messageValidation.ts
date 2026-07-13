@@ -10,9 +10,14 @@ export type MessageValidationResult =
   | { valid: false; error: string };
 
 const HEX_COLOR = /^#?[0-9a-fA-F]{6}$/;
-const BASE64_DATA = /^[A-Za-z0-9+/]*={0,2}$/;
 const GRID_ALIGNMENTS = ['MIN', 'CENTER', 'MAX', 'STRETCH'] as const;
 const GRID_UNITS = ['px', 'percent'] as const;
+const GRID_APPLICATION_MODES = [
+  'fixed',
+  'scale-from-reference',
+  'responsive-width',
+  'canonical-only',
+] as const;
 const GRID_ENTRY_KEYS = ['columns', 'rows', 'baseline'] as const;
 const GRADIENT_TYPES = ['LINEAR', 'RADIAL', 'ANGULAR', 'DIAMOND'] as const;
 const DETAIL_LEVELS = ['minimal', 'detailed', 'presentation'] as const;
@@ -34,7 +39,6 @@ const MAX_GRID_TARGETS = 1000;
 const MAX_TARGET_ID_LENGTH = 256;
 const MAX_DIMENSION = 100000;
 const MAX_GRID_MEASUREMENT = 100000;
-const MAX_IMAGE_DATA_LENGTH = 32 * 1024 * 1024;
 
 function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -64,15 +68,6 @@ function valid(message: UnknownRecord): MessageValidationResult {
   return { valid: true, message: message as unknown as UIToPluginMessage };
 }
 
-function validateOptionalRgb(value: unknown): boolean {
-  return (
-    value === undefined ||
-    (Array.isArray(value) &&
-      value.length === 3 &&
-      value.every(component => isFiniteNumberInRange(component, 0, 255)))
-  );
-}
-
 function validateColor(value: unknown): value is { hex: string; name: string } {
   return (
     isRecord(value) &&
@@ -83,9 +78,10 @@ function validateColor(value: unknown): value is { hex: string; name: string } {
 }
 
 function validateColorOperation(message: UnknownRecord): string | null {
-  const rgb = message.rgb;
   if (!validateColor(message)) return 'color payload must include a valid hex color and name';
-  if (!validateOptionalRgb(rgb)) return 'rgb must contain three values between 0 and 255';
+  if (Object.keys(message).some(key => !['type', 'hex', 'name'].includes(key))) {
+    return 'color payload contains unsupported fields';
+  }
   return null;
 }
 
@@ -196,13 +192,21 @@ function validateDimensions(value: unknown): boolean {
   );
 }
 
-function validateBase64Data(value: unknown): boolean {
-  return (
-    typeof value === 'string' &&
-    value.length > 0 &&
-    value.length <= MAX_IMAGE_DATA_LENGTH &&
-    value.length % 4 !== 1 &&
-    BASE64_DATA.test(value)
+function validateResponsiveWidth(value: unknown): boolean {
+  if (
+    !isRecord(value) ||
+    !isFiniteNumberInRange(value.min, 1, MAX_DIMENSION) ||
+    (value.max !== undefined && !isFiniteNumberInRange(value.max, value.min, MAX_DIMENSION)) ||
+    (value.maxContentWidth !== undefined &&
+      !isFiniteNumberInRange(value.maxContentWidth, 1, MAX_DIMENSION)) ||
+    (value.contentInset !== undefined &&
+      !isFiniteNumberInRange(value.contentInset, 0, MAX_DIMENSION))
+  ) {
+    return false;
+  }
+
+  return Object.keys(value).every(key =>
+    ['min', 'max', 'maxContentWidth', 'contentInset'].includes(key)
   );
 }
 
@@ -212,15 +216,6 @@ function validateCreateGridFrame(message: UnknownRecord): string | null {
   if (!isBoundedString(message.frameName)) return 'frameName must be a non-empty bounded string';
   if (!isFiniteNumberInRange(message.width, 1, MAX_DIMENSION)) return 'width is out of range';
   if (!isFiniteNumberInRange(message.height, 1, MAX_DIMENSION)) return 'height is out of range';
-  if (message.includeImage !== undefined && typeof message.includeImage !== 'boolean') {
-    return 'includeImage must be a boolean';
-  }
-  if (message.imageData !== undefined && !validateBase64Data(message.imageData)) {
-    return 'imageData must be valid base64 data';
-  }
-  if (message.includeImage === true && !validateBase64Data(message.imageData)) {
-    return 'includeImage requires valid imageData';
-  }
   if (
     message.positionNearSelection !== undefined &&
     typeof message.positionNearSelection !== 'boolean'
@@ -242,6 +237,25 @@ function validateApplyGrid(message: UnknownRecord): string | null {
   }
   if (message.sourceDimensions !== undefined && !validateDimensions(message.sourceDimensions)) {
     return 'sourceDimensions must contain valid positive dimensions';
+  }
+  if (!isOneOf(message.applicationMode, GRID_APPLICATION_MODES)) {
+    return 'applicationMode must be fixed, scale-from-reference, responsive-width, or canonical-only';
+  }
+  if (
+    (message.applicationMode === 'scale-from-reference' ||
+      message.applicationMode === 'canonical-only') &&
+    message.sourceDimensions === undefined
+  ) {
+    return `${message.applicationMode} requires sourceDimensions`;
+  }
+  if (
+    message.applicationMode === 'responsive-width' &&
+    !validateResponsiveWidth(message.responsiveWidth)
+  ) {
+    return 'responsive-width requires a valid responsiveWidth contract';
+  }
+  if (message.applicationMode !== 'responsive-width' && message.responsiveWidth !== undefined) {
+    return 'responsiveWidth is only supported for responsive-width application';
   }
   if (
     !Array.isArray(message.expectedTargetIds) ||

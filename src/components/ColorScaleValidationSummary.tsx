@@ -1,7 +1,7 @@
 import * as React from 'react';
 import type { ColorScaleMode, ColorScaleValidation } from '../lib/colorScale';
 
-export interface ScaleValidationItem {
+interface ScaleValidationItem {
   name: string;
   mode: ColorScaleMode;
   validation: ColorScaleValidation;
