@@ -55,7 +55,7 @@
     "html-webpack-plugin": "^5.5.3",
     "husky": "^9.1.7",
     "jsdom": "^27.4.0",
-    "lint-staged": "^16.2.7",
+    "lint-staged": "^17.0.8",
     "prettier": "^3.7.4",
     "ts-loader": "^9.5.1",
     "terser-webpack-plugin": "^5.3.10",
