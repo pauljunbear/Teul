@@ -8,11 +8,11 @@ import {
   duplicateSavedGrid,
   downloadGridsAsJSON,
   importGridsFromFile,
-  searchSavedGrids,
 } from '../lib/gridStorage';
 import {
   buildApplyGridMessage,
   buildCreateGridFrameMessage,
+  getPresetApplicationMode,
   getPresetFrameDimensions,
   getPresetSourceDimensions,
 } from '../lib/figmaGrids';
@@ -106,7 +106,15 @@ const GridCard: React.FC<GridCardProps> = ({
           padding: '8px',
         }}
       >
-        <GridMiniPreview config={grid.config} size={64} isDark={isDark} />
+        <GridMiniPreview
+          config={grid.config}
+          size={64}
+          isDark={isDark}
+          referenceDimensions={grid.referenceDimensions}
+          applicationMode={grid.applicationMode}
+          responsiveWidth={grid.responsiveWidth}
+          aspectRatio={grid.aspectRatio}
+        />
       </div>
 
       {/* Info */}
@@ -136,6 +144,25 @@ const GridCard: React.FC<GridCardProps> = ({
       >
         {grid.description || 'No description'}
       </p>
+
+      {grid.referenceDimensions && (
+        <p
+          style={{
+            margin: '0 0 6px 0',
+            fontSize: '9px',
+            color: theme.textMuted,
+          }}
+        >
+          {getPresetApplicationMode(grid) === 'canonical-only'
+            ? 'Canonical frame only'
+            : getPresetApplicationMode(grid) === 'responsive-width'
+              ? `Responsive ${grid.responsiveWidth?.min}-${grid.responsiveWidth?.max ?? '∞'}px width`
+              : getPresetApplicationMode(grid) === 'scale-from-reference'
+                ? 'Scales from reference'
+                : 'Fixed measurements'}{' '}
+          · {grid.referenceDimensions.width}×{grid.referenceDimensions.height}px
+        </p>
+      )}
 
       {/* Tags */}
       {grid.tags.length > 0 && (
@@ -630,13 +657,35 @@ export const MyGrids: React.FC<MyGridsProps> = ({ isDark }) => {
 
   // Load grids on mount
   React.useEffect(() => {
-    setGrids(loadSavedGrids());
+    let cancelled = false;
+    void loadSavedGrids()
+      .then(savedGrids => {
+        if (!cancelled) setGrids(savedGrids);
+      })
+      .catch(error => {
+        if (!cancelled) {
+          setNotification({
+            type: 'error',
+            message: error instanceof Error ? error.message : 'Failed to load saved grids',
+          });
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Filter grids by search
   const filteredGrids = React.useMemo(() => {
-    if (!searchQuery.trim()) return grids;
-    return searchSavedGrids(searchQuery);
+    const normalizedQuery = searchQuery.toLowerCase().trim();
+    if (!normalizedQuery) return grids;
+
+    return grids.filter(grid => {
+      const nameMatch = grid.name.toLowerCase().includes(normalizedQuery);
+      const descMatch = grid.description.toLowerCase().includes(normalizedQuery);
+      const tagMatch = grid.tags.some(tag => tag.toLowerCase().includes(normalizedQuery));
+      return nameMatch || descMatch || tagMatch;
+    });
   }, [grids, searchQuery]);
 
   // Show notification
@@ -670,6 +719,7 @@ export const MyGrids: React.FC<MyGridsProps> = ({ isDark }) => {
       }
 
       const sourceDimensions = getPresetSourceDimensions(grid);
+      const applicationMode = getPresetApplicationMode(grid);
       const fit = analyzeResolvedPresetFits(grid, currentTargets, sourceDimensions);
       if (fit.status === 'fail') {
         const failedTarget = fit.representative.frame;
@@ -685,6 +735,8 @@ export const MyGrids: React.FC<MyGridsProps> = ({ isDark }) => {
         config: grid.config,
         expectedTargetIds: currentTargets.map(target => target.id),
         sourceDimensions,
+        applicationMode,
+        responsiveWidth: grid.responsiveWidth,
         replaceExisting: true,
       });
 
@@ -774,9 +826,9 @@ export const MyGrids: React.FC<MyGridsProps> = ({ isDark }) => {
   };
 
   // Edit grid
-  const handleEditGrid = (grid: SavedGrid, updates: Partial<SavedGrid>) => {
+  const handleEditGrid = async (grid: SavedGrid, updates: Partial<SavedGrid>) => {
     try {
-      const updated = updateSavedGrid(grid.id, updates);
+      const updated = await updateSavedGrid(grid.id, updates);
       setGrids(updated);
       setEditingGrid(null);
       showNotification('success', 'Grid updated');
@@ -786,11 +838,11 @@ export const MyGrids: React.FC<MyGridsProps> = ({ isDark }) => {
   };
 
   // Duplicate grid
-  const handleDuplicateGrid = (grid: SavedGrid) => {
+  const handleDuplicateGrid = async (grid: SavedGrid) => {
     try {
-      const duplicate = duplicateSavedGrid(grid.id);
+      const duplicate = await duplicateSavedGrid(grid.id);
       if (duplicate) {
-        setGrids(loadSavedGrids());
+        setGrids(await loadSavedGrids());
         showNotification('success', `Created copy of "${grid.name}"`);
       }
     } catch (error) {
@@ -802,9 +854,9 @@ export const MyGrids: React.FC<MyGridsProps> = ({ isDark }) => {
   };
 
   // Delete grid
-  const handleDeleteGrid = (grid: SavedGrid) => {
+  const handleDeleteGrid = async (grid: SavedGrid) => {
     try {
-      const updated = deleteSavedGrid(grid.id);
+      const updated = await deleteSavedGrid(grid.id);
       setGrids(updated);
       setDeletingGrid(null);
       showNotification('success', `Deleted "${grid.name}"`);
@@ -814,13 +866,17 @@ export const MyGrids: React.FC<MyGridsProps> = ({ isDark }) => {
   };
 
   // Export grids
-  const handleExport = () => {
+  const handleExport = async () => {
     if (grids.length === 0) {
       showNotification('error', 'No grids to export');
       return;
     }
-    downloadGridsAsJSON(grids);
-    showNotification('success', `Exported ${grids.length} grid(s)`);
+    try {
+      await downloadGridsAsJSON(grids);
+      showNotification('success', `Exported ${grids.length} grid(s)`);
+    } catch (error) {
+      showNotification('error', error instanceof Error ? error.message : 'Export failed');
+    }
   };
 
   // Import grids
@@ -1103,5 +1159,3 @@ export const MyGrids: React.FC<MyGridsProps> = ({ isDark }) => {
     </div>
   );
 };
-
-export default MyGrids;

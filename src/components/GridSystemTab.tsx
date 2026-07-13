@@ -3,7 +3,6 @@ import { GridLibrary } from './GridLibrary';
 import { MyGrids } from './MyGrids';
 import { getSavedGridCount, SAVED_GRIDS_CHANGED_EVENT } from '../lib/gridStorage';
 import { HelpPanel } from './HelpPanel';
-import { ToastProvider, ToastContainer } from './Toast';
 import { isAnyModalOpen } from '../lib/useModalAccessibility';
 
 interface GridSystemTabProps {
@@ -45,13 +44,27 @@ export const GridSystemTab: React.FC<GridSystemTabProps> = ({ isDark }) => {
 
   // Update saved grid count when tab changes
   React.useEffect(() => {
-    setSavedGridCount(getSavedGridCount());
+    let cancelled = false;
+    void getSavedGridCount()
+      .then(count => {
+        if (!cancelled) setSavedGridCount(count);
+      })
+      .catch(error => {
+        console.error('Failed to load saved grid count:', error);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [activeTab]);
 
   // Listen for storage changes
   React.useEffect(() => {
     const handleStorageChange = () => {
-      setSavedGridCount(getSavedGridCount());
+      void getSavedGridCount()
+        .then(setSavedGridCount)
+        .catch(error => {
+          console.error('Failed to refresh saved grid count:', error);
+        });
     };
 
     window.addEventListener('storage', handleStorageChange);
@@ -95,163 +108,156 @@ export const GridSystemTab: React.FC<GridSystemTabProps> = ({ isDark }) => {
   }, [showHelp]);
 
   return (
-    <ToastProvider>
+    <div
+      style={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: theme.bg,
+        position: 'relative',
+      }}
+    >
+      {/* Compact Sub-Navigation */}
       <div
         style={{
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
+          flexShrink: 0,
+          padding: '6px 12px',
           backgroundColor: theme.bg,
-          position: 'relative',
         }}
       >
-        {/* Compact Sub-Navigation */}
         <div
           style={{
-            flexShrink: 0,
-            padding: '6px 12px',
-            backgroundColor: theme.bg,
+            display: 'flex',
+            gap: '6px',
+            alignItems: 'center',
           }}
         >
+          {/* Sub-tabs - text links style */}
           <div
+            role="tablist"
+            aria-label="Grid sections"
             style={{
+              flex: 1,
               display: 'flex',
-              gap: '6px',
-              alignItems: 'center',
+              gap: '2px',
             }}
           >
-            {/* Sub-tabs - text links style */}
-            <div
-              role="tablist"
-              aria-label="Grid sections"
-              style={{
-                flex: 1,
-                display: 'flex',
-                gap: '2px',
-              }}
-            >
-              {[
-                { id: 'library', label: 'Library', count: undefined },
-                { id: 'my-grids', label: 'Saved', count: savedGridCount || undefined },
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  id={`grid-${tab.id}-tab`}
-                  role="tab"
-                  aria-selected={activeTab === tab.id}
-                  aria-controls={`grid-${tab.id}-panel`}
-                  tabIndex={activeTab === tab.id ? 0 : -1}
-                  onClick={() => setActiveTab(tab.id as 'library' | 'my-grids')}
-                  onKeyDown={event => {
-                    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-                    event.preventDefault();
-                    const nextTab =
-                      event.key === 'Home'
-                        ? 'library'
-                        : event.key === 'End'
+            {[
+              { id: 'library', label: 'Library', count: undefined },
+              { id: 'my-grids', label: 'Saved', count: savedGridCount || undefined },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                id={`grid-${tab.id}-tab`}
+                role="tab"
+                aria-selected={activeTab === tab.id}
+                aria-controls={`grid-${tab.id}-panel`}
+                tabIndex={activeTab === tab.id ? 0 : -1}
+                onClick={() => setActiveTab(tab.id as 'library' | 'my-grids')}
+                onKeyDown={event => {
+                  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+                  event.preventDefault();
+                  const nextTab =
+                    event.key === 'Home'
+                      ? 'library'
+                      : event.key === 'End'
+                        ? 'my-grids'
+                        : activeTab === 'library'
                           ? 'my-grids'
-                          : activeTab === 'library'
-                            ? 'my-grids'
-                            : 'library';
-                    setActiveTab(nextTab);
-                    document.getElementById(`grid-${nextTab}-tab`)?.focus();
-                  }}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    padding: '5px 10px',
-                    border: 'none',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                    fontSize: '11px',
-                    fontWeight: activeTab === tab.id ? 600 : 500,
-                    transition: 'all 0.15s ease',
-                    backgroundColor: activeTab === tab.id ? theme.tabActive : 'transparent',
-                    color: activeTab === tab.id ? theme.tabActiveText : theme.tabInactiveText,
-                  }}
-                >
-                  {tab.label}
-                  {tab.count !== undefined && tab.count > 0 && (
-                    <span
-                      style={{
-                        padding: '1px 5px',
-                        borderRadius: '8px',
-                        fontSize: '9px',
-                        fontWeight: 600,
-                        backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
-                        color: theme.tabInactiveText,
-                      }}
-                    >
-                      {tab.count}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-
-            {/* Help Button - smaller */}
-            <button
-              onClick={() => setShowHelp(true)}
-              style={{
-                width: '24px',
-                height: '24px',
-                borderRadius: '5px',
-                border: `1px solid ${theme.border}`,
-                backgroundColor: 'transparent',
-                color: theme.tabInactiveText,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '11px',
-              }}
-              title="Help (F1)"
-              aria-label="Open help and documentation"
-            >
-              ?
-            </button>
+                          : 'library';
+                  setActiveTab(nextTab);
+                  document.getElementById(`grid-${nextTab}-tab`)?.focus();
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '5px 10px',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                  fontWeight: activeTab === tab.id ? 600 : 500,
+                  transition: 'all 0.15s ease',
+                  backgroundColor: activeTab === tab.id ? theme.tabActive : 'transparent',
+                  color: activeTab === tab.id ? theme.tabActiveText : theme.tabInactiveText,
+                }}
+              >
+                {tab.label}
+                {tab.count !== undefined && tab.count > 0 && (
+                  <span
+                    style={{
+                      padding: '1px 5px',
+                      borderRadius: '8px',
+                      fontSize: '9px',
+                      fontWeight: 600,
+                      backgroundColor: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
+                      color: theme.tabInactiveText,
+                    }}
+                  >
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            ))}
           </div>
-        </div>
 
-        {/* Tab Content */}
-        <div
-          id="grid-library-panel"
-          role="tabpanel"
-          aria-labelledby="grid-library-tab"
-          hidden={activeTab !== 'library'}
-          tabIndex={activeTab === 'library' ? 0 : -1}
-          style={{
-            flex: 1,
-            overflow: 'auto',
-            backgroundColor: theme.bg,
-          }}
-        >
-          {activeTab === 'library' && <GridLibrary isDark={isDark} />}
+          {/* Help Button - smaller */}
+          <button
+            onClick={() => setShowHelp(true)}
+            style={{
+              width: '24px',
+              height: '24px',
+              borderRadius: '5px',
+              border: `1px solid ${theme.border}`,
+              backgroundColor: 'transparent',
+              color: theme.tabInactiveText,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '11px',
+            }}
+            title="Help (F1)"
+            aria-label="Open help and documentation"
+          >
+            ?
+          </button>
         </div>
-        <div
-          id="grid-my-grids-panel"
-          role="tabpanel"
-          aria-labelledby="grid-my-grids-tab"
-          hidden={activeTab !== 'my-grids'}
-          tabIndex={activeTab === 'my-grids' ? 0 : -1}
-          style={{
-            flex: 1,
-            overflow: 'auto',
-            backgroundColor: theme.bg,
-          }}
-        >
-          {activeTab === 'my-grids' && <MyGrids isDark={isDark} />}
-        </div>
-
-        {/* Help Panel */}
-        <HelpPanel isOpen={showHelp} onClose={() => setShowHelp(false)} isDark={isDark} />
-
-        {/* Toast Notifications */}
-        <ToastContainer isDark={isDark} />
       </div>
-    </ToastProvider>
+
+      {/* Tab Content */}
+      <div
+        id="grid-library-panel"
+        role="tabpanel"
+        aria-labelledby="grid-library-tab"
+        hidden={activeTab !== 'library'}
+        tabIndex={activeTab === 'library' ? 0 : -1}
+        style={{
+          flex: 1,
+          overflow: 'auto',
+          backgroundColor: theme.bg,
+        }}
+      >
+        {activeTab === 'library' && <GridLibrary isDark={isDark} />}
+      </div>
+      <div
+        id="grid-my-grids-panel"
+        role="tabpanel"
+        aria-labelledby="grid-my-grids-tab"
+        hidden={activeTab !== 'my-grids'}
+        tabIndex={activeTab === 'my-grids' ? 0 : -1}
+        style={{
+          flex: 1,
+          overflow: 'auto',
+          backgroundColor: theme.bg,
+        }}
+      >
+        {activeTab === 'my-grids' && <MyGrids isDark={isDark} />}
+      </div>
+
+      {/* Help Panel */}
+      <HelpPanel isOpen={showHelp} onClose={() => setShowHelp(false)} isDark={isDark} />
+    </div>
   );
 };
-
-export default GridSystemTab;

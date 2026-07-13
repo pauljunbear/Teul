@@ -226,11 +226,11 @@ export const WADA_ABOUT_CONTENT = {
   content: [
     {
       heading: 'The Dictionary of Color Combinations',
-      text: "The modern corpus presents 159 normalized colors used across 348 combinations from Sanzo Wada's 1930s color-combination work.",
+      text: "Sanzo Wada's original A-series contains 360 combinations: 120 duos, 120 trios, and 120 quads. The modern Seigensha selection presents 159 normalized colors across 348 combinations and omits A.XII four-color Nos. 109-120.",
     },
     {
       heading: 'Digital Approximation',
-      text: 'The bundled sRGB values are digital approximations based on modern Seigensha CMYK recipes, not exact historical RGB colors.',
+      text: 'Bundled names are modern upstream transcriptions, not wholesale verified primary-source text. The sRGB values are digital approximations based on modern Seigensha CMYK recipes, not exact historical RGB colors.',
     },
   ],
   credit: {
@@ -256,5 +256,3 @@ export const WERNER_ABOUT_CONTENT = {
     text: "Patrick Syme's 1821 second edition; public-domain scan from Getty Research Institute.",
   },
 };
-
-export default AboutPanel;

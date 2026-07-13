@@ -1,110 +1,196 @@
 import * as React from 'react';
 import type {
-  BaselineGridConfig,
-  ColumnGridConfig,
+  FigmaRowsColsLayoutGrid,
+  GridApplicationMode,
   GridConfig,
-  RowGridConfig,
+  GridDimensions,
+  GridResponsiveWidth,
 } from '../types/grid';
-import { gridColorToCSS } from '../lib/gridUtils';
+import { gridConfigToFigmaLayoutGrids, parseAspectRatio } from '../lib/figmaGrids';
+import { gridColorToCSS, resolveGridConfigForTarget } from '../lib/gridUtils';
+
+interface GridPreviewProps {
+  config: GridConfig;
+  width: number;
+  height: number;
+  isDark: boolean;
+  referenceDimensions?: GridDimensions;
+  applicationMode?: GridApplicationMode;
+  responsiveWidth?: GridResponsiveWidth;
+  aspectRatio?: string;
+}
 
 interface GridMiniPreviewProps {
   config: GridConfig;
   size?: number;
   isDark: boolean;
+  referenceDimensions?: GridDimensions;
+  applicationMode?: GridApplicationMode;
+  responsiveWidth?: GridResponsiveWidth;
+  aspectRatio?: string;
 }
 
-export const GridMiniPreview: React.FC<GridMiniPreviewProps> = ({ config, size = 48, isDark }) => {
-  const bgColor = isDark ? '#2a2a2a' : '#f5f5f5';
+function getPreviewFrameDimensions(
+  referenceDimensions: GridDimensions | undefined,
+  aspectRatio: string | undefined
+): GridDimensions {
+  if (
+    referenceDimensions &&
+    Number.isFinite(referenceDimensions.width) &&
+    Number.isFinite(referenceDimensions.height) &&
+    referenceDimensions.width > 0 &&
+    referenceDimensions.height > 0
+  ) {
+    return referenceDimensions;
+  }
 
-  const renderMiniColumns = (cols: ColumnGridConfig) => {
-    const margin =
-      cols.marginUnit === 'percent' ? (cols.margin / 100) * size : (cols.margin / 800) * size;
-    const gutter =
-      cols.gutterUnit === 'percent'
-        ? (cols.gutterSize / 100) * size
-        : (cols.gutterSize / 800) * size;
-    const available = size - margin * 2;
-    const colWidth = (available - gutter * (cols.count - 1)) / cols.count;
+  return aspectRatio ? parseAspectRatio(aspectRatio) : { width: 800, height: 800 };
+}
 
-    const rects: React.ReactNode[] = [];
-    let x = margin;
+function getAxisGeometry(grid: FigmaRowsColsLayoutGrid, frameSize: number) {
+  const totalGutterSize = grid.gutterSize * Math.max(0, grid.count - 1);
+  const sectionSize =
+    grid.alignment === 'STRETCH'
+      ? (frameSize - grid.offset * 2 - totalGutterSize) / grid.count
+      : (grid.sectionSize ?? 0);
+  const totalSize = sectionSize * grid.count + totalGutterSize;
+  const start =
+    grid.alignment === 'CENTER'
+      ? (frameSize - totalSize) / 2
+      : grid.alignment === 'MAX'
+        ? frameSize - grid.offset - totalSize
+        : grid.offset;
 
-    for (let i = 0; i < cols.count; i++) {
-      rects.push(
-        <rect
-          key={`mini-col-${i}`}
-          x={x}
-          y={0}
-          width={Math.max(1, colWidth)}
-          height={size}
-          fill={gridColorToCSS({ ...cols.color, a: 0.4 })}
-        />
-      );
-      x += colWidth + gutter;
-    }
+  return { sectionSize, start };
+}
 
-    return rects;
-  };
-
-  const renderMiniRows = (rows: RowGridConfig) => {
-    const margin =
-      rows.marginUnit === 'percent' ? (rows.margin / 100) * size : (rows.margin / 600) * size;
-    const gutter =
-      rows.gutterUnit === 'percent'
-        ? (rows.gutterSize / 100) * size
-        : (rows.gutterSize / 600) * size;
-    const available = size - margin * 2;
-    const rowHeight = (available - gutter * (rows.count - 1)) / rows.count;
-
-    const rects: React.ReactNode[] = [];
-    let y = margin;
-
-    for (let i = 0; i < rows.count; i++) {
-      rects.push(
-        <rect
-          key={`mini-row-${i}`}
-          x={0}
-          y={y}
-          width={size}
-          height={Math.max(1, rowHeight)}
-          fill={gridColorToCSS({ ...rows.color, a: 0.2 })}
-        />
-      );
-      y += rowHeight + gutter;
-    }
-
-    return rects;
-  };
-
-  const renderMiniBaseline = (baseline: BaselineGridConfig) => {
-    const lines: React.ReactNode[] = [];
-    let y = 0;
-    const scaledHeight = (baseline.height / 800) * size * 10;
-
-    while (y < size) {
-      lines.push(
-        <line
-          key={`mini-baseline-${y}`}
-          x1={0}
-          y1={y}
-          x2={size}
-          y2={y}
-          stroke={gridColorToCSS({ ...baseline.color, a: 0.5 })}
-          strokeWidth={0.5}
-        />
-      );
-      y += scaledHeight;
-    }
-
-    return lines;
-  };
+/** Render the same quantized grids that Teul sends to Figma. */
+export const GridPreview: React.FC<GridPreviewProps> = ({
+  config,
+  width,
+  height,
+  isDark,
+  referenceDimensions,
+  applicationMode = 'fixed',
+  responsiveWidth,
+  aspectRatio,
+}) => {
+  const previewId = React.useId().replace(/:/g, '');
+  const frame = getPreviewFrameDimensions(referenceDimensions, aspectRatio);
+  const resolvedConfig = resolveGridConfigForTarget(
+    config,
+    applicationMode === 'fixed' ? undefined : frame,
+    frame,
+    applicationMode,
+    responsiveWidth
+  );
+  const grids = gridConfigToFigmaLayoutGrids(resolvedConfig, frame.width, frame.height);
+  const scale = Math.min(width / frame.width, height / frame.height);
+  const renderedWidth = frame.width * scale;
+  const renderedHeight = frame.height * scale;
+  const xOffset = (width - renderedWidth) / 2;
+  const yOffset = (height - renderedHeight) / 2;
+  const outerBackground = isDark ? '#1e1e1e' : '#e8e8e8';
+  const frameBackground = isDark ? '#2a2a2a' : '#f5f5f5';
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      <rect x={0} y={0} width={size} height={size} fill={bgColor} rx={2} />
-      {config.rows && renderMiniRows(config.rows)}
-      {config.columns && renderMiniColumns(config.columns)}
-      {config.baseline && renderMiniBaseline(config.baseline)}
+    <svg
+      data-testid="grid-preview"
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      style={{ borderRadius: '4px', overflow: 'hidden', display: 'block' }}
+    >
+      <rect width={width} height={height} fill={outerBackground} />
+      <g transform={`translate(${xOffset} ${yOffset}) scale(${scale})`}>
+        <rect width={frame.width} height={frame.height} fill={frameBackground} />
+        {grids.map((grid, gridIndex) => {
+          if (grid.pattern === 'GRID') {
+            const patternId = `${previewId}-uniform-${gridIndex}`;
+            const lineColor = gridColorToCSS({ ...grid.color, a: 0.5 });
+            return (
+              <g key={`uniform-${gridIndex}`}>
+                <defs>
+                  <pattern
+                    id={patternId}
+                    width={grid.sectionSize}
+                    height={grid.sectionSize}
+                    patternUnits="userSpaceOnUse"
+                  >
+                    <path
+                      data-grid-pattern="uniform-pattern"
+                      d={`M ${grid.sectionSize} 0 L 0 0 0 ${grid.sectionSize}`}
+                      fill="none"
+                      stroke={lineColor}
+                      strokeWidth={0.5 / scale}
+                    />
+                  </pattern>
+                </defs>
+                <rect
+                  data-grid-pattern="uniform-grid"
+                  width={frame.width}
+                  height={frame.height}
+                  fill={`url(#${patternId})`}
+                />
+              </g>
+            );
+          }
+
+          const frameSize = grid.pattern === 'COLUMNS' ? frame.width : frame.height;
+          const { sectionSize, start } = getAxisGeometry(grid, frameSize);
+          if (!Number.isFinite(sectionSize) || sectionSize <= 0) return null;
+
+          return (
+            <g key={`${grid.pattern}-${gridIndex}`}>
+              {Array.from({ length: grid.count }, (_, index) => {
+                const position = start + index * (sectionSize + grid.gutterSize);
+                return grid.pattern === 'COLUMNS' ? (
+                  <rect
+                    key={`column-${index}`}
+                    data-grid-pattern="column"
+                    x={position}
+                    y={0}
+                    width={sectionSize}
+                    height={frame.height}
+                    fill={gridColorToCSS({ ...grid.color, a: 0.35 })}
+                  />
+                ) : (
+                  <rect
+                    key={`row-${index}`}
+                    data-grid-pattern="row"
+                    x={0}
+                    y={position}
+                    width={frame.width}
+                    height={sectionSize}
+                    fill={gridColorToCSS({ ...grid.color, a: 0.2 })}
+                  />
+                );
+              })}
+            </g>
+          );
+        })}
+      </g>
     </svg>
   );
 };
+
+export const GridMiniPreview: React.FC<GridMiniPreviewProps> = ({
+  config,
+  size = 48,
+  isDark,
+  referenceDimensions,
+  applicationMode,
+  responsiveWidth,
+  aspectRatio,
+}) => (
+  <GridPreview
+    config={config}
+    width={size}
+    height={size}
+    isDark={isDark}
+    referenceDimensions={referenceDimensions}
+    applicationMode={applicationMode}
+    responsiveWidth={responsiveWidth}
+    aspectRatio={aspectRatio}
+  />
+);

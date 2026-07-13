@@ -41,14 +41,7 @@ export function sendDocumentColorProfile(): void {
 }
 
 // Figma Helpers
-export {
-  isValidHex,
-  hexToFigmaRgb,
-  getSelectedNodesWithFills,
-  getSelectedNodesWithStrokes,
-  sendSelectionInfo,
-  type GradientColor,
-} from './figmaHelpers';
+export { sendSelectionInfo } from './figmaHelpers';
 
 // Color Operations
 export {
@@ -61,13 +54,4 @@ export {
 // Grid Operations
 export { handleCreateGridFrame, handleApplyGrid } from './gridOperations';
 
-// Color System Generation
-export {
-  generateColorSystemFrames,
-  type ColorScaleData,
-  type ColorSystemData,
-} from './colorSystemGeneration';
 export { handleGenerateColorSystem } from './colorSystemTransaction';
-
-// Color Styles
-export { createColorStyles, type CreateStylesData } from './colorStyles';

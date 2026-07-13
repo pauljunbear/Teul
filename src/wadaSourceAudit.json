@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "collectionId": "wada",
+  "scope": "Reviewed differences between Teul's pinned modern 348-combination corpus and the original 360-combination A-series.",
+  "upstream": {
+    "repository": "https://github.com/mattdesl/dictionary-of-colour-combinations",
+    "commit": "c142bd0bc8049ea48db4da5eb397981f047e8ef4",
+    "path": "colors.json",
+    "rawUrl": "https://raw.githubusercontent.com/mattdesl/dictionary-of-colour-combinations/c142bd0bc8049ea48db4da5eb397981f047e8ef4/colors.json",
+    "semanticSha256": "a24e7b0101c5f1e7eed104d84b27a7c9bba147017589302d78c2992c37c2d853"
+  },
+  "corpusComparison": {
+    "originalASeries": {
+      "combinationCount": 360,
+      "distribution": {
+        "duo": 120,
+        "trio": 120,
+        "quad": 120
+      },
+      "evidence": [
+        {
+          "source": "National Diet Library bibliographic record",
+          "url": "https://ndlsearch.ndl.go.jp/books/R100000002-I000001085468",
+          "note": "Catalogues the complete 13-volume set: A.I-A.XII plus the supplement."
+        },
+        {
+          "source": "National Diet Library public-domain scan of A.IV",
+          "url": "https://commons.wikimedia.org/wiki/File:NDL1903636_%E9%85%8D%E8%89%B2%E7%B7%8F%E9%91%91_A.IV.pdf?page=62",
+          "note": "PDF page 62 shows two-color card No. 120."
+        },
+        {
+          "source": "National Diet Library public-domain scan of A.VIII",
+          "url": "https://commons.wikimedia.org/wiki/File:NDL1903656_%E9%85%8D%E8%89%B2%E7%B7%8F%E9%91%91_A.VIII.pdf?page=62",
+          "note": "PDF page 62 shows three-color card No. 120."
+        },
+        {
+          "source": "National Diet Library public-domain scan of A.XII",
+          "url": "https://commons.wikimedia.org/wiki/File:NDL1903671_%E9%85%8D%E8%89%B2%E7%B7%8F%E9%91%91_A.XII.pdf",
+          "note": "The volume contains four-color cards through No. 120; Nos. 109-120 appear on PDF pages 40, 42, 44, 46, 48, 50, 52, 54, 56, 58, 60, and 62."
+        }
+      ]
+    },
+    "modernSeigenshaSelection": {
+      "colorCount": 159,
+      "combinationCount": 348,
+      "distribution": {
+        "duo": 120,
+        "trio": 120,
+        "quad": 108
+      },
+      "publisherUrl": "https://en.seigensha.com/books/978-4-86152-247-5/",
+      "omittedOriginalCombinationIds": [
+        "A.XII-109",
+        "A.XII-110",
+        "A.XII-111",
+        "A.XII-112",
+        "A.XII-113",
+        "A.XII-114",
+        "A.XII-115",
+        "A.XII-116",
+        "A.XII-117",
+        "A.XII-118",
+        "A.XII-119",
+        "A.XII-120"
+      ],
+      "omissionFinding": {
+        "status": "verified-by-structural-comparison",
+        "assertionType": "inference",
+        "note": "The omission list is established by comparing the original A.XII scan, which reaches No. 120, with the pinned modern corpus, whose four-color sequence stops at original No. 108. It is not a quoted publisher statement."
+      }
+    }
+  },
+  "nameReviews": [
+    {
+      "bundledName": "Vandar Poel's Blue",
+      "status": "reviewed-primary-card-spelling-preserved",
+      "variants": [
+        {
+          "value": "Vandar Poel's Blue",
+          "classification": "bundled-and-primary-card-text",
+          "verified": true
+        },
+        {
+          "value": "Vander Poel's Blue",
+          "classification": "unverified-normalization-candidate",
+          "verified": false
+        },
+        {
+          "value": "Vanderpoel's Blue",
+          "classification": "external-reference-spelling",
+          "verified": true,
+          "url": "https://www.govinfo.gov/content/pkg/GOVPUB-C13-65f63ba398aa703418c5e0881f2985ab/pdf/GOVPUB-C13-65f63ba398aa703418c5e0881f2985ab.pdf"
+        }
+      ],
+      "primaryCardReadings": [
+        {
+          "volume": "A.I",
+          "combinationNumber": 5,
+          "pdfPage": 11,
+          "transcription": "Vandar Poel's Blue",
+          "url": "https://commons.wikimedia.org/wiki/File:NDL1903618_%E9%85%8D%E8%89%B2%E7%B7%8F%E9%91%91_A.I.pdf?page=11"
+        },
+        {
+          "volume": "A.XII",
+          "combinationNumber": 103,
+          "pdfPage": 28,
+          "transcription": "Vandar Poel's Blue",
+          "url": "https://commons.wikimedia.org/wiki/File:NDL1903671_%E9%85%8D%E8%89%B2%E7%B7%8F%E9%91%91_A.XII.pdf?page=28"
+        }
+      ],
+      "decision": "Preserve the bundled spelling. Do not present the unverified spaced Vander variant as primary-source text or silently normalize to the external-reference spelling."
+    }
+  ],
+  "unresolvedExceptions": [
+    {
+      "bundledName": "Dull Violet Black",
+      "field": "cmyk[1]",
+      "channel": "magenta",
+      "bundledValue": 106,
+      "status": "unresolved-publisher-verification-required",
+      "decision": "Preserve the pinned upstream value; do not clamp or call it verified until checked against the licensed Seigensha edition."
+    }
+  ],
+  "disclosureSummary": "The original A-series has 360 combinations; the modern Seigensha selection has 348 and omits A.XII four-color Nos. 109-120. Bundled names are modern upstream transcriptions and are not classified wholesale as verified primary-source text."
+}

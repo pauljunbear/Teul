@@ -1,7 +1,7 @@
 # Teul End-To-End Implementation Plan
 
 Status: Current automated remediation recorded; source-dependent and manual acceptance work remains
-Date: 2026-06-06
+Date: 2026-07-12
 
 This plan is governed by `docs/PRD.md` and `docs/SOURCE_PROVENANCE.md`.
 Correctness and source truth come before visual refactoring.
@@ -13,8 +13,9 @@ Correctness and source truth come before visual refactoring.
 - The generated-scale matrix covers 269 historical source colors in both modes:
   536 of 538 outputs validate and build successfully. Wada `White` returns the
   two explicit failures, one per mode.
-- The grid-fit matrix covers 65 presets across 12 required frame sizes: 692 of
-  780 cases fit, 32 warn, and 56 fail with actionable recommendations.
+- The grid-fit matrix covers 65 presets across 12 required frame sizes: 555 of
+  780 cases fit, 22 warn, and 203 intentional canonical/width-contract failures
+  with actionable recommendations.
 - These are automated results only. Manual Figma acceptance is not recorded as
   passing. Werner's bundled data is now independently derived from a pinned
   public-domain Getty scan.
@@ -28,15 +29,17 @@ Correctness and source truth come before visual refactoring.
 - Added machine-readable historical-source and per-preset grid provenance,
   including uncertainty, evidence strength, derivation, and credits.
 - Expanded the bundled grid catalog with 31 directly sourced historical,
-  editorial, poster, and product-system constructions. Documented pixel
-  geometry now retains its fixed measurements when presets are applied or saved.
+  editorial, poster, and product-system constructions. Every bundled preset now
+  declares reference dimensions and an application mode; source-faithful
+  reconstructions block noncanonical frames instead of distorting them.
 - Fixed grid `sectionSize`, fixed-guide sizing, saved-grid application,
   multi-selection reporting, and per-target percentage conversion. Fit analysis
   and backend application now use the same target resolver.
 - Added fit analysis and actionable recommendations across the complete preset
-  and frame-size matrix, with apply blocked when any eligible selected target
-  fails. Current totals are 692 fit, 32 warning, and 56 actionable failure
-  cases.
+  and frame-size matrix. Analysis uses the production resolver after integer
+  quantization, and apply is blocked when any eligible target fails. Current
+  totals are 555 fit, 22 warning, and 203 actionable canonical/width-contract
+  failures.
 - Hardened saved-grid import/storage validation and surfaced persistence
   failures.
 - Rejected invalid hex input instead of silently coercing it to black.
@@ -62,6 +65,8 @@ Correctness and source truth come before visual refactoring.
   types, unused dependencies, network permissions, and secret injection.
 - Removed the emitted duplicate UI JavaScript artifact and added an inline
   Figma UI bundle budget.
+- Added compact runtime projections for the two large source datasets while
+  preserving their reviewed JSON files and runtime object shapes unchanged.
 - Moved CI to supported Node versions.
 - Replaced the Werner modern-recreation dependency with an independent
   public-domain transcription and reproducible scan-sampling workflow; removed
@@ -74,10 +79,9 @@ Correctness and source truth come before visual refactoring.
 - Implement actual profile conversion only if Teul intends to transform values
   for Display P3 documents; current behavior intentionally discloses and
   preserves sRGB values.
-- Generate compact runtime projections of the source datasets while preserving
-  the reviewed source JSON unchanged.
-- Extract a single pure color-system payload builder and continue splitting the
-  largest presentation/backend modules.
+- Continue splitting the largest presentation/backend modules; color-system
+  submission now reuses the canonical export-scale model instead of rebuilding
+  a second payload.
 - Complete the manual Figma acceptance matrix for profiles, mixed selections,
   locks, rotations, existing guides/styles, and resize behavior.
 

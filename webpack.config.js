@@ -68,6 +68,7 @@ class EmitLegalArtifactsPlugin {
           const artifacts = [
             { source: 'LICENSE', output: 'LICENSE' },
             { source: 'THIRD_PARTY_NOTICES.md', output: 'THIRD_PARTY_NOTICES.md' },
+            { source: 'APCA_LICENSE.md', output: 'APCA_LICENSE.md' },
             { source: 'docs/SOURCE_PROVENANCE.md', output: 'SOURCE_PROVENANCE.md' },
           ];
 
@@ -102,7 +103,13 @@ module.exports = (env, argv) => ({
         exclude: /node_modules/,
       },
       {
+        test: /(?:colors|wernerColors)\.json$/,
+        type: 'javascript/auto',
+        use: path.resolve(__dirname, 'scripts/compact-color-json-loader.js'),
+      },
+      {
         test: /\.json$/,
+        exclude: /(?:colors|wernerColors)\.json$/,
         type: 'json',
         parser: {
           parse: JSON.parse,

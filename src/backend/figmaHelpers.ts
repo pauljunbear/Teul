@@ -44,17 +44,34 @@ export function hexToFigmaRgb(hex: string): RGB {
 // Selection Helpers
 // ============================================
 
+/**
+ * Figma's plugin API permits property writes to locked nodes. Treat a node as
+ * non-editable when it or any scene-node ancestor is locked so Teul respects
+ * the lock boundary shown in the editor.
+ */
+export function isNodeOrAncestorLocked(node: BaseNode): boolean {
+  let current: BaseNode | null = node;
+
+  while (current) {
+    if ('locked' in current && current.locked === true) return true;
+    current = current.parent;
+  }
+
+  return false;
+}
+
 // Get current selection with fills
 export function getSelectedNodesWithFills(): (SceneNode & { fills: Paint[] })[] {
   return figma.currentPage.selection.filter(
-    (node): node is SceneNode & { fills: Paint[] } => 'fills' in node
+    (node): node is SceneNode & { fills: Paint[] } => 'fills' in node && Array.isArray(node.fills)
   );
 }
 
 // Get current selection with strokes
 export function getSelectedNodesWithStrokes(): (SceneNode & { strokes: Paint[] })[] {
   return figma.currentPage.selection.filter(
-    (node): node is SceneNode & { strokes: Paint[] } => 'strokes' in node
+    (node): node is SceneNode & { strokes: Paint[] } =>
+      'strokes' in node && Array.isArray(node.strokes)
   );
 }
 

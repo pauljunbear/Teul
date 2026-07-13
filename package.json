@@ -10,7 +10,7 @@
   "description": "Teul — Design foundations for Figma. Historic color palettes and Swiss-style grids.",
   "main": "dist/code.js",
   "scripts": {
-    "audit": "npm audit --audit-level=high",
+    "audit": "npm audit --audit-level=moderate",
     "build": "webpack --mode=production",
     "assert:artifacts": "node scripts/assert-build-artifacts.js",
     "dev": "webpack --mode=development --watch",
@@ -21,6 +21,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "verify:wada": "node scripts/verify-wada-upstream.mjs",
     "werner:sample": "node scripts/werner-sampling/sample.mjs",
     "prepare": "husky"
   },

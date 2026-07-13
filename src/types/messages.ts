@@ -10,6 +10,8 @@ import type {
 import type {
   FigmaRowsColsLayoutGrid,
   FigmaUniformLayoutGrid,
+  GridApplicationMode,
+  GridResponsiveWidth,
   GridConfig,
   GridSelectionTarget,
 } from './grid';
@@ -45,21 +47,18 @@ export interface ApplyFillMessage {
   type: 'apply-fill';
   hex: string;
   name: string;
-  rgb?: number[];
 }
 
 export interface ApplyStrokeMessage {
   type: 'apply-stroke';
   hex: string;
   name: string;
-  rgb?: number[];
 }
 
 export interface CreateStyleMessage {
   type: 'create-style';
   hex: string;
   name: string;
-  rgb?: number[];
 }
 
 export interface GetSelectionForGridMessage {
@@ -96,8 +95,6 @@ export interface CreateGridFrameMessage {
   frameName: string;
   width: number;
   height: number;
-  includeImage?: boolean;
-  imageData?: string;
   positionNearSelection?: boolean;
 }
 
@@ -106,8 +103,26 @@ export interface ApplyGridMessage {
   requestId: string;
   sourceConfig: GridConfig;
   sourceDimensions?: { width: number; height: number };
+  applicationMode: GridApplicationMode;
+  responsiveWidth?: GridResponsiveWidth;
   expectedTargetIds: string[];
   replaceExisting: boolean;
+}
+
+export interface GetGridStorageMessage {
+  type: 'get-grid-storage';
+  requestId: string;
+}
+
+export interface SetGridStorageMessage {
+  type: 'set-grid-storage';
+  requestId: string;
+  value: string;
+}
+
+export interface DeleteGridStorageMessage {
+  type: 'delete-grid-storage';
+  requestId: string;
 }
 
 /**
@@ -123,7 +138,10 @@ export type UIToPluginMessage =
   | NotifyMessage
   | GenerateColorSystemMessage
   | CreateGridFrameMessage
-  | ApplyGridMessage;
+  | ApplyGridMessage
+  | GetGridStorageMessage
+  | SetGridStorageMessage
+  | DeleteGridStorageMessage;
 
 // ============================================
 // Plugin → UI Messages
@@ -165,5 +183,14 @@ export interface GridAppliedMessage {
   frameName?: string;
   frameWidth?: number;
   frameHeight?: number;
+  error?: string;
+}
+
+export interface GridStorageResultMessage {
+  type: 'grid-storage-result';
+  requestId: string;
+  operation: 'get' | 'set' | 'delete';
+  success: boolean;
+  value?: string | null;
   error?: string;
 }

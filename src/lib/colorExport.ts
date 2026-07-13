@@ -36,7 +36,7 @@ export interface ExportScales {
   [key: string]: ExportScale | undefined;
 }
 
-export type ExportSemanticPolicy = SemanticColorPolicyReport;
+type ExportSemanticPolicy = SemanticColorPolicyReport;
 
 interface ExactRadixExportMetadata {
   packageName: '@radix-ui/colors';

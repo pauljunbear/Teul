@@ -33,7 +33,7 @@ const PRESET_ADAPTATION_NOTES: Record<string, string> = {
   'editorial-book':
     'Teul-defined single-column page suggestion with equal margins; it does not encode an independent binding margin.',
   'editorial-2col-text': 'Teul-defined two-column reading layout using equal proportional margins.',
-  'poster-dramatic': 'Teul-defined offset poster composition using uniform columns and gutters.',
+  'poster-dramatic': 'Teul-defined bold poster composition using uniform columns and gutters.',
   'poster-cinema':
     'Teul-defined wide-frame poster suggestion; it is not derived from a specific cinema-poster artifact.',
   'poster-minimal': 'Teul-defined single-column composition with generous equal margins.',
@@ -72,6 +72,43 @@ const PRESET_ADAPTATION_NOTES: Record<string, string> = {
     'Combines Teul-defined equal modules with a native square 8px Figma GRID.',
 };
 
+const LEGACY_PRESET_REFERENCE_DIMENSIONS: Record<string, { width: number; height: number }> = {
+  'swiss-4col': { width: 794, height: 1123 },
+  'swiss-6col': { width: 800, height: 1200 },
+  'swiss-8col-asym': { width: 794, height: 1123 },
+  'swiss-3plus3': { width: 1440, height: 810 },
+  'swiss-golden': { width: 800, height: 1294 },
+  'swiss-poster': { width: 794, height: 1123 },
+  'swiss-2col-wide': { width: 1080, height: 1080 },
+  'editorial-magazine': { width: 800, height: 1200 },
+  'editorial-newspaper': { width: 900, height: 1200 },
+  'editorial-book': { width: 800, height: 1200 },
+  'editorial-2col-text': { width: 816, height: 1056 },
+  'poster-dramatic': { width: 794, height: 1123 },
+  'poster-cinema': { width: 1410, height: 600 },
+  'poster-minimal': { width: 794, height: 1123 },
+  'poster-event': { width: 794, height: 1123 },
+  'web-12col': { width: 1440, height: 810 },
+  'web-8col': { width: 1440, height: 810 },
+  'web-16col': { width: 1440, height: 810 },
+  'web-4col-mobile': { width: 390, height: 844 },
+  'web-6col-tablet': { width: 1024, height: 768 },
+  'modular-4x4': { width: 1080, height: 1080 },
+  'modular-5x7': { width: 794, height: 1123 },
+  'modular-6x8': { width: 900, height: 1200 },
+  'modular-3x5': { width: 720, height: 1200 },
+  'modular-8x8-dense': { width: 1080, height: 1080 },
+  'baseline-4px': { width: 800, height: 800 },
+  'baseline-8px': { width: 800, height: 800 },
+  'baseline-12px': { width: 800, height: 800 },
+  'baseline-16px': { width: 800, height: 800 },
+  'baseline-24px': { width: 800, height: 800 },
+  'combined-6col-8px': { width: 1440, height: 810 },
+  'combined-12col-8px': { width: 1440, height: 810 },
+  'combined-4col-12px': { width: 794, height: 1123 },
+  'combined-modular-8px': { width: 1080, height: 1080 },
+};
+
 function addBundledPresetProvenance(preset: GridPreset): GridPreset {
   if (preset.provenance) {
     return preset;
@@ -91,6 +128,25 @@ function addBundledPresetProvenance(preset: GridPreset): GridPreset {
       evidence: 'unsourced',
       adaptationNotes,
     },
+  };
+}
+
+function addBundledPresetContract(preset: GridPreset): GridPreset {
+  const withProvenance = addBundledPresetProvenance(preset);
+
+  if (withProvenance.referenceDimensions && withProvenance.applicationMode) {
+    return withProvenance;
+  }
+
+  const referenceDimensions = LEGACY_PRESET_REFERENCE_DIMENSIONS[withProvenance.id];
+  if (!referenceDimensions) {
+    throw new Error(`Missing reference dimensions for bundled grid preset: ${withProvenance.id}`);
+  }
+
+  return {
+    ...withProvenance,
+    referenceDimensions,
+    applicationMode: 'fixed',
   };
 }
 
@@ -346,10 +402,10 @@ const editorialGrids: GridPreset[] = [
 const posterGrids: GridPreset[] = [
   {
     id: 'poster-dramatic',
-    name: 'Dramatic Poster',
-    description: 'Bold asymmetric grid for dramatic poster compositions.',
+    name: 'Dramatic Four-Column',
+    description: 'Bold uniform grid for dramatic poster compositions.',
     category: 'poster',
-    tags: ['dramatic', 'bold', 'asymmetric', 'expressive'],
+    tags: ['dramatic', 'bold', 'uniform', 'expressive'],
     aspectRatio: '1:√2',
     config: {
       columns: {
@@ -930,10 +986,10 @@ export const GRID_PRESETS: GridPreset[] = [
   ...baselineGrids,
   ...combinedGrids,
   ...RESEARCH_GRID_PRESETS,
-].map(addBundledPresetProvenance);
+].map(addBundledPresetContract);
 
 /** Grid presets organized by category for easy filtering */
-export const PRESETS_BY_CATEGORY: Record<GridCategory, GridPreset[]> = {
+const PRESETS_BY_CATEGORY: Record<GridCategory, GridPreset[]> = {
   'classic-swiss': GRID_PRESETS.filter(preset => preset.category === 'classic-swiss'),
   editorial: GRID_PRESETS.filter(preset => preset.category === 'editorial'),
   poster: GRID_PRESETS.filter(preset => preset.category === 'poster'),

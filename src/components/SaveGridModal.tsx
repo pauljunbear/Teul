@@ -4,6 +4,7 @@ import type {
   GridConfig,
   GridCategory,
   GridDimensions,
+  GridResponsiveWidth,
   SavedGrid,
 } from '../types/grid';
 import { GridMiniPreview } from './GridPreview';
@@ -23,6 +24,8 @@ interface SaveGridModalProps {
   referenceDimensions?: GridDimensions;
   /** Pixel-measurement behavior inherited from a bundled preset */
   applicationMode?: GridApplicationMode;
+  /** Responsive width behavior inherited from a bundled named system. */
+  responsiveWidth?: GridResponsiveWidth;
   /** Dark mode */
   isDark: boolean;
   /** Callback when modal is closed */
@@ -76,6 +79,7 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
   aspectRatio,
   referenceDimensions,
   applicationMode,
+  responsiveWidth,
   isDark,
   onClose,
   onSave,
@@ -126,7 +130,7 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
   }, [config, source]);
 
   // Handle save
-  const handleSave = React.useCallback(() => {
+  const handleSave = React.useCallback(async () => {
     if (!name.trim() || isSaving) return;
 
     setIsSaving(true);
@@ -146,9 +150,10 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
         aspectRatio,
         referenceDimensions,
         applicationMode,
+        responsiveWidth,
       });
 
-      addSavedGrid(savedGrid);
+      await addSavedGrid(savedGrid);
 
       setIsSaved(true);
 
@@ -175,6 +180,7 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
     aspectRatio,
     referenceDimensions,
     applicationMode,
+    responsiveWidth,
     onSave,
     onClose,
   ]);
@@ -190,7 +196,7 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
         dialogRef.current?.contains(document.activeElement)
       ) {
         e.preventDefault();
-        handleSave();
+        void handleSave();
       }
     };
 
@@ -354,7 +360,15 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
               borderRadius: '8px',
             }}
           >
-            <GridMiniPreview config={config} size={80} isDark={isDark} />
+            <GridMiniPreview
+              config={config}
+              size={80}
+              isDark={isDark}
+              referenceDimensions={referenceDimensions}
+              applicationMode={applicationMode}
+              responsiveWidth={responsiveWidth}
+              aspectRatio={aspectRatio}
+            />
           </div>
 
           {/* Form Fields */}
@@ -596,5 +610,3 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
     </div>
   );
 };
-
-export default SaveGridModal;

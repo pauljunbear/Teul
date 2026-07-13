@@ -123,6 +123,7 @@ function applyGridMessage(
     type: 'apply-grid',
     requestId: 'grid-apply-test',
     sourceConfig: { columns: sourceColumns },
+    applicationMode: 'fixed',
     expectedTargetIds,
     replaceExisting: true,
     ...overrides,
@@ -204,44 +205,109 @@ describe('handleCreateGridFrame', () => {
     expect(figma.notify).toHaveBeenCalledWith('Failed to create grid frame');
   });
 
-  it('removes partial image and frame nodes when image setup fails', async () => {
-    const frame = createLayoutGridNode('New Frame');
-    const imageRect = createIneligibleNode('Reference Image') as RectangleNode;
+  it('removes a partial frame when layout-grid assignment fails', async () => {
+    const frame = createLayoutGridNode('New Frame', [], ['fail-before-write']);
     Object.assign(frame, {
       resize: vi.fn(),
-      appendChild: vi.fn(() => {
-        throw new Error('append failed');
-      }),
       x: 0,
       y: 0,
-    });
-    Object.assign(imageRect, {
-      resize: vi.fn(),
-      removed: false,
-      remove: vi.fn(),
     });
     installFigmaMock([]);
     Object.assign(figma, {
       createFrame: vi.fn(() => frame),
-      createImage: vi.fn(() => ({ hash: 'image-hash' })),
-      createRectangle: vi.fn(() => imageRect),
     });
 
     await handleCreateGridFrame({
       config: { baseline: fallbackBaseline },
       width: 800,
       height: 600,
-      includeImage: true,
-      imageData: 'AQ==',
     });
 
-    expect(imageRect.remove).toHaveBeenCalled();
-    expect(frame.remove).toHaveBeenCalled();
+    expect(frame.removed).toBe(true);
     expect(figma.currentPage.selection).toEqual([]);
   });
 });
 
 describe('handleApplyGrid', () => {
+  it('rejects all targets before mutation when a selected frame is locked', async () => {
+    const existingGrid = { pattern: 'GRID', sectionSize: 6, visible: true, color } as LayoutGrid;
+    const unlocked = createLayoutGridNode('Unlocked', [existingGrid]);
+    const locked = Object.assign(createLayoutGridNode('Locked', [existingGrid]), { locked: true });
+    const { notify, postMessage } = installFigmaMock([unlocked, locked]);
+
+    await handleApplyGrid(
+      applyGridMessage(['unlocked', 'locked'], {
+        sourceConfig: { baseline: sourceBaseline },
+      })
+    );
+
+    expect(unlocked.getLayoutGrids()).toEqual([existingGrid]);
+    expect(locked.getLayoutGrids()).toEqual([existingGrid]);
+    expect(notify).toHaveBeenCalledWith('Grid apply rejected: unlock the selected target first');
+    expect(postMessage).toHaveBeenCalledWith({
+      type: 'grid-applied',
+      requestId: 'grid-apply-test',
+      success: false,
+      appliedCount: 0,
+      skippedCount: 0,
+      failedCount: 2,
+      message: 'Grid apply rejected: unlock the selected target first',
+      error: 'Locked grid targets cannot be edited',
+    });
+  });
+
+  it('rejects a grid target inside a locked component before mutation', async () => {
+    const existingGrid = { pattern: 'GRID', sectionSize: 6, visible: true, color } as LayoutGrid;
+    const nestedFrame = Object.assign(createLayoutGridNode('Nested Frame', [existingGrid]), {
+      parent: { id: 'component', type: 'COMPONENT', locked: true, parent: null },
+    });
+    const { postMessage } = installFigmaMock([nestedFrame]);
+
+    await handleApplyGrid(
+      applyGridMessage(['nested-frame'], {
+        sourceConfig: { baseline: sourceBaseline },
+      })
+    );
+
+    expect(nestedFrame.getLayoutGrids()).toEqual([existingGrid]);
+    expect(postMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+        appliedCount: 0,
+        failedCount: 1,
+        error: 'Locked grid targets cannot be edited',
+      })
+    );
+  });
+
+  it('continues to support unlocked components and instances that expose layout grids', async () => {
+    const component = Object.assign(createLayoutGridNode('Component'), {
+      type: 'COMPONENT' as const,
+      locked: false,
+    });
+    const instance = Object.assign(createLayoutGridNode('Instance'), {
+      type: 'INSTANCE' as const,
+      locked: false,
+    });
+    const { postMessage } = installFigmaMock([component, instance]);
+
+    await handleApplyGrid(
+      applyGridMessage(['component', 'instance'], {
+        sourceConfig: { baseline: sourceBaseline },
+      })
+    );
+
+    expect(component.getLayoutGrids()).toEqual([
+      expect.objectContaining({ pattern: 'GRID', sectionSize: 10 }),
+    ]);
+    expect(instance.getLayoutGrids()).toEqual([
+      expect.objectContaining({ pattern: 'GRID', sectionSize: 10 }),
+    ]);
+    expect(postMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ success: true, appliedCount: 2, failedCount: 0 })
+    );
+  });
+
   it('rolls back prior targets when a later target write fails', async () => {
     const firstExisting = { pattern: 'GRID', sectionSize: 6, visible: true, color } as LayoutGrid;
     const first = createLayoutGridNode('First', [firstExisting]);
@@ -515,6 +581,7 @@ describe('handleApplyGrid', () => {
       requestId: 'grid-apply-test',
       sourceConfig: payload.sourceConfig,
       sourceDimensions: payload.sourceDimensions,
+      applicationMode: 'fixed',
       expectedTargetIds: ['frame'],
       replaceExisting: true,
     } as ApplyGridMessage);
@@ -590,6 +657,7 @@ describe('handleApplyGrid', () => {
           color,
         },
       },
+      applicationMode: 'fixed',
       expectedTargetIds: ['wide', 'narrow'],
       replaceExisting: true,
     });
@@ -622,6 +690,7 @@ describe('handleApplyGrid', () => {
           color,
         },
       },
+      applicationMode: 'fixed',
       expectedTargetIds: ['linkedin-cover'],
       replaceExisting: true,
     });
@@ -669,6 +738,7 @@ describe('handleApplyGrid', () => {
         },
       },
       sourceDimensions: { width: 1440, height: 900 },
+      applicationMode: 'scale-from-reference',
       expectedTargetIds: ['wide', 'narrow'],
       replaceExisting: true,
     });
@@ -678,6 +748,60 @@ describe('handleApplyGrid', () => {
     );
     expect(narrow.getLayoutGrids()[0]).toEqual(
       expect.objectContaining({ pattern: 'COLUMNS', gutterSize: 5, offset: 4 })
+    );
+  });
+
+  it('applies responsive centered-content geometry without constraining frame height', async () => {
+    const frame = createLayoutGridNode('Responsive');
+    Object.assign(frame, { width: 1600, height: 2000 });
+    installFigmaMock([frame]);
+
+    await handleApplyGrid({
+      type: 'apply-grid',
+      requestId: 'grid-apply-responsive',
+      sourceConfig: {
+        columns: {
+          count: 12,
+          gutterSize: 24,
+          gutterUnit: 'px',
+          margin: 72,
+          marginUnit: 'px',
+          alignment: 'STRETCH',
+          visible: true,
+          color,
+        },
+      },
+      applicationMode: 'responsive-width',
+      responsiveWidth: { min: 1400, maxContentWidth: 1320, contentInset: 12 },
+      expectedTargetIds: ['responsive'],
+      replaceExisting: true,
+    });
+
+    expect(frame.getLayoutGrids()[0]).toEqual(
+      expect.objectContaining({ pattern: 'COLUMNS', gutterSize: 24, offset: 152 })
+    );
+  });
+
+  it('blocks a source-faithful grid on a noncanonical frame before mutation', async () => {
+    const existingGrid = { pattern: 'GRID', sectionSize: 4, visible: true, color } as LayoutGrid;
+    const frame = createLayoutGridNode('Wrong Size', [existingGrid]);
+    Object.assign(frame, { width: 1160, height: 1160 });
+    const { postMessage } = installFigmaMock([frame]);
+
+    await handleApplyGrid(
+      applyGridMessage(['wrong-size'], {
+        sourceDimensions: { width: 580, height: 580 },
+        applicationMode: 'canonical-only',
+      })
+    );
+
+    expect(frame.getLayoutGrids()).toEqual([existingGrid]);
+    expect(postMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+        appliedCount: 0,
+        error: expect.stringContaining('580\u00d7580px'),
+      })
     );
   });
 });

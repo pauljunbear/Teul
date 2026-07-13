@@ -16,7 +16,7 @@ export interface WernerColorGroup {
   name: string;
 }
 
-export interface WernerText {
+interface WernerText {
   name: string;
   description: string;
   animal: string;
@@ -26,7 +26,7 @@ export interface WernerText {
 
 export type WernerTextField = keyof WernerText;
 
-export interface WernerTextNormalization {
+interface WernerTextNormalization {
   field: WernerTextField;
   source: string;
   normalized: string;

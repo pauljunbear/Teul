@@ -1,12 +1,12 @@
 import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import wadaColors from '../../colors.json';
+import wadaSourceAudit from '../../wadaSourceAudit.json';
 import wernerColors from '../../wernerColors.json';
 import wernerSourceManifest from '../../../scripts/werner-sampling/source-manifest.json';
 
 const WADA_COMBINATION_COUNT = 348;
 const WERNER_COLOR_COUNT = 110;
-const WADA_SEMANTIC_SHA256 = 'a24e7b0101c5f1e7eed104d84b27a7c9bba147017589302d78c2992c37c2d853';
 const WERNER_SEMANTIC_SHA256 = '16863a032a868cbcdd32f18027f0505228fcaceec15f64a696c6e2f9cebd2fa5';
 
 const semanticHash = (value: unknown): string =>
@@ -28,11 +28,74 @@ for (const color of wadaColors) {
 
 describe('Sanzo Wada source integrity', () => {
   it('matches the reviewed upstream semantic snapshot', () => {
-    expect(semanticHash(wadaColors)).toBe(WADA_SEMANTIC_SHA256);
+    expect(semanticHash(wadaColors)).toBe(wadaSourceAudit.upstream.semanticSha256);
+    expect(wadaSourceAudit.upstream.commit).toMatch(/^[0-9a-f]{40}$/);
+  });
+
+  it('records the original 360 combinations and the modern twelve-card omission', () => {
+    expect(wadaSourceAudit.corpusComparison.originalASeries).toMatchObject({
+      combinationCount: 360,
+      distribution: { duo: 120, trio: 120, quad: 120 },
+    });
+    expect(wadaSourceAudit.corpusComparison.modernSeigenshaSelection).toMatchObject({
+      colorCount: 159,
+      combinationCount: 348,
+      distribution: { duo: 120, trio: 120, quad: 108 },
+    });
+    expect(
+      wadaSourceAudit.corpusComparison.modernSeigenshaSelection.omittedOriginalCombinationIds
+    ).toEqual(Array.from({ length: 12 }, (_, index) => `A.XII-${109 + index}`));
+    expect(
+      wadaSourceAudit.corpusComparison.originalASeries.combinationCount -
+        wadaSourceAudit.corpusComparison.modernSeigenshaSelection.omittedOriginalCombinationIds
+          .length
+    ).toBe(wadaSourceAudit.corpusComparison.modernSeigenshaSelection.combinationCount);
+  });
+
+  it('preserves reviewed name spelling without overstating normalization evidence', () => {
+    const nameReview = wadaSourceAudit.nameReviews.find(
+      review => review.bundledName === "Vandar Poel's Blue"
+    );
+    expect(nameReview).toBeDefined();
+    expect(wadaColors.some(color => color.name === nameReview?.bundledName)).toBe(true);
+    expect(nameReview?.primaryCardReadings.map(reading => reading.transcription)).toEqual([
+      "Vandar Poel's Blue",
+      "Vandar Poel's Blue",
+    ]);
+    expect(nameReview?.variants).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          value: "Vander Poel's Blue",
+          classification: 'unverified-normalization-candidate',
+          verified: false,
+        }),
+        expect.objectContaining({
+          value: "Vanderpoel's Blue",
+          classification: 'external-reference-spelling',
+          verified: true,
+        }),
+      ])
+    );
+  });
+
+  it('keeps Dull Violet Black M=106 explicitly unresolved', () => {
+    const dullVioletBlack = wadaColors.find(color => color.name === 'Dull Violet Black');
+    const exception = wadaSourceAudit.unresolvedExceptions.find(
+      item => item.bundledName === 'Dull Violet Black'
+    );
+    expect(dullVioletBlack?.cmyk[1]).toBe(106);
+    expect(exception).toMatchObject({
+      field: 'cmyk[1]',
+      channel: 'magenta',
+      bundledValue: 106,
+      status: 'unresolved-publisher-verification-required',
+    });
   });
 
   it('preserves 159 colors and every combination ID from 1 through 348', () => {
-    expect(wadaColors).toHaveLength(159);
+    expect(wadaColors).toHaveLength(
+      wadaSourceAudit.corpusComparison.modernSeigenshaSelection.colorCount
+    );
     expect([...wadaCombinationMembers.keys()].sort((a, b) => a - b)).toEqual(
       expectedWadaCombinationIds
     );

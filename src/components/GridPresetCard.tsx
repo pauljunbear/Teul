@@ -1,13 +1,7 @@
 import * as React from 'react';
-import type {
-  GridPreset,
-  GridConfig,
-  ColumnGridConfig,
-  RowGridConfig,
-  BaselineGridConfig,
-} from '../types/grid';
+import type { GridPreset } from '../types/grid';
 import type { GridFitAnalysis } from '../lib/gridFit';
-import { gridColorToCSS } from '../lib/gridUtils';
+import { GridPreview } from './GridPreview';
 
 interface GridPresetCardProps {
   preset: GridPreset;
@@ -17,143 +11,6 @@ interface GridPresetCardProps {
   isDark: boolean;
   fit?: GridFitAnalysis;
 }
-
-// ============================================
-// SVG Grid Preview Component
-// ============================================
-
-interface GridPreviewSVGProps {
-  config: GridConfig;
-  width: number;
-  height: number;
-  isDark: boolean;
-}
-
-const GridPreviewSVG: React.FC<GridPreviewSVGProps> = ({ config, width, height, isDark }) => {
-  const bgColor = isDark ? '#2a2a2a' : '#f5f5f5';
-
-  // Calculate column positions - fill entire width properly
-  const renderColumns = (columns: ColumnGridConfig) => {
-    // Convert margin to pixels
-    const marginPx =
-      columns.marginUnit === 'percent'
-        ? (columns.margin / 100) * width
-        : columns.margin * (width / 200); // Scale for preview
-
-    // Convert gutter to pixels
-    const gutterPx =
-      columns.gutterUnit === 'percent'
-        ? (columns.gutterSize / 100) * width
-        : columns.gutterSize * (width / 200); // Scale for preview
-
-    // Available width after both margins
-    const availableWidth = width - marginPx * 2;
-
-    // Total gutter width (n-1 gutters)
-    const totalGutterWidth = Math.max(0, gutterPx * (columns.count - 1));
-
-    // Each column width
-    const columnWidth = Math.max(1, (availableWidth - totalGutterWidth) / columns.count);
-
-    const rects: React.ReactNode[] = [];
-    let x = marginPx;
-
-    for (let i = 0; i < columns.count; i++) {
-      rects.push(
-        <rect
-          key={`col-${i}`}
-          x={x}
-          y={0}
-          width={columnWidth}
-          height={height}
-          fill={gridColorToCSS({ ...columns.color, a: 0.35 })}
-        />
-      );
-      x += columnWidth + gutterPx;
-    }
-
-    return rects;
-  };
-
-  // Calculate row positions
-  const renderRows = (rows: RowGridConfig) => {
-    const marginPercent =
-      rows.marginUnit === 'percent' ? rows.margin : (rows.margin / height) * 100;
-    const gutterPercent =
-      rows.gutterUnit === 'percent' ? rows.gutterSize : (rows.gutterSize / height) * 100;
-
-    const marginPx = (marginPercent / 100) * height;
-    const gutterPx = (gutterPercent / 100) * height;
-    const availableHeight = height - marginPx * 2;
-    const totalGutterHeight = gutterPx * (rows.count - 1);
-    const rowHeight = (availableHeight - totalGutterHeight) / rows.count;
-
-    const rects: React.ReactNode[] = [];
-    let y = marginPx;
-
-    for (let i = 0; i < rows.count; i++) {
-      rects.push(
-        <rect
-          key={`row-${i}`}
-          x={0}
-          y={y}
-          width={width}
-          height={rowHeight}
-          fill={gridColorToCSS({ ...rows.color, a: 0.15 })}
-        />
-      );
-      y += rowHeight + gutterPx;
-    }
-
-    return rects;
-  };
-
-  // Render baseline grid lines
-  const renderBaseline = (baseline: BaselineGridConfig) => {
-    const lines: React.ReactNode[] = [];
-    let y = 0;
-    let i = 0;
-
-    while (y < height) {
-      lines.push(
-        <line
-          key={`baseline-${i}`}
-          x1={0}
-          y1={y}
-          x2={width}
-          y2={y}
-          stroke={gridColorToCSS({ ...baseline.color, a: 0.4 })}
-          strokeWidth={0.5}
-        />
-      );
-      y += baseline.height;
-      i++;
-    }
-
-    return lines;
-  };
-
-  return (
-    <svg
-      width={width}
-      height={height}
-      viewBox={`0 0 ${width} ${height}`}
-      style={{ borderRadius: '4px', overflow: 'hidden' }}
-    >
-      {/* Background */}
-      <rect x={0} y={0} width={width} height={height} fill={bgColor} />
-
-      {/* Rows (render first so columns overlay) */}
-      {config.rows && renderRows(config.rows)}
-
-      {/* Columns */}
-      {config.columns && renderColumns(config.columns)}
-
-      {/* Baseline */}
-      {config.baseline && renderBaseline(config.baseline)}
-    </svg>
-  );
-};
 
 // ============================================
 // Grid Preset Card Component
@@ -229,24 +86,7 @@ export const GridPresetCard: React.FC<GridPresetCardProps> = ({
     );
   };
 
-  // Calculate preview height based on aspect ratio - compact
-  const getPreviewHeight = () => {
-    if (!preset.aspectRatio) return Math.round(cardWidth * 0.55);
-
-    // Parse aspect ratio
-    if (preset.aspectRatio.includes('√2')) return Math.round(cardWidth * 1.2);
-    if (preset.aspectRatio.includes('9:16')) return Math.round(cardWidth * 1.2);
-    if (preset.aspectRatio.includes('16:9')) return Math.round(cardWidth * 0.5);
-    if (preset.aspectRatio.includes('2:3')) return Math.round(cardWidth * 1.1);
-    if (preset.aspectRatio.includes('3:4')) return Math.round(cardWidth * 0.9);
-    if (preset.aspectRatio.includes('4:3')) return Math.round(cardWidth * 0.65);
-    if (preset.aspectRatio.includes('1:1')) return Math.round(cardWidth * 0.8);
-
-    return Math.round(cardWidth * 0.6); // Default
-  };
-
-  // Limit preview height for tall ratios - more compact
-  const previewHeight = Math.min(getPreviewHeight(), 85);
+  const previewHeight = Math.min(85, Math.round(cardWidth * 0.65));
   const showApply = fit?.status !== 'fail' && (isHovered || isSelected || hasFocusWithin);
   const failedFitMessage =
     fit?.status === 'fail'
@@ -313,11 +153,15 @@ export const GridPresetCard: React.FC<GridPresetCardProps> = ({
           backgroundColor: isDark ? '#1e1e1e' : '#e8e8e8',
         }}
       >
-        <GridPreviewSVG
+        <GridPreview
           config={preset.config}
           width={cardWidth}
           height={previewHeight}
           isDark={isDark}
+          referenceDimensions={preset.referenceDimensions}
+          applicationMode={preset.applicationMode}
+          responsiveWidth={preset.responsiveWidth}
+          aspectRatio={preset.aspectRatio}
         />
       </div>
 
@@ -480,5 +324,3 @@ export const GridPresetCard: React.FC<GridPresetCardProps> = ({
     </div>
   );
 };
-
-export default GridPresetCard;

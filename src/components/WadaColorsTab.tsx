@@ -197,15 +197,24 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
 
   // Memoized handlers
   const handleApplyFill = useCallback((color: Color) => {
-    parent.postMessage({ pluginMessage: { type: 'apply-fill', ...color } }, '*');
+    parent.postMessage(
+      { pluginMessage: { type: 'apply-fill', hex: color.hex, name: color.name } },
+      '*'
+    );
   }, []);
 
   const handleApplyStroke = useCallback((color: Color) => {
-    parent.postMessage({ pluginMessage: { type: 'apply-stroke', ...color } }, '*');
+    parent.postMessage(
+      { pluginMessage: { type: 'apply-stroke', hex: color.hex, name: color.name } },
+      '*'
+    );
   }, []);
 
   const handleCreateStyle = useCallback((color: Color) => {
-    parent.postMessage({ pluginMessage: { type: 'create-style', ...color } }, '*');
+    parent.postMessage(
+      { pluginMessage: { type: 'create-style', hex: color.hex, name: color.name } },
+      '*'
+    );
   }, []);
 
   const filteredColors = useMemo(() => {
@@ -947,5 +956,3 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
     </div>
   );
 };
-
-export default WadaColorsTab;

@@ -1,13 +1,10 @@
 /**
  * Color Vision Deficiency (CVD) Simulation Library
  *
- * Implements academically-validated algorithms for simulating color blindness:
- * - Brettel 1997: Accurate dichromacy simulation (complete color blindness)
- * - Machado 2009: Anomalous trichromacy with severity (partial color blindness)
+ * Implements Machado et al. 2009's published matrices for approximating
+ * dichromacy and anomalous trichromacy across supported severity levels.
  *
  * References:
- * - Brettel et al. 1997: "Computerized simulation of color appearance for dichromats"
- * - Viénot et al. 1999: "Digital video colourmaps for checking the legibility of displays by dichromats"
  * - Machado et al. 2009: "A physiologically-based model for simulation of color vision deficiency"
  */
 
@@ -19,13 +16,13 @@ import { hexToRgb, rgbToHex, type RGB } from './utils';
 
 export type CVDType =
   | 'normal'
-  | 'protanopia' // Red-blind (dichromacy)
-  | 'protanomaly' // Red-weak (anomalous trichromacy)
-  | 'deuteranopia' // Green-blind (dichromacy)
-  | 'deuteranomaly' // Green-weak (anomalous trichromacy) - most common
-  | 'tritanopia' // Blue-blind (dichromacy)
-  | 'tritanomaly' // Blue-weak (anomalous trichromacy)
-  | 'achromatopsia'; // Complete color blindness (monochromacy)
+  | 'protanopia' // L-cone-related dichromacy
+  | 'protanomaly' // L-cone-related anomalous trichromacy
+  | 'deuteranopia' // M-cone-related dichromacy
+  | 'deuteranomaly' // M-cone-related anomalous trichromacy
+  | 'tritanopia' // S-cone-related dichromacy
+  | 'tritanomaly' // S-cone-related anomalous trichromacy
+  | 'achromatopsia'; // Grayscale approximation for little/no color discrimination
 
 export interface CVDSimulationOptions {
   type: CVDType;
@@ -48,58 +45,58 @@ export const CVD_INFO: Record<CVDType, CVDInfo> = {
   normal: {
     type: 'normal',
     name: 'Normal Vision',
-    description: 'Full color vision with all three cone types functioning normally.',
-    prevalence: '~92% of population',
+    description: 'Typical trichromatic color vision; individual color perception still varies.',
+    prevalence: 'Baseline; no single population-wide percentage',
     affectedCone: 'none',
   },
   protanopia: {
     type: 'protanopia',
     name: 'Protanopia',
-    description: 'Complete absence of L-cones (red receptors). Cannot perceive red light.',
-    prevalence: '~1% of males',
+    description: 'An L-cone-related dichromacy that reduces red-green discrimination.',
+    prevalence: '~1% of males; much rarer in females',
     affectedCone: 'L',
   },
   protanomaly: {
     type: 'protanomaly',
     name: 'Protanomaly',
-    description: 'Reduced sensitivity of L-cones. Red appears weaker/shifted.',
-    prevalence: '~1% of males',
+    description: 'L-cone-related anomalous trichromacy with reduced red-green discrimination.',
+    prevalence: '~1% of males; much rarer in females',
     affectedCone: 'L',
   },
   deuteranopia: {
     type: 'deuteranopia',
     name: 'Deuteranopia',
-    description:
-      'Complete absence of M-cones (green receptors). Cannot distinguish red from green.',
-    prevalence: '~1% of males',
+    description: 'An M-cone-related dichromacy that reduces red-green discrimination.',
+    prevalence: '~1% of males; much rarer in females',
     affectedCone: 'M',
   },
   deuteranomaly: {
     type: 'deuteranomaly',
     name: 'Deuteranomaly',
-    description: 'Reduced sensitivity of M-cones. Most common form of color blindness.',
-    prevalence: '~5% of males',
+    description: 'M-cone-related anomalous trichromacy; a common red-green deficiency.',
+    prevalence: '~5% of males; much rarer in females',
     affectedCone: 'M',
   },
   tritanopia: {
     type: 'tritanopia',
     name: 'Tritanopia',
-    description: 'Complete absence of S-cones (blue receptors). Very rare.',
-    prevalence: '~0.01% of population',
+    description: 'An S-cone-related dichromacy that reduces blue-yellow discrimination.',
+    prevalence: 'Rare; estimates vary by population',
     affectedCone: 'S',
   },
   tritanomaly: {
     type: 'tritanomaly',
     name: 'Tritanomaly',
-    description: 'Reduced sensitivity of S-cones. Blue appears weaker.',
-    prevalence: '~0.01% of population',
+    description: 'S-cone-related anomalous trichromacy with reduced blue-yellow discrimination.',
+    prevalence: 'Rare; estimates vary by population',
     affectedCone: 'S',
   },
   achromatopsia: {
     type: 'achromatopsia',
     name: 'Achromatopsia',
-    description: 'Complete color blindness. Only perceives luminance (grayscale).',
-    prevalence: '~0.003% of population',
+    description:
+      'A rare condition with little or no color discrimination; this preview is a grayscale approximation.',
+    prevalence: 'Rare; estimates vary by population',
     affectedCone: 'all',
   },
 };
@@ -137,74 +134,199 @@ const LMS_TO_XYZ: number[][] = [
 ];
 
 // ============================================
-// Viénot 1999 Simulation Matrices (RGB space)
+// Machado 2009 Matrices
 // ============================================
 
-/**
- * Viénot et al. 1999 matrices operate directly in linear RGB space.
- * These are well-tested and preserve neutral colors (white, black, grays).
- */
-
-// Protanopia simulation matrix (linear RGB space)
-const VIENOT_PROTAN: number[][] = [
-  [0.56667, 0.43333, 0.0],
-  [0.55833, 0.44167, 0.0],
-  [0.0, 0.24167, 0.75833],
-];
-
-// Deuteranopia simulation matrix (linear RGB space)
-const VIENOT_DEUTAN: number[][] = [
-  [0.625, 0.375, 0.0],
-  [0.7, 0.3, 0.0],
-  [0.0, 0.3, 0.7],
-];
-
-// Tritanopia simulation matrix (linear RGB space)
-const VIENOT_TRITAN: number[][] = [
-  [0.95, 0.05, 0.0],
-  [0.0, 0.43333, 0.56667],
-  [0.0, 0.475, 0.525],
-];
-
-// ============================================
-// Machado 2009 Matrices for Anomalous Trichromacy
-// ============================================
+type Matrix3x3 = number[][];
 
 /**
  * Machado et al. 2009 provides matrices for different severity levels.
  * These matrices operate directly in RGB space.
  * Severity levels: 0.0 (normal) to 1.0 (dichromacy)
  *
- * The matrices below are for severity = 1.0 (full dichromacy equivalent).
- * For intermediate severities, we interpolate between identity and these.
+ * The authors' supplement provides matrices at 0.1 severity increments.
+ * Intermediate severities are interpolated between the nearest two matrices,
+ * as prescribed by the supplement (for example, 0.873 uses 0.8 and 0.9).
+ * Source: https://www.inf.ufrgs.br/~oliveira/pubs_files/CVD_Simulation/CVD_Simulation.html
  */
 
-// Protanomaly at full severity (severity = 1.0)
-const MACHADO_PROTAN_100: number[][] = [
-  [0.152286, 1.052583, -0.204868],
-  [0.114503, 0.786281, 0.099216],
-  [-0.003882, -0.048116, 1.051998],
+const MACHADO_PROTAN: Matrix3x3[] = [
+  [
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 0, 1],
+  ],
+  [
+    [0.856167, 0.182038, -0.038205],
+    [0.029342, 0.955115, 0.015544],
+    [-0.00288, -0.001563, 1.004443],
+  ],
+  [
+    [0.734766, 0.334872, -0.069637],
+    [0.05184, 0.919198, 0.028963],
+    [-0.004928, -0.004209, 1.009137],
+  ],
+  [
+    [0.630323, 0.465641, -0.095964],
+    [0.069181, 0.890046, 0.040773],
+    [-0.006308, -0.007724, 1.014032],
+  ],
+  [
+    [0.539009, 0.579343, -0.118352],
+    [0.082546, 0.866121, 0.051332],
+    [-0.007136, -0.011959, 1.019095],
+  ],
+  [
+    [0.458064, 0.679578, -0.137642],
+    [0.092785, 0.846313, 0.060902],
+    [-0.007494, -0.016807, 1.024301],
+  ],
+  [
+    [0.38545, 0.769005, -0.154455],
+    [0.100526, 0.829802, 0.069673],
+    [-0.007442, -0.02219, 1.029632],
+  ],
+  [
+    [0.319627, 0.849633, -0.169261],
+    [0.106241, 0.815969, 0.07779],
+    [-0.007025, -0.028051, 1.035076],
+  ],
+  [
+    [0.259411, 0.923008, -0.18242],
+    [0.110296, 0.80434, 0.085364],
+    [-0.006276, -0.034346, 1.040622],
+  ],
+  [
+    [0.203876, 0.990338, -0.194214],
+    [0.112975, 0.794542, 0.092483],
+    [-0.005222, -0.041043, 1.046265],
+  ],
+  [
+    [0.152286, 1.052583, -0.204868],
+    [0.114503, 0.786281, 0.099216],
+    [-0.003882, -0.048116, 1.051998],
+  ],
 ];
 
-// Deuteranomaly at full severity (severity = 1.0)
-const MACHADO_DEUTAN_100: number[][] = [
-  [0.367322, 0.860646, -0.227968],
-  [0.280085, 0.672501, 0.047413],
-  [-0.01182, 0.04294, 0.968881],
+const MACHADO_DEUTAN: Matrix3x3[] = [
+  [
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 0, 1],
+  ],
+  [
+    [0.866435, 0.177704, -0.044139],
+    [0.049567, 0.939063, 0.01137],
+    [-0.003453, 0.007233, 0.99622],
+  ],
+  [
+    [0.760729, 0.319078, -0.079807],
+    [0.090568, 0.889315, 0.020117],
+    [-0.006027, 0.013325, 0.992702],
+  ],
+  [
+    [0.675425, 0.43385, -0.109275],
+    [0.125303, 0.847755, 0.026942],
+    [-0.00795, 0.018572, 0.989378],
+  ],
+  [
+    [0.605511, 0.52856, -0.134071],
+    [0.155318, 0.812366, 0.032316],
+    [-0.009376, 0.023176, 0.9862],
+  ],
+  [
+    [0.547494, 0.607765, -0.155259],
+    [0.181692, 0.781742, 0.036566],
+    [-0.01041, 0.027275, 0.983136],
+  ],
+  [
+    [0.498864, 0.674741, -0.173604],
+    [0.205199, 0.754872, 0.039929],
+    [-0.011131, 0.030969, 0.980162],
+  ],
+  [
+    [0.457771, 0.731899, -0.18967],
+    [0.226409, 0.731012, 0.042579],
+    [-0.011595, 0.034333, 0.977261],
+  ],
+  [
+    [0.422823, 0.781057, -0.203881],
+    [0.245752, 0.709602, 0.044646],
+    [-0.011843, 0.037423, 0.974421],
+  ],
+  [
+    [0.392952, 0.82361, -0.216562],
+    [0.263559, 0.69021, 0.046232],
+    [-0.01191, 0.040281, 0.97163],
+  ],
+  [
+    [0.367322, 0.860646, -0.227968],
+    [0.280085, 0.672501, 0.047413],
+    [-0.01182, 0.04294, 0.968881],
+  ],
 ];
 
-// Tritanomaly at full severity (severity = 1.0)
-const MACHADO_TRITAN_100: number[][] = [
-  [1.255528, -0.076749, -0.178779],
-  [-0.078411, 0.930809, 0.147602],
-  [0.004733, 0.691367, 0.3039],
+const MACHADO_TRITAN: Matrix3x3[] = [
+  [
+    [1, 0, 0],
+    [0, 1, 0],
+    [0, 0, 1],
+  ],
+  [
+    [0.92667, 0.092514, -0.019184],
+    [0.021191, 0.964503, 0.014306],
+    [0.008437, 0.054813, 0.93675],
+  ],
+  [
+    [0.89572, 0.13333, -0.02905],
+    [0.029997, 0.9454, 0.024603],
+    [0.013027, 0.104707, 0.882266],
+  ],
+  [
+    [0.905871, 0.127791, -0.033662],
+    [0.026856, 0.941251, 0.031893],
+    [0.01341, 0.148296, 0.838294],
+  ],
+  [
+    [0.948035, 0.08949, -0.037526],
+    [0.014364, 0.946792, 0.038844],
+    [0.010853, 0.193991, 0.795156],
+  ],
+  [
+    [1.017277, 0.027029, -0.044306],
+    [-0.006113, 0.958479, 0.047634],
+    [0.006379, 0.248708, 0.744913],
+  ],
+  [
+    [1.104996, -0.046633, -0.058363],
+    [-0.032137, 0.971635, 0.060503],
+    [0.001336, 0.317922, 0.680742],
+  ],
+  [
+    [1.193214, -0.109812, -0.083402],
+    [-0.058496, 0.97941, 0.079086],
+    [-0.002346, 0.403492, 0.598854],
+  ],
+  [
+    [1.257728, -0.139648, -0.118081],
+    [-0.078003, 0.975409, 0.102594],
+    [-0.003316, 0.501214, 0.502102],
+  ],
+  [
+    [1.278864, -0.125333, -0.153531],
+    [-0.084748, 0.957674, 0.127074],
+    [-0.000989, 0.601151, 0.399838],
+  ],
+  [
+    [1.255528, -0.076749, -0.178779],
+    [-0.078411, 0.930809, 0.147602],
+    [0.004733, 0.691367, 0.3039],
+  ],
 ];
 
 // ============================================
 // Matrix Operations
 // ============================================
-
-type Matrix3x3 = number[][];
 
 function multiplyMatrix(m: Matrix3x3, v: number[]): number[] {
   return [
@@ -214,7 +336,7 @@ function multiplyMatrix(m: Matrix3x3, v: number[]): number[] {
   ];
 }
 
-function interpolateMatrix(identity: Matrix3x3, target: Matrix3x3, t: number): Matrix3x3 {
+function interpolateMatrix(start: Matrix3x3, end: Matrix3x3, t: number): Matrix3x3 {
   const result: Matrix3x3 = [
     [0, 0, 0],
     [0, 0, 0],
@@ -222,7 +344,7 @@ function interpolateMatrix(identity: Matrix3x3, target: Matrix3x3, t: number): M
   ];
   for (let i = 0; i < 3; i++) {
     for (let j = 0; j < 3; j++) {
-      result[i][j] = identity[i][j] * (1 - t) + target[i][j] * t;
+      result[i][j] = start[i][j] * (1 - t) + end[i][j] * t;
     }
   }
   return result;
@@ -275,28 +397,28 @@ export function linearToRgb(linear: number[]): RGB {
 /**
  * Convert linear RGB to XYZ
  */
-export function linearRgbToXyz(linear: number[]): number[] {
+function linearRgbToXyz(linear: number[]): number[] {
   return multiplyMatrix(RGB_TO_XYZ, linear);
 }
 
 /**
  * Convert XYZ to linear RGB
  */
-export function xyzToLinearRgb(xyz: number[]): number[] {
+function xyzToLinearRgb(xyz: number[]): number[] {
   return multiplyMatrix(XYZ_TO_RGB, xyz);
 }
 
 /**
  * Convert XYZ to LMS
  */
-export function xyzToLms(xyz: number[]): number[] {
+function xyzToLms(xyz: number[]): number[] {
   return multiplyMatrix(XYZ_TO_LMS, xyz);
 }
 
 /**
  * Convert LMS to XYZ
  */
-export function lmsToXyz(lms: number[]): number[] {
+function lmsToXyz(lms: number[]): number[] {
   return multiplyMatrix(LMS_TO_XYZ, lms);
 }
 
@@ -318,39 +440,25 @@ export function lmsToRgb(lms: number[]): RGB {
   return linearToRgb(linear);
 }
 
-// ============================================
-// Viénot 1999 Dichromacy Simulation
-// ============================================
-
 /**
- * Apply Viénot simulation for dichromacy
- * Works directly in linear RGB space
- */
-function vienotSimulate(rgb: RGB, matrix: Matrix3x3): RGB {
-  const linear = rgbToLinear(rgb);
-  const simLinear = multiplyMatrix(matrix, linear);
-  return linearToRgb(simLinear);
-}
-
-/**
- * Simulate protanopia (red-blind) using Viénot algorithm
+ * Approximate protanopia using Machado's full-severity protan matrix.
  */
 export function simulateProtanopia(rgb: RGB): RGB {
-  return vienotSimulate(rgb, VIENOT_PROTAN);
+  return simulateAnomaly(rgb, 'protanopia', 1);
 }
 
 /**
- * Simulate deuteranopia (green-blind) using Viénot algorithm
+ * Approximate deuteranopia using Machado's full-severity deutan matrix.
  */
 export function simulateDeuteranopia(rgb: RGB): RGB {
-  return vienotSimulate(rgb, VIENOT_DEUTAN);
+  return simulateAnomaly(rgb, 'deuteranopia', 1);
 }
 
 /**
- * Simulate tritanopia (blue-blind) using Viénot algorithm
+ * Approximate tritanopia using Machado's full-severity tritan matrix.
  */
 export function simulateTritanopia(rgb: RGB): RGB {
-  return vienotSimulate(rgb, VIENOT_TRITAN);
+  return simulateAnomaly(rgb, 'tritanopia', 1);
 }
 
 // ============================================
@@ -364,20 +472,20 @@ export function getMachadoMatrix(type: CVDType, severity: number): Matrix3x3 {
   // Clamp severity to 0-1
   const t = Math.max(0, Math.min(1, severity));
 
-  let targetMatrix: Matrix3x3;
+  let matrices: Matrix3x3[];
 
   switch (type) {
     case 'protanopia':
     case 'protanomaly':
-      targetMatrix = MACHADO_PROTAN_100;
+      matrices = MACHADO_PROTAN;
       break;
     case 'deuteranopia':
     case 'deuteranomaly':
-      targetMatrix = MACHADO_DEUTAN_100;
+      matrices = MACHADO_DEUTAN;
       break;
     case 'tritanopia':
     case 'tritanomaly':
-      targetMatrix = MACHADO_TRITAN_100;
+      matrices = MACHADO_TRITAN;
       break;
     default:
       return IDENTITY_MATRIX;
@@ -385,15 +493,22 @@ export function getMachadoMatrix(type: CVDType, severity: number): Matrix3x3 {
 
   // For dichromacy types, always use full severity
   if (type === 'protanopia' || type === 'deuteranopia' || type === 'tritanopia') {
-    return targetMatrix;
+    return matrices[10];
   }
 
-  // For anomaly types, interpolate based on severity
-  return interpolateMatrix(IDENTITY_MATRIX, targetMatrix, t);
+  const scaledSeverity = t * 10;
+  const lowerIndex = Math.floor(scaledSeverity);
+  const upperIndex = Math.ceil(scaledSeverity);
+
+  if (lowerIndex === upperIndex) {
+    return matrices[lowerIndex];
+  }
+
+  return interpolateMatrix(matrices[lowerIndex], matrices[upperIndex], scaledSeverity - lowerIndex);
 }
 
 /**
- * Simulate anomalous trichromacy using Machado algorithm
+ * Simulate a supported CVD category using the Machado model.
  * Works directly in linear RGB space
  */
 export function simulateAnomaly(rgb: RGB, type: CVDType, severity: number = 1.0): RGB {
@@ -404,18 +519,17 @@ export function simulateAnomaly(rgb: RGB, type: CVDType, severity: number = 1.0)
 }
 
 // ============================================
-// Achromatopsia (Complete Color Blindness)
+// Achromatopsia Grayscale Approximation
 // ============================================
 
 /**
- * Simulate achromatopsia (complete color blindness)
- * Uses luminance-only perception
+ * Approximate achromatopsia as luminance-only grayscale.
+ * This intentionally does not claim to reproduce an individual's perception.
  */
 export function simulateAchromatopsia(rgb: RGB): RGB {
-  // Calculate luminance using ITU-R BT.709 coefficients
-  const luminance = 0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b;
-  const gray = Math.round(luminance);
-  return { r: gray, g: gray, b: gray };
+  const [r, g, b] = rgbToLinear(rgb);
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return linearToRgb([luminance, luminance, luminance]);
 }
 
 // ============================================
@@ -423,11 +537,12 @@ export function simulateAchromatopsia(rgb: RGB): RGB {
 // ============================================
 
 /**
- * Simulate how a color appears to someone with a specific type of color vision deficiency
+ * Produce an algorithmic preview for a color vision deficiency category.
+ * This is a design aid, not a reproduction of any individual's perception.
  *
  * @param rgb - The input color
  * @param options - CVD type and optional severity (0-1)
- * @returns The simulated color as it would appear to someone with the specified CVD
+ * @returns The transformed preview color
  */
 export function simulateCVD(rgb: RGB, options: CVDSimulationOptions): RGB {
   const { type, severity = 1.0 } = options;
