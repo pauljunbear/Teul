@@ -145,6 +145,58 @@ describe('transactional color operations', () => {
     expect(second.fills).toEqual(first.fills);
   });
 
+  it('rejects the whole fill transaction when a selected instance is locked', async () => {
+    const component = Object.assign(fillNode('component', [RED]), {
+      type: 'COMPONENT' as const,
+      locked: false,
+    });
+    const instance = Object.assign(fillNode('instance', [BLUE]), {
+      type: 'INSTANCE' as const,
+      locked: true,
+    });
+    selection = [component, instance];
+
+    await expect(handleApplyFill({ hex: '#00ff00', name: 'Green' })).resolves.toBe(false);
+    expect(component.fills).toEqual([RED]);
+    expect(instance.fills).toEqual([BLUE]);
+    expect(notify).toHaveBeenCalledWith('Fill apply rejected: unlock the selected target first');
+  });
+
+  it('rejects the whole stroke transaction when a target has a locked ancestor', async () => {
+    const unlocked = strokeNode('unlocked', [RED], 1);
+    const nested = Object.assign(strokeNode('nested', [BLUE], 2), {
+      parent: { id: 'locked-component', type: 'COMPONENT', locked: true, parent: null },
+    });
+    selection = [unlocked, nested];
+
+    await expect(handleApplyStroke({ hex: '#00ff00', name: 'Green' })).resolves.toBe(false);
+    expect(unlocked.strokes).toEqual([RED]);
+    expect(nested.strokes).toEqual([BLUE]);
+    expect(notify).toHaveBeenCalledWith('Stroke apply rejected: unlock the selected target first');
+  });
+
+  it('rejects a gradient on a locked component before writing its fill', async () => {
+    const component = Object.assign(fillNode('component', [RED]), {
+      type: 'COMPONENT' as const,
+      locked: true,
+    });
+    selection = [component];
+
+    await expect(
+      handleApplyGradient({
+        colors: [
+          { hex: '#ff0000', name: 'Red' },
+          { hex: '#0000ff', name: 'Blue' },
+        ],
+        gradientType: 'LINEAR',
+      })
+    ).resolves.toBe(false);
+    expect(component.fills).toEqual([RED]);
+    expect(notify).toHaveBeenCalledWith(
+      'Gradient apply rejected: unlock the selected target first'
+    );
+  });
+
   it('does not mutate a node whose existing fills are mixed and cannot be restored safely', async () => {
     const mixed = Symbol('mixed');
     selection = [{ id: 'mixed-text', type: 'TEXT', fills: mixed } as unknown as SceneNode];

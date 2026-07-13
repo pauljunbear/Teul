@@ -120,6 +120,13 @@ describe('validateUIToPluginMessage', () => {
     { type: 'get-selection-for-grid' },
     { type: 'get-selection-for-grid', requestId: 'grid-apply-1' },
     { type: 'get-document-color-profile' },
+    { type: 'get-grid-storage', requestId: 'grid-storage-get-1' },
+    {
+      type: 'set-grid-storage',
+      requestId: 'grid-storage-set-1',
+      value: '{"version":1,"grids":[]}',
+    },
+    { type: 'delete-grid-storage', requestId: 'grid-storage-delete-1' },
     { type: 'apply-gradient', gradientType: 'LINEAR', colors: [color, color] },
     { type: 'notify', text: 'Copied Test Color' },
     {
@@ -150,6 +157,26 @@ describe('validateUIToPluginMessage', () => {
 
     expect(result).toEqual({ valid: true, message });
     expect(isUIToPluginMessage(message)).toBe(true);
+  });
+
+  it('rejects malformed or oversized saved-grid storage requests', () => {
+    expect(validateUIToPluginMessage({ type: 'get-grid-storage', requestId: '' }).valid).toBe(
+      false
+    );
+    expect(
+      validateUIToPluginMessage({
+        type: 'set-grid-storage',
+        requestId: 'grid-storage-set-1',
+        value: '',
+      }).valid
+    ).toBe(false);
+    expect(
+      validateUIToPluginMessage({
+        type: 'set-grid-storage',
+        requestId: 'grid-storage-set-oversized',
+        value: 'x'.repeat(4 * 1024 * 1024 + 1),
+      }).valid
+    ).toBe(false);
   });
 
   it('rejects malformed selection refresh correlation IDs', () => {

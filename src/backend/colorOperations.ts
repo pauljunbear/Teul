@@ -5,8 +5,19 @@ import {
   hexToFigmaRgb,
   getSelectedNodesWithFills,
   getSelectedNodesWithStrokes,
+  isNodeOrAncestorLocked,
   type GradientColor,
 } from './figmaHelpers';
+
+function hasLockedTarget(nodes: readonly SceneNode[], operation: string): boolean {
+  const lockedTargets = nodes.filter(isNodeOrAncestorLocked);
+  if (lockedTargets.length === 0) return false;
+
+  figma.notify(
+    `${operation} rejected: unlock ${lockedTargets.length === 1 ? 'the selected target' : `${lockedTargets.length} selected targets`} first`
+  );
+  return true;
+}
 
 // ============================================
 // Fill Operations
@@ -19,6 +30,7 @@ export async function handleApplyFill(msg: { hex: string; name: string }): Promi
     figma.notify('Select an editable shape or frame with a uniform fill');
     return false;
   }
+  if (hasLockedTarget(nodes, 'Fill apply')) return false;
 
   const color = hexToFigmaRgb(msg.hex);
   const snapshots: FillSnapshot[] = [];
@@ -64,6 +76,7 @@ export async function handleApplyStroke(msg: { hex: string; name: string }): Pro
     figma.notify('Select an editable shape or frame with strokes');
     return false;
   }
+  if (hasLockedTarget(nodes, 'Stroke apply')) return false;
 
   const color = hexToFigmaRgb(msg.hex);
   const snapshots: StrokeSnapshot[] = [];
@@ -172,6 +185,7 @@ export async function handleApplyGradient(msg: {
     figma.notify('Select an editable shape or frame with a uniform fill');
     return false;
   }
+  if (hasLockedTarget(nodes, 'Gradient apply')) return false;
 
   const colors = msg.colors;
 

@@ -229,6 +229,85 @@ describe('handleCreateGridFrame', () => {
 });
 
 describe('handleApplyGrid', () => {
+  it('rejects all targets before mutation when a selected frame is locked', async () => {
+    const existingGrid = { pattern: 'GRID', sectionSize: 6, visible: true, color } as LayoutGrid;
+    const unlocked = createLayoutGridNode('Unlocked', [existingGrid]);
+    const locked = Object.assign(createLayoutGridNode('Locked', [existingGrid]), { locked: true });
+    const { notify, postMessage } = installFigmaMock([unlocked, locked]);
+
+    await handleApplyGrid(
+      applyGridMessage(['unlocked', 'locked'], {
+        sourceConfig: { baseline: sourceBaseline },
+      })
+    );
+
+    expect(unlocked.getLayoutGrids()).toEqual([existingGrid]);
+    expect(locked.getLayoutGrids()).toEqual([existingGrid]);
+    expect(notify).toHaveBeenCalledWith('Grid apply rejected: unlock the selected target first');
+    expect(postMessage).toHaveBeenCalledWith({
+      type: 'grid-applied',
+      requestId: 'grid-apply-test',
+      success: false,
+      appliedCount: 0,
+      skippedCount: 0,
+      failedCount: 2,
+      message: 'Grid apply rejected: unlock the selected target first',
+      error: 'Locked grid targets cannot be edited',
+    });
+  });
+
+  it('rejects a grid target inside a locked component before mutation', async () => {
+    const existingGrid = { pattern: 'GRID', sectionSize: 6, visible: true, color } as LayoutGrid;
+    const nestedFrame = Object.assign(createLayoutGridNode('Nested Frame', [existingGrid]), {
+      parent: { id: 'component', type: 'COMPONENT', locked: true, parent: null },
+    });
+    const { postMessage } = installFigmaMock([nestedFrame]);
+
+    await handleApplyGrid(
+      applyGridMessage(['nested-frame'], {
+        sourceConfig: { baseline: sourceBaseline },
+      })
+    );
+
+    expect(nestedFrame.getLayoutGrids()).toEqual([existingGrid]);
+    expect(postMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+        appliedCount: 0,
+        failedCount: 1,
+        error: 'Locked grid targets cannot be edited',
+      })
+    );
+  });
+
+  it('continues to support unlocked components and instances that expose layout grids', async () => {
+    const component = Object.assign(createLayoutGridNode('Component'), {
+      type: 'COMPONENT' as const,
+      locked: false,
+    });
+    const instance = Object.assign(createLayoutGridNode('Instance'), {
+      type: 'INSTANCE' as const,
+      locked: false,
+    });
+    const { postMessage } = installFigmaMock([component, instance]);
+
+    await handleApplyGrid(
+      applyGridMessage(['component', 'instance'], {
+        sourceConfig: { baseline: sourceBaseline },
+      })
+    );
+
+    expect(component.getLayoutGrids()).toEqual([
+      expect.objectContaining({ pattern: 'GRID', sectionSize: 10 }),
+    ]);
+    expect(instance.getLayoutGrids()).toEqual([
+      expect.objectContaining({ pattern: 'GRID', sectionSize: 10 }),
+    ]);
+    expect(postMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ success: true, appliedCount: 2, failedCount: 0 })
+    );
+  });
+
   it('rolls back prior targets when a later target write fails', async () => {
     const firstExisting = { pattern: 'GRID', sectionSize: 6, visible: true, color } as LayoutGrid;
     const first = createLayoutGridNode('First', [firstExisting]);

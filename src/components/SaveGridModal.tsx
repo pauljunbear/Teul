@@ -130,7 +130,7 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
   }, [config, source]);
 
   // Handle save
-  const handleSave = React.useCallback(() => {
+  const handleSave = React.useCallback(async () => {
     if (!name.trim() || isSaving) return;
 
     setIsSaving(true);
@@ -153,7 +153,7 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
         responsiveWidth,
       });
 
-      addSavedGrid(savedGrid);
+      await addSavedGrid(savedGrid);
 
       setIsSaved(true);
 
@@ -196,7 +196,7 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
         dialogRef.current?.contains(document.activeElement)
       ) {
         e.preventDefault();
-        handleSave();
+        void handleSave();
       }
     };
 
