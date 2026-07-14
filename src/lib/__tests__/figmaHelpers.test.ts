@@ -85,8 +85,22 @@ describe('grid selection info', () => {
     const second = createNode('3', 'Narrow', 320, 568, true);
 
     expect(getGridSelectionTargets([first, skipped, second])).toEqual([
-      { id: '1', name: 'Wide', width: 1440, height: 900 },
-      { id: '3', name: 'Narrow', width: 320, height: 568 },
+      {
+        id: '1',
+        name: 'Wide',
+        width: 1440,
+        height: 900,
+        layoutGridCount: 0,
+        teulConstructionCount: 0,
+      },
+      {
+        id: '3',
+        name: 'Narrow',
+        width: 320,
+        height: 568,
+        layoutGridCount: 0,
+        teulConstructionCount: 0,
+      },
     ]);
   });
 
@@ -111,8 +125,22 @@ describe('grid selection info', () => {
         selectedCount: 3,
         ineligibleCount: 1,
         eligibleTargets: [
-          { id: '1', name: 'Wide', width: 1440, height: 900 },
-          { id: '3', name: 'Narrow', width: 320, height: 568 },
+          {
+            id: '1',
+            name: 'Wide',
+            width: 1440,
+            height: 900,
+            layoutGridCount: 0,
+            teulConstructionCount: 0,
+          },
+          {
+            id: '3',
+            name: 'Narrow',
+            width: 320,
+            height: 568,
+            layoutGridCount: 0,
+            teulConstructionCount: 0,
+          },
         ],
       })
     );

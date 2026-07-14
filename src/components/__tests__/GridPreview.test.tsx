@@ -2,7 +2,7 @@ import * as React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import type { GridConfig } from '../../types/grid';
+import type { GridConfig, GridConstructionV2 } from '../../types/grid';
 import { GridPreview } from '../GridPreview';
 
 const color = { r: 0.2, g: 0.8, b: 0.9, a: 0.15 };
@@ -118,5 +118,58 @@ describe('GridPreview', () => {
     expect(columns).toHaveLength(2);
     expect(columns[0]?.getAttribute('width')).toBe('280');
     expect(columns[1]?.getAttribute('x')).toBe('300');
+  });
+
+  it('renders generated construction tracks, subdivisions, and baselines', () => {
+    const construction: GridConstructionV2 = {
+      version: 2,
+      margins: { left: 40, right: 40, top: 40, bottom: 40, unit: 'px' },
+      trackGroups: [
+        {
+          id: 'columns',
+          axis: 'columns',
+          tracks: [100, 100],
+          gutters: [20],
+          gapBefore: 0,
+          unit: 'px',
+          visible: true,
+          color,
+        },
+      ],
+      subdivisions: [
+        {
+          id: 'nested',
+          parentTrackId: 'columns:0',
+          axis: 'rows',
+          tracks: [80, 80],
+          gutters: [16],
+          insetStart: 0,
+          insetEnd: 0,
+          unit: 'px',
+          visible: true,
+          color,
+        },
+      ],
+      baseline: { interval: 8, topInset: 0, unit: 'px', visible: true, color },
+      realization: { kind: 'generated-geometry', disclosure: 'Generated test.' },
+    };
+    act(() =>
+      root.render(
+        <GridPreview
+          config={{}}
+          construction={construction}
+          width={100}
+          height={100}
+          isDark={false}
+          referenceDimensions={{ width: 600, height: 500 }}
+        />
+      )
+    );
+
+    expect(container.querySelectorAll('[data-grid-pattern="column"]')).toHaveLength(2);
+    expect(container.querySelectorAll('[data-grid-pattern="subdivision"]')).toHaveLength(2);
+    expect(container.querySelectorAll('[data-grid-pattern="construction-baseline"]')).toHaveLength(
+      53
+    );
   });
 });

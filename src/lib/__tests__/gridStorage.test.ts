@@ -13,14 +13,11 @@ import {
   addSavedGrid,
   updateSavedGrid,
   deleteSavedGrid,
-  getSavedGridById,
-  searchSavedGrids,
   exportGridsToJSON,
   importGridsFromJSON,
   importGridsFromFile,
   getGridStorageDiagnostics,
   getSavedGridCount,
-  clearAllSavedGrids,
   duplicateSavedGrid,
   MAX_GRID_IMPORT_FILE_BYTES,
   MAX_GRID_IMPORT_RECORDS,
@@ -28,6 +25,7 @@ import {
 import type { SavedGrid, GridConfig } from '../../types/grid';
 import { GRID_PRESETS } from '../gridPresets';
 import { getPresetApplicationMode, getPresetFrameDimensions } from '../figmaGrids';
+import { createConstructionV2FromGridConfig } from '../gridConstructionV2';
 
 // Helper to create a minimal valid grid config
 const createMockGridConfig = (): GridConfig => ({
@@ -152,7 +150,7 @@ describe('gridStorage', () => {
 
       expect(grids).toHaveLength(1);
       expect(grids[0].id).toBe('test-grid-1');
-      await expect(searchSavedGrids('test')).resolves.toHaveLength(1);
+      expect(grids.filter(grid => grid.name.toLowerCase().includes('test'))).toHaveLength(1);
     });
 
     it('should discard stored records with malformed nested configs', async () => {
@@ -218,7 +216,7 @@ describe('gridStorage', () => {
       const stored = localStorage.getItem('teul-saved-grids');
       const parsed = JSON.parse(stored!);
 
-      expect(parsed).toHaveProperty('version', 1);
+      expect(parsed).toHaveProperty('version', 2);
       expect(parsed).toHaveProperty('grids');
       expect(parsed).toHaveProperty('lastUpdated');
       expect(parsed.grids).toHaveLength(1);
@@ -257,7 +255,7 @@ describe('gridStorage', () => {
       await addSavedGrid(createMockSavedGrid({ id: 'new-grid' }));
 
       const stored = JSON.parse(localStorage.getItem('teul-saved-grids')!);
-      expect(stored.version).toBe(1);
+      expect(stored.version).toBe(2);
       expect(stored.grids.map((grid: SavedGrid) => grid.id)).toEqual(['new-grid', 'legacy-valid']);
       expect(stored.quarantinedGrids).toHaveLength(1);
       expect(stored.quarantinedGrids[0]).toMatchObject({
@@ -437,7 +435,7 @@ describe('gridStorage', () => {
 
       await addSavedGrid(saved);
       const exported = await exportGridsToJSON();
-      await clearAllSavedGrids();
+      await saveGridsToStorage([]);
       const imported = await importGridsFromJSON(exported);
 
       expect(imported.success).toBe(true);
@@ -584,88 +582,6 @@ describe('gridStorage', () => {
     });
   });
 
-  describe('getSavedGridById', () => {
-    it('should return grid with matching ID', async () => {
-      const grid = createMockSavedGrid({ id: 'target-grid' });
-      await saveGridsToStorage([grid]);
-
-      const found = await getSavedGridById('target-grid');
-      expect(found?.id).toBe('target-grid');
-    });
-
-    it('should return undefined for non-existent ID', async () => {
-      const grid = createMockSavedGrid({ id: 'other-grid' });
-      await saveGridsToStorage([grid]);
-
-      const found = await getSavedGridById('non-existent');
-      expect(found).toBeUndefined();
-    });
-  });
-
-  // ============================================
-  // Search Operations
-  // ============================================
-
-  describe('searchSavedGrids', () => {
-    beforeEach(async () => {
-      await saveGridsToStorage([
-        createMockSavedGrid({
-          id: '1',
-          name: 'Swiss 12 Column',
-          description: 'Classic layout',
-          tags: ['swiss', 'classic'],
-        }),
-        createMockSavedGrid({
-          id: '2',
-          name: 'Modular Grid',
-          description: 'For magazines',
-          tags: ['editorial', 'modular'],
-        }),
-        createMockSavedGrid({
-          id: '3',
-          name: 'Web UI Grid',
-          description: 'Swiss inspired web',
-          tags: ['web', 'ui'],
-        }),
-      ]);
-    });
-
-    it('should return all grids for empty query', async () => {
-      const results = await searchSavedGrids('');
-      expect(results).toHaveLength(3);
-    });
-
-    it('should return all grids for whitespace query', async () => {
-      const results = await searchSavedGrids('   ');
-      expect(results).toHaveLength(3);
-    });
-
-    it('should search by name (case insensitive)', async () => {
-      const results = await searchSavedGrids('modular');
-      expect(results).toHaveLength(1);
-      expect(results[0].name).toBe('Modular Grid');
-    });
-
-    it('should search by description', async () => {
-      const results = await searchSavedGrids('magazines');
-      expect(results).toHaveLength(1);
-      expect(results[0].name).toBe('Modular Grid');
-    });
-
-    it('should search by tags', async () => {
-      const results = await searchSavedGrids('editorial');
-      expect(results).toHaveLength(1);
-      expect(results[0].name).toBe('Modular Grid');
-    });
-
-    it('should return multiple matches', async () => {
-      const results = await searchSavedGrids('swiss');
-      // 'Swiss 12 Column' has 'swiss' in name and tags
-      // 'Web UI Grid' has 'Swiss' in description
-      expect(results.length).toBeGreaterThanOrEqual(1);
-    });
-  });
-
   // ============================================
   // Export/Import Operations
   // ============================================
@@ -679,7 +595,7 @@ describe('gridStorage', () => {
       const parsed = JSON.parse(json);
 
       expect(parsed).toHaveProperty('type', 'teul-grids');
-      expect(parsed).toHaveProperty('version', 1);
+      expect(parsed).toHaveProperty('version', 2);
       expect(parsed).toHaveProperty('exportedAt');
       expect(parsed).toHaveProperty('grids');
       expect(parsed.grids).toHaveLength(1);
@@ -718,7 +634,7 @@ describe('gridStorage', () => {
       expect(result.grids).toHaveLength(1);
     });
 
-    it('should import a valid version-1 export', async () => {
+    it('should import a valid version-2 export', async () => {
       const result = await importGridsFromJSON(await exportGridsToJSON([createMockSavedGrid()]));
 
       expect(result.success).toBe(true);
@@ -727,7 +643,7 @@ describe('gridStorage', () => {
       expect(result.grids![0].config).toEqual(createMockGridConfig());
     });
 
-    it('should preserve valid row and baseline configs from a version-1 export', async () => {
+    it('should preserve valid row and baseline configs from a version-2 export', async () => {
       const config: GridConfig = {
         ...createMockGridConfig(),
         rows: {
@@ -756,6 +672,76 @@ describe('gridStorage', () => {
       expect(result.grids![0].config).toEqual(config);
     });
 
+    it('round-trips v2 construction, variable bindings, and linked grid-style metadata', async () => {
+      const config = {
+        columns: {
+          ...createMockGridConfig().columns!,
+          boundVariables: {
+            gutterSize: { type: 'VARIABLE_ALIAS' as const, id: 'VariableID:gutter' },
+          },
+        },
+      };
+      const grid = createMockSavedGrid({
+        config,
+        construction: createConstructionV2FromGridConfig(config, { width: 1440, height: 900 }),
+        nativeResources: {
+          gridStyleId: 'GridStyle:editorial',
+          boundVariableIds: ['VariableID:gutter'],
+          sourceFileKey: 'source-file',
+        },
+      });
+
+      const result = await importGridsFromJSON(await exportGridsToJSON([grid]));
+
+      expect(result.success).toBe(true);
+      expect(result.grids![0]).toMatchObject({
+        config: { columns: { boundVariables: grid.config.columns!.boundVariables } },
+        construction: grid.construction,
+        nativeResources: grid.nativeResources,
+      });
+    });
+
+    it('migrates a valid v1 export without changing its grid geometry', async () => {
+      const grid = createMockSavedGrid();
+      const result = await importGridsFromJSON(
+        JSON.stringify({ type: 'teul-grids', version: 1, grids: [grid] })
+      );
+
+      expect(result.success).toBe(true);
+      expect(result.grids![0].config).toEqual(grid.config);
+    });
+
+    it('round-trips generated source geometry without inventing a native fallback config', async () => {
+      const construction = {
+        version: 2 as const,
+        margins: { left: 72, right: 48, top: 72, bottom: 48, unit: 'px' as const },
+        trackGroups: [
+          {
+            id: 'columns',
+            axis: 'columns' as const,
+            tracks: [180, 260, 180],
+            gutters: [24, 36],
+            gapBefore: 0,
+            unit: 'px' as const,
+            visible: true,
+            color: { r: 1, g: 0.2, b: 0.2, a: 0.1 },
+          },
+        ],
+        subdivisions: [],
+        realization: {
+          kind: 'generated-geometry' as const,
+          disclosure: 'Unequal source geometry is generated.',
+        },
+      };
+      const grid = createMockSavedGrid({ config: {}, construction });
+
+      const result = await importGridsFromJSON(await exportGridsToJSON([grid]));
+
+      expect(result.success).toBe(true);
+      expect(result.grids![0].config).toEqual({});
+      expect(result.grids![0].construction).toEqual(construction);
+    });
+
     it('should reject invalid file format', async () => {
       const result = await importGridsFromJSON(JSON.stringify({ type: 'wrong-type', grids: [] }));
 
@@ -770,17 +756,21 @@ describe('gridStorage', () => {
       expect(result.error).toBe('No grids found in file');
     });
 
-    it('should reject unsupported or legacy versions when a grids array is present', async () => {
+    it('should migrate v1 exports and reject unsupported versions', async () => {
       const unsupported = await importGridsFromJSON(
-        JSON.stringify({ type: 'teul-grids', version: 2, grids: [] })
+        JSON.stringify({ type: 'teul-grids', version: 3, grids: [] })
       );
-      const legacy = await importGridsFromJSON(
+      const v1 = await importGridsFromJSON(
+        JSON.stringify({ type: 'teul-grids', version: 1, grids: [] })
+      );
+      const unsupportedLegacy = await importGridsFromJSON(
         JSON.stringify({ type: 'teul-grids', version: 0, grids: [] })
       );
       const missing = await importGridsFromJSON(JSON.stringify({ type: 'teul-grids', grids: [] }));
 
       expect(unsupported).toEqual({ success: false, error: 'Unsupported file version' });
-      expect(legacy).toEqual({ success: false, error: 'Unsupported file version' });
+      expect(v1).toMatchObject({ success: true, count: 0 });
+      expect(unsupportedLegacy).toEqual({ success: false, error: 'Unsupported file version' });
       expect(missing).toEqual({ success: false, error: 'Unsupported file version' });
     });
 
@@ -1050,26 +1040,6 @@ describe('gridStorage', () => {
         createMockSavedGrid({ id: '3' }),
       ]);
       expect(await getSavedGridCount()).toBe(3);
-    });
-  });
-
-  describe('clearAllSavedGrids', () => {
-    it('should remove all grids from localStorage', async () => {
-      await saveGridsToStorage([createMockSavedGrid()]);
-
-      const result = await clearAllSavedGrids();
-
-      expect(result).toBe(true);
-      expect(localStorage.getItem('teul-saved-grids')).toBeNull();
-    });
-
-    it('should clear the in-memory cache immediately', async () => {
-      await saveGridsToStorage([createMockSavedGrid()]);
-      expect(await loadSavedGrids()).toHaveLength(1);
-
-      await clearAllSavedGrids();
-
-      expect(await loadSavedGrids()).toEqual([]);
     });
   });
 

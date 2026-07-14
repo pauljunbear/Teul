@@ -6,6 +6,8 @@ import { isSemanticColorPolicyCurrent } from '../lib/semanticColorPolicy';
 import { areAllScalesExactRadix, haveExactRadixScaleClaims } from '../lib/radixColors';
 import { createColorStyles } from './colorStyles';
 import { generateColorSystemFrames } from './colorSystemGeneration';
+import { createColorVariables, type ColorVariableTransaction } from './colorVariables';
+import { resolveColorSystemOutputName } from './colorSystemCollision';
 
 export const MAX_COMPLETED_COLOR_SYSTEM_RESULTS = 100;
 
@@ -44,6 +46,8 @@ function getRequestFingerprint(message: GenerateColorSystemMessage): string {
     canonicalize({
       type: message.type,
       createStyles: message.createStyles,
+      createVariables: message.createVariables,
+      collisionPolicy: message.collisionPolicy ?? 'cancel',
       config: message.config,
       scales: message.scales,
     })
@@ -126,7 +130,20 @@ function withRollbackFailures(error: unknown, failures: readonly string[]): Erro
   return new Error(`${getErrorMessage(error)}; rollback failed: ${failures.join('; ')}`);
 }
 
-async function runColorSystemTransaction(message: GenerateColorSystemMessage): Promise<void> {
+interface ColorSystemTransactionReport {
+  outputName: string;
+  modes: string[];
+  primitiveCount: number;
+  semanticAliasCount: number;
+  styleCount: number;
+  frameCount: number;
+  skippedCount: number;
+  warnings: string[];
+}
+
+async function runColorSystemTransaction(
+  message: GenerateColorSystemMessage
+): Promise<ColorSystemTransactionReport> {
   const scales = message.scales.scales;
   if (scales && !haveExactRadixScaleClaims(scales.light, scales.dark)) {
     throw new Error('Exact Radix Colors claims must match the pinned bundled values');
@@ -149,19 +166,59 @@ async function runColorSystemTransaction(message: GenerateColorSystemMessage): P
     }
   }
 
+  const collisionPolicy = message.collisionPolicy ?? 'cancel';
+  const outputResolution = await resolveColorSystemOutputName(message);
+  const effectiveMessage: GenerateColorSystemMessage = {
+    ...message,
+    collisionPolicy,
+    config: { ...message.config, systemName: outputResolution.outputName },
+    scales: { ...message.scales, systemName: outputResolution.outputName },
+  };
   const pageView = capturePageView();
   let generatedFrame: FrameNode | undefined;
+  let variableTransaction: ColorVariableTransaction | undefined;
 
   try {
-    generatedFrame = await generateColorSystemFrames(message.config, message.scales, {
-      notify: false,
-    });
+    generatedFrame = await generateColorSystemFrames(
+      effectiveMessage.config,
+      effectiveMessage.scales,
+      { notify: false }
+    );
 
-    if (message.createStyles) {
-      await createColorStyles(message.scales, message.scales.systemName);
+    if (effectiveMessage.createVariables) {
+      variableTransaction = await createColorVariables(
+        effectiveMessage.scales,
+        outputResolution.outputName,
+        collisionPolicy
+      );
     }
+    const styleReport = effectiveMessage.createStyles
+      ? await createColorStyles(
+          effectiveMessage.scales,
+          outputResolution.outputName,
+          collisionPolicy
+        )
+      : undefined;
+    return {
+      outputName: outputResolution.outputName,
+      modes:
+        variableTransaction?.report.modes ??
+        (effectiveMessage.scales.includeDarkMode ? ['Light', 'Dark'] : ['Light']),
+      primitiveCount: variableTransaction?.report.primitiveCount ?? 0,
+      semanticAliasCount: variableTransaction?.report.semanticAliasCount ?? 0,
+      styleCount: styleReport?.styleCount ?? 0,
+      frameCount: 1,
+      skippedCount:
+        (variableTransaction?.report.skippedCount ?? 0) + (styleReport?.skippedCount ?? 0),
+      warnings: [
+        ...outputResolution.warnings,
+        ...(variableTransaction?.report.warnings ?? []),
+        ...(styleReport?.warnings ?? []),
+      ],
+    };
   } catch (error) {
     const rollbackFailures: string[] = [];
+    if (variableTransaction) rollbackFailures.push(...variableTransaction.rollback());
     if (generatedFrame) {
       const frameRemovalFailure = removeGeneratedFrame(generatedFrame);
       if (frameRemovalFailure) rollbackFailures.push(frameRemovalFailure);
@@ -197,14 +254,17 @@ export async function handleGenerateColorSystem(
 
   let result: ColorSystemOperationResultMessage;
   try {
-    await runColorSystemTransaction(message);
+    const report = await runColorSystemTransaction(message);
+    figma.commitUndo();
     result = {
       type: 'color-system-operation-result',
       requestId: message.requestId,
       success: true,
+      message: `Created "${report.outputName}"`,
+      ...report,
     };
     notify(
-      `Created "${message.scales.systemName}" color system${message.createStyles ? ' and styles' : ''}`
+      `Created "${report.outputName}" color system${message.createStyles ? ', styles' : ''}${message.createVariables ? ', and variables' : ''}`
     );
   } catch (error) {
     console.error('Error generating color system:', error);

@@ -40,7 +40,18 @@ describe('ColorSystemModal submission', () => {
     });
   };
 
-  const sendOperationResult = (requestId: string, success: boolean, error?: string) => {
+  const advanceToReview = (method = 'Exact Radix Colors') => {
+    act(() => findButton('Continue')?.click());
+    act(() => findButton(method)?.click());
+    act(() => findButton('Continue')?.click());
+  };
+
+  const sendOperationResult = (
+    requestId: string,
+    success: boolean,
+    error?: string,
+    details: Record<string, unknown> = {}
+  ) => {
     act(() => {
       window.dispatchEvent(
         new MessageEvent('message', {
@@ -49,6 +60,7 @@ describe('ColorSystemModal submission', () => {
               type: 'color-system-operation-result',
               requestId,
               success,
+              ...details,
               ...(error ? { error } : {}),
             },
           },
@@ -79,13 +91,11 @@ describe('ColorSystemModal submission', () => {
   ])('blocks %s system names before posting', (_, invalidName, expectedError) => {
     renderModal('Test System');
 
-    act(() => findButton('Exact Radix Colors')?.click());
-
     const nameInput = container.querySelector<HTMLInputElement>('#color-system-name');
     expect(nameInput).not.toBeNull();
     setInputValue(nameInput!, invalidName);
 
-    const generateButton = findButton('Generate Color System') as HTMLButtonElement | undefined;
+    const generateButton = findButton('Continue') as HTMLButtonElement | undefined;
     const error = container.querySelector('#color-system-name-error');
 
     expect(nameInput?.getAttribute('aria-invalid')).toBe('true');
@@ -102,12 +112,12 @@ describe('ColorSystemModal submission', () => {
   it('posts one correlated transaction and blocks duplicate submission until success', () => {
     renderModal('Test System');
 
-    act(() => findButton('Exact Radix Colors')?.click());
+    advanceToReview();
 
     const createStylesToggle = Array.from(container.querySelectorAll('label'))
       .find(label => label.textContent?.includes('Create Figma Color Styles'))
       ?.querySelector<HTMLInputElement>('input');
-    const generateButton = findButton('Generate Color System') as HTMLButtonElement | undefined;
+    const generateButton = findButton('Create Color System') as HTMLButtonElement | undefined;
 
     expect(generateButton?.disabled).toBe(false);
 
@@ -120,6 +130,8 @@ describe('ColorSystemModal submission', () => {
           type: string;
           requestId: string;
           createStyles: boolean;
+          createVariables: boolean;
+          collisionPolicy: string;
         };
       },
       string,
@@ -130,6 +142,8 @@ describe('ColorSystemModal submission', () => {
     expect(request.type).toBe('generate-color-system');
     expect(request.requestId).toMatch(/^color-system-/);
     expect(request.createStyles).toBe(true);
+    expect(request.createVariables).toBe(true);
+    expect(request.collisionPolicy).toBe('cancel');
     expect(generateButton?.disabled).toBe(true);
 
     act(() => generateButton?.click());
@@ -141,14 +155,16 @@ describe('ColorSystemModal submission', () => {
     expect(container.querySelector('[role="dialog"]')).not.toBeNull();
 
     sendOperationResult(request.requestId, true);
-    expect(onClose).toHaveBeenCalledOnce();
+    expect(onClose).not.toHaveBeenCalled();
+    expect(container.textContent).toContain('Created “Test System”');
+    expect(findButton('Create Another')).toBeDefined();
   });
 
   it('re-enables submission after a correlated failure acknowledgement', () => {
     renderModal('Test System');
 
-    act(() => findButton('Exact Radix Colors')?.click());
-    act(() => findButton('Generate Color System')?.click());
+    advanceToReview();
+    act(() => findButton('Create Color System')?.click());
 
     const firstRequest = (
       postMessage.mock.calls[0][0] as {
@@ -158,7 +174,7 @@ describe('ColorSystemModal submission', () => {
 
     sendOperationResult(firstRequest.requestId, false, 'Style creation failed');
 
-    const retryButton = findButton('Generate Color System') as HTMLButtonElement | undefined;
+    const retryButton = findButton('Create Color System') as HTMLButtonElement | undefined;
     expect(retryButton?.disabled).toBe(false);
     expect(container.querySelector('[role="alert"]')?.textContent).toBe('Style creation failed');
     expect(onClose).not.toHaveBeenCalled();
@@ -174,9 +190,43 @@ describe('ColorSystemModal submission', () => {
     expect(postMessage).toHaveBeenCalledTimes(2);
   });
 
+  it('uses the selected collision policy and renders the backend output report', () => {
+    renderModal('Test System');
+    advanceToReview();
+    const policy = container.querySelector<HTMLSelectElement>('#color-system-collision-policy')!;
+    act(() => {
+      const setter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')?.set;
+      setter?.call(policy, 'create-copy');
+      policy.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    act(() => findButton('Create Color System')?.click());
+    const request = (
+      postMessage.mock.calls[0][0] as {
+        pluginMessage: { requestId: string; collisionPolicy: string };
+      }
+    ).pluginMessage;
+    expect(request.collisionPolicy).toBe('create-copy');
+
+    sendOperationResult(request.requestId, true, undefined, {
+      outputName: 'Test System Copy',
+      modes: ['Light', 'Dark'],
+      primitiveCount: 24,
+      semanticAliasCount: 10,
+      styleCount: 34,
+      frameCount: 1,
+      skippedCount: 0,
+      warnings: ['Existing output was preserved.'],
+    });
+
+    expect(container.textContent).toContain('Created “Test System Copy”');
+    expect(container.textContent).toContain('24 primitives');
+    expect(container.textContent).toContain('Existing output was preserved.');
+  });
+
   it('presents three distinct generation modes with accurate claims', () => {
     renderModal('Test System');
 
+    act(() => findButton('Continue')?.click());
     expect(findButton('Teul Generated')).toBeDefined();
     expect(findButton('Exact Radix Colors')).toBeDefined();
     expect(findButton('WCAG-Constrained Tokens')).toBeDefined();
@@ -187,12 +237,14 @@ describe('ColorSystemModal submission', () => {
   it('posts exact Radix source metadata instead of inserting the input color into the scale', () => {
     renderModal('Test System');
 
+    act(() => findButton('Continue')?.click());
     act(() => findButton('Exact Radix Colors')?.click());
     expect(container.textContent).toContain(
       'the input color is not inserted into the exact Radix scale'
     );
 
-    act(() => findButton('Generate Color System')?.click());
+    act(() => findButton('Continue')?.click());
+    act(() => findButton('Create Color System')?.click());
 
     const request = (
       postMessage.mock.calls[0][0] as {
@@ -224,10 +276,12 @@ describe('ColorSystemModal submission', () => {
   it('posts a passing recomputable semantic policy in WCAG-constrained mode', () => {
     renderModal('Test System');
 
+    act(() => findButton('Continue')?.click());
     act(() => findButton('WCAG-Constrained Tokens')?.click());
     expect(container.textContent).toContain('WCAG 2.2 semantic color policy: Passed');
 
-    act(() => findButton('Generate Color System')?.click());
+    act(() => findButton('Continue')?.click());
+    act(() => findButton('Create Color System')?.click());
 
     const request = (
       postMessage.mock.calls[0][0] as {

@@ -693,6 +693,7 @@ describe('buildCreateGridFrameMessage', () => {
     };
 
     const result = buildCreateGridFrameMessage({
+      requestId: 'grid-frame-1',
       config,
       width: 1440,
       height: 900,
@@ -710,6 +711,7 @@ describe('buildCreateGridFrameMessage', () => {
     const config: GridConfig = {};
 
     const result = buildCreateGridFrameMessage({
+      requestId: 'grid-frame-2',
       config,
       frameName: 'My Custom Grid',
       width: 800,
@@ -734,6 +736,7 @@ describe('buildCreateGridFrameMessage', () => {
     };
 
     const result = buildCreateGridFrameMessage({
+      requestId: 'grid-frame-3',
       config,
       width: 800,
       height: 600,
@@ -746,6 +749,7 @@ describe('buildCreateGridFrameMessage', () => {
     const config: GridConfig = {};
 
     const result = buildCreateGridFrameMessage({
+      requestId: 'grid-frame-4',
       config,
       width: 800,
       height: 600,
@@ -789,6 +793,7 @@ describe('buildApplyGridMessage', () => {
     expect(result.expectedTargetIds).toEqual(['1:2', '3:4']);
     expect(result.replaceExisting).toBe(true); // Default
     expect(result.applicationMode).toBe('fixed');
+    expect(result.linkedResourcePolicy).toBe('replace-with-values');
   });
 
   it('respects replaceExisting setting', () => {
@@ -870,5 +875,41 @@ describe('buildApplyGridMessage', () => {
     expect(result.applicationMode).toBe('responsive-width');
     expect(result.responsiveWidth).toEqual(responsiveWidth);
     expect(result.sourceDimensions).toBeUndefined();
+  });
+
+  it('preserves captured native resource policy and variable aliases', () => {
+    const boundVariables = {
+      gutterSize: { type: 'VARIABLE_ALIAS' as const, id: 'VariableID:gutter' },
+    };
+    const config: GridConfig = {
+      columns: {
+        count: 4,
+        gutterSize: 20,
+        gutterUnit: 'px',
+        margin: 32,
+        marginUnit: 'px',
+        alignment: 'STRETCH',
+        visible: true,
+        color: defaultColor,
+        boundVariables,
+      },
+    };
+    const nativeResources = {
+      gridStyleId: 'GridStyle:editorial',
+      boundVariableIds: ['VariableID:gutter'],
+      sourceFileKey: 'file-key',
+    };
+
+    const message = buildApplyGridMessage({
+      requestId: 'grid-linked',
+      config,
+      expectedTargetIds: ['1:2'],
+      nativeResources,
+      linkedResourcePolicy: 'preserve-if-available',
+    });
+
+    expect(message.sourceConfig.columns?.boundVariables).toEqual(boundVariables);
+    expect(message.nativeResources).toBe(nativeResources);
+    expect(message.linkedResourcePolicy).toBe('preserve-if-available');
   });
 });

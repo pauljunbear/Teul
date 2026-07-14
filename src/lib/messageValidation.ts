@@ -1,12 +1,17 @@
-import type { UIToPluginMessage } from '../types/messages';
+import type { PluginToUIMessage, UIToPluginMessage } from '../types/messages';
 import { calculateContrastRatio, getLuminance, hexToOklch, hexToRgb } from './utils';
 import { isSemanticColorPolicyCurrent } from './semanticColorPolicy';
 import { doesRadixSourceInputMatchFamily, isExactRadixScale } from './radixColors';
+import { parseGridConstructionV2 } from './gridConstructionV2';
 
 type UnknownRecord = Record<string, unknown>;
 
 export type MessageValidationResult =
   | { valid: true; message: UIToPluginMessage }
+  | { valid: false; error: string };
+
+export type PluginMessageValidationResult =
+  | { valid: true; message: PluginToUIMessage }
   | { valid: false; error: string };
 
 const HEX_COLOR = /^#?[0-9a-fA-F]{6}$/;
@@ -19,11 +24,13 @@ const GRID_APPLICATION_MODES = [
   'canonical-only',
 ] as const;
 const GRID_ENTRY_KEYS = ['columns', 'rows', 'baseline'] as const;
+const GRID_LINKED_RESOURCE_POLICIES = ['preserve-if-available', 'replace-with-values'] as const;
 const GRADIENT_TYPES = ['LINEAR', 'RADIAL', 'ANGULAR', 'DIAMOND'] as const;
 const DETAIL_LEVELS = ['minimal', 'detailed', 'presentation'] as const;
 const SCALE_METHODS = ['custom', 'radix-match', 'wcag-constrained'] as const;
 const COLOR_SCALE_METHODS = ['Teul OKLCH v2', 'Radix Colors'] as const;
 const COLOR_ROLES = ['primary', 'secondary', 'tertiary', 'accent'] as const;
+const COLOR_COLLISION_POLICIES = ['cancel', 'update-local', 'create-copy'] as const;
 const NEUTRAL_FAMILIES = ['auto', 'gray', 'mauve', 'slate', 'sage', 'olive', 'sand'] as const;
 const DOCUMENT_COLOR_PROFILES = ['legacy', 'srgb', 'display-p3', 'unknown'] as const;
 const SCALE_KEY = /^(neutral|(primary|secondary|tertiary|accent)([2-9]\d*)?)$/;
@@ -42,6 +49,7 @@ const MAX_GRID_MEASUREMENT = 100000;
 // Figma clientStorage has a 5 MB per-plugin quota. Keep a small envelope for
 // other plugin preferences and let setAsync report the authoritative quota error.
 const MAX_GRID_STORAGE_STRING_LENGTH = 4 * 1024 * 1024;
+const MAX_WORKSPACE_STORAGE_STRING_LENGTH = 256 * 1024;
 
 function isRecord(value: unknown): value is UnknownRecord {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -81,14 +89,20 @@ function validateColor(value: unknown): value is { hex: string; name: string } {
 }
 
 function validateColorOperation(message: UnknownRecord): string | null {
+  if (!isBoundedString(message.requestId, 128)) {
+    return 'requestId must be a non-empty bounded string';
+  }
   if (!validateColor(message)) return 'color payload must include a valid hex color and name';
-  if (Object.keys(message).some(key => !['type', 'hex', 'name'].includes(key))) {
+  if (Object.keys(message).some(key => !['type', 'requestId', 'hex', 'name'].includes(key))) {
     return 'color payload contains unsupported fields';
   }
   return null;
 }
 
 function validateGradient(message: UnknownRecord): string | null {
+  if (!isBoundedString(message.requestId, 128)) {
+    return 'requestId must be a non-empty bounded string';
+  }
   if (!isOneOf(message.gradientType, GRADIENT_TYPES)) return 'gradientType is invalid';
   if (
     !Array.isArray(message.colors) ||
@@ -111,6 +125,31 @@ function validateGridColor(value: unknown): boolean {
   );
 }
 
+function validateGridBoundVariables(value: unknown): boolean {
+  if (value === undefined) return true;
+  if (!isRecord(value) || Object.keys(value).length > 16) return false;
+  return Object.entries(value).every(
+    ([field, alias]) =>
+      field.length > 0 &&
+      field.length <= 64 &&
+      isRecord(alias) &&
+      alias.type === 'VARIABLE_ALIAS' &&
+      isBoundedString(alias.id, 256)
+  );
+}
+
+function validateGridNativeResources(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    (value.gridStyleId === undefined || isBoundedString(value.gridStyleId, 256)) &&
+    (value.sourceFileKey === undefined || isBoundedString(value.sourceFileKey, 256)) &&
+    Array.isArray(value.boundVariableIds) &&
+    value.boundVariableIds.length <= 64 &&
+    value.boundVariableIds.every(id => isBoundedString(id, 256)) &&
+    new Set(value.boundVariableIds).size === value.boundVariableIds.length
+  );
+}
+
 function validateFigmaRowsOrColumnsGrid(value: unknown, pattern: 'COLUMNS' | 'ROWS'): boolean {
   if (
     !isRecord(value) ||
@@ -120,7 +159,8 @@ function validateFigmaRowsOrColumnsGrid(value: unknown, pattern: 'COLUMNS' | 'RO
     !isIntegerInRange(value.count, 1, MAX_GRID_COUNT) ||
     !isFiniteNumberInRange(value.offset, 0, MAX_GRID_MEASUREMENT) ||
     typeof value.visible !== 'boolean' ||
-    !validateGridColor(value.color)
+    !validateGridColor(value.color) ||
+    !validateGridBoundVariables(value.boundVariables)
   ) {
     return false;
   }
@@ -137,7 +177,8 @@ function validateFigmaUniformGrid(value: unknown): boolean {
     value.pattern === 'GRID' &&
     isFiniteNumberInRange(value.sectionSize, 1, MAX_GRID_MEASUREMENT) &&
     typeof value.visible === 'boolean' &&
-    validateGridColor(value.color)
+    validateGridColor(value.color) &&
+    validateGridBoundVariables(value.boundVariables)
   );
 }
 
@@ -160,7 +201,8 @@ function validateSourceRowsOrColumnsGrid(value: unknown): boolean {
     isOneOf(value.marginUnit, GRID_UNITS) &&
     isOneOf(value.alignment, GRID_ALIGNMENTS) &&
     typeof value.visible === 'boolean' &&
-    validateGridColor(value.color)
+    validateGridColor(value.color) &&
+    validateGridBoundVariables(value.boundVariables)
   );
 }
 
@@ -170,7 +212,8 @@ function validateSourceBaselineGrid(value: unknown): boolean {
     isFiniteNumberInRange(value.height, 1, MAX_GRID_MEASUREMENT) &&
     isFiniteNumberInRange(value.offset, 0, MAX_GRID_MEASUREMENT) &&
     typeof value.visible === 'boolean' &&
-    validateGridColor(value.color)
+    validateGridColor(value.color) &&
+    validateGridBoundVariables(value.boundVariables)
   );
 }
 
@@ -214,8 +257,18 @@ function validateResponsiveWidth(value: unknown): boolean {
 }
 
 function validateCreateGridFrame(message: UnknownRecord): string | null {
+  if (!isBoundedString(message.requestId, 128)) {
+    return 'requestId must be a non-empty bounded string';
+  }
   if (!validateFigmaGridConfig(message.config)) return 'config must be a valid Figma grid config';
-  if (!hasGridEntry(message.config)) return 'config must include at least one grid entry';
+  const construction =
+    message.construction === undefined ? null : parseGridConstructionV2(message.construction);
+  const generatedConstruction =
+    construction?.realization.kind === 'generated-geometry' ||
+    construction?.realization.kind === 'approximation';
+  if (!hasGridEntry(message.config) && !generatedConstruction) {
+    return 'config must include at least one grid entry';
+  }
   if (!isBoundedString(message.frameName)) return 'frameName must be a non-empty bounded string';
   if (!isFiniteNumberInRange(message.width, 1, MAX_DIMENSION)) return 'width is out of range';
   if (!isFiniteNumberInRange(message.height, 1, MAX_DIMENSION)) return 'height is out of range';
@@ -224,6 +277,9 @@ function validateCreateGridFrame(message: UnknownRecord): string | null {
     typeof message.positionNearSelection !== 'boolean'
   ) {
     return 'positionNearSelection must be a boolean';
+  }
+  if (message.construction !== undefined && !construction) {
+    return 'construction must be a valid Grid Construction v2 record';
   }
   return null;
 }
@@ -235,7 +291,12 @@ function validateApplyGrid(message: UnknownRecord): string | null {
   if (!validateSourceGridConfig(message.sourceConfig)) {
     return 'sourceConfig must be a valid source grid config';
   }
-  if (!hasGridEntry(message.sourceConfig)) {
+  const construction =
+    message.construction === undefined ? null : parseGridConstructionV2(message.construction);
+  const generatedConstruction =
+    construction?.realization.kind === 'generated-geometry' ||
+    construction?.realization.kind === 'approximation';
+  if (!hasGridEntry(message.sourceConfig) && !generatedConstruction) {
     return 'sourceConfig must include at least one grid entry';
   }
   if (message.sourceDimensions !== undefined && !validateDimensions(message.sourceDimensions)) {
@@ -270,6 +331,24 @@ function validateApplyGrid(message: UnknownRecord): string | null {
     return `expectedTargetIds must contain 1-${MAX_GRID_TARGETS} unique target IDs`;
   }
   if (typeof message.replaceExisting !== 'boolean') return 'replaceExisting must be a boolean';
+  if (!isOneOf(message.linkedResourcePolicy, GRID_LINKED_RESOURCE_POLICIES)) {
+    return 'linkedResourcePolicy must preserve links or replace them with numeric values';
+  }
+  if (
+    message.nativeResources !== undefined &&
+    !validateGridNativeResources(message.nativeResources)
+  ) {
+    return 'nativeResources must contain valid style and variable identifiers';
+  }
+  if (
+    message.linkedResourcePolicy === 'preserve-if-available' &&
+    message.nativeResources === undefined
+  ) {
+    return 'preserve-if-available requires nativeResources';
+  }
+  if (message.construction !== undefined && !construction) {
+    return 'construction must be a valid Grid Construction v2 record';
+  }
   return null;
 }
 
@@ -277,6 +356,22 @@ function validateGetSelectionForGrid(message: UnknownRecord): string | null {
   return message.requestId === undefined || isBoundedString(message.requestId, 128)
     ? null
     : 'requestId must be a non-empty bounded string';
+}
+
+function validateClearGrid(message: UnknownRecord): string | null {
+  if (!isBoundedString(message.requestId, 128)) {
+    return 'requestId must be a non-empty bounded string';
+  }
+  if (
+    !Array.isArray(message.expectedTargetIds) ||
+    message.expectedTargetIds.length === 0 ||
+    message.expectedTargetIds.length > MAX_GRID_TARGETS ||
+    !message.expectedTargetIds.every(id => isBoundedString(id, MAX_TARGET_ID_LENGTH)) ||
+    new Set(message.expectedTargetIds).size !== message.expectedTargetIds.length
+  ) {
+    return 'expectedTargetIds must be a non-empty bounded list of unique target IDs';
+  }
+  return null;
 }
 
 function validateGridStorageRequest(message: UnknownRecord): string | null {
@@ -294,6 +389,21 @@ function validateGridStorageRequest(message: UnknownRecord): string | null {
     }
   }
 
+  return null;
+}
+
+function validateWorkspaceStorageRequest(message: UnknownRecord): string | null {
+  if (!isBoundedString(message.requestId, 128)) {
+    return 'requestId must be a non-empty bounded string';
+  }
+  if (
+    message.type === 'set-workspace-storage' &&
+    (typeof message.value !== 'string' ||
+      message.value.length === 0 ||
+      message.value.length > MAX_WORKSPACE_STORAGE_STRING_LENGTH)
+  ) {
+    return `value must be a non-empty string no longer than ${MAX_WORKSPACE_STORAGE_STRING_LENGTH} characters`;
+  }
   return null;
 }
 
@@ -481,19 +591,6 @@ function validateScalesContainer(
   );
 }
 
-function validateUsageProportions(value: unknown): boolean {
-  if (!isRecord(value)) return false;
-
-  const proportions = [value.primary, value.secondary, value.tertiary, value.accent, value.neutral];
-
-  return (
-    proportions.every(proportion => isFiniteNumberInRange(proportion, 0, 100)) &&
-    Math.abs(
-      proportions.reduce<number>((total, proportion) => total + (proportion as number), 0) - 100
-    ) < 0.001
-  );
-}
-
 function validateCreateStylesData(value: unknown): boolean {
   return (
     isRecord(value) &&
@@ -512,7 +609,6 @@ function validateColorSystemData(value: unknown): boolean {
     isOneOf(value.scaleMethod, SCALE_METHODS) &&
     (value.documentColorProfile === undefined ||
       isOneOf(value.documentColorProfile, DOCUMENT_COLOR_PROFILES)) &&
-    validateUsageProportions(value.usageProportions) &&
     (value.multiSelectMode === undefined || typeof value.multiSelectMode === 'boolean') &&
     (value.colorCounts === undefined || validateColorCounts(value.colorCounts)) &&
     validateSemanticColorPolicy(value)
@@ -629,6 +725,13 @@ function validateGenerateColorSystem(message: UnknownRecord): string | null {
     return 'requestId must be a non-empty bounded string';
   }
   if (typeof message.createStyles !== 'boolean') return 'createStyles must be a boolean';
+  if (typeof message.createVariables !== 'boolean') return 'createVariables must be a boolean';
+  if (
+    message.collisionPolicy !== undefined &&
+    !isOneOf(message.collisionPolicy, COLOR_COLLISION_POLICIES)
+  ) {
+    return 'collisionPolicy must be cancel, update-local, or create-copy';
+  }
   if (!validateColorSystemConfig(message.config)) {
     return 'config must be valid color system configuration';
   }
@@ -665,13 +768,27 @@ export function validateUIToPluginMessage(message: unknown): MessageValidationRe
     case 'get-selection-for-grid':
       error = validateGetSelectionForGrid(message);
       break;
+    case 'capture-selected-grid':
+      error = isBoundedString(message.requestId, 128)
+        ? null
+        : 'requestId must be a non-empty bounded string';
+      break;
     case 'get-document-color-profile':
       error = null;
+      break;
+    case 'get-selection-for-accessibility':
+      error = isBoundedString(message.requestId, 128)
+        ? null
+        : 'requestId must be a non-empty bounded string';
       break;
     case 'get-grid-storage':
     case 'set-grid-storage':
     case 'delete-grid-storage':
       error = validateGridStorageRequest(message);
+      break;
+    case 'get-workspace-storage':
+    case 'set-workspace-storage':
+      error = validateWorkspaceStorageRequest(message);
       break;
     case 'apply-gradient':
       error = validateGradient(message);
@@ -690,6 +807,9 @@ export function validateUIToPluginMessage(message: unknown): MessageValidationRe
     case 'apply-grid':
       error = validateApplyGrid(message);
       break;
+    case 'clear-grid':
+      error = validateClearGrid(message);
+      break;
     default:
       return invalid(`unsupported message type: ${message.type}`);
   }
@@ -697,6 +817,168 @@ export function validateUIToPluginMessage(message: unknown): MessageValidationRe
   return error ? invalid(`${message.type}: ${error}`) : valid(message);
 }
 
-export function isUIToPluginMessage(message: unknown): message is UIToPluginMessage {
-  return validateUIToPluginMessage(message).valid;
+function validPlugin(message: UnknownRecord): PluginMessageValidationResult {
+  return { valid: true, message: message as unknown as PluginToUIMessage };
+}
+
+function invalidPlugin(error: string): PluginMessageValidationResult {
+  return { valid: false, error };
+}
+
+function optionalBoundedString(value: unknown, maxLength = MAX_TEXT_LENGTH): boolean {
+  return value === undefined || isBoundedString(value, maxLength);
+}
+
+function validResultEnvelope(message: UnknownRecord): boolean {
+  return isBoundedString(message.requestId, 128) && typeof message.success === 'boolean';
+}
+
+function validSelectionTarget(value: unknown): boolean {
+  return (
+    isRecord(value) &&
+    isBoundedString(value.id, MAX_TARGET_ID_LENGTH) &&
+    isBoundedString(value.name) &&
+    isFiniteNumberInRange(value.width, 0, MAX_DIMENSION) &&
+    isFiniteNumberInRange(value.height, 0, MAX_DIMENSION) &&
+    isIntegerInRange(value.layoutGridCount, 0, MAX_GRID_COUNT) &&
+    (value.teulConstructionCount === undefined ||
+      isIntegerInRange(value.teulConstructionCount, 0, MAX_GRID_COUNT))
+  );
+}
+
+function validNonNegativeCount(value: unknown): boolean {
+  return isIntegerInRange(value, 0, MAX_COLOR_SCALES * MAX_GRID_TARGETS);
+}
+
+/** Runtime validation for every plugin-to-UI message before component routing. */
+export function validatePluginToUIMessage(message: unknown): PluginMessageValidationResult {
+  if (!isRecord(message)) return invalidPlugin('message must be an object');
+  if (!isBoundedString(message.type, 64)) return invalidPlugin('message type must be bounded');
+
+  let validMessage = false;
+  switch (message.type) {
+    case 'selection-info':
+      validMessage =
+        (message.requestId === undefined || isBoundedString(message.requestId, 128)) &&
+        typeof message.hasSelection === 'boolean' &&
+        typeof message.isFrame === 'boolean' &&
+        isIntegerInRange(message.selectedCount, 0, MAX_GRID_TARGETS) &&
+        Array.isArray(message.eligibleTargets) &&
+        message.eligibleTargets.length <= MAX_GRID_TARGETS &&
+        message.eligibleTargets.every(validSelectionTarget) &&
+        isIntegerInRange(message.ineligibleCount, 0, MAX_GRID_TARGETS) &&
+        (message.width === undefined || isFiniteNumberInRange(message.width, 0, MAX_DIMENSION)) &&
+        (message.height === undefined || isFiniteNumberInRange(message.height, 0, MAX_DIMENSION)) &&
+        optionalBoundedString(message.name);
+      break;
+    case 'document-color-profile':
+      validMessage = isOneOf(message.profile, DOCUMENT_COLOR_PROFILES);
+      break;
+    case 'accessibility-selection-result':
+      validMessage =
+        validResultEnvelope(message) &&
+        isOneOf(message.profile, DOCUMENT_COLOR_PROFILES) &&
+        optionalBoundedString(message.foreground) &&
+        optionalBoundedString(message.background) &&
+        optionalBoundedString(message.foregroundSource) &&
+        optionalBoundedString(message.backgroundSource) &&
+        optionalBoundedString(message.error, MAX_NOTIFICATION_LENGTH);
+      break;
+    case 'color-system-operation-result':
+      validMessage =
+        validResultEnvelope(message) &&
+        optionalBoundedString(message.message, MAX_NOTIFICATION_LENGTH) &&
+        optionalBoundedString(message.outputName) &&
+        (message.modes === undefined ||
+          (Array.isArray(message.modes) &&
+            message.modes.length <= 2 &&
+            message.modes.every(mode => mode === 'Light' || mode === 'Dark'))) &&
+        [
+          message.primitiveCount,
+          message.semanticAliasCount,
+          message.styleCount,
+          message.frameCount,
+          message.skippedCount,
+        ].every(value => value === undefined || validNonNegativeCount(value)) &&
+        (message.warnings === undefined ||
+          (Array.isArray(message.warnings) &&
+            message.warnings.length <= 100 &&
+            message.warnings.every(warning =>
+              isBoundedString(warning, MAX_NOTIFICATION_LENGTH)
+            ))) &&
+        optionalBoundedString(message.error, MAX_NOTIFICATION_LENGTH);
+      break;
+    case 'mutation-operation-result':
+      validMessage =
+        validResultEnvelope(message) &&
+        isOneOf(message.operation, [
+          'apply-fill',
+          'apply-stroke',
+          'create-style',
+          'apply-gradient',
+          'create-grid-frame',
+        ] as const) &&
+        isBoundedString(message.message, MAX_NOTIFICATION_LENGTH) &&
+        optionalBoundedString(message.error, MAX_NOTIFICATION_LENGTH);
+      break;
+    case 'grid-applied':
+      validMessage =
+        validResultEnvelope(message) &&
+        validNonNegativeCount(message.appliedCount) &&
+        validNonNegativeCount(message.skippedCount) &&
+        validNonNegativeCount(message.failedCount) &&
+        isBoundedString(message.message, MAX_NOTIFICATION_LENGTH) &&
+        optionalBoundedString(message.frameName) &&
+        (message.frameWidth === undefined ||
+          isFiniteNumberInRange(message.frameWidth, 0, MAX_DIMENSION)) &&
+        (message.frameHeight === undefined ||
+          isFiniteNumberInRange(message.frameHeight, 0, MAX_DIMENSION)) &&
+        optionalBoundedString(message.error, MAX_NOTIFICATION_LENGTH) &&
+        (message.realization === undefined ||
+          (isRecord(message.realization) &&
+            isOneOf(message.realization.kind, [
+              'native-guides',
+              'multiple-native-layers',
+              'generated-geometry',
+              'approximation',
+            ] as const)));
+      break;
+    case 'grid-storage-result':
+      validMessage =
+        validResultEnvelope(message) &&
+        isOneOf(message.operation, ['get', 'set', 'delete'] as const) &&
+        (message.value === undefined ||
+          message.value === null ||
+          typeof message.value === 'string') &&
+        optionalBoundedString(message.error, MAX_NOTIFICATION_LENGTH);
+      break;
+    case 'workspace-storage-result':
+      validMessage =
+        validResultEnvelope(message) &&
+        isOneOf(message.operation, ['get', 'set'] as const) &&
+        (message.value === undefined ||
+          message.value === null ||
+          typeof message.value === 'string') &&
+        optionalBoundedString(message.error, MAX_NOTIFICATION_LENGTH);
+      break;
+    case 'grid-capture-result':
+      validMessage =
+        validResultEnvelope(message) &&
+        (message.config === undefined || validateSourceGridConfig(message.config)) &&
+        optionalBoundedString(message.frameName) &&
+        (message.dimensions === undefined ||
+          (isRecord(message.dimensions) &&
+            isFiniteNumberInRange(message.dimensions.width, 1, MAX_DIMENSION) &&
+            isFiniteNumberInRange(message.dimensions.height, 1, MAX_DIMENSION))) &&
+        (message.nativeResources === undefined ||
+          validateGridNativeResources(message.nativeResources)) &&
+        optionalBoundedString(message.error, MAX_NOTIFICATION_LENGTH);
+      break;
+    default:
+      return invalidPlugin(`unsupported message type: ${message.type}`);
+  }
+
+  return validMessage
+    ? validPlugin(message)
+    : invalidPlugin(`${message.type}: invalid plugin-to-UI payload`);
 }

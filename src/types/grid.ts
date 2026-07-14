@@ -46,6 +46,9 @@ export interface GridResponsiveWidth {
 export interface GridSelectionTarget extends GridDimensions {
   id: string;
   name: string;
+  layoutGridCount: number;
+  /** Generated Teul construction overlays already attached to this target. */
+  teulConstructionCount?: number;
 }
 
 /** Evidence-based classification for preset provenance */
@@ -81,6 +84,89 @@ export interface GridColor {
   a: number; // 0-1
 }
 
+/** Serializable subset of Figma's VariableAlias used by captured native guides. */
+export interface GridVariableAlias {
+  type: 'VARIABLE_ALIAS';
+  id: string;
+}
+
+/** Bound fields retained from a native Figma layout-grid layer. */
+export type GridBoundVariables = Record<string, GridVariableAlias>;
+
+/** Native resources captured with a saved grid and resolved again on apply. */
+export interface GridNativeResources {
+  gridStyleId?: string;
+  boundVariableIds: string[];
+  sourceFileKey?: string;
+}
+
+export type GridLinkedResourcePolicy = 'preserve-if-available' | 'replace-with-values';
+
+export type GridConstructionAxis = 'columns' | 'rows';
+export type GridConstructionRealizationKind =
+  | 'native-layout-grids'
+  | 'native-layout-grid-layers'
+  | 'generated-geometry'
+  | 'approximation';
+
+export interface GridConstructionMarginsV2 {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+  inside?: number;
+  outside?: number;
+  unit: GridUnit;
+}
+
+export interface GridTrackGroupV2 {
+  id: string;
+  axis: GridConstructionAxis;
+  /** Ordered track sizes. Unequal values are preserved. */
+  tracks: number[];
+  /** Ordered gaps between tracks; length must equal tracks.length - 1. */
+  gutters: number[];
+  /** Space before this group in the same axis. */
+  gapBefore: number;
+  unit: GridUnit;
+  visible: boolean;
+  color: GridColor;
+}
+
+export interface GridNestedSubdivisionV2 {
+  id: string;
+  /** `${groupId}:${zeroBasedTrackIndex}` identifies the parent track. */
+  parentTrackId: string;
+  axis: GridConstructionAxis;
+  tracks: number[];
+  gutters: number[];
+  insetStart: number;
+  insetEnd: number;
+  unit: GridUnit;
+  visible: boolean;
+  color: GridColor;
+}
+
+export interface GridBaselineRowsV2 {
+  interval: number;
+  topInset: number;
+  unit: GridUnit;
+  visible: boolean;
+  color: GridColor;
+}
+
+export interface GridConstructionV2 {
+  version: 2;
+  margins: GridConstructionMarginsV2;
+  trackGroups: GridTrackGroupV2[];
+  subdivisions: GridNestedSubdivisionV2[];
+  baseline?: GridBaselineRowsV2;
+  realization: {
+    kind: GridConstructionRealizationKind;
+    disclosure: string;
+  };
+}
+
 // ============================================
 // Column Grid Configuration
 // ============================================
@@ -102,6 +188,8 @@ export interface ColumnGridConfig {
   visible: boolean;
   /** Grid line color */
   color: GridColor;
+  /** Optional native variable bindings captured from Figma. */
+  boundVariables?: GridBoundVariables;
 }
 
 // ============================================
@@ -125,6 +213,8 @@ export interface RowGridConfig {
   visible: boolean;
   /** Grid line color */
   color: GridColor;
+  /** Optional native variable bindings captured from Figma. */
+  boundVariables?: GridBoundVariables;
 }
 
 // ============================================
@@ -140,6 +230,8 @@ export interface BaselineGridConfig {
   visible: boolean;
   /** Grid line color */
   color: GridColor;
+  /** Optional native variable bindings captured from Figma. */
+  boundVariables?: GridBoundVariables;
 }
 
 // ============================================
@@ -180,6 +272,8 @@ export interface GridPreset {
   responsiveWidth?: GridResponsiveWidth;
   /** The actual grid configuration */
   config: GridConfig;
+  /** Versioned source construction; config remains the current native realization. */
+  construction?: GridConstructionV2;
   /**
    * Source and adaptation disclosure. Optional for backward compatibility with
    * saved and third-party presets; all bundled presets include this metadata.
@@ -200,6 +294,8 @@ export interface SavedGrid extends GridPreset {
   isCustom: true;
   /** Source of the grid (preset name) */
   source?: string;
+  /** Linked style and variable identifiers retained by native capture. */
+  nativeResources?: GridNativeResources;
 }
 
 // ============================================
@@ -215,6 +311,7 @@ export interface FigmaRowsColsLayoutGrid {
   offset: number;
   visible: boolean;
   color: GridColor;
+  boundVariables?: GridBoundVariables;
 }
 
 export interface FigmaUniformLayoutGrid {
@@ -222,6 +319,7 @@ export interface FigmaUniformLayoutGrid {
   sectionSize: number;
   visible: boolean;
   color: GridColor;
+  boundVariables?: GridBoundVariables;
 }
 
 export type FigmaLayoutGrid = FigmaRowsColsLayoutGrid | FigmaUniformLayoutGrid;

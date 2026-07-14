@@ -19,13 +19,6 @@ const scalesData: ColorSystemData = {
       },
     },
   },
-  usageProportions: {
-    primary: 0,
-    secondary: 0,
-    tertiary: 0,
-    accent: 0,
-    neutral: 100,
-  },
 };
 
 interface MockNode {
@@ -307,6 +300,33 @@ describe('generateColorSystemFrames atomic generation', () => {
 
     expect(nodes.map(node => node.name)).not.toContain('WCAG Policy Report (light)');
   });
+
+  it.each(['minimal', 'detailed', 'presentation'] as const)(
+    'does not present untested semantic, pairing, CTA, or usage advice in custom %s output',
+    async detailLevel => {
+      const { nodes } = stubSuccessfulFigmaGeneration();
+      const customData: ColorSystemData = {
+        ...scalesData,
+        detailLevel,
+        scales: { light: { neutral: makeFullScale('light') } },
+      };
+
+      await generateColorSystemFrames({}, customData, { notify: false });
+
+      const names = nodes.map(node => node.name);
+      const text = nodes
+        .map(node => node.characters)
+        .filter((characters): characters is string => Boolean(characters))
+        .join('\n');
+
+      expect(names).not.toContain('Semantic Labels');
+      expect(names).not.toContain('Usage Proportions');
+      expect(names).not.toContain('Color Pairing Guide');
+      expect(text).not.toMatch(
+        /SEMANTIC USAGE GUIDE|RADIX STEP USAGE GUIDE|High Contrast|Harmonious Duo|Accents & CTAs|All colors work together/
+      );
+    }
+  );
 
   it('rejects forged Exact Radix values before creating frames', async () => {
     const forgedScale = {

@@ -108,27 +108,6 @@ export interface GridFitOptions {
   responsiveWidth?: GridResponsiveWidth;
 }
 
-export interface GridPresetMatrixAnalysis {
-  presetId: string;
-  presetName: string;
-  results: GridFitAnalysis[];
-  fitCount: number;
-  warningCount: number;
-  failureCount: number;
-}
-
-export interface GridPresetRecommendation {
-  preset: GridPreset;
-  analysis: GridFitAnalysis;
-  score: number;
-  reasons: string[];
-}
-
-export interface GridPresetRecommendationOptions extends GridFitOptions {
-  limit?: number;
-  includeFailures?: boolean;
-}
-
 export interface GridFitAggregateAnalysis {
   status: GridFitStatus;
   fits: boolean;
@@ -140,42 +119,6 @@ export interface GridFitAggregateAnalysis {
   analyses: GridFitAnalysis[];
   representative: GridFitAnalysis;
 }
-
-/** Required frame-size matrix from the product requirements. */
-export const GRID_FIT_FRAME_MATRIX: readonly GridFitFrame[] = [
-  { id: 'small-mobile', name: 'Small mobile', width: 320, height: 568 },
-  { id: 'modern-phone', name: 'Modern phone', width: 390, height: 844 },
-  { id: 'tablet-portrait', name: 'Tablet portrait', width: 768, height: 1024 },
-  {
-    id: 'tablet-landscape',
-    name: 'Tablet landscape / 4:3',
-    width: 1024,
-    height: 768,
-  },
-  { id: 'widescreen-16-9', name: '16:9', width: 1280, height: 720 },
-  { id: 'desktop', name: 'Desktop', width: 1440, height: 900 },
-  { id: 'full-hd', name: 'Full HD', width: 1920, height: 1080 },
-  { id: 'square', name: 'Square', width: 1080, height: 1080 },
-  { id: 'portrait-social', name: 'Portrait social', width: 1080, height: 1350 },
-  {
-    id: 'story-video-portrait',
-    name: 'Story/video portrait',
-    width: 1080,
-    height: 1920,
-  },
-  {
-    id: 'a-series-approximation',
-    name: 'A-series approximation',
-    width: 794,
-    height: 1123,
-  },
-  {
-    id: 'arbitrary-tiny-invalid',
-    name: 'Arbitrary/tiny invalid case',
-    width: 100,
-    height: 100,
-  },
-];
 
 const DEFAULT_MINIMUM_SECTION_SIZE = 12;
 const DEFAULT_PREFERRED_SECTION_SIZE = 24;
@@ -656,19 +599,6 @@ export function analyzeResolvedGridFit(
   }
 }
 
-/** Analyze a preset and preserve its identity in the result. */
-export function analyzePresetFit(
-  preset: GridPreset,
-  frame: GridFitFrame,
-  options: GridFitOptions = {}
-): GridFitAnalysis {
-  return {
-    ...analyzeGridFit(preset.config, frame, options),
-    presetId: preset.id,
-    presetName: preset.name,
-  };
-}
-
 /** Analyze the exact geometry that application resolves for one preset target. */
 function analyzeResolvedPresetFit(
   preset: GridPreset,
@@ -733,89 +663,4 @@ export function analyzeResolvedPresetFits(
   return aggregateGridFitAnalyses(
     frames.map(frame => analyzeResolvedPresetFit(preset, frame, sourceDimensions, options))
   );
-}
-
-/** Analyze one preset across the documented frame-size matrix. */
-export function analyzePresetAcrossFrameMatrix(
-  preset: GridPreset,
-  matrix: readonly GridFitFrame[] = GRID_FIT_FRAME_MATRIX,
-  options: GridFitOptions = {}
-): GridPresetMatrixAnalysis {
-  const results = matrix.map(frame => analyzeResolvedPresetFit(preset, frame, undefined, options));
-
-  return {
-    presetId: preset.id,
-    presetName: preset.name,
-    results,
-    fitCount: results.filter(result => result.status === 'fit').length,
-    warningCount: results.filter(result => result.status === 'warning').length,
-    failureCount: results.filter(result => result.status === 'fail').length,
-  };
-}
-
-/** Analyze multiple presets across the documented frame-size matrix. */
-export function analyzePresetsAcrossFrameMatrix(
-  presets: readonly GridPreset[],
-  matrix: readonly GridFitFrame[] = GRID_FIT_FRAME_MATRIX,
-  options: GridFitOptions = {}
-): GridPresetMatrixAnalysis[] {
-  return presets.map(preset => analyzePresetAcrossFrameMatrix(preset, matrix, options));
-}
-
-function parseAspectRatio(aspectRatio: string | undefined): number | undefined {
-  if (!aspectRatio) return undefined;
-  if (aspectRatio.includes('√2')) return 1 / Math.SQRT2;
-  if (aspectRatio.includes('φ')) return 1 / ((1 + Math.sqrt(5)) / 2);
-
-  const match = aspectRatio.match(/(\d+(?:\.\d+)?)\s*:\s*(\d+(?:\.\d+)?)/);
-  if (!match) return undefined;
-
-  const width = Number(match[1]);
-  const height = Number(match[2]);
-  return width > 0 && height > 0 ? width / height : undefined;
-}
-
-function getAspectScore(preset: GridPreset, frame: GridFitFrame): number {
-  const presetRatio = parseAspectRatio(preset.aspectRatio);
-  if (!presetRatio) return 75;
-
-  const targetRatio = frame.width / frame.height;
-  const logarithmicDistance = Math.abs(Math.log(targetRatio / presetRatio));
-  return Math.max(0, Math.round(100 - logarithmicDistance * 100));
-}
-
-/**
- * Rank presets for a frame. Geometry contributes 90% of the score; declared
- * aspect ratio contributes only a secondary 10% signal.
- */
-export function recommendGridPresets(
-  presets: readonly GridPreset[],
-  frame: GridFitFrame,
-  options: GridPresetRecommendationOptions = {}
-): GridPresetRecommendation[] {
-  const { limit = 5, includeFailures = false, ...fitOptions } = options;
-
-  return presets
-    .map((preset, index) => {
-      const analysis = analyzeResolvedPresetFit(preset, frame, undefined, fitOptions);
-      const aspectScore = getAspectScore(preset, frame);
-      const score = Math.round(analysis.score * 0.9 + aspectScore * 0.1);
-      const reasons = [
-        analysis.status === 'fit'
-          ? 'Grid geometry fits the target frame.'
-          : analysis.status === 'warning'
-            ? 'Grid geometry fits with usability warnings.'
-            : 'Grid geometry requires changes for the target frame.',
-      ];
-
-      if (aspectScore >= 90) {
-        reasons.push('Declared aspect ratio is close to the target frame.');
-      }
-
-      return { preset, analysis, score, reasons, index };
-    })
-    .filter(recommendation => includeFailures || recommendation.analysis.status !== 'fail')
-    .sort((a, b) => b.score - a.score || a.index - b.index)
-    .slice(0, Math.max(0, limit))
-    .map(({ index: _index, ...recommendation }) => recommendation);
 }

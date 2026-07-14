@@ -6,6 +6,7 @@ import type { GenerateColorSystemMessage } from '../../types/messages';
 const backendMocks = vi.hoisted(() => ({
   generateColorSystemFrames: vi.fn(),
   createColorStyles: vi.fn(),
+  resolveColorSystemOutputName: vi.fn(),
 }));
 
 vi.mock('../colorSystemGeneration', () => ({
@@ -13,6 +14,9 @@ vi.mock('../colorSystemGeneration', () => ({
 }));
 vi.mock('../colorStyles', () => ({
   createColorStyles: backendMocks.createColorStyles,
+}));
+vi.mock('../colorSystemCollision', () => ({
+  resolveColorSystemOutputName: backendMocks.resolveColorSystemOutputName,
 }));
 
 import {
@@ -25,6 +29,7 @@ function createMessage(requestId: string, createStyles = false): GenerateColorSy
     type: 'generate-color-system',
     requestId,
     createStyles,
+    createVariables: false,
     config: {} as GenerateColorSystemMessage['config'],
     scales: {
       systemName: 'Transaction Test',
@@ -65,13 +70,6 @@ function createConstrainedMessage(requestId: string): GenerateColorSystemMessage
       includeDarkMode: true,
       scaleMethod: 'wcag-constrained',
       scales,
-      usageProportions: {
-        primary: 35,
-        secondary: 0,
-        tertiary: 0,
-        accent: 0,
-        neutral: 65,
-      },
       semanticPolicy: buildSemanticColorPolicy(scales.light, scales.dark),
     },
   };
@@ -79,11 +77,23 @@ function createConstrainedMessage(requestId: string): GenerateColorSystemMessage
 
 beforeEach(() => {
   vi.clearAllMocks();
+  backendMocks.resolveColorSystemOutputName.mockResolvedValue({
+    outputName: 'Transaction Test',
+    warnings: [],
+  });
+  backendMocks.createColorStyles.mockResolvedValue({
+    styleCount: 4,
+    createdCount: 4,
+    updatedCount: 0,
+    skippedCount: 0,
+    warnings: [],
+  });
   const originalSelection = [{ id: 'original-selection' }] as unknown as SceneNode[];
   vi.stubGlobal('figma', {
     currentPage: { selection: originalSelection },
     notify: vi.fn(),
     ui: { postMessage: vi.fn() },
+    commitUndo: vi.fn(),
     viewport: {
       center: { x: 10, y: 20 },
       zoom: 1.5,
@@ -95,26 +105,30 @@ describe('handleGenerateColorSystem', () => {
   it('posts a correlated terminal success after the requested mutations complete', async () => {
     const frame = { remove: vi.fn() } as unknown as FrameNode;
     backendMocks.generateColorSystemFrames.mockResolvedValue(frame);
-    backendMocks.createColorStyles.mockResolvedValue(undefined);
-
     const message = createMessage('transaction-success', true);
     await handleGenerateColorSystem(message);
 
     expect(backendMocks.generateColorSystemFrames).toHaveBeenCalledWith(
-      message.config,
+      { ...message.config, systemName: message.scales.systemName },
       message.scales,
       { notify: false }
     );
     expect(backendMocks.createColorStyles).toHaveBeenCalledWith(
       message.scales,
-      message.scales.systemName
+      message.scales.systemName,
+      'cancel'
     );
     expect(frame.remove).not.toHaveBeenCalled();
-    expect(figma.ui.postMessage).toHaveBeenCalledWith({
-      type: 'color-system-operation-result',
-      requestId: message.requestId,
-      success: true,
-    });
+    expect(figma.ui.postMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'color-system-operation-result',
+        requestId: message.requestId,
+        success: true,
+        outputName: 'Transaction Test',
+        styleCount: 4,
+        frameCount: 1,
+      })
+    );
   });
 
   it('removes completed frames when optional style creation fails', async () => {
@@ -274,11 +288,13 @@ describe('handleGenerateColorSystem', () => {
 
     expect(backendMocks.generateColorSystemFrames).toHaveBeenCalledOnce();
     expect(figma.ui.postMessage).toHaveBeenCalledTimes(2);
-    expect(figma.ui.postMessage).toHaveBeenLastCalledWith({
-      type: 'color-system-operation-result',
-      requestId: message.requestId,
-      success: true,
-    });
+    expect(figma.ui.postMessage).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        type: 'color-system-operation-result',
+        requestId: message.requestId,
+        success: true,
+      })
+    );
   });
 
   it('rejects active requestId reuse with a different payload without repeating mutations', async () => {

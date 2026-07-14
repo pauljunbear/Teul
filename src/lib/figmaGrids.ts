@@ -14,8 +14,11 @@ import type {
   FigmaUniformLayoutGrid,
   GridApplicationMode,
   GridDimensions,
+  GridConstructionV2,
   GridPreset,
   GridResponsiveWidth,
+  GridLinkedResourcePolicy,
+  GridNativeResources,
 } from '../types/grid';
 import { toPixels } from './gridUtils';
 
@@ -50,6 +53,7 @@ export function columnConfigToFigmaGrid(
     offset: Math.round(marginPx),
     visible: config.visible,
     color: config.color,
+    ...(config.boundVariables ? { boundVariables: config.boundVariables } : {}),
   };
 
   if (config.alignment !== 'STRETCH') {
@@ -82,6 +86,7 @@ export function rowConfigToFigmaGrid(
     offset: Math.round(marginPx),
     visible: config.visible,
     color: config.color,
+    ...(config.boundVariables ? { boundVariables: config.boundVariables } : {}),
   };
 
   if (config.alignment !== 'STRETCH') {
@@ -105,6 +110,7 @@ export function baselineConfigToFigmaGrid(config: BaselineGridConfig): FigmaUnif
     sectionSize: config.height,
     visible: config.visible,
     color: config.color,
+    ...(config.boundVariables ? { boundVariables: config.boundVariables } : {}),
   };
 }
 
@@ -300,18 +306,22 @@ export function getPresetSourceDimensions(preset: GridPreset): GridDimensions | 
  * Build the message payload for creating a grid frame
  */
 export function buildCreateGridFrameMessage(params: {
+  requestId: string;
   config: GridConfig;
   frameName?: string;
   width: number;
   height: number;
   positionNearSelection?: boolean;
+  construction?: GridConstructionV2;
 }): {
   type: 'create-grid-frame';
+  requestId: string;
   config: FigmaGridConfigs;
   frameName: string;
   width: number;
   height: number;
   positionNearSelection?: boolean;
+  construction?: GridConstructionV2;
 } {
   const { config, width, height } = params;
 
@@ -332,11 +342,13 @@ export function buildCreateGridFrameMessage(params: {
 
   return {
     type: 'create-grid-frame',
+    requestId: params.requestId,
     config: figmaConfig,
     frameName: params.frameName || gridConfigToFrameName(config),
     width,
     height,
     positionNearSelection: params.positionNearSelection !== false,
+    construction: params.construction,
   };
 }
 
@@ -351,6 +363,9 @@ export function buildApplyGridMessage(params: {
   sourceDimensions?: { width: number; height: number };
   applicationMode?: GridApplicationMode;
   responsiveWidth?: GridResponsiveWidth;
+  nativeResources?: GridNativeResources;
+  linkedResourcePolicy?: GridLinkedResourcePolicy;
+  construction?: GridConstructionV2;
 }): {
   type: 'apply-grid';
   requestId: string;
@@ -360,6 +375,9 @@ export function buildApplyGridMessage(params: {
   responsiveWidth?: GridResponsiveWidth;
   expectedTargetIds: string[];
   replaceExisting: boolean;
+  nativeResources?: GridNativeResources;
+  linkedResourcePolicy: GridLinkedResourcePolicy;
+  construction?: GridConstructionV2;
 } {
   return {
     type: 'apply-grid',
@@ -372,5 +390,8 @@ export function buildApplyGridMessage(params: {
     responsiveWidth: params.responsiveWidth,
     expectedTargetIds: [...params.expectedTargetIds],
     replaceExisting: params.replaceExisting !== false,
+    nativeResources: params.nativeResources,
+    linkedResourcePolicy: params.linkedResourcePolicy ?? 'replace-with-values',
+    construction: params.construction,
   };
 }

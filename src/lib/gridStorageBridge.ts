@@ -100,8 +100,3 @@ export async function setGridStorageItem(value: string): Promise<void> {
   await requestGridStorage('set', value);
   if (isFigmaPluginUI()) clearLegacyStorageBestEffort();
 }
-
-export async function deleteGridStorageItem(): Promise<void> {
-  await requestGridStorage('delete');
-  if (isFigmaPluginUI()) clearLegacyStorageBestEffort();
-}

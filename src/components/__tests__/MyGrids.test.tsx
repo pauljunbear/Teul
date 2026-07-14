@@ -12,6 +12,9 @@ interface PostedPayload {
     requestId?: string;
     text?: string;
     expectedTargetIds?: string[];
+    replaceExisting?: boolean;
+    linkedResourcePolicy?: string;
+    nativeResources?: SavedGrid['nativeResources'];
     sourceDimensions?: {
       width: number;
       height: number;
@@ -31,6 +34,7 @@ interface SelectionTarget {
   name: string;
   width: number;
   height: number;
+  layoutGridCount?: number;
 }
 
 function sendSelectionInfo(targets: SelectionTarget[], requestId?: string): void {
@@ -44,7 +48,11 @@ function sendSelectionInfo(targets: SelectionTarget[], requestId?: string): void
           hasSelection: targets.length > 0,
           isFrame: targets.length === 1,
           selectedCount: targets.length,
-          eligibleTargets: targets,
+          eligibleTargets: targets.map(target => ({
+            ...target,
+            layoutGridCount: target.layoutGridCount ?? 0,
+            teulConstructionCount: 0,
+          })),
           ineligibleCount: 0,
           width: firstTarget?.width,
           height: firstTarget?.height,
@@ -125,9 +133,11 @@ describe('MyGrids apply flow', () => {
 
     const initialCalls = postMessage.mock.calls as unknown as PostMessageCall[];
     const selectionRequest = initialCalls.find(
-      ([payload]) => payload.pluginMessage?.type === 'get-selection-for-grid'
+      ([payload]) =>
+        payload.pluginMessage?.type === 'get-selection-for-grid' &&
+        typeof payload.pluginMessage.requestId === 'string'
     );
-    expect(selectionRequest?.[0].pluginMessage?.requestId).toBe('saved-grid-apply-1');
+    expect(selectionRequest?.[0].pluginMessage?.requestId).toMatch(/^saved-grid-apply-\d+-1$/);
     expect(
       initialCalls.filter(([payload]) => payload.pluginMessage?.type === 'apply-grid')
     ).toHaveLength(0);
@@ -171,6 +181,9 @@ describe('MyGrids apply flow', () => {
               type: 'grid-applied',
               requestId: 'saved-grid-apply-stale',
               success: true,
+              appliedCount: 1,
+              skippedCount: 0,
+              failedCount: 0,
               message: 'Grid apply confirmed',
             },
           },
@@ -188,6 +201,9 @@ describe('MyGrids apply flow', () => {
               type: 'grid-applied',
               requestId: selectionRequest?.[0].pluginMessage?.requestId,
               success: true,
+              appliedCount: 1,
+              skippedCount: 0,
+              failedCount: 0,
               message: 'Grid apply confirmed',
             },
           },
@@ -213,7 +229,9 @@ describe('MyGrids apply flow', () => {
     });
 
     const selectionRequest = (postMessage.mock.calls as unknown as PostMessageCall[]).find(
-      ([payload]) => payload.pluginMessage?.type === 'get-selection-for-grid'
+      ([payload]) =>
+        payload.pluginMessage?.type === 'get-selection-for-grid' &&
+        typeof payload.pluginMessage.requestId === 'string'
     );
 
     act(() => {
@@ -228,8 +246,49 @@ describe('MyGrids apply flow', () => {
 
     const calls = postMessage.mock.calls as unknown as PostMessageCall[];
     expect(calls.some(([payload]) => payload.pluginMessage?.type === 'apply-grid')).toBe(false);
-    expect(calls.some(([payload]) => payload.pluginMessage?.type === 'notify')).toBe(true);
     expect(container.querySelector('[role="alert"]')?.textContent).toBeTruthy();
+  });
+
+  it('can add to existing grids only after an explicit choice', async () => {
+    await act(async () => {
+      root.render(<MyGrids isDark={false} />);
+      await Promise.resolve();
+    });
+
+    const applyButton = Array.from(container.querySelectorAll('button')).find(
+      button => button.textContent === 'Apply'
+    );
+    act(() => applyButton?.click());
+    const selectionRequest = (postMessage.mock.calls as unknown as PostMessageCall[]).find(
+      ([payload]) =>
+        payload.pluginMessage?.type === 'get-selection-for-grid' &&
+        typeof payload.pluginMessage.requestId === 'string'
+    );
+    act(() => {
+      sendSelectionInfo(
+        [
+          {
+            id: 'frame-1',
+            name: 'Frame 1',
+            width: 1000,
+            height: 500,
+            layoutGridCount: 1,
+          },
+        ],
+        selectionRequest?.[0].pluginMessage?.requestId
+      );
+    });
+
+    const addButton = Array.from(container.querySelectorAll('button')).find(
+      button => button.textContent === 'Add'
+    );
+    expect(addButton).toBeDefined();
+    act(() => addButton?.click());
+
+    const applyCall = (postMessage.mock.calls as unknown as PostMessageCall[]).find(
+      ([payload]) => payload.pluginMessage?.type === 'apply-grid'
+    );
+    expect(applyCall?.[0].pluginMessage?.replaceExisting).toBe(false);
   });
 
   it('preserves scale-from-reference behavior for saved preset copies', async () => {
@@ -254,7 +313,9 @@ describe('MyGrids apply flow', () => {
     });
 
     const selectionRequest = (postMessage.mock.calls as unknown as PostMessageCall[]).find(
-      ([payload]) => payload.pluginMessage?.type === 'get-selection-for-grid'
+      ([payload]) =>
+        payload.pluginMessage?.type === 'get-selection-for-grid' &&
+        typeof payload.pluginMessage.requestId === 'string'
     );
     act(() => {
       sendSelectionInfo(
@@ -267,6 +328,94 @@ describe('MyGrids apply flow', () => {
       ([payload]) => payload.pluginMessage?.type === 'apply-grid'
     );
     expect(applyCall?.[0].pluginMessage?.sourceDimensions).toEqual({ width: 800, height: 600 });
+  });
+
+  it('requires an explicit choice before applying captured style and variable links', async () => {
+    const linkedGrid: SavedGrid = {
+      ...savedGrid,
+      nativeResources: {
+        gridStyleId: 'GridStyle:editorial',
+        boundVariableIds: ['VariableID:gutter'],
+        sourceFileKey: 'source-file',
+      },
+    };
+    await saveGridsToStorage([linkedGrid]);
+
+    await act(async () => {
+      root.render(<MyGrids isDark={false} />);
+      await Promise.resolve();
+    });
+    const applyButton = Array.from(container.querySelectorAll('button')).find(
+      button => button.textContent === 'Apply'
+    );
+    act(() => applyButton?.click());
+    const selectionRequest = (postMessage.mock.calls as unknown as PostMessageCall[]).find(
+      ([payload]) =>
+        payload.pluginMessage?.type === 'get-selection-for-grid' &&
+        typeof payload.pluginMessage.requestId === 'string'
+    );
+    act(() => {
+      sendSelectionInfo(
+        [{ id: 'frame-1', name: 'Frame 1', width: 1000, height: 500 }],
+        selectionRequest?.[0].pluginMessage?.requestId
+      );
+    });
+
+    expect(container.querySelector('[role="dialog"]')?.textContent).toContain(
+      'Choose linked-resource behavior'
+    );
+    const preserve = container.querySelector<HTMLInputElement>(
+      '[role="dialog"] input[type="checkbox"]'
+    );
+    expect(preserve?.checked).toBe(true);
+    const confirm = Array.from(
+      container.querySelectorAll<HTMLButtonElement>('[role="dialog"] button')
+    ).find(button => button.textContent === 'Apply');
+    act(() => confirm?.click());
+
+    const applyCall = (postMessage.mock.calls as unknown as PostMessageCall[]).find(
+      ([payload]) => payload.pluginMessage?.type === 'apply-grid'
+    );
+    expect(applyCall?.[0].pluginMessage?.linkedResourcePolicy).toBe('preserve-if-available');
+    expect(applyCall?.[0].pluginMessage?.nativeResources).toEqual(linkedGrid.nativeResources);
+  });
+
+  it('uses the shared controller to clear selected saved-grid targets', async () => {
+    await act(async () => {
+      root.render(<MyGrids isDark={false} />);
+      await Promise.resolve();
+    });
+    const clearButton = Array.from(container.querySelectorAll('button')).find(
+      button => button.textContent === 'Clear Selected'
+    );
+    act(() => clearButton?.click());
+    const selectionRequest = (postMessage.mock.calls as unknown as PostMessageCall[]).find(
+      ([payload]) =>
+        payload.pluginMessage?.type === 'get-selection-for-grid' &&
+        typeof payload.pluginMessage.requestId === 'string'
+    );
+    act(() => {
+      sendSelectionInfo(
+        [
+          {
+            id: 'frame-1',
+            name: 'Frame 1',
+            width: 1000,
+            height: 500,
+            layoutGridCount: 1,
+          },
+        ],
+        selectionRequest?.[0].pluginMessage?.requestId
+      );
+    });
+    const confirm = Array.from(
+      container.querySelectorAll<HTMLButtonElement>('[role="alertdialog"] button')
+    ).find(button => button.textContent === 'Clear');
+    act(() => confirm?.click());
+    const clearCall = (postMessage.mock.calls as unknown as PostMessageCall[]).find(
+      ([payload]) => payload.pluginMessage?.type === 'clear-grid'
+    );
+    expect(clearCall?.[0].pluginMessage?.expectedTargetIds).toEqual(['frame-1']);
   });
 
   it('does not report create-frame success before backend confirmation', async () => {
@@ -291,6 +440,67 @@ describe('MyGrids apply flow', () => {
     expect(container.textContent).not.toContain(`Created frame with "${savedGrid.name}"`);
   });
 
+  it('captures a selected native grid into the save workflow', async () => {
+    await act(async () => {
+      root.render(<MyGrids isDark={false} />);
+      await Promise.resolve();
+    });
+
+    const captureButton = Array.from(container.querySelectorAll('button')).find(
+      button => button.textContent === 'Capture Selected Frame'
+    );
+    act(() => captureButton?.click());
+    expect(postMessage).toHaveBeenCalledWith(
+      {
+        pluginMessage: { type: 'capture-selected-grid', requestId: 'grid-capture-1' },
+      },
+      '*'
+    );
+
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: {
+            pluginMessage: {
+              type: 'grid-capture-result',
+              requestId: 'grid-capture-1',
+              success: true,
+              frameName: 'Article Frame',
+              dimensions: { width: 1200, height: 800 },
+              config: savedGrid.config,
+            },
+          },
+        })
+      );
+    });
+
+    expect(container.querySelector('#save-grid-dialog-title')?.textContent).toBe('Save Grid');
+    expect(container.querySelector<HTMLInputElement>('#save-grid-name')?.value).toBe(
+      'Article Frame Grid'
+    );
+  });
+
+  it('opens a real geometry editor before saving a new custom grid', async () => {
+    await act(async () => {
+      root.render(<MyGrids isDark={false} />);
+      await Promise.resolve();
+    });
+
+    const newGridButton = Array.from(container.querySelectorAll('button')).find(
+      button => button.textContent === '+ New Grid'
+    );
+    act(() => newGridButton?.click());
+    expect(container.querySelector('#grid-builder-title')?.textContent).toBe('New Grid');
+
+    const continueButton = Array.from(container.querySelectorAll('button')).find(
+      button => button.textContent === 'Continue'
+    );
+    act(() => continueButton?.click());
+
+    expect(container.querySelector('#save-grid-dialog-title')?.textContent).toBe('Save Grid');
+    expect(container.querySelector<HTMLInputElement>('#save-grid-name')?.value).toBe('My Grid');
+  });
+
   it('associates Edit Grid labels with their fields', async () => {
     await act(async () => {
       root.render(<MyGrids isDark={false} />);
@@ -312,6 +522,35 @@ describe('MyGrids apply flow', () => {
     );
     expect(container.querySelector('label[for="edit-grid-tags"]')?.textContent).toContain('Tags');
     expect(container.querySelector('#edit-grid-name')).toBe(document.activeElement);
+  });
+
+  it('edits saved geometry rather than only grid metadata', async () => {
+    await act(async () => {
+      root.render(<MyGrids isDark={false} />);
+      await Promise.resolve();
+    });
+
+    const editGeometry = Array.from(container.querySelectorAll('button')).find(
+      button => button.getAttribute('aria-label') === 'Edit grid geometry'
+    );
+    act(() => editGeometry?.click());
+    expect(container.querySelector('#grid-builder-title')?.textContent).toBe('Edit Grid Geometry');
+    expect(
+      (postMessage.mock.calls as unknown as PostMessageCall[]).some(([payload]) =>
+        payload.pluginMessage?.requestId?.startsWith('grid-builder-selection-')
+      )
+    ).toBe(true);
+
+    const continueButton = Array.from(container.querySelectorAll('button')).find(
+      button => button.textContent === 'Continue'
+    );
+    await act(async () => {
+      continueButton?.click();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(container.textContent).toContain('Grid geometry updated');
   });
 
   it('clearly warns when an import accepts only some records', async () => {

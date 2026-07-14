@@ -3,7 +3,9 @@ import type {
   GridApplicationMode,
   GridConfig,
   GridCategory,
+  GridConstructionV2,
   GridDimensions,
+  GridNativeResources,
   GridResponsiveWidth,
   SavedGrid,
 } from '../types/grid';
@@ -26,6 +28,10 @@ interface SaveGridModalProps {
   applicationMode?: GridApplicationMode;
   /** Responsive width behavior inherited from a bundled named system. */
   responsiveWidth?: GridResponsiveWidth;
+  /** Linked resources retained by native Figma capture. */
+  nativeResources?: GridNativeResources;
+  /** Versioned source geometry retained independently of the native realization. */
+  construction?: GridConstructionV2;
   /** Dark mode */
   isDark: boolean;
   /** Callback when modal is closed */
@@ -80,6 +86,8 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
   referenceDimensions,
   applicationMode,
   responsiveWidth,
+  nativeResources,
+  construction,
   isDark,
   onClose,
   onSave,
@@ -151,6 +159,8 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
         referenceDimensions,
         applicationMode,
         responsiveWidth,
+        nativeResources,
+        construction,
       });
 
       await addSavedGrid(savedGrid);
@@ -181,6 +191,8 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
     referenceDimensions,
     applicationMode,
     responsiveWidth,
+    nativeResources,
+    construction,
     onSave,
     onClose,
   ]);
@@ -362,6 +374,7 @@ export const SaveGridModal: React.FC<SaveGridModalProps> = ({
           >
             <GridMiniPreview
               config={config}
+              construction={construction}
               size={80}
               isDark={isDark}
               referenceDimensions={referenceDimensions}

@@ -1,17 +1,41 @@
 import { describe, expect, it } from 'vitest';
 import type { GridConfig, GridPreset } from '../../types/grid';
 import {
-  GRID_FIT_FRAME_MATRIX,
   aggregateGridFitAnalyses,
   analyzeGridFit,
-  analyzePresetAcrossFrameMatrix,
-  analyzePresetFit,
-  analyzePresetsAcrossFrameMatrix,
   analyzeResolvedGridFit,
   analyzeResolvedPresetFits,
-  recommendGridPresets,
 } from '../gridFit';
 import { GRID_CATEGORIES, GRID_PRESETS, getPresetsByCategory } from '../gridPresets';
+
+const GRID_FIT_FRAME_MATRIX = [
+  { id: 'small-mobile', name: 'Small mobile', width: 320, height: 568 },
+  { id: 'modern-phone', name: 'Modern phone', width: 390, height: 844 },
+  { id: 'tablet-portrait', name: 'Tablet portrait', width: 768, height: 1024 },
+  { id: 'tablet-landscape', name: 'Tablet landscape / 4:3', width: 1024, height: 768 },
+  { id: 'widescreen-16-9', name: '16:9', width: 1280, height: 720 },
+  { id: 'desktop', name: 'Desktop', width: 1440, height: 900 },
+  { id: 'full-hd', name: 'Full HD', width: 1920, height: 1080 },
+  { id: 'square', name: 'Square', width: 1080, height: 1080 },
+  { id: 'portrait-social', name: 'Portrait social', width: 1080, height: 1350 },
+  { id: 'story-video-portrait', name: 'Story/video portrait', width: 1080, height: 1920 },
+  { id: 'a-series-approximation', name: 'A-series approximation', width: 794, height: 1123 },
+  { id: 'arbitrary-tiny-invalid', name: 'Arbitrary/tiny invalid case', width: 100, height: 100 },
+] as const;
+
+function analyzePresetAcrossFrameMatrix(preset: GridPreset) {
+  const results = GRID_FIT_FRAME_MATRIX.map(
+    frame => analyzeResolvedPresetFits(preset, [frame]).representative
+  );
+  return {
+    presetId: preset.id,
+    presetName: preset.name,
+    results,
+    fitCount: results.filter(result => result.status === 'fit').length,
+    warningCount: results.filter(result => result.status === 'warning').length,
+    failureCount: results.filter(result => result.status === 'fail').length,
+  };
+}
 
 const TEST_COLOR = { r: 1, g: 0, b: 0, a: 0.1 };
 
@@ -257,9 +281,10 @@ describe('bundled preset provenance and matrix fit', () => {
         expect(preset.provenance.sourceUrl, preset.id).toMatch(/^https:\/\//);
         expect(preset.provenance.evidence, preset.id).not.toBe('unsourced');
         expect(preset.provenance.source, preset.id).not.toBe('Teul preset catalog');
-        expect(analyzePresetFit(preset, preset.referenceDimensions!).status, preset.id).not.toBe(
-          'fail'
-        );
+        expect(
+          analyzeGridFit(preset.config, preset.referenceDimensions!).status,
+          preset.id
+        ).not.toBe('fail');
       } else {
         expect(preset.provenance, preset.id).toMatchObject({
           classification: 'teul-modern-adaptation',
@@ -289,7 +314,7 @@ describe('bundled preset provenance and matrix fit', () => {
   });
 
   it('produces a valid result or actionable failure for every preset and required frame', () => {
-    const matrixResults = analyzePresetsAcrossFrameMatrix(GRID_PRESETS);
+    const matrixResults = GRID_PRESETS.map(preset => analyzePresetAcrossFrameMatrix(preset));
 
     expect(matrixResults).toHaveLength(GRID_PRESETS.length);
 
@@ -318,7 +343,7 @@ describe('bundled preset provenance and matrix fit', () => {
   });
 
   it('pins the current complete preset/frame matrix totals', () => {
-    const matrixResults = analyzePresetsAcrossFrameMatrix(GRID_PRESETS);
+    const matrixResults = GRID_PRESETS.map(preset => analyzePresetAcrossFrameMatrix(preset));
     const totals = matrixResults.reduce(
       (result, preset) => ({
         fit: result.fit + preset.fitCount,
@@ -342,54 +367,5 @@ describe('bundled preset provenance and matrix fit', () => {
     expect(result.fitCount + result.warningCount + result.failureCount).toBe(
       GRID_FIT_FRAME_MATRIX.length
     );
-  });
-});
-
-describe('recommendGridPresets', () => {
-  it('excludes failed presets by default and ranks usable mobile geometry', () => {
-    const frame = { width: 320, height: 568 };
-    const recommendations = recommendGridPresets(GRID_PRESETS, frame, {
-      limit: GRID_PRESETS.length,
-    });
-
-    expect(recommendations.length).toBeGreaterThan(0);
-    expect(recommendations.every(item => item.analysis.status !== 'fail')).toBe(true);
-    expect(recommendations.some(item => item.preset.id === 'web-4col-mobile')).toBe(true);
-    expect(recommendations.some(item => item.preset.id === 'web-16col')).toBe(false);
-
-    for (let index = 1; index < recommendations.length; index++) {
-      expect(recommendations[index - 1].score).toBeGreaterThanOrEqual(recommendations[index].score);
-    }
-  });
-
-  it('uses geometry as the primary signal and aspect ratio only as a secondary signal', () => {
-    const goodGeometry: GridPreset = {
-      id: 'good-geometry',
-      name: 'Good Geometry',
-      description: 'Test',
-      category: 'custom',
-      tags: [],
-      config: createColumnGrid({ count: 2, gutterSize: 16, margin: 16 }),
-      isCustom: false,
-    };
-    const exactAspectButPoorGeometry: GridPreset = {
-      id: 'poor-geometry',
-      name: 'Poor Geometry',
-      description: 'Test',
-      category: 'custom',
-      tags: [],
-      aspectRatio: '16:9',
-      config: createColumnGrid({ count: 24, gutterSize: 24, margin: 32 }),
-      isCustom: false,
-    };
-    const frame = { width: 320, height: 180 };
-    const recommendations = recommendGridPresets(
-      [exactAspectButPoorGeometry, goodGeometry],
-      frame,
-      { includeFailures: true }
-    );
-
-    expect(recommendations[0].preset.id).toBe('good-geometry');
-    expect(analyzePresetFit(exactAspectButPoorGeometry, frame).status).toBe('fail');
   });
 });

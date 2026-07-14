@@ -6,11 +6,14 @@ import { copyToClipboard } from '../lib/clipboard';
 import { styles } from '../lib/theme';
 import { ColorSystemModal } from './ColorSystemModal';
 import { AboutPanel, WADA_ABOUT_CONTENT } from './AboutPanel';
-import { getWCAGContrastHex, getWCAGRating } from '../lib/accessibility';
+import { getAccessibleTextColor } from '../lib/accessibility';
 import { WADA_SOURCE_PROVENANCE } from '../lib/sourceProvenance';
 import { useModalAccessibility } from '../lib/useModalAccessibility';
 import type { NormalizedDocumentColorProfile } from '../types/messages';
 import { SourceProvenanceDisclosure } from './SourceProvenanceDisclosure';
+import { createRequestId } from '../lib/requestId';
+import { useOptionalWorkspaceState } from '../lib/workspaceState';
+import { HistoricalColorSwatchCard } from './HistoricalColorSwatchCard';
 
 interface Color {
   name: string;
@@ -78,11 +81,6 @@ function getCachedContrastRatio(rgb1: number[], rgb2: number[]): number {
   contrastCache.set(key, ratio);
   return ratio;
 }
-
-const getTextColor = (rgb: number[]): string => {
-  const luminance = (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255;
-  return luminance > 0.5 ? '#1a1a1a' : '#ffffff';
-};
 
 // Contrast Tooltip Component
 const ContrastTooltip: React.FC<{
@@ -169,9 +167,40 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
   isDark,
   documentColorProfile = 'unknown',
 }) => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const workspaceContext = useOptionalWorkspaceState();
+  const [localSearchTerm, setLocalSearchTerm] = useState('');
+  const [localSelectedSwatch, setLocalSelectedSwatch] = useState(-1);
+  const searchTerm = workspaceContext?.state.wada.searchTerm ?? localSearchTerm;
+  const setSearchTerm = useCallback(
+    (searchTerm: string) => {
+      if (!workspaceContext) setLocalSearchTerm(searchTerm);
+      else {
+        workspaceContext.update(current => ({
+          ...current,
+          wada: { ...current.wada, searchTerm },
+        }));
+      }
+    },
+    [workspaceContext]
+  );
   const [selectedColor, setSelectedColor] = useState<Color | null>(null);
-  const [selectedSwatch, setSelectedSwatch] = useState(-1);
+  const selectedSwatch = workspaceContext?.state.wada.selectedSwatch ?? localSelectedSwatch;
+  const setSelectedSwatch = useCallback(
+    (selectedSwatch: number) => {
+      if (!workspaceContext) setLocalSelectedSwatch(selectedSwatch);
+      else {
+        workspaceContext.update(current => ({
+          ...current,
+          wada: { ...current.wada, selectedSwatch },
+        }));
+      }
+    },
+    [workspaceContext]
+  );
+  const addRecentColor = React.useMemo(
+    () => workspaceContext?.addRecentColor ?? (() => undefined),
+    [workspaceContext]
+  );
   const [showExport, setShowExport] = useState(false);
   const [exportColors, setExportColors] = useState<Color[]>([]);
   const exportCloseButtonRef = React.useRef<HTMLButtonElement>(null);
@@ -196,26 +225,59 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
   const theme = isDark ? styles.dark : styles.light;
 
   // Memoized handlers
-  const handleApplyFill = useCallback((color: Color) => {
-    parent.postMessage(
-      { pluginMessage: { type: 'apply-fill', hex: color.hex, name: color.name } },
-      '*'
-    );
-  }, []);
+  const handleApplyFill = useCallback(
+    (color: Color) => {
+      addRecentColor(color);
+      parent.postMessage(
+        {
+          pluginMessage: {
+            type: 'apply-fill',
+            requestId: createRequestId('fill'),
+            hex: color.hex,
+            name: color.name,
+          },
+        },
+        '*'
+      );
+    },
+    [addRecentColor]
+  );
 
-  const handleApplyStroke = useCallback((color: Color) => {
-    parent.postMessage(
-      { pluginMessage: { type: 'apply-stroke', hex: color.hex, name: color.name } },
-      '*'
-    );
-  }, []);
+  const handleApplyStroke = useCallback(
+    (color: Color) => {
+      addRecentColor(color);
+      parent.postMessage(
+        {
+          pluginMessage: {
+            type: 'apply-stroke',
+            requestId: createRequestId('stroke'),
+            hex: color.hex,
+            name: color.name,
+          },
+        },
+        '*'
+      );
+    },
+    [addRecentColor]
+  );
 
-  const handleCreateStyle = useCallback((color: Color) => {
-    parent.postMessage(
-      { pluginMessage: { type: 'create-style', hex: color.hex, name: color.name } },
-      '*'
-    );
-  }, []);
+  const handleCreateStyle = useCallback(
+    (color: Color) => {
+      addRecentColor(color);
+      parent.postMessage(
+        {
+          pluginMessage: {
+            type: 'create-style',
+            requestId: createRequestId('style'),
+            hex: color.hex,
+            name: color.name,
+          },
+        },
+        '*'
+      );
+    },
+    [addRecentColor]
+  );
 
   const filteredColors = useMemo(() => {
     let filtered = colors;
@@ -267,6 +329,7 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <input
             type="text"
+            aria-label="Search Wada colors"
             placeholder="Search colors..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
@@ -387,108 +450,14 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
           // Color Grid
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
             {filteredColors.map(color => {
-              const textColor = getTextColor(color.rgb);
               const combos = calculateCombinations(color, comboIndex);
-              // Calculate best WCAG contrast (against white or black)
-              const contrastWhite = getWCAGContrastHex(color.hex, '#ffffff');
-              const contrastBlack = getWCAGContrastHex(color.hex, '#000000');
-              const bestContrast = Math.max(contrastWhite, contrastBlack);
-              const wcagRating = getWCAGRating(bestContrast);
-              const wcagLabel = wcagRating.aaa
-                ? 'AAA'
-                : wcagRating.aa
-                  ? 'AA'
-                  : wcagRating.aaLarge
-                    ? 'A'
-                    : '';
               return (
-                <div
+                <HistoricalColorSwatchCard
                   key={color.hex}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`Open ${color.name}, ${color.hex}`}
-                  onClick={() => setSelectedColor(color)}
-                  onKeyDown={event => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault();
-                      setSelectedColor(color);
-                    }
-                  }}
-                  style={{
-                    backgroundColor: color.hex,
-                    borderRadius: '8px',
-                    padding: '10px',
-                    cursor: 'pointer',
-                    minHeight: '70px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'flex-end',
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
-                    transition: 'transform 0.15s ease',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.03)')}
-                  onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
-                >
-                  <div
-                    style={{
-                      fontWeight: 700,
-                      fontSize: '11px',
-                      color: textColor,
-                      marginBottom: '2px',
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    {color.name}
-                  </div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: '9px',
-                        color: textColor,
-                        opacity: 0.8,
-                        fontFamily: 'monospace',
-                      }}
-                    >
-                      {color.hex.toUpperCase()}
-                    </span>
-                    <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
-                      {wcagLabel && (
-                        <span
-                          style={{
-                            fontSize: '7px',
-                            color: textColor,
-                            backgroundColor: 'rgba(255,255,255,0.2)',
-                            padding: '1px 3px',
-                            borderRadius: '3px',
-                            fontWeight: 700,
-                            opacity: 0.9,
-                          }}
-                          title={`WCAG ${wcagLabel} (${bestContrast.toFixed(1)}:1)`}
-                        >
-                          {wcagLabel}
-                        </span>
-                      )}
-                      <span
-                        style={{
-                          fontSize: '9px',
-                          color: textColor,
-                          backgroundColor: 'rgba(0,0,0,0.15)',
-                          padding: '1px 5px',
-                          borderRadius: '8px',
-                          fontWeight: 600,
-                        }}
-                      >
-                        {combos.length}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                  color={color}
+                  onOpen={() => setSelectedColor(color)}
+                  trailingCount={combos.length}
+                />
               );
             })}
             {filteredColors.length === 0 && (
@@ -520,7 +489,7 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
                 style={{
                   fontSize: '24px',
                   fontWeight: 800,
-                  color: getTextColor(selectedColor.rgb),
+                  color: getAccessibleTextColor(selectedColor.hex).hex,
                   margin: '0 0 8px 0',
                 }}
               >
@@ -529,8 +498,7 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
               <p
                 style={{
                   fontSize: '14px',
-                  color: getTextColor(selectedColor.rgb),
-                  opacity: 0.8,
+                  color: getAccessibleTextColor(selectedColor.hex).hex,
                   margin: 0,
                   fontFamily: 'monospace',
                 }}
@@ -784,6 +752,7 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
                             {
                               pluginMessage: {
                                 type: 'apply-gradient',
+                                requestId: createRequestId('gradient'),
                                 gradientType: type,
                                 colors: [selectedColor, ...combo.colors].map(co => ({
                                   hex: co.hex,

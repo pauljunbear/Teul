@@ -120,6 +120,14 @@ module.exports = (env, argv) => ({
 
   resolve: {
     extensions: ['.tsx', '.ts', '.js', '.json'],
+    alias:
+      argv.mode === 'production'
+        ? {
+            'react$': 'preact/compat',
+            'react-dom$': 'preact/compat',
+            'react-dom/client$': 'preact/compat/client',
+          }
+        : {},
   },
 
   output: {

@@ -1,22 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import wadaSourceAudit from '../../wadaSourceAudit.json';
-import {
-  getHistoricalSourceProvenance,
-  HISTORICAL_SOURCE_PROVENANCE,
-  WADA_SOURCE_PROVENANCE,
-  WERNER_SOURCE_PROVENANCE,
-} from '../sourceProvenance';
+import { WADA_SOURCE_PROVENANCE, WERNER_SOURCE_PROVENANCE } from '../sourceProvenance';
 
 describe('historical source provenance registry', () => {
   it('provides serializable, versioned records for both historical collections', () => {
-    expect(Object.keys(HISTORICAL_SOURCE_PROVENANCE)).toEqual(['wada', 'werner']);
-    expect(JSON.parse(JSON.stringify(HISTORICAL_SOURCE_PROVENANCE))).toEqual(
-      HISTORICAL_SOURCE_PROVENANCE
-    );
-    expect(getHistoricalSourceProvenance('wada')).toBe(WADA_SOURCE_PROVENANCE);
-    expect(getHistoricalSourceProvenance('werner')).toBe(WERNER_SOURCE_PROVENANCE);
-
-    for (const provenance of Object.values(HISTORICAL_SOURCE_PROVENANCE)) {
+    for (const provenance of [WADA_SOURCE_PROVENANCE, WERNER_SOURCE_PROVENANCE]) {
       expect(provenance.schemaVersion).toBe(1);
       expect(provenance.source.primaryUrl).toMatch(/^https:\/\//);
       expect(provenance.derivation.classification).toBe('digital-approximation');

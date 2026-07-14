@@ -1,10 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  deleteGridStorageItem,
-  getGridStorageItem,
-  setGridStorageItem,
-} from '../gridStorageBridge';
+import { getGridStorageItem, setGridStorageItem } from '../gridStorageBridge';
 import { addSavedGrid, createSavedGrid, invalidateGridCache, loadSavedGrids } from '../gridStorage';
 
 interface StorageRequest {
@@ -75,10 +71,7 @@ describe('gridStorageBridge', () => {
 
     await setGridStorageItem('{"version":1}');
     await expect(getGridStorageItem()).resolves.toBe('{"version":1}');
-    await deleteGridStorageItem();
-    await expect(getGridStorageItem()).resolves.toBeNull();
-
-    expect(figmaParent.postMessage).toHaveBeenCalledTimes(4);
+    expect(figmaParent.postMessage).toHaveBeenCalledTimes(2);
   });
 
   it('accepts Figma-relayed responses when the event source is not the immediate parent', async () => {
@@ -196,27 +189,6 @@ describe('gridStorageBridge', () => {
 
     await expect(getGridStorageItem()).rejects.toThrow('clientStorage quota exceeded');
     expect(localStorage.getItem('teul-saved-grids')).toBe('legacy-value');
-  });
-
-  it('clears legacy iframe data after an authoritative clientStorage delete', async () => {
-    localStorage.setItem('teul-saved-grids', 'legacy-value');
-    const figmaParent = {
-      postMessage: vi.fn((payload: StorageRequest) => {
-        queueMicrotask(() => {
-          dispatchStorageResult(figmaParent as unknown as Window, {
-            type: 'grid-storage-result',
-            requestId: payload.pluginMessage.requestId,
-            operation: 'delete',
-            success: true,
-          });
-        });
-      }),
-    };
-    Object.defineProperty(window, 'parent', { configurable: true, value: figmaParent });
-
-    await deleteGridStorageItem();
-
-    expect(localStorage.getItem('teul-saved-grids')).toBeNull();
   });
 
   it('serializes concurrent adds so a deferred clientStorage write cannot lose either grid', async () => {

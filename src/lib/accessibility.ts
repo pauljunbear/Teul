@@ -33,6 +33,11 @@ export interface ContrastResult {
 }
 
 export type WCAGLevel = 'AAA' | 'AA' | 'AA Large' | 'Fail';
+export interface AccessibleTextColor {
+  hex: string;
+  contrast: number;
+  rating: ReturnType<typeof getWCAGRating>;
+}
 export type APCAUseCase =
   | 'preferred-body'
   | 'minimum-body'
@@ -95,6 +100,29 @@ export function getWCAGRating(ratio: number): {
     aaLarge: ratio >= 3,
     level: ratio >= 7 ? 'AAA' : ratio >= 4.5 ? 'AA' : ratio >= 3 ? 'AA Large' : 'Fail',
   };
+}
+
+/**
+ * Choose the candidate with the highest exact WCAG 2.2 contrast against a
+ * rendered background. The default dark value matches Teul's swatch text.
+ */
+export function getAccessibleTextColor(
+  backgroundHex: string,
+  candidates: readonly string[] = ['#1a1a1a', '#ffffff']
+): AccessibleTextColor {
+  if (candidates.length === 0) {
+    throw new Error('At least one text-color candidate is required');
+  }
+
+  const best = candidates.reduce(
+    (current, hex) => {
+      const contrast = getWCAGContrastHex(hex, backgroundHex);
+      return contrast > current.contrast ? { hex, contrast } : current;
+    },
+    { hex: candidates[0], contrast: getWCAGContrastHex(candidates[0], backgroundHex) }
+  );
+
+  return { ...best, rating: getWCAGRating(best.contrast) };
 }
 
 // ============================================
@@ -187,13 +215,6 @@ export function getAPCAContrast(text: RGB, bg: RGB): number {
 }
 
 /**
- * Calculate APCA contrast from hex colors
- */
-export function getAPCAContrastHex(textHex: string, bgHex: string): number {
-  return getAPCAContrast(hexToRgb(textHex), hexToRgb(bgHex));
-}
-
-/**
  * Classify an Lc value by APCA's basic use-case levels.
  * These are contextual guides, not pass/fail conformance ratings.
  */
@@ -255,105 +276,4 @@ export function analyzeContrast(fgHex: string, bgHex: string): ContrastResult {
       minimumFontSize: minFontSize,
     },
   };
-}
-
-/**
- * Check if a color pair meets a specific WCAG level
- */
-export function meetsWCAGLevel(fgHex: string, bgHex: string, level: 'AA' | 'AAA'): boolean {
-  const ratio = getWCAGContrastHex(fgHex, bgHex);
-  return level === 'AAA' ? ratio >= 7 : ratio >= 4.5;
-}
-
-/**
- * Suggest a text color (black or white) that provides best contrast
- */
-export function suggestTextColor(bgHex: string): {
-  hex: string;
-  wcagRatio: number;
-  apcaLc: number;
-} {
-  const blackContrast = analyzeContrast('#000000', bgHex);
-  const whiteContrast = analyzeContrast('#ffffff', bgHex);
-
-  // Prefer the color with higher WCAG ratio
-  // APCA handles polarity (dark-on-light vs light-on-dark) but WCAG is symmetric
-  if (blackContrast.wcag.ratio > whiteContrast.wcag.ratio) {
-    return {
-      hex: '#000000',
-      wcagRatio: blackContrast.wcag.ratio,
-      apcaLc: blackContrast.apca.lc,
-    };
-  }
-  return {
-    hex: '#ffffff',
-    wcagRatio: whiteContrast.wcag.ratio,
-    apcaLc: whiteContrast.apca.lc,
-  };
-}
-
-/**
- * Find the closest color that meets a WCAG level
- * Adjusts the text color lightness while preserving hue
- */
-export function findAccessibleColor(
-  textHex: string,
-  bgHex: string,
-  targetLevel: 'AA' | 'AAA' = 'AA'
-): string | null {
-  const targetRatio = targetLevel === 'AAA' ? 7 : 4.5;
-  const currentRatio = getWCAGContrastHex(textHex, bgHex);
-
-  if (currentRatio >= targetRatio) {
-    return textHex; // Already meets target
-  }
-
-  // Get background luminance to determine direction
-  const bg = hexToRgb(bgHex);
-  const bgLum = getRelativeLuminance(bg.r, bg.g, bg.b);
-
-  // Try darkening or lightening the text
-  const text = hexToRgb(textHex);
-  const textLum = getRelativeLuminance(text.r, text.g, text.b);
-
-  // Determine if we should go lighter or darker
-  const shouldLighten = textLum > bgLum;
-
-  // Binary search for the right adjustment
-  let low = 0;
-  let high = 1;
-  let bestHex: string | null = null;
-
-  for (let i = 0; i < 20; i++) {
-    const mid = (low + high) / 2;
-    const factor = shouldLighten ? 1 + mid : 1 - mid;
-
-    const adjusted = {
-      r: Math.max(0, Math.min(255, Math.round(text.r * factor))),
-      g: Math.max(0, Math.min(255, Math.round(text.g * factor))),
-      b: Math.max(0, Math.min(255, Math.round(text.b * factor))),
-    };
-
-    const adjustedHex = `#${adjusted.r.toString(16).padStart(2, '0')}${adjusted.g.toString(16).padStart(2, '0')}${adjusted.b.toString(16).padStart(2, '0')}`;
-
-    const ratio = getWCAGContrastHex(adjustedHex, bgHex);
-
-    if (ratio >= targetRatio) {
-      bestHex = adjustedHex;
-      high = mid; // Try to find a closer match
-    } else {
-      low = mid;
-    }
-  }
-
-  // If we couldn't find a good match, suggest black or white
-  if (!bestHex) {
-    const blackRatio = getWCAGContrastHex('#000000', bgHex);
-    const whiteRatio = getWCAGContrastHex('#ffffff', bgHex);
-    if (blackRatio >= targetRatio) return '#000000';
-    if (whiteRatio >= targetRatio) return '#ffffff';
-    return null;
-  }
-
-  return bestHex;
 }

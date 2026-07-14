@@ -1,4 +1,4 @@
-import { calculateContrastRatio } from './utils';
+import { getWCAGContrastHex } from './accessibility';
 
 export type SemanticColorMode = 'light' | 'dark';
 export type SemanticColorCategory = 'text' | 'enhanced-text' | 'non-text';
@@ -49,6 +49,16 @@ export interface SemanticColorPolicyReport {
     dark?: SemanticColorModeReport;
   };
   valid: boolean;
+}
+
+class SemanticColorPolicyError extends Error {
+  readonly report?: SemanticColorPolicyReport;
+
+  constructor(message: string, report?: SemanticColorPolicyReport) {
+    super(message);
+    this.name = 'SemanticColorPolicyError';
+    this.report = report;
+  }
 }
 
 interface SemanticColorScale {
@@ -159,16 +169,6 @@ export const SEMANTIC_PAIRING_DEFINITIONS: readonly PairingDefinition[] = [
   },
 ] as const;
 
-export class SemanticColorPolicyError extends Error {
-  readonly report?: SemanticColorPolicyReport;
-
-  constructor(message: string, report?: SemanticColorPolicyReport) {
-    super(message);
-    this.name = 'SemanticColorPolicyError';
-    this.report = report;
-  }
-}
-
 function isHexColor(value: string): boolean {
   return /^#[0-9a-f]{6}$/i.test(value);
 }
@@ -223,7 +223,7 @@ function contrastPasses(
   category: SemanticColorCategory
 ): boolean {
   return (
-    calculateContrastRatio(foreground.value, background.value) >= WCAG_CONTRAST_THRESHOLDS[category]
+    getWCAGContrastHex(foreground.value, background.value) >= WCAG_CONTRAST_THRESHOLDS[category]
   );
 }
 
@@ -332,7 +332,7 @@ function evaluatePairings(
     }
 
     const minimumRatio = WCAG_CONTRAST_THRESHOLDS[definition.category];
-    const ratio = calculateContrastRatio(foreground.value, background.value);
+    const ratio = getWCAGContrastHex(foreground.value, background.value);
     return {
       ...definition,
       minimumRatio,
@@ -398,18 +398,4 @@ export function isSemanticColorPolicyCurrent(
   } catch {
     return false;
   }
-}
-
-export function assertSemanticColorPolicy(
-  lightScales: SemanticColorScales,
-  darkScales?: SemanticColorScales
-): SemanticColorPolicyReport {
-  const report = buildSemanticColorPolicy(lightScales, darkScales);
-  if (!report.valid) {
-    throw new SemanticColorPolicyError(
-      'One or more declared semantic color pairings fail the WCAG 2.2 policy.',
-      report
-    );
-  }
-  return report;
 }

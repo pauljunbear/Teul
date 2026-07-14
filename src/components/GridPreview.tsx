@@ -3,14 +3,17 @@ import type {
   FigmaRowsColsLayoutGrid,
   GridApplicationMode,
   GridConfig,
+  GridConstructionV2,
   GridDimensions,
   GridResponsiveWidth,
 } from '../types/grid';
 import { gridConfigToFigmaLayoutGrids, parseAspectRatio } from '../lib/figmaGrids';
 import { gridColorToCSS, resolveGridConfigForTarget } from '../lib/gridUtils';
+import { resolveGridConstructionForTarget } from '../lib/gridConstructionV2';
 
 interface GridPreviewProps {
   config: GridConfig;
+  construction?: GridConstructionV2;
   width: number;
   height: number;
   isDark: boolean;
@@ -22,6 +25,7 @@ interface GridPreviewProps {
 
 interface GridMiniPreviewProps {
   config: GridConfig;
+  construction?: GridConstructionV2;
   size?: number;
   isDark: boolean;
   referenceDimensions?: GridDimensions;
@@ -67,6 +71,7 @@ function getAxisGeometry(grid: FigmaRowsColsLayoutGrid, frameSize: number) {
 /** Render the same quantized grids that Teul sends to Figma. */
 export const GridPreview: React.FC<GridPreviewProps> = ({
   config,
+  construction,
   width,
   height,
   isDark,
@@ -85,6 +90,15 @@ export const GridPreview: React.FC<GridPreviewProps> = ({
     responsiveWidth
   );
   const grids = gridConfigToFigmaLayoutGrids(resolvedConfig, frame.width, frame.height);
+  const resolvedConstruction = construction
+    ? resolveGridConstructionForTarget(
+        construction,
+        referenceDimensions ?? frame,
+        frame,
+        applicationMode,
+        responsiveWidth
+      )
+    : undefined;
   const scale = Math.min(width / frame.width, height / frame.height);
   const renderedWidth = frame.width * scale;
   const renderedHeight = frame.height * scale;
@@ -104,6 +118,62 @@ export const GridPreview: React.FC<GridPreviewProps> = ({
       <rect width={width} height={height} fill={outerBackground} />
       <g transform={`translate(${xOffset} ${yOffset}) scale(${scale})`}>
         <rect width={frame.width} height={frame.height} fill={frameBackground} />
+        {resolvedConstruction?.tracks.map(track => {
+          if (!track.visible) return null;
+          const parent = track.parentTrackId
+            ? resolvedConstruction.tracks.find(candidate => candidate.id === track.parentTrackId)
+            : undefined;
+          const x =
+            track.axis === 'columns'
+              ? track.start
+              : parent?.axis === 'columns'
+                ? parent.start
+                : resolvedConstruction.contentBounds.x;
+          const y =
+            track.axis === 'rows'
+              ? track.start
+              : parent?.axis === 'rows'
+                ? parent.start
+                : resolvedConstruction.contentBounds.y;
+          const trackWidth =
+            track.axis === 'columns'
+              ? track.size
+              : parent?.axis === 'columns'
+                ? parent.size
+                : resolvedConstruction.contentBounds.width;
+          const trackHeight =
+            track.axis === 'rows'
+              ? track.size
+              : parent?.axis === 'rows'
+                ? parent.size
+                : resolvedConstruction.contentBounds.height;
+          return (
+            <rect
+              key={track.id}
+              data-grid-pattern={track.parentTrackId ? 'subdivision' : track.axis.slice(0, -1)}
+              x={x}
+              y={y}
+              width={trackWidth}
+              height={trackHeight}
+              fill={gridColorToCSS(track.color)}
+            />
+          );
+        })}
+        {resolvedConstruction?.baselines.map((baseline, index) => (
+          <rect
+            key={`construction-baseline-${index}`}
+            data-grid-pattern="construction-baseline"
+            x={resolvedConstruction.contentBounds.x}
+            y={baseline}
+            width={resolvedConstruction.contentBounds.width}
+            height={Math.max(0.5 / scale, 0.5)}
+            fill={
+              construction?.baseline
+                ? gridColorToCSS(construction.baseline.color)
+                : 'rgba(0, 0, 0, 0.2)'
+            }
+          />
+        ))}
         {grids.map((grid, gridIndex) => {
           if (grid.pattern === 'GRID') {
             const patternId = `${previewId}-uniform-${gridIndex}`;
@@ -176,6 +246,7 @@ export const GridPreview: React.FC<GridPreviewProps> = ({
 
 export const GridMiniPreview: React.FC<GridMiniPreviewProps> = ({
   config,
+  construction,
   size = 48,
   isDark,
   referenceDimensions,
@@ -185,6 +256,7 @@ export const GridMiniPreview: React.FC<GridMiniPreviewProps> = ({
 }) => (
   <GridPreview
     config={config}
+    construction={construction}
     width={size}
     height={size}
     isDark={isDark}

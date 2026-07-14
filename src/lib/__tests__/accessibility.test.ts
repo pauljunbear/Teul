@@ -11,15 +11,14 @@ import {
   getWCAGContrast,
   getWCAGContrastHex,
   getWCAGRating,
+  getAccessibleTextColor,
   getAPCAContrast,
-  getAPCAContrastHex,
   getAPCAUseCase,
   getAPCAMinFontSize,
   analyzeContrast,
-  meetsWCAGLevel,
-  suggestTextColor,
-  findAccessibleColor,
 } from '../accessibility';
+import wadaColors from '../../colors.json';
+import wernerColors from '../../wernerColors.json';
 
 // ============================================
 // Relative Luminance Tests
@@ -113,6 +112,48 @@ describe('getWCAGContrastHex', () => {
 
   it('handles uppercase hex', () => {
     expect(getWCAGContrastHex('#AABBCC', '#FFFFFF')).toBeGreaterThan(1);
+  });
+});
+
+describe('getAccessibleTextColor', () => {
+  const candidates = ['#1a1a1a', '#ffffff'] as const;
+
+  it('chooses the exact higher-contrast rendered candidate', () => {
+    const result = getAccessibleTextColor('#00b49b');
+    expect(result.hex).toBe('#1a1a1a');
+    expect(result.contrast).toBeCloseTo(6.63, 2);
+    expect(result.rating.aa).toBe(true);
+  });
+
+  it('rejects an empty candidate list', () => {
+    expect(() => getAccessibleTextColor('#ffffff', [])).toThrow(
+      'At least one text-color candidate is required'
+    );
+  });
+
+  it.each([
+    ['Wada', wadaColors],
+    ['Werner', wernerColors],
+  ])('selects the best candidate for every %s swatch', (_name, colors) => {
+    for (const color of colors) {
+      const result = getAccessibleTextColor(color.hex, candidates);
+      const candidateContrasts = candidates.map(candidate =>
+        getWCAGContrastHex(candidate, color.hex)
+      );
+      const bestContrast = Math.max(...candidateContrasts);
+
+      expect(result.contrast).toBeCloseTo(bestContrast, 10);
+      if (bestContrast >= 4.5) {
+        expect(result.rating.aa, `${color.name} should pass AA`).toBe(true);
+      }
+    }
+  });
+
+  it('rescues Werner Sap Green from a failing white-text choice', () => {
+    const result = getAccessibleTextColor('#808740');
+    expect(result.hex).toBe('#1a1a1a');
+    expect(result.contrast).toBeGreaterThanOrEqual(4.5);
+    expect(getWCAGContrastHex('#ffffff', '#808740')).toBeLessThan(4.5);
   });
 });
 
@@ -225,18 +266,6 @@ describe('getAPCAContrast', () => {
   });
 });
 
-describe('getAPCAContrastHex', () => {
-  it('handles hex colors correctly', () => {
-    const lc = getAPCAContrastHex('#ffffff', '#000000');
-    expect(lc).toBe(-107.88473318309848);
-  });
-
-  it('handles hex without # prefix', () => {
-    const lc = getAPCAContrastHex('ffffff', '000000');
-    expect(lc).toBe(-107.88473318309848);
-  });
-});
-
 describe('getAPCAUseCase', () => {
   it('maps signed Lc values to contextual use cases instead of conformance grades', () => {
     expect(getAPCAUseCase(90)).toBe('preferred-body');
@@ -325,115 +354,6 @@ describe('analyzeContrast', () => {
     expect(result.wcag.ratio).toBeLessThan(2);
     expect(result.wcag.aa).toBe(false);
     expect(result.apca.useCase).toBe('below-guide');
-  });
-});
-
-describe('meetsWCAGLevel', () => {
-  it('returns true for black/white meeting AA', () => {
-    expect(meetsWCAGLevel('#000000', '#ffffff', 'AA')).toBe(true);
-  });
-
-  it('returns true for black/white meeting AAA', () => {
-    expect(meetsWCAGLevel('#000000', '#ffffff', 'AAA')).toBe(true);
-  });
-
-  it('returns false for low contrast at AA', () => {
-    expect(meetsWCAGLevel('#888888', '#999999', 'AA')).toBe(false);
-  });
-
-  it('correctly identifies AA but not AAA', () => {
-    // Find a ratio between 4.5 and 7
-    const meetsAA = meetsWCAGLevel('#767676', '#ffffff', 'AA');
-    const meetsAAA = meetsWCAGLevel('#767676', '#ffffff', 'AAA');
-    expect(meetsAA).toBe(true);
-    expect(meetsAAA).toBe(false);
-  });
-});
-
-describe('suggestTextColor', () => {
-  it('suggests black for white background', () => {
-    const result = suggestTextColor('#ffffff');
-    expect(result.hex).toBe('#000000');
-    expect(result.wcagRatio).toBe(21);
-  });
-
-  it('suggests white for black background', () => {
-    const result = suggestTextColor('#000000');
-    expect(result.hex).toBe('#ffffff');
-    expect(result.wcagRatio).toBe(21);
-  });
-
-  it('suggests black for light colors', () => {
-    const result = suggestTextColor('#f0f0f0');
-    expect(result.hex).toBe('#000000');
-  });
-
-  it('suggests white for dark colors', () => {
-    const result = suggestTextColor('#222222');
-    expect(result.hex).toBe('#ffffff');
-  });
-
-  it('suggests black for yellow background', () => {
-    const result = suggestTextColor('#ffff00');
-    expect(result.hex).toBe('#000000');
-  });
-
-  it('includes APCA Lc value', () => {
-    const result = suggestTextColor('#ffffff');
-    expect(result.apcaLc).toBeDefined();
-    expect(Math.abs(result.apcaLc)).toBeGreaterThan(100);
-  });
-});
-
-describe('findAccessibleColor', () => {
-  it('returns same color if already accessible', () => {
-    const result = findAccessibleColor('#000000', '#ffffff', 'AAA');
-    expect(result).toBe('#000000');
-  });
-
-  it('returns adjusted color for low contrast', () => {
-    const result = findAccessibleColor('#888888', '#ffffff', 'AA');
-    expect(result).toBeDefined();
-    if (result) {
-      const ratio = getWCAGContrastHex(result, '#ffffff');
-      expect(ratio).toBeGreaterThanOrEqual(4.5);
-    }
-  });
-
-  it('returns black or white if original color cannot be adjusted enough', () => {
-    // Very light color on white - needs to go much darker
-    const result = findAccessibleColor('#fefefe', '#ffffff', 'AA');
-    expect(result).toBeDefined();
-    // Should find a darker shade or black
-    if (result) {
-      const ratio = getWCAGContrastHex(result, '#ffffff');
-      expect(ratio).toBeGreaterThanOrEqual(4.5);
-    }
-  });
-
-  it('handles AAA target level', () => {
-    const result = findAccessibleColor('#666666', '#ffffff', 'AAA');
-    expect(result).toBeDefined();
-    if (result) {
-      const ratio = getWCAGContrastHex(result, '#ffffff');
-      expect(ratio).toBeGreaterThanOrEqual(7);
-    }
-  });
-
-  it('preserves relative darkness/lightness when possible', () => {
-    // A dark color on white should return a darker color
-    const result = findAccessibleColor('#444444', '#ffffff', 'AA');
-    expect(result).toBeDefined();
-    // The result should still be on the darker side
-    if (result && result !== '#000000' && result !== '#ffffff') {
-      const rgb = {
-        r: parseInt(result.slice(1, 3), 16),
-        g: parseInt(result.slice(3, 5), 16),
-        b: parseInt(result.slice(5, 7), 16),
-      };
-      const brightness = (rgb.r + rgb.g + rgb.b) / 3;
-      expect(brightness).toBeLessThan(128);
-    }
   });
 });
 

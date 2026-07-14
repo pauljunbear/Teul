@@ -6,8 +6,10 @@ import { buildSemanticColorPolicy } from '../semanticColorPolicy';
 interface CreatedStyle {
   name: string;
   paints: Paint[];
-  description?: string;
+  description: string;
   remove: ReturnType<typeof vi.fn>;
+  getPluginData: (key: string) => string;
+  setPluginData: (key: string, value: string) => void;
 }
 
 const createdStyles: CreatedStyle[] = [];
@@ -17,7 +19,17 @@ beforeEach(() => {
   vi.stubGlobal('figma', {
     getLocalPaintStylesAsync: vi.fn().mockResolvedValue([]),
     createPaintStyle: vi.fn(() => {
-      const style: CreatedStyle = { name: '', paints: [], remove: vi.fn() };
+      const pluginData = new Map<string, string>();
+      const style: CreatedStyle = {
+        name: '',
+        paints: [],
+        description: '',
+        remove: vi.fn(),
+        getPluginData: key => pluginData.get(key) ?? '',
+        setPluginData: (key, value) => {
+          pluginData.set(key, value);
+        },
+      };
       createdStyles.push(style);
       return style;
     }),
@@ -49,6 +61,21 @@ function solidPaint(hex: string): Paint {
       b: parseInt(cleanHex.slice(4, 6), 16) / 255,
     },
   };
+}
+
+function storedStyle(name: string, hex: string, owned = true): PaintStyle {
+  const pluginData = new Map<string, string>();
+  if (owned) pluginData.set('teul-color-system', '1');
+  return {
+    name,
+    paints: [solidPaint(hex)],
+    description: '',
+    remove: vi.fn(),
+    getPluginData: (key: string) => pluginData.get(key) ?? '',
+    setPluginData: (key: string, value: string) => {
+      pluginData.set(key, value);
+    },
+  } as unknown as PaintStyle;
 }
 
 function makeConstrainedScale(mode: 'light' | 'dark') {
@@ -154,15 +181,13 @@ describe('createColorStyles', () => {
       },
     };
 
-    await createColorStyles(data, 'Brand');
+    const report = await createColorStyles(data, 'Brand');
 
     const names = createdStyles.map(style => style.name);
     expect(names).toHaveLength(new Set(names).size);
     expect(names.filter(name => name === 'Brand/Shared/1000')).toHaveLength(1);
     expect(names.filter(name => name === 'Brand/Shared/1100')).toHaveLength(1);
-    expect(figma.notify).toHaveBeenCalledWith(
-      'Created 5 color styles; skipped 2 duplicate queued names'
-    );
+    expect(report).toMatchObject({ createdCount: 5, skippedCount: 2, updatedCount: 0 });
   });
 
   it('rejects duplicate queued names that request different paints before creating styles', async () => {
@@ -194,7 +219,7 @@ describe('createColorStyles', () => {
 
   it('preserves the historical meaning of an existing 1000 style when regenerating', async () => {
     vi.mocked(figma.getLocalPaintStylesAsync).mockResolvedValue([
-      { name: 'Brand/Neutral/1000', paints: [solidPaint('#111111')] } as unknown as PaintStyle,
+      storedStyle('Brand/Neutral/1000', '#111111'),
     ]);
     const data: CreateStylesData = {
       systemName: 'Brand',
@@ -207,17 +232,16 @@ describe('createColorStyles', () => {
       },
     };
 
-    await createColorStyles(data, 'Brand');
+    const report = await createColorStyles(data, 'Brand', 'update-local');
 
     expect(createdStyles.map(style => style.name)).not.toContain('Brand/Neutral/1000');
     expect(createdStyles.map(style => style.name)).toContain('Brand/Neutral/1100');
-    expect(figma.notify).toHaveBeenCalledWith('Created 3 color styles; skipped 1 existing name');
+    expect(report).toMatchObject({ createdCount: 3, updatedCount: 1, skippedCount: 0 });
   });
 
-  it('rejects an existing same-name style with a different paint before creating styles', async () => {
-    vi.mocked(figma.getLocalPaintStylesAsync).mockResolvedValue([
-      { name: 'Brand/Neutral/1000', paints: [solidPaint('#ffffff')] } as unknown as PaintStyle,
-    ]);
+  it('updates a Teul-owned same-name style with a different paint', async () => {
+    const existing = storedStyle('Brand/Neutral/1000', '#ffffff');
+    vi.mocked(figma.getLocalPaintStylesAsync).mockResolvedValue([existing]);
     const data: CreateStylesData = {
       systemName: 'Brand',
       includeDarkMode: false,
@@ -229,11 +253,27 @@ describe('createColorStyles', () => {
       },
     };
 
-    await expect(createColorStyles(data, 'Brand')).rejects.toThrow(
-      'Color style conflict for "Brand/Neutral/1000": existing paint does not match requested #111111'
+    const report = await createColorStyles(data, 'Brand', 'update-local');
+
+    expect(existing.paints).toEqual([solidPaint('#111111')]);
+    expect(report.updatedCount).toBe(1);
+  });
+
+  it('refuses to update an unrelated local style', async () => {
+    vi.mocked(figma.getLocalPaintStylesAsync).mockResolvedValue([
+      storedStyle('Brand/Neutral/1000', '#ffffff', false),
+    ]);
+    const data: CreateStylesData = {
+      systemName: 'Brand',
+      includeDarkMode: false,
+      scaleMethod: 'radix-match',
+      scales: { light: { neutral: makeScale('Neutral') } },
+    };
+
+    await expect(createColorStyles(data, 'Brand', 'update-local')).rejects.toThrow(
+      'is not marked as Teul-owned'
     );
     expect(createdStyles).toEqual([]);
-    expect(figma.notify).not.toHaveBeenCalled();
   });
 
   it('serializes overlapping requests so later calls observe newly created names', async () => {
@@ -251,17 +291,17 @@ describe('createColorStyles', () => {
       },
     };
 
-    await Promise.all([createColorStyles(data, 'Brand'), createColorStyles(data, 'Brand')]);
+    const reports = await Promise.all([
+      createColorStyles(data, 'Brand', 'update-local'),
+      createColorStyles(data, 'Brand', 'update-local'),
+    ]);
 
     const names = createdStyles.map(style => style.name);
     expect(names).toHaveLength(4);
     expect(names).toHaveLength(new Set(names).size);
     expect(figma.getLocalPaintStylesAsync).toHaveBeenCalledTimes(2);
-    expect(figma.notify).toHaveBeenNthCalledWith(1, 'Created 4 color styles');
-    expect(figma.notify).toHaveBeenNthCalledWith(
-      2,
-      'Created 0 color styles; skipped 4 existing names'
-    );
+    expect(reports[0]).toMatchObject({ createdCount: 4, skippedCount: 0 });
+    expect(reports[1]).toMatchObject({ createdCount: 0, skippedCount: 4 });
   });
 
   it('rejects invalid colors before creating any styles', async () => {
@@ -349,26 +389,19 @@ describe('createColorStyles', () => {
 
   it('rejects a constrained semantic style collision before creating any styles', async () => {
     vi.mocked(figma.getLocalPaintStylesAsync).mockResolvedValue([
-      {
-        name: 'Brand/Semantic/background.canvas',
-        paints: [solidPaint('#000000')],
-      } as unknown as PaintStyle,
+      storedStyle('Brand/Semantic/background.canvas', '#000000', false),
     ]);
     const data = makeConstrainedStylesData(false);
 
-    await expect(createColorStyles(data, 'Brand')).rejects.toThrow(
-      'Color style conflict for "Brand/Semantic/background.canvas": existing paint does not match requested #ffffff'
+    await expect(createColorStyles(data, 'Brand', 'update-local')).rejects.toThrow(
+      'Color style "Brand/Semantic/background.canvas" is not marked as Teul-owned'
     );
     expect(createdStyles).toEqual([]);
     expect(figma.notify).not.toHaveBeenCalled();
   });
 
   it('rolls back newly created styles after a Figma API exception and preserves existing styles', async () => {
-    const existingStyle = {
-      name: 'Brand/Neutral/1000',
-      paints: [solidPaint('#111111')],
-      remove: vi.fn(),
-    };
+    const existingStyle = storedStyle('Brand/Neutral/1000', '#111111');
     const apiError = new Error('Figma paints assignment failed');
     let createAttempts = 0;
 
@@ -377,7 +410,8 @@ describe('createColorStyles', () => {
     ]);
     vi.mocked(figma.createPaintStyle).mockImplementation(() => {
       createAttempts++;
-      const style: CreatedStyle = { name: '', paints: [], remove: vi.fn() };
+      const style = storedStyle('', '#000000') as unknown as CreatedStyle;
+      style.paints = [];
       if (createAttempts === 3) {
         Object.defineProperty(style, 'paints', {
           get: () => [],
@@ -401,16 +435,47 @@ describe('createColorStyles', () => {
       },
     };
 
-    await expect(createColorStyles(data, 'Brand')).rejects.toBe(apiError);
+    await expect(createColorStyles(data, 'Brand', 'update-local')).rejects.toBe(apiError);
 
     expect(createdStyles).toHaveLength(3);
     expect(createdStyles.every(style => style.remove.mock.calls.length === 1)).toBe(true);
     expect(existingStyle.remove).not.toHaveBeenCalled();
-    expect(figma.notify).not.toHaveBeenCalled();
 
     vi.mocked(figma.getLocalPaintStylesAsync).mockResolvedValue([]);
-    await createColorStyles(data, 'Recovered');
-    expect(figma.notify).toHaveBeenCalledWith('Created 4 color styles');
+    const recovered = await createColorStyles(data, 'Recovered');
+    expect(recovered.createdCount).toBe(4);
+  });
+
+  it('restores earlier Teul-owned style updates when a later update fails', async () => {
+    const first = storedStyle('Brand/Neutral/1000', '#ffffff');
+    const second = storedStyle('Brand/Neutral/1100', '#ffffff');
+    let secondPaints: readonly Paint[] = second.paints;
+    let failNextAssignment = true;
+    Object.defineProperty(second, 'paints', {
+      get: () => secondPaints,
+      set: (value: readonly Paint[]) => {
+        if (failNextAssignment) {
+          failNextAssignment = false;
+          throw new Error('Injected style update failure');
+        }
+        secondPaints = value;
+      },
+    });
+    vi.mocked(figma.getLocalPaintStylesAsync).mockResolvedValue([first, second]);
+    const data: CreateStylesData = {
+      systemName: 'Brand',
+      includeDarkMode: false,
+      scaleMethod: 'radix-match',
+      scales: { light: { neutral: makeScale('Neutral') } },
+    };
+
+    await expect(createColorStyles(data, 'Brand', 'update-local')).rejects.toThrow(
+      'Injected style update failure'
+    );
+
+    expect(first.paints).toEqual([solidPaint('#ffffff')]);
+    expect(second.paints).toEqual([solidPaint('#ffffff')]);
+    expect(createdStyles.every(style => style.remove.mock.calls.length === 1)).toBe(true);
   });
 
   it('reports failed style removals in the rejected operation error', async () => {
@@ -421,7 +486,8 @@ describe('createColorStyles', () => {
 
     vi.mocked(figma.createPaintStyle).mockImplementation(() => {
       createAttempts++;
-      const style: CreatedStyle = { name: '', paints: [], remove: vi.fn() };
+      const style = storedStyle('', '#000000') as unknown as CreatedStyle;
+      style.paints = [];
       if (createAttempts === 1) {
         style.remove.mockImplementation(() => {
           throw rollbackError;
@@ -451,7 +517,7 @@ describe('createColorStyles', () => {
     };
 
     await expect(createColorStyles(data, 'Brand')).rejects.toThrow(
-      'Figma paints assignment failed; failed to roll back 1 created color style'
+      'Figma paints assignment failed; rollback failed: style "Brand/Neutral/1000" removal failed'
     );
     expect(createdStyles).toHaveLength(3);
     expect(createdStyles.every(style => style.remove.mock.calls.length === 1)).toBe(true);

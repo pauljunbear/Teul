@@ -8,6 +8,7 @@ import { SemanticPolicySummary } from './SemanticPolicySummary';
 import { buildSemanticColorPolicy } from '../lib/semanticColorPolicy';
 import type {
   ColorSystemOperationResultMessage,
+  GenerateColorSystemMessage,
   NormalizedDocumentColorProfile,
 } from '../types/messages';
 import {
@@ -25,11 +26,14 @@ import {
   type ExportScales,
   type ExportScale,
 } from '../lib/colorExport';
+import { useOptionalWorkspaceState } from '../lib/workspaceState';
+import { usePluginOperation } from '../lib/usePluginOperation';
 
 // Types
 type ColorRole = 'primary' | 'secondary' | 'tertiary' | 'accent';
 type ScaleMethod = 'custom' | 'radix-match' | 'wcag-constrained';
 type OutputDetailLevel = 'minimal' | 'detailed' | 'presentation';
+type GeneratorStage = 1 | 2 | 3;
 const MAX_SYSTEM_NAME_LENGTH = 512;
 
 const getSystemNameError = (systemName: string): string | null => {
@@ -83,6 +87,12 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
   documentColorProfile = 'unknown',
 }) => {
   const theme = getStyles(isDark);
+  const workspaceContext = useOptionalWorkspaceState();
+  const updateWorkspace = workspaceContext?.update;
+  const sourceSignature = useMemo(
+    () => colors.map(color => `${color.hex.toLowerCase()}|${color.name}`).join('\u001f'),
+    [colors]
+  );
   const closeButtonRef = React.useRef<HTMLButtonElement>(null);
   const dialogRef = useModalAccessibility({
     isOpen,
@@ -96,12 +106,19 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
   const [detailLevel, setDetailLevel] = useState<OutputDetailLevel>('detailed');
   const [includeDarkMode, setIncludeDarkMode] = useState(true);
   const [createStyles, setCreateStyles] = useState(false);
+  const [createVariables, setCreateVariables] = useState(true);
+  const [collisionPolicy, setCollisionPolicy] = useState<'cancel' | 'update-local' | 'create-copy'>(
+    'cancel'
+  );
   const [systemName, setSystemName] = useState(combinationName || 'My Color System');
   const [showExport, setShowExport] = useState(false);
   const [exportFormat, setExportFormat] = useState<'css' | 'tailwind' | 'json'>('css');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
-  const pendingRequestIdRef = React.useRef<string | null>(null);
+  const [stage, setStage] = useState<GeneratorStage>(1);
+  const [creationComplete, setCreationComplete] = useState(false);
+  const [operationResult, setOperationResult] = useState<ColorSystemOperationResultMessage | null>(
+    null
+  );
   const nextRequestIdRef = React.useRef(0);
   const systemNameError = getSystemNameError(systemName);
 
@@ -116,74 +133,142 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
     setMultiSelectMode(Boolean(colors && colors.length > 4));
   }, [colors]);
 
-  React.useEffect(() => {
-    const handleMessage = (event: MessageEvent<{ pluginMessage?: unknown }>) => {
-      const message = event.data?.pluginMessage as Partial<ColorSystemOperationResultMessage>;
-      if (
-        message.type !== 'color-system-operation-result' ||
-        typeof message.requestId !== 'string' ||
-        message.requestId !== pendingRequestIdRef.current ||
-        typeof message.success !== 'boolean'
-      ) {
-        return;
-      }
-
-      pendingRequestIdRef.current = null;
-      setIsSubmitting(false);
+  const colorSystemOperation = usePluginOperation({
+    resultType: 'color-system-operation-result',
+    onResult: message => {
       if (message.success) {
         setSubmissionError(null);
-        onClose();
+        setCreationComplete(true);
+        setOperationResult(message);
+        updateWorkspace?.(current => {
+          if (!current.generatorDraft) return current;
+          const { generatorDraft: _completedDraft, ...rest } = current;
+          return rest;
+        });
       } else {
+        setOperationResult(null);
         setSubmissionError(message.error || 'Failed to generate color system');
       }
-    };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, [onClose]);
+    },
+    onTimeout: () => {
+      setOperationResult(null);
+      setSubmissionError(
+        'Figma did not finish this operation within 30 seconds. The draft is preserved; inspect the file before retrying.'
+      );
+    },
+    onSubmitError: error => {
+      setOperationResult(null);
+      setSubmissionError(error.message);
+    },
+  });
+  const isSubmitting = colorSystemOperation.pending;
 
   React.useEffect(() => {
-    if (isOpen) setSubmissionError(null);
+    if (isOpen) {
+      setSubmissionError(null);
+      setCreationComplete(false);
+      setOperationResult(null);
+    }
   }, [isOpen]);
 
-  // Update role assignments when colors change (e.g., when modal opens with new colors)
-  React.useEffect(() => {
-    if (colors && colors.length > 0) {
-      setRoleAssignments(
-        colors.map((c, i) => ({
-          hex: c.hex,
-          name: c.name,
-          role:
-            i === 0
-              ? 'primary'
-              : i === 1
-                ? 'secondary'
-                : i === 2
-                  ? 'tertiary'
-                  : i === 3
-                    ? 'accent'
-                    : null,
-          roles:
-            i === 0
-              ? ['primary']
-              : i === 1
-                ? ['secondary']
-                : i === 2
-                  ? ['tertiary']
-                  : i === 3
-                    ? ['accent']
-                    : [],
-        }))
-      );
-    }
-  }, [colors]);
+  const restoredDraftKeyRef = React.useRef<string | null>(null);
 
-  // Update system name when combinationName changes
+  // Restore an unfinished draft only when it belongs to the exact source palette.
   React.useEffect(() => {
-    if (combinationName) {
-      setSystemName(combinationName);
+    if (!isOpen || colors.length === 0) return;
+    const restoreKey = `${sourceSignature}:${workspaceContext?.hydrated ? 'hydrated' : 'local'}`;
+    if (restoredDraftKeyRef.current === restoreKey) return;
+    restoredDraftKeyRef.current = restoreKey;
+    const draft = workspaceContext?.state.generatorDraft;
+    if (draft?.sourceSignature === sourceSignature) {
+      setScaleMethod(draft.scaleMethod);
+      setNeutralFamily(draft.neutralFamily);
+      setDetailLevel(draft.detailLevel);
+      setIncludeDarkMode(draft.includeDarkMode);
+      setCreateStyles(draft.createStyles);
+      setCreateVariables(draft.createVariables);
+      setCollisionPolicy(draft.collisionPolicy);
+      setSystemName(draft.systemName);
+      setMultiSelectMode(draft.multiSelectMode);
+      setRoleAssignments(draft.roleAssignments);
+      setStage(draft.stage);
+      return;
     }
-  }, [combinationName]);
+    setMultiSelectMode(colors.length > 4);
+    setRoleAssignments(
+      colors.map((c, i) => ({
+        hex: c.hex,
+        name: c.name,
+        role:
+          i === 0
+            ? 'primary'
+            : i === 1
+              ? 'secondary'
+              : i === 2
+                ? 'tertiary'
+                : i === 3
+                  ? 'accent'
+                  : null,
+        roles:
+          i === 0
+            ? ['primary']
+            : i === 1
+              ? ['secondary']
+              : i === 2
+                ? ['tertiary']
+                : i === 3
+                  ? ['accent']
+                  : [],
+      }))
+    );
+    setSystemName(combinationName || 'My Color System');
+    setStage(1);
+  }, [colors, combinationName, isOpen, sourceSignature, workspaceContext]);
+
+  React.useEffect(() => {
+    if (
+      !isOpen ||
+      !workspaceContext?.hydrated ||
+      roleAssignments.length === 0 ||
+      creationComplete
+    ) {
+      return;
+    }
+    const generatorDraft = {
+      sourceSignature,
+      scaleMethod,
+      neutralFamily,
+      detailLevel,
+      includeDarkMode,
+      createStyles,
+      createVariables,
+      collisionPolicy,
+      systemName,
+      multiSelectMode,
+      roleAssignments,
+      stage,
+    } as const;
+    workspaceContext.update(current => {
+      if (JSON.stringify(current.generatorDraft) === JSON.stringify(generatorDraft)) return current;
+      return { ...current, generatorDraft };
+    });
+  }, [
+    createStyles,
+    createVariables,
+    collisionPolicy,
+    creationComplete,
+    detailLevel,
+    includeDarkMode,
+    isOpen,
+    multiSelectMode,
+    neutralFamily,
+    roleAssignments,
+    scaleMethod,
+    sourceSignature,
+    stage,
+    systemName,
+    workspaceContext,
+  ]);
 
   // Auto-suggested neutral based on primary color
   const suggestedNeutral = useMemo(() => {
@@ -449,33 +534,13 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
 
   // Handle generate
   const handleGenerate = () => {
-    if (systemNameError || pendingRequestIdRef.current) return;
+    if (systemNameError || colorSystemOperation.pending) return;
 
     // Get colors for each role (supports multiple colors per role in multi-select mode)
     const primaries = getColorsForRole('primary');
     const secondaries = getColorsForRole('secondary');
     const tertiaries = getColorsForRole('tertiary');
     const accents = getColorsForRole('accent');
-
-    // Usage proportions describe the aggregate role, even when it has multiple colors.
-    const usageProportions = {
-      primary: primaries.length > 0 ? 35 : 0,
-      secondary: secondaries.length > 0 ? 20 : 0,
-      tertiary: tertiaries.length > 0 ? 15 : 0,
-      accent: accents.length > 0 ? 10 : 0,
-      neutral: 20,
-    };
-
-    // Adjust if some roles are missing
-    const total =
-      usageProportions.primary +
-      usageProportions.secondary +
-      usageProportions.tertiary +
-      usageProportions.accent +
-      usageProportions.neutral;
-    if (total < 100) {
-      usageProportions.neutral += 100 - total;
-    }
 
     const config = {
       sourceColors: colors,
@@ -500,7 +565,6 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
         light: exportScales.light,
         dark: exportScales.dark,
       },
-      usageProportions,
       // Include counts for multi-select mode
       colorCounts: {
         primary: primaries.length,
@@ -512,28 +576,16 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
     };
 
     const requestId = `color-system-${Date.now()}-${++nextRequestIdRef.current}`;
-    pendingRequestIdRef.current = requestId;
-    setIsSubmitting(true);
     setSubmissionError(null);
-
-    try {
-      parent.postMessage(
-        {
-          pluginMessage: {
-            type: 'generate-color-system',
-            requestId,
-            createStyles,
-            config,
-            scales: scalesPayload,
-          },
-        },
-        '*'
-      );
-    } catch (error) {
-      pendingRequestIdRef.current = null;
-      setIsSubmitting(false);
-      setSubmissionError(error instanceof Error ? error.message : 'Failed to submit color system');
-    }
+    colorSystemOperation.submit({
+      type: 'generate-color-system',
+      requestId,
+      createStyles,
+      createVariables,
+      collisionPolicy,
+      config,
+      scales: scalesPayload as GenerateColorSystemMessage['scales'],
+    });
   };
 
   if (!isOpen) return null;
@@ -548,6 +600,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
   const semanticPolicyValid = scaleMethod !== 'wcag-constrained' || semanticPolicy?.valid === true;
   const canGenerate = generatedScalesValid && semanticPolicyValid;
   const canSubmit = canGenerate && !systemNameError && !isSubmitting;
+  const hasPrimary = getColorsForRole('primary').length > 0;
   const generationErrorMessage = !generatedScalesValid
     ? 'Generated scale fails structural or required contrast validation. Choose Exact Radix Colors or another source color.'
     : 'The declared WCAG 2.2 semantic-token policy has failing pairings. Choose another source color or Exact Radix Colors.';
@@ -673,10 +726,48 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
           </button>
         </div>
 
+        <div
+          aria-label="Color system stages"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '6px',
+            padding: '10px 20px',
+            borderBottom: `1px solid ${theme.border}`,
+          }}
+        >
+          {(
+            [
+              [1, 'Palette roles'],
+              [2, 'System method'],
+              [3, 'Review and create'],
+            ] as const
+          ).map(([step, label]) => (
+            <button
+              key={step}
+              type="button"
+              onClick={() => step < stage && setStage(step)}
+              aria-current={stage === step ? 'step' : undefined}
+              disabled={step > stage}
+              style={{
+                padding: '7px 5px',
+                borderRadius: '6px',
+                border: `1px solid ${stage === step ? theme.accent : theme.border}`,
+                backgroundColor: stage === step ? `${theme.accent}18` : theme.cardBg,
+                color: stage === step ? theme.accent : theme.textMuted,
+                fontSize: '10px',
+                fontWeight: 600,
+              }}
+            >
+              {step}. {label}
+            </button>
+          ))}
+        </div>
+
         {/* Content - Scrollable */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
           {/* System Name */}
-          <div style={sectionStyle}>
+          <div style={{ ...sectionStyle, display: stage === 1 ? undefined : 'none' }}>
             <label htmlFor="color-system-name" style={labelStyle}>
               System Name
             </label>
@@ -713,7 +804,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
 
           {/* Multi-select Mode Toggle (show only when more than 4 colors) */}
           {colors.length > 4 && (
-            <div style={sectionStyle}>
+            <div style={{ ...sectionStyle, display: stage === 1 ? undefined : 'none' }}>
               <label
                 style={{
                   display: 'flex',
@@ -745,7 +836,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
           )}
 
           {/* Color Role Assignment */}
-          <div style={sectionStyle}>
+          <div style={{ ...sectionStyle, display: stage === 1 ? undefined : 'none' }}>
             <label style={labelStyle}>Assign Color Roles</label>
             <p style={{ fontSize: '11px', color: theme.textMuted, margin: '0 0 12px' }}>
               {multiSelectMode
@@ -874,7 +965,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
           </div>
 
           {/* Scale Method */}
-          <div style={sectionStyle}>
+          <div style={{ ...sectionStyle, display: stage === 2 ? undefined : 'none' }}>
             <div id="scale-generation-method-label" style={labelStyle}>
               Scale Generation Method
             </div>
@@ -937,7 +1028,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
           </div>
 
           {/* Neutral Family */}
-          <div style={sectionStyle}>
+          <div style={{ ...sectionStyle, display: stage === 2 ? undefined : 'none' }}>
             <div id="neutral-family-label" style={labelStyle}>
               Neutral Family
             </div>
@@ -988,7 +1079,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
           </div>
 
           {/* Output Detail Level */}
-          <div style={sectionStyle}>
+          <div style={{ ...sectionStyle, display: stage === 2 ? undefined : 'none' }}>
             <div id="output-detail-label" style={labelStyle}>
               Output Detail Level
             </div>
@@ -1034,7 +1125,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
           </div>
 
           {/* Scale Preview - Side by Side */}
-          <div style={sectionStyle}>
+          <div style={{ ...sectionStyle, display: stage === 2 ? undefined : 'none' }}>
             <label style={labelStyle}>Scale Preview</label>
             <p style={{ fontSize: '11px', color: theme.textMuted, margin: '0 0 12px' }}>
               {scaleMethod === 'radix-match'
@@ -1186,7 +1277,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
           </div>
 
           {/* Include Dark Mode Toggle */}
-          <div style={sectionStyle}>
+          <div style={{ ...sectionStyle, display: stage === 2 ? undefined : 'none' }}>
             <label
               style={{
                 display: 'flex',
@@ -1215,8 +1306,85 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
             </label>
           </div>
 
+          <div
+            style={{
+              ...sectionStyle,
+              display: stage === 3 ? 'block' : 'none',
+              padding: '12px',
+              borderRadius: '8px',
+              border: `1px solid ${creationComplete ? '#22c55e' : theme.border}`,
+              backgroundColor: creationComplete ? (isDark ? '#052e16' : '#f0fdf4') : theme.inputBg,
+            }}
+          >
+            <div style={{ fontSize: '12px', fontWeight: 700, color: theme.text }}>
+              {creationComplete
+                ? `Created “${operationResult?.outputName ?? systemName}”`
+                : 'Review planned changes'}
+            </div>
+            <ul
+              style={{
+                margin: '8px 0 0',
+                paddingLeft: '18px',
+                color: theme.textMuted,
+                fontSize: '10px',
+                lineHeight: 1.6,
+              }}
+            >
+              <li>
+                Use {getColorsForRole('primary').length} primary,{' '}
+                {getColorsForRole('secondary').length} secondary,{' '}
+                {getColorsForRole('tertiary').length} tertiary, and{' '}
+                {getColorsForRole('accent').length} accent source colors.
+              </li>
+              <li>
+                Build {includeDarkMode ? 'light and dark' : 'light'} output with{' '}
+                {scaleMethod === 'radix-match'
+                  ? `exact Radix Colors v${RADIX_COLORS_VERSION}`
+                  : scaleMethod === 'wcag-constrained'
+                    ? 'blocking WCAG-constrained semantic tokens'
+                    : 'Teul Generated scales'}
+                .
+              </li>
+              <li>Create one {detailLevel} Figma color-system frame.</li>
+              <li>
+                {createVariables ? 'Create' : 'Do not create'} a native Figma variable collection;{' '}
+                {createStyles ? 'create' : 'do not create'} local color styles.
+              </li>
+              <li>
+                If matching local output exists:{' '}
+                {collisionPolicy === 'cancel'
+                  ? 'cancel without changing the file'
+                  : collisionPolicy === 'update-local'
+                    ? 'update only resources previously created by Teul'
+                    : 'create a collision-free copy'}
+                .
+              </li>
+              {creationComplete && operationResult && (
+                <li>
+                  {operationResult.modes?.join(' and ') || 'Light'} modes ·{' '}
+                  {operationResult.primitiveCount ?? 0} primitives ·{' '}
+                  {operationResult.semanticAliasCount ?? 0} semantic aliases ·{' '}
+                  {operationResult.styleCount ?? 0} styles · {operationResult.frameCount ?? 0}{' '}
+                  frames · {operationResult.skippedCount ?? 0} skipped.
+                </li>
+              )}
+            </ul>
+            {creationComplete &&
+              operationResult?.warnings?.map(warning => (
+                <p key={warning} style={{ margin: '8px 0 0', color: '#f59e0b', fontSize: '10px' }}>
+                  {warning}
+                </p>
+              ))}
+            {creationComplete && (
+              <p style={{ margin: '8px 0 0', color: '#22c55e', fontSize: '10px' }}>
+                The output is selected on the canvas. You can close this dialog or adjust the draft
+                and create another system.
+              </p>
+            )}
+          </div>
+
           {/* Create Color Styles Toggle */}
-          <div style={sectionStyle}>
+          <div style={{ ...sectionStyle, display: stage === 3 ? undefined : 'none' }}>
             <label
               style={{
                 display: 'flex',
@@ -1246,8 +1414,65 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
             </label>
           </div>
 
+          {/* Create Variables Toggle */}
+          <div style={{ ...sectionStyle, display: stage === 3 ? undefined : 'none' }}>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                cursor: 'pointer',
+                padding: '12px',
+                backgroundColor: theme.inputBg,
+                borderRadius: '8px',
+                border: createVariables ? `2px solid ${theme.accent}` : `1px solid transparent`,
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={createVariables}
+                onChange={event => setCreateVariables(event.target.checked)}
+                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+              />
+              <div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: theme.text }}>
+                  Create Figma Variables
+                </div>
+                <div style={{ fontSize: '11px', color: theme.textMuted }}>
+                  Create a native color collection with light and dark modes
+                </div>
+              </div>
+            </label>
+          </div>
+
+          <div style={{ ...sectionStyle, display: stage === 3 ? undefined : 'none' }}>
+            <label htmlFor="color-system-collision-policy" style={labelStyle}>
+              Existing local output
+            </label>
+            <select
+              id="color-system-collision-policy"
+              value={collisionPolicy}
+              onChange={event =>
+                setCollisionPolicy(event.target.value as 'cancel' | 'update-local' | 'create-copy')
+              }
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                borderRadius: '8px',
+                border: `1px solid ${theme.border}`,
+                backgroundColor: theme.inputBg,
+                color: theme.text,
+                fontSize: '12px',
+              }}
+            >
+              <option value="cancel">Cancel — make no changes</option>
+              <option value="update-local">Update local — Teul-owned resources only</option>
+              <option value="create-copy">Create copy — use a new output name</option>
+            </select>
+          </div>
+
           {/* Export Section */}
-          <div style={sectionStyle}>
+          <div style={{ ...sectionStyle, display: stage === 3 ? undefined : 'none' }}>
             <button
               onClick={() => setShowExport(current => (canGenerate ? !current : false))}
               aria-disabled={!canGenerate}
@@ -1358,17 +1583,28 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
           }}
         >
           <button
-            onClick={onClose}
+            onClick={() =>
+              stage === 1 ? onClose() : setStage(current => (current - 1) as GeneratorStage)
+            }
             style={{
               ...buttonStyle(),
               flex: 1,
             }}
           >
-            Cancel
+            {stage === 1 ? 'Cancel' : 'Back'}
           </button>
           <button
-            onClick={handleGenerate}
-            disabled={!canSubmit}
+            onClick={() => {
+              if (stage < 3) setStage((stage + 1) as GeneratorStage);
+              else handleGenerate();
+            }}
+            disabled={
+              stage === 1
+                ? Boolean(systemNameError) || !hasPrimary
+                : stage === 2
+                  ? !canGenerate
+                  : !canSubmit
+            }
             aria-busy={isSubmitting}
             aria-describedby={
               systemNameError
@@ -1380,13 +1616,29 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
             style={{
               ...buttonStyle(true),
               flex: 2,
-              backgroundColor: canSubmit ? theme.accent : theme.btnBg,
+              backgroundColor:
+                (stage === 1 && !systemNameError && hasPrimary) ||
+                (stage === 2 && canGenerate) ||
+                (stage === 3 && canSubmit)
+                  ? theme.accent
+                  : theme.btnBg,
               color: '#ffffff',
-              cursor: canSubmit ? 'pointer' : 'not-allowed',
-              opacity: canSubmit ? 1 : 0.6,
+              cursor: 'pointer',
+              opacity:
+                (stage === 1 && !systemNameError && hasPrimary) ||
+                (stage === 2 && canGenerate) ||
+                (stage === 3 && canSubmit)
+                  ? 1
+                  : 0.6,
             }}
           >
-            {isSubmitting ? 'Generating Color System…' : '🎨 Generate Color System'}
+            {stage < 3
+              ? 'Continue'
+              : isSubmitting
+                ? 'Creating Color System…'
+                : creationComplete
+                  ? 'Create Another'
+                  : 'Create Color System'}
           </button>
           {submissionError && (
             <span

@@ -8,22 +8,18 @@ import type {
 } from '../lib/semanticColorPolicy';
 import { isSemanticColorPolicyCurrent } from '../lib/semanticColorPolicy';
 import { areAllScalesExactRadix, haveExactRadixScaleClaims } from '../lib/radixColors';
-import { getLuminance, hexToRgb } from '../lib/utils';
+import { getWCAGContrastHex, getWCAGRating } from '../lib/accessibility';
 import type { ColorScaleData, ColorSystemData } from '../types/colorSystem';
+import { RADIX_STEP_LABELS, type ColorSystemLayoutContext } from './colorSystemLayoutContext';
+import { generateMinimalColorSystemLayout } from './colorSystemMinimalLayout';
+import { generateDetailedColorSystemLayout } from './colorSystemDetailedLayout';
+import { generatePresentationColorSystemLayout } from './colorSystemPresentationLayout';
+import { getColorSystemDocumentName, getOrderedColorScaleKeys } from './colorSystemDocumentModel';
 export type { ColorSystemData } from '../types/colorSystem';
 
 // ============================================
 // Type Definitions
 // ============================================
-
-interface ColorInfo {
-  hex: string;
-  name: string;
-  role: string;
-  luminance: number;
-  saturation: number;
-  hue: number;
-}
 
 type SemanticMode = 'light' | 'dark';
 
@@ -31,23 +27,7 @@ type SemanticMode = 'light' | 'dark';
 // Constants
 // ============================================
 
-const SEMANTIC_LABELS: Record<number, { short: string; full: string }> = {
-  1: { short: 'App BG', full: 'App Background' },
-  2: { short: 'Subtle BG', full: 'Subtle Background' },
-  3: { short: 'Element BG', full: 'UI Element Background' },
-  4: { short: 'Hovered', full: 'Hovered Element BG' },
-  5: { short: 'Active', full: 'Active/Selected Element BG' },
-  6: { short: 'Subtle Border', full: 'Subtle Border' },
-  7: { short: 'Border', full: 'Border' },
-  8: { short: 'Focus Ring', full: 'Border Focus/Hover' },
-  9: { short: 'Solid', full: 'Solid Background' },
-  10: { short: 'Solid Hover', full: 'Solid Hover' },
-  11: { short: 'Text Low', full: 'Low Contrast Text' },
-  12: { short: 'Text High', full: 'High Contrast Text' },
-};
-
 const FONT_LOAD_TIMEOUT = 5000;
-const CHROMATIC_SCALE_ORDER = ['primary', 'secondary', 'tertiary', 'accent'] as const;
 
 interface GenerationOperation {
   nodes: Set<SceneNode>;
@@ -96,10 +76,6 @@ function createOwnedRectangle(): RectangleNode {
   return trackCreatedNode(figma.createRectangle());
 }
 
-function createOwnedEllipse(): EllipseNode {
-  return trackCreatedNode(figma.createEllipse());
-}
-
 function createOwnedText(): TextNode {
   return trackCreatedNode(figma.createText());
 }
@@ -118,55 +94,13 @@ function removeOwnedNodes(operation: GenerationOperation): void {
   }
 }
 
-function getOrderedScaleKeys(scales: ColorSystemData['scales']['light']): string[] {
-  const roleOrder = new Map(CHROMATIC_SCALE_ORDER.map((role, index) => [role, index]));
-
-  const parseScaleKey = (key: string): { roleIndex: number; variant: number } | null => {
-    const match = /^(primary|secondary|tertiary|accent)(\d+)?$/.exec(key);
-    if (!match) return null;
-
-    return {
-      roleIndex: roleOrder.get(match[1] as (typeof CHROMATIC_SCALE_ORDER)[number]) ?? 0,
-      variant: match[2] ? Number(match[2]) : 1,
-    };
-  };
-
-  return Object.keys(scales)
-    .filter(key => scales[key])
-    .sort((a, b) => {
-      if (a === 'neutral') return b === 'neutral' ? 0 : 1;
-      if (b === 'neutral') return -1;
-
-      const parsedA = parseScaleKey(a);
-      const parsedB = parseScaleKey(b);
-      if (parsedA && parsedB) {
-        return parsedA.roleIndex - parsedB.roleIndex || parsedA.variant - parsedB.variant;
-      }
-      if (parsedA) return -1;
-      if (parsedB) return 1;
-      return a.localeCompare(b);
-    });
-}
-
-function getRelativeLuminance(hex: string): number {
-  const { r, g, b } = hexToRgb(hex);
-  return getLuminance(r, g, b);
-}
-
-function calculateContrastRatio(hex1: string, hex2: string): number {
-  const l1 = getRelativeLuminance(hex1);
-  const l2 = getRelativeLuminance(hex2);
-  const lighter = Math.max(l1, l2);
-  const darker = Math.min(l1, l2);
-  return (lighter + 0.05) / (darker + 0.05);
-}
-
 function getAccessibilityRating(contrast: number): { rating: string; color: RGB } {
-  if (contrast >= 7) {
+  const rating = getWCAGRating(contrast).level;
+  if (rating === 'AAA') {
     return { rating: 'AAA', color: { r: 0.13, g: 0.55, b: 0.13 } };
-  } else if (contrast >= 4.5) {
+  } else if (rating === 'AA') {
     return { rating: 'AA', color: { r: 0.2, g: 0.6, b: 0.86 } };
-  } else if (contrast >= 3) {
+  } else if (rating === 'AA Large') {
     return { rating: 'AA Large', color: { r: 0.9, g: 0.65, b: 0.15 } };
   } else {
     return { rating: 'Fail', color: { r: 0.8, g: 0.2, b: 0.2 } };
@@ -248,7 +182,8 @@ async function createScaleRow(
   scale: ColorScaleData,
   mode: 'light' | 'dark',
   showLabels: boolean = true,
-  swatchSize: number = 40
+  swatchSize: number = 40,
+  showRadixGuidance: boolean = false
 ): Promise<FrameNode> {
   const row = createOwnedFrame();
   row.name = `${scale.name} Scale`;
@@ -315,8 +250,8 @@ async function createScaleRow(
 
   row.appendChild(swatchesContainer);
 
-  // Semantic labels row
-  if (showLabels) {
+  // Radix step-use labels are source guidance, not generic generated-scale semantics.
+  if (showLabels && showRadixGuidance) {
     const labelsContainer = createOwnedFrame();
     labelsContainer.name = 'Semantic Labels';
     labelsContainer.layoutMode = 'HORIZONTAL';
@@ -335,7 +270,7 @@ async function createScaleRow(
       labelFrame.primaryAxisSizingMode = 'FIXED';
       labelFrame.counterAxisSizingMode = 'FIXED';
 
-      const semantic = SEMANTIC_LABELS[i];
+      const semantic = RADIX_STEP_LABELS[i];
       const label = createText(
         semantic.short,
         6,
@@ -351,7 +286,7 @@ async function createScaleRow(
   }
 
   // Accessibility badges for text steps (11 and 12)
-  if (showLabels && scale.steps.length >= 12) {
+  if (showLabels && showRadixGuidance && scale.steps.length >= 12) {
     const accessibilityRow = createOwnedFrame();
     accessibilityRow.name = 'Accessibility';
     accessibilityRow.layoutMode = 'HORIZONTAL';
@@ -373,7 +308,7 @@ async function createScaleRow(
       badgeFrame.counterAxisSizingMode = 'FIXED';
 
       if (i === 9 || i === 11 || i === 12) {
-        const contrast = calculateContrastRatio(scale.steps[i - 1].hex, bgColor);
+        const contrast = getWCAGContrastHex(scale.steps[i - 1].hex, bgColor);
         const { rating, color } = getAccessibilityRating(contrast);
         const badge = createText(rating, 6, 'Medium', color);
         badge.textAlignHorizontal = 'CENTER';
@@ -536,824 +471,17 @@ function createSemanticPolicyReport(
   return container;
 }
 
-// ============================================
-// Usage Proportion Bar
-// ============================================
-
-function createUsageProportionBar(
-  proportions: {
-    primary: number;
-    secondary: number;
-    tertiary: number;
-    accent: number;
-    neutral: number;
-  },
-  colors: {
-    primary?: string;
-    secondary?: string;
-    tertiary?: string;
-    accent?: string;
-    neutral: string;
-  },
-  width: number = 400,
-  mode: 'light' | 'dark' = 'light'
-): FrameNode {
-  const container = createOwnedFrame();
-  container.name = 'Usage Proportions';
-  container.layoutMode = 'VERTICAL';
-  container.primaryAxisSizingMode = 'AUTO';
-  container.counterAxisSizingMode = 'AUTO';
-  container.itemSpacing = 8;
-  container.fills = [];
-
-  const labelColor = mode === 'dark' ? { r: 0.9, g: 0.9, b: 0.9 } : { r: 0.3, g: 0.3, b: 0.3 };
-  const title = createText('USAGE PROPORTIONS', 10, 'Bold', labelColor);
-  title.letterSpacing = { value: 1, unit: 'PIXELS' };
-  container.appendChild(title);
-
-  // Bar container
-  const barFrame = createOwnedFrame();
-  barFrame.name = 'Bar';
-  barFrame.layoutMode = 'HORIZONTAL';
-  barFrame.primaryAxisSizingMode = 'AUTO';
-  barFrame.counterAxisSizingMode = 'AUTO';
-  barFrame.itemSpacing = 0;
-  barFrame.fills = [];
-  barFrame.cornerRadius = 4;
-  barFrame.clipsContent = true;
-
-  const total =
-    proportions.primary +
-    proportions.secondary +
-    proportions.tertiary +
-    proportions.accent +
-    proportions.neutral;
-
-  const segments = [
-    { key: 'primary', color: colors.primary, proportion: proportions.primary },
-    { key: 'secondary', color: colors.secondary, proportion: proportions.secondary },
-    { key: 'tertiary', color: colors.tertiary, proportion: proportions.tertiary },
-    { key: 'accent', color: colors.accent, proportion: proportions.accent },
-    { key: 'neutral', color: colors.neutral, proportion: proportions.neutral },
-  ].filter(s => s.color && s.proportion > 0);
-
-  for (const segment of segments) {
-    const segmentWidth = (segment.proportion / total) * width;
-    const rect = createOwnedRectangle();
-    rect.resize(segmentWidth, 24);
-    rect.fills = [{ type: 'SOLID', color: hexToFigmaRgb(segment.color!) }];
-    rect.name = segment.key;
-    barFrame.appendChild(rect);
-  }
-
-  container.appendChild(barFrame);
-
-  // Legend
-  const legendFrame = createOwnedFrame();
-  legendFrame.name = 'Legend';
-  legendFrame.layoutMode = 'HORIZONTAL';
-  legendFrame.primaryAxisSizingMode = 'AUTO';
-  legendFrame.counterAxisSizingMode = 'AUTO';
-  legendFrame.itemSpacing = 16;
-  legendFrame.fills = [];
-
-  for (const segment of segments) {
-    const item = createOwnedFrame();
-    item.layoutMode = 'HORIZONTAL';
-    item.primaryAxisSizingMode = 'AUTO';
-    item.counterAxisSizingMode = 'AUTO';
-    item.itemSpacing = 4;
-    item.fills = [];
-    item.counterAxisAlignItems = 'CENTER';
-
-    const dot = createColorSwatch(segment.color!, 8, 8, 4);
-    item.appendChild(dot);
-
-    const label = createText(
-      `${segment.key.charAt(0).toUpperCase() + segment.key.slice(1)}: ${segment.proportion}%`,
-      9,
-      'Regular',
-      mode === 'dark' ? { r: 0.7, g: 0.7, b: 0.7 } : { r: 0.4, g: 0.4, b: 0.4 }
-    );
-    item.appendChild(label);
-
-    legendFrame.appendChild(item);
-  }
-
-  container.appendChild(legendFrame);
-
-  return container;
-}
-
-// ============================================
-// Color Pairing Guide
-// ============================================
-
-function analyzeColor(hex: string, name: string, role: string): ColorInfo {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  const l = (max + min) / 2;
-
-  let h = 0,
-    s = 0;
-  if (max !== min) {
-    const d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    switch (max) {
-      case r:
-        h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
-        break;
-      case g:
-        h = ((b - r) / d + 2) / 6;
-        break;
-      case b:
-        h = ((r - g) / d + 4) / 6;
-        break;
-    }
-  }
-
-  return {
-    hex,
-    name,
-    role,
-    luminance: l,
-    saturation: s,
-    hue: h * 360,
-  };
-}
-
-function getColorUseCase(color: ColorInfo): string {
-  if (color.luminance > 0.7) return 'Backgrounds';
-  if (color.luminance < 0.3) return 'Text & Details';
-  if (color.saturation > 0.5) return 'Accents & CTAs';
-  return 'Supporting Elements';
-}
-
-function generatePairingSuggestions(colors: ColorInfo[]): {
-  pairs: { colors: ColorInfo[]; name: string; description: string }[];
-  proportionStack: { color: ColorInfo; weight: number }[];
-} {
-  const pairs: { colors: ColorInfo[]; name: string; description: string }[] = [];
-
-  if (colors.length < 2) {
-    return { pairs: [], proportionStack: colors.map(c => ({ color: c, weight: 1 })) };
-  }
-
-  const byLuminance = [...colors].sort((a, b) => b.luminance - a.luminance);
-
-  if (colors.length >= 2) {
-    pairs.push({
-      colors: [byLuminance[0], byLuminance[byLuminance.length - 1]],
-      name: 'High Contrast',
-      description: 'Maximum visual impact, great for headlines and CTAs',
-    });
-  }
-
-  if (colors.length >= 2) {
-    pairs.push({
-      colors: [colors[0], colors[1]],
-      name: 'Harmonious Duo',
-      description: 'Balanced and cohesive, ideal for branded content',
-    });
-  }
-
-  if (colors.length >= 3) {
-    pairs.push({
-      colors: [colors[0], colors[1], colors[2]],
-      name: 'Core Trio',
-      description: 'Rich palette for illustrations and marketing',
-    });
-  }
-
-  if (colors.length >= 4) {
-    pairs.push({
-      colors: colors.slice(0, 4),
-      name: 'Full Palette',
-      description: 'Complete expression for maximum visual variety',
-    });
-  }
-
-  const proportionStack = colors.map(c => {
-    let weight: number;
-    if (c.luminance > 0.65) weight = 40;
-    else if (c.saturation > 0.6 && c.luminance < 0.5) weight = 10;
-    else if (c.saturation > 0.5) weight = 20;
-    else weight = 30;
-    return { color: c, weight };
-  });
-
-  const totalWeight = proportionStack.reduce((sum, p) => sum + p.weight, 0);
-  proportionStack.forEach(p => (p.weight = Math.round((p.weight / totalWeight) * 100)));
-
-  return { pairs, proportionStack };
-}
-
-async function createColorPairingGuide(
-  scales: ColorSystemData['scales']['light'],
-  mode: 'light' | 'dark'
-): Promise<FrameNode> {
-  const textColor = mode === 'dark' ? { r: 0.95, g: 0.95, b: 0.95 } : { r: 0.1, g: 0.1, b: 0.1 };
-  const mutedColor = mode === 'dark' ? { r: 0.6, g: 0.6, b: 0.6 } : { r: 0.5, g: 0.5, b: 0.5 };
-  const bgColor = mode === 'dark' ? { r: 0.12, g: 0.12, b: 0.12 } : { r: 0.97, g: 0.97, b: 0.97 };
-
-  const colorInfos: ColorInfo[] = [];
-
-  for (const key of getOrderedScaleKeys(scales).filter(key => key !== 'neutral')) {
-    const scale = scales[key];
-    if (scale && scale.steps[8]) {
-      colorInfos.push(analyzeColor(scale.steps[8].hex, scale.name, scale.role));
-    }
-  }
-
-  if (colorInfos.length === 0) {
-    const emptyFrame = createOwnedFrame();
-    emptyFrame.name = 'Color Pairing Guide';
-    emptyFrame.resize(100, 100);
-    return emptyFrame;
-  }
-
-  const { pairs, proportionStack } = generatePairingSuggestions(colorInfos);
-
-  const container = createOwnedFrame();
-  container.name = 'Color Pairing Guide';
-  container.layoutMode = 'VERTICAL';
-  container.primaryAxisSizingMode = 'AUTO';
-  container.counterAxisSizingMode = 'AUTO';
-  container.itemSpacing = 24;
-  container.fills = [];
-
-  const sectionTitle = createText('HOW TO USE THIS PALETTE', 11, 'Bold', mutedColor);
-  sectionTitle.letterSpacing = { value: 1.5, unit: 'PIXELS' };
-  container.appendChild(sectionTitle);
-
-  // Proportion Stack
-  const stackSection = createOwnedFrame();
-  stackSection.name = 'Visual Proportions';
-  stackSection.layoutMode = 'HORIZONTAL';
-  stackSection.primaryAxisSizingMode = 'AUTO';
-  stackSection.counterAxisSizingMode = 'AUTO';
-  stackSection.itemSpacing = 24;
-  stackSection.fills = [];
-
-  const stackFrame = createOwnedFrame();
-  stackFrame.name = 'Stack';
-  stackFrame.layoutMode = 'VERTICAL';
-  stackFrame.primaryAxisSizingMode = 'AUTO';
-  stackFrame.counterAxisSizingMode = 'AUTO';
-  stackFrame.itemSpacing = 2;
-  stackFrame.cornerRadius = 8;
-  stackFrame.clipsContent = true;
-  stackFrame.fills = [];
-
-  const sortedStack = [...proportionStack].sort((a, b) => b.weight - a.weight);
-
-  for (const item of sortedStack) {
-    const height = Math.max(20, (item.weight / 100) * 160);
-    const rect = createOwnedRectangle();
-    rect.resize(100, height);
-    rect.fills = [{ type: 'SOLID', color: hexToFigmaRgb(item.color.hex) }];
-    rect.name = `${item.color.name} (${item.weight}%)`;
-    stackFrame.appendChild(rect);
-  }
-
-  stackSection.appendChild(stackFrame);
-
-  // Stack legend
-  const stackLegend = createOwnedFrame();
-  stackLegend.name = 'Stack Legend';
-  stackLegend.layoutMode = 'VERTICAL';
-  stackLegend.primaryAxisSizingMode = 'AUTO';
-  stackLegend.counterAxisSizingMode = 'AUTO';
-  stackLegend.itemSpacing = 8;
-  stackLegend.fills = [];
-
-  const proportionTitle = createText('Suggested Proportions', 12, 'Semi Bold', textColor);
-  stackLegend.appendChild(proportionTitle);
-
-  for (const item of sortedStack) {
-    const row = createOwnedFrame();
-    row.layoutMode = 'HORIZONTAL';
-    row.primaryAxisSizingMode = 'AUTO';
-    row.counterAxisSizingMode = 'AUTO';
-    row.itemSpacing = 8;
-    row.fills = [];
-    row.counterAxisAlignItems = 'CENTER';
-
-    const dot = createColorSwatch(item.color.hex, 12, 12, 6);
-    row.appendChild(dot);
-
-    const label = createText(`${item.color.name}: ${item.weight}%`, 11, 'Regular', textColor);
-    row.appendChild(label);
-
-    const useCase = createText(`(${getColorUseCase(item.color)})`, 10, 'Regular', mutedColor);
-    row.appendChild(useCase);
-
-    stackLegend.appendChild(row);
-  }
-
-  stackSection.appendChild(stackLegend);
-  container.appendChild(stackSection);
-
-  // Suggested Pairings
-  const pairingsSection = createOwnedFrame();
-  pairingsSection.name = 'Suggested Pairings';
-  pairingsSection.layoutMode = 'VERTICAL';
-  pairingsSection.primaryAxisSizingMode = 'AUTO';
-  pairingsSection.counterAxisSizingMode = 'AUTO';
-  pairingsSection.itemSpacing = 16;
-  pairingsSection.fills = [];
-
-  const pairingsTitle = createText('Color Combinations', 12, 'Semi Bold', textColor);
-  pairingsSection.appendChild(pairingsTitle);
-
-  const pairingsGrid = createOwnedFrame();
-  pairingsGrid.name = 'Pairings Grid';
-  pairingsGrid.layoutMode = 'HORIZONTAL';
-  pairingsGrid.primaryAxisSizingMode = 'AUTO';
-  pairingsGrid.counterAxisSizingMode = 'AUTO';
-  pairingsGrid.itemSpacing = 16;
-  pairingsGrid.fills = [];
-
-  for (const pair of pairs) {
-    const pairCard = createOwnedFrame();
-    pairCard.name = pair.name;
-    pairCard.layoutMode = 'VERTICAL';
-    pairCard.primaryAxisSizingMode = 'AUTO';
-    pairCard.counterAxisSizingMode = 'AUTO';
-    pairCard.itemSpacing = 8;
-    pairCard.paddingLeft = 12;
-    pairCard.paddingRight = 12;
-    pairCard.paddingTop = 12;
-    pairCard.paddingBottom = 12;
-    pairCard.cornerRadius = 8;
-    pairCard.fills = [{ type: 'SOLID', color: bgColor }];
-
-    const swatchesRow = createOwnedFrame();
-    swatchesRow.name = 'Swatches';
-    swatchesRow.layoutMode = 'HORIZONTAL';
-    swatchesRow.primaryAxisSizingMode = 'AUTO';
-    swatchesRow.counterAxisSizingMode = 'AUTO';
-    swatchesRow.itemSpacing = -8;
-    swatchesRow.fills = [];
-
-    for (const color of pair.colors) {
-      const swatch = createOwnedEllipse();
-      swatch.resize(32, 32);
-      swatch.fills = [{ type: 'SOLID', color: hexToFigmaRgb(color.hex) }];
-      swatch.strokes = [
-        {
-          type: 'SOLID',
-          color: mode === 'dark' ? { r: 0.2, g: 0.2, b: 0.2 } : { r: 1, g: 1, b: 1 },
-        },
-      ];
-      swatch.strokeWeight = 2;
-      swatchesRow.appendChild(swatch);
-    }
-
-    pairCard.appendChild(swatchesRow);
-
-    const pairName = createText(pair.name, 11, 'Semi Bold', textColor);
-    pairCard.appendChild(pairName);
-
-    const pairDesc = createText(pair.description, 9, 'Regular', mutedColor);
-    pairDesc.resize(140, pairDesc.height);
-    pairDesc.textAutoResize = 'HEIGHT';
-    pairCard.appendChild(pairDesc);
-
-    pairingsGrid.appendChild(pairCard);
-  }
-
-  pairingsSection.appendChild(pairingsGrid);
-  container.appendChild(pairingsSection);
-
-  // Use Case Suggestions
-  const useCaseSection = createOwnedFrame();
-  useCaseSection.name = 'Use Cases';
-  useCaseSection.layoutMode = 'VERTICAL';
-  useCaseSection.primaryAxisSizingMode = 'AUTO';
-  useCaseSection.counterAxisSizingMode = 'AUTO';
-  useCaseSection.itemSpacing = 12;
-  useCaseSection.fills = [];
-
-  const useCaseTitle = createText('Quick Reference', 12, 'Semi Bold', textColor);
-  useCaseSection.appendChild(useCaseTitle);
-
-  const useCases = [
-    { label: 'Marketing & Social', suggestion: 'Use Full Palette or Core Trio for visual energy' },
-    { label: 'Website Sections', suggestion: 'Dominant color as background, others as accents' },
-    { label: 'Illustrations', suggestion: 'All colors work together — vary saturation for depth' },
-    { label: 'UI Elements', suggestion: 'High Contrast pair for buttons and interactive states' },
-  ];
-
-  for (const useCase of useCases) {
-    const row = createOwnedFrame();
-    row.layoutMode = 'HORIZONTAL';
-    row.primaryAxisSizingMode = 'AUTO';
-    row.counterAxisSizingMode = 'AUTO';
-    row.itemSpacing = 8;
-    row.fills = [];
-
-    const bullet = createText('→', 10, 'Regular', mutedColor);
-    row.appendChild(bullet);
-
-    const labelText = createText(`${useCase.label}:`, 10, 'Semi Bold', textColor);
-    row.appendChild(labelText);
-
-    const suggestionText = createText(useCase.suggestion, 10, 'Regular', mutedColor);
-    row.appendChild(suggestionText);
-
-    useCaseSection.appendChild(row);
-  }
-
-  container.appendChild(useCaseSection);
-
-  return container;
-}
-
-// ============================================
-// Layout Generators
-// ============================================
-
-async function generateMinimalLayout(
-  scales: ColorSystemData['scales']['light'],
-  mode: 'light' | 'dark',
-  semanticPolicy?: SemanticColorPolicyReport
-): Promise<FrameNode> {
-  const frame = createOwnedFrame();
-  frame.name = `Color Scales (${mode})`;
-  frame.layoutMode = 'VERTICAL';
-  frame.primaryAxisSizingMode = 'AUTO';
-  frame.counterAxisSizingMode = 'AUTO';
-  frame.itemSpacing = 16;
-  frame.paddingLeft = 24;
-  frame.paddingRight = 24;
-  frame.paddingTop = 24;
-  frame.paddingBottom = 24;
-  frame.cornerRadius = 12;
-  frame.fills = [
-    {
-      type: 'SOLID',
-      color: mode === 'dark' ? { r: 0.1, g: 0.1, b: 0.1 } : { r: 0.98, g: 0.98, b: 0.98 },
-    },
-  ];
-
-  for (const key of getOrderedScaleKeys(scales)) {
-    const scale = scales[key];
-    if (scale) {
-      const row = await createScaleRow(scale, mode, true, 36);
-      frame.appendChild(row);
-    }
-  }
-
-  const modePolicy = semanticPolicy?.modes[mode];
-  if (modePolicy) {
-    frame.appendChild(createSemanticPolicyReport(semanticPolicy, modePolicy, mode));
-  }
-
-  return frame;
-}
-
-async function generateDetailedLayout(
-  scales: ColorSystemData['scales']['light'],
-  proportions: ColorSystemData['usageProportions'],
-  mode: 'light' | 'dark',
-  semanticPolicy?: SemanticColorPolicyReport
-): Promise<FrameNode> {
-  const frame = createOwnedFrame();
-  frame.name = `Color System (${mode})`;
-  frame.layoutMode = 'VERTICAL';
-  frame.primaryAxisSizingMode = 'AUTO';
-  frame.counterAxisSizingMode = 'AUTO';
-  frame.itemSpacing = 24;
-  frame.paddingLeft = 32;
-  frame.paddingRight = 32;
-  frame.paddingTop = 32;
-  frame.paddingBottom = 32;
-  frame.cornerRadius = 16;
-  frame.fills = [
-    {
-      type: 'SOLID',
-      color: mode === 'dark' ? { r: 0.1, g: 0.1, b: 0.1 } : { r: 0.98, g: 0.98, b: 0.98 },
-    },
-  ];
-
-  const colors = {
-    primary: scales.primary?.steps[8]?.hex,
-    secondary: scales.secondary?.steps[8]?.hex,
-    tertiary: scales.tertiary?.steps[8]?.hex,
-    accent: scales.accent?.steps[8]?.hex,
-    neutral: scales.neutral.steps[8].hex,
-  };
-  const proportionBar = createUsageProportionBar(proportions, colors, 500, mode);
-  frame.appendChild(proportionBar);
-
-  const divider = createOwnedRectangle();
-  divider.resize(500, 1);
-  divider.fills = [
-    {
-      type: 'SOLID',
-      color: mode === 'dark' ? { r: 0.2, g: 0.2, b: 0.2 } : { r: 0.9, g: 0.9, b: 0.9 },
-    },
-  ];
-  frame.appendChild(divider);
-
-  for (const key of getOrderedScaleKeys(scales)) {
-    const scale = scales[key];
-    if (scale) {
-      const row = await createScaleRow(scale, mode, true, 40);
-      frame.appendChild(row);
-    }
-  }
-
-  const pairingDivider = createOwnedRectangle();
-  pairingDivider.resize(500, 1);
-  pairingDivider.fills = [
-    {
-      type: 'SOLID',
-      color: mode === 'dark' ? { r: 0.2, g: 0.2, b: 0.2 } : { r: 0.9, g: 0.9, b: 0.9 },
-    },
-  ];
-  frame.appendChild(pairingDivider);
-
-  const pairingGuide = await createColorPairingGuide(scales, mode);
-  frame.appendChild(pairingGuide);
-
-  const modePolicy = semanticPolicy?.modes[mode];
-  if (modePolicy) {
-    frame.appendChild(createSemanticPolicyReport(semanticPolicy, modePolicy, mode));
-  }
-
-  return frame;
-}
-
-async function generatePresentationLayout(
-  systemName: string,
-  scales: ColorSystemData['scales']['light'],
-  proportions: ColorSystemData['usageProportions'],
-  mode: 'light' | 'dark',
-  semanticPolicy?: SemanticColorPolicyReport
-): Promise<FrameNode> {
-  const frame = createOwnedFrame();
-  frame.name = `${systemName} - ${mode === 'dark' ? 'Dark' : 'Light'} Mode`;
-  frame.layoutMode = 'VERTICAL';
-  frame.primaryAxisSizingMode = 'AUTO';
-  frame.counterAxisSizingMode = 'AUTO';
-  frame.itemSpacing = 32;
-  frame.paddingLeft = 40;
-  frame.paddingRight = 40;
-  frame.paddingTop = 40;
-  frame.paddingBottom = 40;
-  frame.cornerRadius = 20;
-  frame.fills = [
-    {
-      type: 'SOLID',
-      color: mode === 'dark' ? { r: 0.08, g: 0.08, b: 0.08 } : { r: 1, g: 1, b: 1 },
-    },
-  ];
-
-  const textColor = mode === 'dark' ? { r: 0.95, g: 0.95, b: 0.95 } : { r: 0.1, g: 0.1, b: 0.1 };
-  const mutedColor = mode === 'dark' ? { r: 0.6, g: 0.6, b: 0.6 } : { r: 0.5, g: 0.5, b: 0.5 };
-
-  // Header
-  const header = createOwnedFrame();
-  header.name = 'Header';
-  header.layoutMode = 'VERTICAL';
-  header.primaryAxisSizingMode = 'AUTO';
-  header.counterAxisSizingMode = 'AUTO';
-  header.itemSpacing = 8;
-  header.fills = [];
-
-  const title = createText(systemName, 28, 'Bold', textColor);
-  header.appendChild(title);
-
-  const subtitle = createText(
-    `${mode === 'dark' ? 'Dark' : 'Light'} Mode Color System`,
-    14,
-    'Regular',
-    mutedColor
-  );
-  header.appendChild(subtitle);
-
-  frame.appendChild(header);
-
-  // Primary Palette Section
-  const primarySection = createOwnedFrame();
-  primarySection.name = 'Primary Palette';
-  primarySection.layoutMode = 'VERTICAL';
-  primarySection.primaryAxisSizingMode = 'AUTO';
-  primarySection.counterAxisSizingMode = 'AUTO';
-  primarySection.itemSpacing = 16;
-  primarySection.fills = [];
-
-  const primaryTitle = createText('PRIMARY PALETTE', 11, 'Bold', mutedColor);
-  primaryTitle.letterSpacing = { value: 1.5, unit: 'PIXELS' };
-  primarySection.appendChild(primaryTitle);
-
-  const primaryRow = createOwnedFrame();
-  primaryRow.name = 'Primary Colors';
-  primaryRow.layoutMode = 'HORIZONTAL';
-  primaryRow.primaryAxisSizingMode = 'AUTO';
-  primaryRow.counterAxisSizingMode = 'AUTO';
-  primaryRow.itemSpacing = 16;
-  primaryRow.fills = [];
-
-  const bw = createBWSwatches(80);
-  primaryRow.appendChild(bw);
-
-  for (const key of getOrderedScaleKeys(scales)) {
-    const scale = scales[key];
-    if (scale && scale.steps[8]) {
-      const colorFrame = createOwnedFrame();
-      colorFrame.name = scale.role;
-      colorFrame.layoutMode = 'VERTICAL';
-      colorFrame.primaryAxisSizingMode = 'AUTO';
-      colorFrame.counterAxisSizingMode = 'AUTO';
-      colorFrame.itemSpacing = 4;
-      colorFrame.fills = [];
-
-      const swatch = createColorSwatch(scale.steps[8].hex, 80, 80, 4);
-      colorFrame.appendChild(swatch);
-
-      const label = createText(scale.role, 10, 'Medium', mutedColor);
-      colorFrame.appendChild(label);
-
-      const hexLabel = createText(scale.steps[8].hex.toUpperCase(), 9, 'Regular', mutedColor);
-      colorFrame.appendChild(hexLabel);
-
-      primaryRow.appendChild(colorFrame);
-    }
-  }
-
-  primarySection.appendChild(primaryRow);
-  frame.appendChild(primarySection);
-
-  // Usage Proportions
-  const colors = {
-    primary: scales.primary?.steps[8]?.hex,
-    secondary: scales.secondary?.steps[8]?.hex,
-    tertiary: scales.tertiary?.steps[8]?.hex,
-    accent: scales.accent?.steps[8]?.hex,
-    neutral: scales.neutral.steps[8].hex,
-  };
-  const proportionBar = createUsageProportionBar(proportions, colors, 600, mode);
-  frame.appendChild(proportionBar);
-
-  // Semantic Categories Section
-  const semanticSection = createOwnedFrame();
-  semanticSection.name = 'Semantic Categories';
-  semanticSection.layoutMode = 'VERTICAL';
-  semanticSection.primaryAxisSizingMode = 'AUTO';
-  semanticSection.counterAxisSizingMode = 'AUTO';
-  semanticSection.itemSpacing = 24;
-  semanticSection.fills = [];
-
-  const semanticTitle = createText('SEMANTIC USAGE GUIDE', 11, 'Bold', mutedColor);
-  semanticTitle.letterSpacing = { value: 1.5, unit: 'PIXELS' };
-  semanticSection.appendChild(semanticTitle);
-
-  const semanticGroups = [
-    {
-      name: 'BACKGROUNDS',
-      steps: [1, 2, 3, 4, 5],
-      description: 'App backgrounds, UI elements, hover & active states',
-    },
-    {
-      name: 'BORDERS',
-      steps: [6, 7, 8],
-      description: 'Subtle borders, default borders, focus rings',
-    },
-    { name: 'INTERACTIVE', steps: [9, 10], description: 'Buttons, badges, solid backgrounds' },
-    { name: 'TEXT', steps: [11, 12], description: 'Secondary and primary text colors' },
-  ];
-
-  for (const group of semanticGroups) {
-    const groupFrame = createOwnedFrame();
-    groupFrame.name = group.name;
-    groupFrame.layoutMode = 'VERTICAL';
-    groupFrame.primaryAxisSizingMode = 'AUTO';
-    groupFrame.counterAxisSizingMode = 'AUTO';
-    groupFrame.itemSpacing = 8;
-    groupFrame.fills = [];
-
-    const groupTitleRow = createOwnedFrame();
-    groupTitleRow.layoutMode = 'HORIZONTAL';
-    groupTitleRow.primaryAxisSizingMode = 'AUTO';
-    groupTitleRow.counterAxisSizingMode = 'AUTO';
-    groupTitleRow.itemSpacing = 12;
-    groupTitleRow.fills = [];
-
-    const groupTitle = createText(group.name, 10, 'Bold', textColor);
-    groupTitle.letterSpacing = { value: 1, unit: 'PIXELS' };
-    groupTitleRow.appendChild(groupTitle);
-
-    const groupDesc = createText(group.description, 9, 'Regular', mutedColor);
-    groupTitleRow.appendChild(groupDesc);
-    groupFrame.appendChild(groupTitleRow);
-
-    const roleSwatches = createOwnedFrame();
-    roleSwatches.layoutMode = 'HORIZONTAL';
-    roleSwatches.primaryAxisSizingMode = 'AUTO';
-    roleSwatches.counterAxisSizingMode = 'AUTO';
-    roleSwatches.itemSpacing = 16;
-    roleSwatches.fills = [];
-
-    for (const roleKey of getOrderedScaleKeys(scales)) {
-      const scale = scales[roleKey];
-      if (!scale) continue;
-
-      const roleColumn = createOwnedFrame();
-      roleColumn.layoutMode = 'VERTICAL';
-      roleColumn.primaryAxisSizingMode = 'AUTO';
-      roleColumn.counterAxisSizingMode = 'AUTO';
-      roleColumn.itemSpacing = 4;
-      roleColumn.fills = [];
-
-      const roleLabel = createText(scale.role.toUpperCase(), 7, 'Medium', mutedColor);
-      roleColumn.appendChild(roleLabel);
-
-      const swatchRow = createOwnedFrame();
-      swatchRow.layoutMode = 'HORIZONTAL';
-      swatchRow.primaryAxisSizingMode = 'AUTO';
-      swatchRow.counterAxisSizingMode = 'AUTO';
-      swatchRow.itemSpacing = 2;
-      swatchRow.fills = [];
-
-      for (const stepNum of group.steps) {
-        const step = scale.steps[stepNum - 1];
-        if (!step) continue;
-
-        const swatchContainer = createOwnedFrame();
-        swatchContainer.layoutMode = 'VERTICAL';
-        swatchContainer.primaryAxisSizingMode = 'AUTO';
-        swatchContainer.counterAxisSizingMode = 'AUTO';
-        swatchContainer.itemSpacing = 2;
-        swatchContainer.fills = [];
-
-        const swatch = createColorSwatch(step.hex, 32, 32, 4);
-        swatchContainer.appendChild(swatch);
-
-        const semantic = SEMANTIC_LABELS[stepNum];
-        const stepLabel = createText(semantic.short, 5, 'Regular', mutedColor);
-        swatchContainer.appendChild(stepLabel);
-
-        if (stepNum === 11 || stepNum === 12) {
-          const bgColor = scale.steps[0].hex;
-          const contrast = calculateContrastRatio(step.hex, bgColor);
-          const { rating, color } = getAccessibilityRating(contrast);
-          const badge = createText(rating, 5, 'Medium', color);
-          swatchContainer.appendChild(badge);
-        }
-
-        swatchRow.appendChild(swatchContainer);
-      }
-
-      roleColumn.appendChild(swatchRow);
-      roleSwatches.appendChild(roleColumn);
-    }
-
-    groupFrame.appendChild(roleSwatches);
-    semanticSection.appendChild(groupFrame);
-  }
-
-  frame.appendChild(semanticSection);
-
-  // Extended Palette Section
-  const extendedSection = createOwnedFrame();
-  extendedSection.name = 'Extended Palette';
-  extendedSection.layoutMode = 'VERTICAL';
-  extendedSection.primaryAxisSizingMode = 'AUTO';
-  extendedSection.counterAxisSizingMode = 'AUTO';
-  extendedSection.itemSpacing = 16;
-  extendedSection.fills = [];
-
-  const extendedTitle = createText('FULL COLOR SCALES', 11, 'Bold', mutedColor);
-  extendedTitle.letterSpacing = { value: 1.5, unit: 'PIXELS' };
-  extendedSection.appendChild(extendedTitle);
-
-  for (const key of getOrderedScaleKeys(scales)) {
-    const scale = scales[key];
-    if (scale) {
-      const row = await createScaleRow(scale, mode, true, 48);
-      extendedSection.appendChild(row);
-    }
-  }
-
-  frame.appendChild(extendedSection);
-
-  const pairingGuide = await createColorPairingGuide(scales, mode);
-  frame.appendChild(pairingGuide);
-
-  const modePolicy = semanticPolicy?.modes[mode];
-  if (modePolicy) {
-    frame.appendChild(createSemanticPolicyReport(semanticPolicy, modePolicy, mode));
-  }
-
-  return frame;
-}
+const layoutContext: ColorSystemLayoutContext = {
+  createFrame: createOwnedFrame,
+  createText,
+  createColorSwatch,
+  createScaleRow,
+  createBWSwatches,
+  createSemanticPolicyReport,
+  getOrderedScaleKeys: getOrderedColorScaleKeys,
+  getAccessibilityRating,
+  getWCAGContrastHex,
+};
 
 // ============================================
 // Main Public Function
@@ -1392,21 +520,13 @@ export async function generateColorSystemFrames(
       throw new Error('Unable to generate color system: required fonts failed to load');
     }
 
-    const { detailLevel, includeDarkMode, systemName, scaleMethod, documentColorProfile } =
-      scalesData;
+    const { detailLevel, includeDarkMode, systemName, scaleMethod } = scalesData;
     const { light: lightScales, dark: darkScales } = scalesData.scales;
     const semanticPolicy =
       scaleMethod === 'wcag-constrained' ? scalesData.semanticPolicy : undefined;
 
     const container = createOwnedFrame();
-    const methodLabel =
-      scaleMethod === 'wcag-constrained'
-        ? 'WCAG-Constrained Semantic Tokens'
-        : scaleMethod === 'custom'
-          ? 'Teul Generated'
-          : 'Exact Radix Colors';
-    const profileLabel = documentColorProfile ? `, document ${documentColorProfile}` : '';
-    container.name = `Color System - ${systemName} (${methodLabel}, source sRGB${profileLabel})`;
+    container.name = getColorSystemDocumentName(scalesData);
     container.layoutMode = 'HORIZONTAL';
     container.primaryAxisSizingMode = 'AUTO';
     container.counterAxisSizingMode = 'AUTO';
@@ -1416,30 +536,39 @@ export async function generateColorSystemFrames(
     let lightFrame: FrameNode;
     switch (detailLevel) {
       case 'minimal':
-        lightFrame = await generateMinimalLayout(lightScales, 'light', semanticPolicy);
+        lightFrame = await generateMinimalColorSystemLayout(
+          layoutContext,
+          lightScales,
+          'light',
+          scaleMethod,
+          semanticPolicy
+        );
         break;
       case 'detailed':
-        lightFrame = await generateDetailedLayout(
+        lightFrame = await generateDetailedColorSystemLayout(
+          layoutContext,
           lightScales,
-          scalesData.usageProportions,
           'light',
+          scaleMethod,
           semanticPolicy
         );
         break;
       case 'presentation':
-        lightFrame = await generatePresentationLayout(
+        lightFrame = await generatePresentationColorSystemLayout(
+          layoutContext,
           systemName,
           lightScales,
-          scalesData.usageProportions,
           'light',
+          scaleMethod,
           semanticPolicy
         );
         break;
       default:
-        lightFrame = await generateDetailedLayout(
+        lightFrame = await generateDetailedColorSystemLayout(
+          layoutContext,
           lightScales,
-          scalesData.usageProportions,
           'light',
+          scaleMethod,
           semanticPolicy
         );
     }
@@ -1449,30 +578,39 @@ export async function generateColorSystemFrames(
       let darkFrame: FrameNode;
       switch (detailLevel) {
         case 'minimal':
-          darkFrame = await generateMinimalLayout(darkScales, 'dark', semanticPolicy);
+          darkFrame = await generateMinimalColorSystemLayout(
+            layoutContext,
+            darkScales,
+            'dark',
+            scaleMethod,
+            semanticPolicy
+          );
           break;
         case 'detailed':
-          darkFrame = await generateDetailedLayout(
+          darkFrame = await generateDetailedColorSystemLayout(
+            layoutContext,
             darkScales,
-            scalesData.usageProportions,
             'dark',
+            scaleMethod,
             semanticPolicy
           );
           break;
         case 'presentation':
-          darkFrame = await generatePresentationLayout(
+          darkFrame = await generatePresentationColorSystemLayout(
+            layoutContext,
             systemName,
             darkScales,
-            scalesData.usageProportions,
             'dark',
+            scaleMethod,
             semanticPolicy
           );
           break;
         default:
-          darkFrame = await generateDetailedLayout(
+          darkFrame = await generateDetailedColorSystemLayout(
+            layoutContext,
             darkScales,
-            scalesData.usageProportions,
             'dark',
+            scaleMethod,
             semanticPolicy
           );
       }

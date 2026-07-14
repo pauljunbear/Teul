@@ -1,10 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { radixColors, type RadixScale } from '../radixColors';
 import {
-  assertSemanticColorPolicy,
   buildSemanticColorPolicy,
   evaluateSemanticColorPolicy,
-  SemanticColorPolicyError,
   SEMANTIC_PAIRING_DEFINITIONS,
   WCAG_CONTRAST_THRESHOLDS,
   type SemanticColorMode,
@@ -232,9 +230,6 @@ describe('buildSemanticColorPolicy', () => {
     expect(report.modes.light.valid).toBe(true);
     expect(report.modes.dark?.valid).toBe(false);
     expect(report.valid).toBe(false);
-    expect(() => assertSemanticColorPolicy(makePassingScales('light'), invalidDark)).toThrow(
-      SemanticColorPolicyError
-    );
   });
 
   it('publishes the requested WCAG 2.2 thresholds', () => {

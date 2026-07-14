@@ -4,25 +4,17 @@ import {
   rgbToHex,
   getLuminance,
   getContrastRatio,
-  getContrastLevel,
   calculateContrastRatio,
-  getAccessibilityRating,
-  getTextColorForBackground,
-  getContrastingTextColor,
   colorDistance,
   rgbToLab,
   rgbToOklab,
-  oklabToRgb,
   oklabToOklch,
   oklchToOklab,
   hexToOklch,
-  oklchToHex,
   rgbToHsl,
-  hslToRgb,
   hexToHsl,
-  hslToHex,
 } from '../utils';
-import { generateColorScale, generateColorScales } from '../colorScale';
+import { generateColorScale } from '../colorScale';
 
 // ============================================
 // Basic Color Conversions
@@ -134,39 +126,6 @@ describe('getContrastRatio', () => {
   });
 });
 
-describe('getContrastLevel', () => {
-  it('returns AAA for ratio >= 7', () => {
-    const result = getContrastLevel(7);
-    expect(result.level).toBe('AAA');
-    expect(result.pass).toBe(true);
-  });
-
-  it('returns AA for ratio >= 4.5', () => {
-    const result = getContrastLevel(4.5);
-    expect(result.level).toBe('AA');
-    expect(result.pass).toBe(true);
-  });
-
-  it('returns AA Large for ratio >= 3', () => {
-    const result = getContrastLevel(3);
-    expect(result.level).toBe('AA Large');
-    expect(result.pass).toBe(true);
-  });
-
-  it('returns Fail for ratio < 3', () => {
-    const result = getContrastLevel(2.5);
-    expect(result.level).toBe('Fail');
-    expect(result.pass).toBe(false);
-  });
-
-  it('correctly assigns colors for each level', () => {
-    expect(getContrastLevel(7).color).toBe('text-green-500');
-    expect(getContrastLevel(4.5).color).toBe('text-green-400');
-    expect(getContrastLevel(3).color).toBe('text-yellow-500');
-    expect(getContrastLevel(2).color).toBe('text-red-500');
-  });
-});
-
 describe('calculateContrastRatio', () => {
   it('calculates contrast from hex values', () => {
     const ratio = calculateContrastRatio('#000000', '#ffffff');
@@ -176,47 +135,6 @@ describe('calculateContrastRatio', () => {
   it('works with hex values without hash', () => {
     const ratio = calculateContrastRatio('000000', 'ffffff');
     expect(ratio).toBeCloseTo(21, 0);
-  });
-});
-
-describe('getAccessibilityRating', () => {
-  it('returns AAA rating for high contrast', () => {
-    const result = getAccessibilityRating('#000000', '#ffffff');
-    expect(result.rating).toBe('AAA');
-    expect(result.pass).toBe(true);
-    expect(result.ratio).toBeCloseTo(21, 0);
-  });
-
-  it('returns Fail for low contrast', () => {
-    const result = getAccessibilityRating('#888888', '#999999');
-    expect(result.rating).toBe('Fail');
-    expect(result.pass).toBe(false);
-  });
-});
-
-describe('getTextColorForBackground', () => {
-  it('returns dark for light backgrounds', () => {
-    expect(getTextColorForBackground('#ffffff')).toBe('dark');
-    expect(getTextColorForBackground('#f0f0f0')).toBe('dark');
-    expect(getTextColorForBackground('#ffff00')).toBe('dark'); // Yellow is bright
-  });
-
-  it('returns light for dark backgrounds', () => {
-    expect(getTextColorForBackground('#000000')).toBe('light');
-    expect(getTextColorForBackground('#333333')).toBe('light');
-    expect(getTextColorForBackground('#0000ff')).toBe('light'); // Blue is dark
-  });
-});
-
-describe('getContrastingTextColor', () => {
-  it('returns black for light backgrounds', () => {
-    expect(getContrastingTextColor('#ffffff')).toBe('#000000');
-    expect(getContrastingTextColor('#ffff00')).toBe('#000000');
-  });
-
-  it('returns white for dark backgrounds', () => {
-    expect(getContrastingTextColor('#000000')).toBe('#ffffff');
-    expect(getContrastingTextColor('#0000ff')).toBe('#ffffff');
   });
 });
 
@@ -286,34 +204,6 @@ describe('rgbToOklab', () => {
   });
 });
 
-describe('oklabToRgb', () => {
-  it('converts black OKLab to RGB', () => {
-    const rgb = oklabToRgb(0, 0, 0);
-    expect(rgb.r).toBe(0);
-    expect(rgb.g).toBe(0);
-    expect(rgb.b).toBe(0);
-  });
-
-  it('converts white OKLab to RGB', () => {
-    const rgb = oklabToRgb(1, 0, 0);
-    expect(rgb.r).toBe(255);
-    expect(rgb.g).toBe(255);
-    expect(rgb.b).toBe(255);
-  });
-
-  it('roundtrips RGB through OKLab', () => {
-    const originalR = 128,
-      originalG = 64,
-      originalB = 200;
-    const oklab = rgbToOklab(originalR, originalG, originalB);
-    const rgb = oklabToRgb(oklab.L, oklab.a, oklab.b);
-
-    expect(rgb.r).toBeCloseTo(originalR, 0);
-    expect(rgb.g).toBeCloseTo(originalG, 0);
-    expect(rgb.b).toBeCloseTo(originalB, 0);
-  });
-});
-
 describe('oklabToOklch and oklchToOklab', () => {
   it('converts neutral OKLab to OKLCH with zero chroma', () => {
     const oklch = oklabToOklch(0.5, 0, 0);
@@ -356,32 +246,6 @@ describe('hexToOklch', () => {
     const oklch = hexToOklch('#ffffff');
     expect(oklch.l).toBeCloseTo(1, 2);
     expect(oklch.c).toBeCloseTo(0, 2); // White has no chroma
-  });
-});
-
-describe('oklchToHex', () => {
-  it('converts OKLCH to hex', () => {
-    const hex = oklchToHex(0, 0, 0);
-    expect(hex).toBe('#000000');
-  });
-
-  it('converts white OKLCH to white hex', () => {
-    const hex = oklchToHex(1, 0, 0);
-    expect(hex).toBe('#ffffff');
-  });
-
-  it('roundtrips hex through OKLCH', () => {
-    const originalHex = '#cc6633';
-    const oklch = hexToOklch(originalHex);
-    const resultHex = oklchToHex(oklch.l, oklch.c, oklch.h);
-
-    // Convert both to RGB for comparison (hex string matching can be off by 1)
-    const original = hexToRgb(originalHex);
-    const result = hexToRgb(resultHex);
-
-    expect(result.r).toBeCloseTo(original.r, 0);
-    expect(result.g).toBeCloseTo(original.g, 0);
-    expect(result.b).toBeCloseTo(original.b, 0);
   });
 });
 
@@ -428,73 +292,12 @@ describe('rgbToHsl', () => {
   });
 });
 
-describe('hslToRgb', () => {
-  it('converts red HSL to RGB', () => {
-    const rgb = hslToRgb(0, 100, 50);
-    expect(rgb.r).toBe(255);
-    expect(rgb.g).toBe(0);
-    expect(rgb.b).toBe(0);
-  });
-
-  it('converts green HSL to RGB', () => {
-    const rgb = hslToRgb(120, 100, 50);
-    expect(rgb.r).toBe(0);
-    expect(rgb.g).toBe(255);
-    expect(rgb.b).toBe(0);
-  });
-
-  it('converts blue HSL to RGB', () => {
-    const rgb = hslToRgb(240, 100, 50);
-    expect(rgb.r).toBe(0);
-    expect(rgb.g).toBe(0);
-    expect(rgb.b).toBe(255);
-  });
-
-  it('converts gray HSL to RGB', () => {
-    const rgb = hslToRgb(0, 0, 50);
-    expect(rgb.r).toBe(128);
-    expect(rgb.g).toBe(128);
-    expect(rgb.b).toBe(128);
-  });
-
-  it('roundtrips RGB through HSL', () => {
-    const originalR = 100,
-      originalG = 150,
-      originalB = 200;
-    const hsl = rgbToHsl(originalR, originalG, originalB);
-    const rgb = hslToRgb(hsl.h, hsl.s, hsl.l);
-
-    // Allow tolerance of 2 due to rounding in both directions
-    expect(Math.abs(rgb.r - originalR)).toBeLessThanOrEqual(2);
-    expect(Math.abs(rgb.g - originalG)).toBeLessThanOrEqual(2);
-    expect(Math.abs(rgb.b - originalB)).toBeLessThanOrEqual(2);
-  });
-});
-
-describe('hexToHsl and hslToHex', () => {
+describe('hexToHsl', () => {
   it('converts hex to HSL', () => {
     const hsl = hexToHsl('#ff0000');
     expect(hsl.h).toBe(0);
     expect(hsl.s).toBe(100);
     expect(hsl.l).toBe(50);
-  });
-
-  it('converts HSL to hex', () => {
-    const hex = hslToHex(0, 100, 50);
-    expect(hex).toBe('#ff0000');
-  });
-
-  it('roundtrips hex through HSL', () => {
-    const originalHex = '#3366cc';
-    const hsl = hexToHsl(originalHex);
-    const resultHex = hslToHex(hsl.h, hsl.s, hsl.l);
-
-    const original = hexToRgb(originalHex);
-    const result = hexToRgb(resultHex);
-
-    expect(result.r).toBeCloseTo(original.r, 0);
-    expect(result.g).toBeCloseTo(original.g, 0);
-    expect(result.b).toBeCloseTo(original.b, 0);
   });
 });
 
@@ -557,7 +360,10 @@ describe('generateColorScale', () => {
 
 describe('generateColorScales', () => {
   it('generates both light and dark scales', () => {
-    const scales = generateColorScales('#3366cc', 'Blue');
+    const scales = {
+      light: generateColorScale('#3366cc', 'light', 'Blue'),
+      dark: generateColorScale('#3366cc', 'dark', 'Blue'),
+    };
 
     expect(scales.light).toBeDefined();
     expect(scales.dark).toBeDefined();
@@ -568,7 +374,10 @@ describe('generateColorScales', () => {
   });
 
   it('both scales have 12 steps', () => {
-    const scales = generateColorScales('#ff6600');
+    const scales = {
+      light: generateColorScale('#ff6600', 'light'),
+      dark: generateColorScale('#ff6600', 'dark'),
+    };
 
     expect(scales.light.steps).toHaveLength(12);
     expect(scales.dark.steps).toHaveLength(12);

@@ -33,11 +33,17 @@ swatch, or historical pigment.
   the selected source color and reporting what was tested.
 - **WCAG-Constrained Tokens** creates semantic tokens only when every declared
   WCAG 2.2 color pairing passes.
-- Export CSS variables, Tailwind configuration, JSON, Figma styles, and visual
-  reference frames.
+- Export CSS variables, Tailwind configuration, JSON, optional Figma styles,
+  native Figma color variables with light and dark modes, and visual reference
+  frames.
 
 Passing color-pair tests does not make an entire product accessible. Teul names
 the guarantee it can prove and stops there.
+
+The accessibility checker can read one opaque text/background pair from the
+current Figma selection, including a bound color variable. It rejects mixed,
+layered, transparent, gradient, image, video, or role-ambiguous selections
+instead of estimating a rendered color.
 
 ### Apply Grids That Fit
 
@@ -50,8 +56,13 @@ or explains why it cannot be applied. Source-faithful reconstructions keep
 their canonical dimensions instead of quietly stretching history to fit a
 different canvas.
 
-Save custom grids, move them between files with JSON import and export, and
-store them through Figma's plugin storage.
+Build symmetric column, row, and uniform grids, or capture supported native
+stretch grids from one selected frame. Teul refuses capture when Figma geometry
+cannot round-trip through the saved model. Captured grid styles and bound
+variables are retained: users can preserve available links or explicitly apply
+the captured numeric values when moving between files. Saved grids move between
+files through a versioned JSON format and live in Figma's plugin storage; v1
+records migrate without changing their supported geometry.
 
 <img width="3888" height="2382" alt="Teul color system generator in Figma" src="https://github.com/user-attachments/assets/e1b04881-c29b-4691-8c9e-7867724328ff" />
 
@@ -111,6 +122,8 @@ npm run typecheck
 npm run test:run
 npm run build
 npm run assert:artifacts
+npm run check:ui-bundle
+npm run test:production-ui
 ```
 
 ## Sources And Credits

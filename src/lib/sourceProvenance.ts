@@ -218,14 +218,3 @@ export const WERNER_SOURCE_PROVENANCE = {
       "Reproducible median sample from Getty's aged scan of Patrick Syme's 1821 painted swatch.",
   },
 } as const satisfies HistoricalSourceProvenance;
-
-export const HISTORICAL_SOURCE_PROVENANCE = {
-  wada: WADA_SOURCE_PROVENANCE,
-  werner: WERNER_SOURCE_PROVENANCE,
-} as const satisfies Record<HistoricalCollectionId, HistoricalSourceProvenance>;
-
-export function getHistoricalSourceProvenance(
-  collectionId: HistoricalCollectionId
-): HistoricalSourceProvenance {
-  return HISTORICAL_SOURCE_PROVENANCE[collectionId];
-}

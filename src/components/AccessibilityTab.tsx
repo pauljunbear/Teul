@@ -1,7 +1,10 @@
 import * as React from 'react';
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { analyzeContrast, type ContrastResult, type APCAUseCase } from '../lib/accessibility';
 import { simulateCVDHex, CVD_INFO, type CVDType } from '../lib/colorBlindness';
+import { consumeRequestId, createRequestId } from '../lib/requestId';
+import type { AccessibilitySelectionResultMessage } from '../types/messages';
+import { useOptionalWorkspaceState } from '../lib/workspaceState';
 
 // ============================================
 // Types
@@ -225,9 +228,67 @@ const APCA_BASIC_REFERENCE_LEVELS = [
 
 const ContrastChecker: React.FC<{
   styles: ReturnType<typeof getStyles>;
-}> = ({ styles }) => {
+  recentColors?: Array<{ hex: string; name: string }>;
+}> = ({ styles, recentColors = [] }) => {
   const [foreground, setForeground] = useState('#1a1a1a');
   const [background, setBackground] = useState('#ffffff');
+  const [selectionPending, setSelectionPending] = useState(false);
+  const [selectionStatus, setSelectionStatus] = useState<{
+    success: boolean;
+    message: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent<{ pluginMessage?: unknown }>) => {
+      const message = event.data?.pluginMessage as Partial<AccessibilitySelectionResultMessage>;
+      if (
+        message?.type !== 'accessibility-selection-result' ||
+        typeof message.requestId !== 'string' ||
+        typeof message.success !== 'boolean' ||
+        !consumeRequestId(message.requestId)
+      ) {
+        return;
+      }
+
+      setSelectionPending(false);
+      if (
+        message.success &&
+        typeof message.foreground === 'string' &&
+        typeof message.background === 'string'
+      ) {
+        setForeground(message.foreground);
+        setBackground(message.background);
+        const sources =
+          typeof message.foregroundSource === 'string' &&
+          typeof message.backgroundSource === 'string'
+            ? `${message.foregroundSource} on ${message.backgroundSource}`
+            : 'Selected pair';
+        const profile = typeof message.profile === 'string' ? message.profile : 'unknown';
+        setSelectionStatus({ success: true, message: `${sources} · ${profile} document` });
+      } else {
+        setSelectionStatus({
+          success: false,
+          message:
+            typeof message.error === 'string'
+              ? message.error
+              : 'The selected layers could not be reduced to one exact color pair.',
+        });
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
+  const handleUseSelection = useCallback(() => {
+    const requestId = createRequestId('accessibility-selection');
+    setSelectionPending(true);
+    setSelectionStatus(null);
+    parent.postMessage(
+      { pluginMessage: { type: 'get-selection-for-accessibility', requestId } },
+      '*'
+    );
+  }, []);
 
   const contrastResult = useMemo<ContrastResult | null>(() => {
     try {
@@ -242,7 +303,53 @@ const ContrastChecker: React.FC<{
 
   return (
     <Card styles={styles}>
-      <SectionHeader styles={styles}>Contrast Checker</SectionHeader>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '8px',
+          marginBottom: '12px',
+        }}
+      >
+        <div style={{ flex: 1 }}>
+          <SectionHeader styles={styles}>Contrast Checker</SectionHeader>
+        </div>
+        <button
+          type="button"
+          onClick={handleUseSelection}
+          disabled={selectionPending}
+          style={{
+            border: `1px solid ${styles.inputBorder}`,
+            borderRadius: '6px',
+            padding: '6px 9px',
+            backgroundColor: styles.inputBg,
+            color: styles.text,
+            cursor: selectionPending ? 'wait' : 'pointer',
+            fontSize: '10px',
+            fontWeight: 600,
+          }}
+        >
+          {selectionPending ? 'Reading…' : 'Use Selection'}
+        </button>
+      </div>
+
+      {selectionStatus && (
+        <div
+          role={selectionStatus.success ? 'status' : 'alert'}
+          style={{
+            padding: '7px 8px',
+            marginBottom: '12px',
+            borderRadius: '6px',
+            backgroundColor: selectionStatus.success ? `${styles.success}18` : `${styles.error}18`,
+            color: selectionStatus.success ? styles.success : styles.error,
+            fontSize: '10px',
+            lineHeight: 1.4,
+          }}
+        >
+          {selectionStatus.message}
+        </div>
+      )}
 
       {/* Color Inputs */}
       <div
@@ -265,6 +372,33 @@ const ContrastChecker: React.FC<{
           styles={styles}
         />
       </div>
+
+      {recentColors.length > 0 && (
+        <div style={{ margin: '-6px 0 14px' }}>
+          <div style={{ marginBottom: '5px', color: styles.textMuted, fontSize: '10px' }}>
+            Recent colors · choose foreground
+          </div>
+          <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+            {recentColors.map(color => (
+              <button
+                key={color.hex}
+                type="button"
+                title={`${color.name} ${color.hex}`}
+                aria-label={`Use ${color.name} ${color.hex} as foreground`}
+                onClick={() => setForeground(color.hex)}
+                style={{
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: '5px',
+                  border: `1px solid ${styles.border}`,
+                  backgroundColor: color.hex,
+                  cursor: 'pointer',
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       <div
         style={{
@@ -716,6 +850,7 @@ const CVDSimulator: React.FC<{
 
 export const AccessibilityTab: React.FC<AccessibilityTabProps> = ({ isDark }) => {
   const styles = getStyles(isDark);
+  const workspace = useOptionalWorkspaceState();
 
   return (
     <div
@@ -752,7 +887,7 @@ export const AccessibilityTab: React.FC<AccessibilityTabProps> = ({ isDark }) =>
         </div>
 
         {/* Contrast Checker */}
-        <ContrastChecker styles={styles} />
+        <ContrastChecker styles={styles} recentColors={workspace?.state.recentColors} />
 
         {/* CVD Simulator */}
         <CVDSimulator styles={styles} />

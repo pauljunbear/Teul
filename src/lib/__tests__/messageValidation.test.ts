@@ -1,18 +1,21 @@
 import { describe, expect, it, vi } from 'vitest';
 import { generateColorScale } from '../colorScale';
-import { isUIToPluginMessage, validateUIToPluginMessage } from '../messageValidation';
+import { validateUIToPluginMessage } from '../messageValidation';
 import { radixColors } from '../radixColors';
 import { buildSemanticColorPolicy } from '../semanticColorPolicy';
 
 const backendMocks = vi.hoisted(() => ({
   sendSelectionInfo: vi.fn(),
+  sendAccessibilitySelection: vi.fn(),
   sendDocumentColorProfile: vi.fn(),
+  detectDocumentColorProfile: vi.fn(),
   handleApplyFill: vi.fn(),
   handleApplyStroke: vi.fn(),
   handleCreateStyle: vi.fn(),
   handleApplyGradient: vi.fn(),
   handleCreateGridFrame: vi.fn(),
   handleApplyGrid: vi.fn(),
+  handleCaptureSelectedGrid: vi.fn(),
   handleGenerateColorSystem: vi.fn(),
   generateColorSystemFrames: vi.fn(),
 }));
@@ -87,13 +90,6 @@ const colorSystemData = {
   ...styleData,
   detailLevel: 'detailed',
   scaleMethod: 'custom',
-  usageProportions: {
-    primary: 35,
-    secondary: 20,
-    tertiary: 15,
-    accent: 10,
-    neutral: 20,
-  },
   documentColorProfile: 'srgb',
 };
 
@@ -110,16 +106,19 @@ const colorSystemConfig = {
 const generationRequest = {
   requestId: 'color-system-request-1',
   createStyles: false,
+  createVariables: false,
 };
 
 describe('validateUIToPluginMessage', () => {
   it.each([
-    { type: 'apply-fill', ...color },
-    { type: 'apply-stroke', ...color },
-    { type: 'create-style', ...color },
+    { type: 'apply-fill', requestId: 'fill-1', ...color },
+    { type: 'apply-stroke', requestId: 'stroke-1', ...color },
+    { type: 'create-style', requestId: 'style-1', ...color },
     { type: 'get-selection-for-grid' },
     { type: 'get-selection-for-grid', requestId: 'grid-apply-1' },
+    { type: 'capture-selected-grid', requestId: 'grid-capture-1' },
     { type: 'get-document-color-profile' },
+    { type: 'get-selection-for-accessibility', requestId: 'accessibility-1' },
     { type: 'get-grid-storage', requestId: 'grid-storage-get-1' },
     {
       type: 'set-grid-storage',
@@ -127,7 +126,12 @@ describe('validateUIToPluginMessage', () => {
       value: '{"version":1,"grids":[]}',
     },
     { type: 'delete-grid-storage', requestId: 'grid-storage-delete-1' },
-    { type: 'apply-gradient', gradientType: 'LINEAR', colors: [color, color] },
+    {
+      type: 'apply-gradient',
+      requestId: 'gradient-1',
+      gradientType: 'LINEAR',
+      colors: [color, color],
+    },
     { type: 'notify', text: 'Copied Test Color' },
     {
       type: 'generate-color-system',
@@ -137,6 +141,7 @@ describe('validateUIToPluginMessage', () => {
     },
     {
       type: 'create-grid-frame',
+      requestId: 'grid-frame-1',
       config: { columns },
       frameName: 'Grid - Test',
       width: 1440,
@@ -151,12 +156,12 @@ describe('validateUIToPluginMessage', () => {
       applicationMode: 'scale-from-reference',
       expectedTargetIds: ['1:2', '3:4'],
       replaceExisting: true,
+      linkedResourcePolicy: 'replace-with-values',
     },
   ])('accepts a valid $type message', message => {
     const result = validateUIToPluginMessage(message);
 
     expect(result).toEqual({ valid: true, message });
-    expect(isUIToPluginMessage(message)).toBe(true);
   });
 
   it('rejects malformed or oversized saved-grid storage requests', () => {
@@ -186,6 +191,84 @@ describe('validateUIToPluginMessage', () => {
     expect(
       validateUIToPluginMessage({ type: 'get-selection-for-grid', requestId: 'x'.repeat(129) })
         .valid
+    ).toBe(false);
+    expect(
+      validateUIToPluginMessage({ type: 'get-selection-for-accessibility', requestId: '' }).valid
+    ).toBe(false);
+    expect(
+      validateUIToPluginMessage({
+        type: 'get-selection-for-accessibility',
+        requestId: 'x'.repeat(129),
+      }).valid
+    ).toBe(false);
+  });
+
+  it('requires an explicit and internally consistent linked-resource policy', () => {
+    const base = {
+      type: 'apply-grid',
+      requestId: 'grid-linked-1',
+      sourceConfig: { columns: sourceColumns },
+      applicationMode: 'fixed',
+      expectedTargetIds: ['1:2'],
+      replaceExisting: true,
+    };
+
+    expect(validateUIToPluginMessage(base).valid).toBe(false);
+    expect(
+      validateUIToPluginMessage({ ...base, linkedResourcePolicy: 'preserve-if-available' }).valid
+    ).toBe(false);
+    expect(
+      validateUIToPluginMessage({
+        ...base,
+        linkedResourcePolicy: 'preserve-if-available',
+        nativeResources: {
+          gridStyleId: 'GridStyle:editorial',
+          boundVariableIds: ['VariableID:gutter'],
+          sourceFileKey: 'file-key',
+        },
+      }).valid
+    ).toBe(true);
+  });
+
+  it('accepts generated v2 geometry without a misleading native fallback', () => {
+    const construction = {
+      version: 2,
+      margins: { left: 40, right: 20, top: 30, bottom: 30, unit: 'px' },
+      trackGroups: [
+        {
+          id: 'columns',
+          axis: 'columns',
+          tracks: [100, 200],
+          gutters: [20],
+          gapBefore: 0,
+          unit: 'px',
+          visible: true,
+          color: gridColor,
+        },
+      ],
+      subdivisions: [],
+      realization: {
+        kind: 'generated-geometry',
+        disclosure: 'Unequal source tracks require generated geometry.',
+      },
+    };
+    const message = {
+      type: 'apply-grid',
+      requestId: 'generated-grid-1',
+      sourceConfig: {},
+      construction,
+      applicationMode: 'fixed',
+      expectedTargetIds: ['1:2'],
+      replaceExisting: true,
+      linkedResourcePolicy: 'replace-with-values',
+    };
+
+    expect(validateUIToPluginMessage(message)).toEqual({ valid: true, message });
+    expect(
+      validateUIToPluginMessage({
+        ...message,
+        construction: { ...construction, version: 3 },
+      }).valid
     ).toBe(false);
   });
 
@@ -474,6 +557,7 @@ describe('validateUIToPluginMessage', () => {
   it('accepts valid maximum grid bounds', () => {
     const message = {
       type: 'create-grid-frame',
+      requestId: 'grid-frame-boundary',
       config: {
         columns: {
           ...columns,
@@ -531,7 +615,6 @@ describe('validateUIToPluginMessage', () => {
     },
   ])('rejects unsafe apply-grid payload: $name', ({ message }) => {
     expect(validateUIToPluginMessage(message).valid).toBe(false);
-    expect(isUIToPluginMessage(message)).toBe(false);
   });
 
   it.each([
@@ -539,20 +622,21 @@ describe('validateUIToPluginMessage', () => {
     [],
     {},
     { type: 'unknown' },
-    { type: 'apply-fill', ...color, hex: '#fff' },
-    { type: 'apply-fill', ...color, rgb: [0, 0, 256] },
-    { type: 'apply-gradient', gradientType: 'LINEAR', colors: [color] },
-    { type: 'apply-gradient', gradientType: 'INVALID', colors: [color, color] },
-    { type: 'notify', text: '   ' },
+    { type: 'apply-fill', requestId: 'fill-invalid', ...color, hex: '#fff' },
+    { type: 'apply-fill', requestId: 'fill-extra', ...color, rgb: [0, 0, 256] },
     {
-      type: 'generate-color-system',
-      ...generationRequest,
-      config: colorSystemConfig,
-      scales: {
-        ...colorSystemData,
-        usageProportions: { ...colorSystemData.usageProportions, neutral: 19 },
-      },
+      type: 'apply-gradient',
+      requestId: 'gradient-short',
+      gradientType: 'LINEAR',
+      colors: [color],
     },
+    {
+      type: 'apply-gradient',
+      requestId: 'gradient-invalid',
+      gradientType: 'INVALID',
+      colors: [color, color],
+    },
+    { type: 'notify', text: '   ' },
     {
       type: 'generate-color-system',
       ...generationRequest,
@@ -592,7 +676,15 @@ describe('validateUIToPluginMessage', () => {
       scales: colorSystemData,
     },
     {
+      type: 'generate-color-system',
+      ...generationRequest,
+      collisionPolicy: 'overwrite-all',
+      config: colorSystemConfig,
+      scales: colorSystemData,
+    },
+    {
       type: 'create-grid-frame',
+      requestId: 'grid-frame-empty',
       config: {},
       frameName: 'Grid',
       width: 1440,
@@ -600,6 +692,7 @@ describe('validateUIToPluginMessage', () => {
     },
     {
       type: 'create-grid-frame',
+      requestId: 'grid-frame-zero',
       config: { columns },
       frameName: 'Grid',
       width: 0,
@@ -613,6 +706,7 @@ describe('validateUIToPluginMessage', () => {
       },
       expectedTargetIds: ['1:2'],
       replaceExisting: true,
+      linkedResourcePolicy: 'replace-with-values',
     },
     {
       type: 'apply-grid',
@@ -639,7 +733,6 @@ describe('validateUIToPluginMessage', () => {
     const result = validateUIToPluginMessage(message);
 
     expect(result.valid).toBe(false);
-    expect(isUIToPluginMessage(message)).toBe(false);
     if (!result.valid) {
       expect(result.error.length).toBeGreaterThan(0);
     }
@@ -670,6 +763,7 @@ describe('validateUIToPluginMessage', () => {
       responsiveWidth: { min: 600, max: 904 },
       expectedTargetIds: ['1:2'],
       replaceExisting: true,
+      linkedResourcePolicy: 'replace-with-values',
     };
 
     expect(validateUIToPluginMessage(message)).toEqual({ valid: true, message });

@@ -12,8 +12,16 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import {
   isNormalizedDocumentColorProfile,
   type DocumentColorProfileMessage,
+  type MutationOperationResultMessage,
   type NormalizedDocumentColorProfile,
 } from './types/messages';
+import { consumeRequestId } from './lib/requestId';
+import {
+  WorkspaceProvider,
+  useWorkspaceState,
+  type WorkspaceMainTab,
+  type WorkspaceThemeMode,
+} from './lib/workspaceState';
 
 const profileLabels: Record<NormalizedDocumentColorProfile, string> = {
   legacy: 'Legacy',
@@ -22,18 +30,33 @@ const profileLabels: Record<NormalizedDocumentColorProfile, string> = {
   unknown: 'Not reported',
 };
 
-export const App: React.FC = () => {
-  const [isDark, setIsDark] = useState(true);
-  const [mainTab, setMainTab] = useState<'colors' | 'werner' | 'grids' | 'a11y'>('colors');
+const AppContent: React.FC = () => {
+  const { state: workspace, update: updateWorkspace } = useWorkspaceState();
+  const [systemDark, setSystemDark] = useState(() =>
+    typeof window.matchMedia === 'function'
+      ? window.matchMedia('(prefers-color-scheme: dark)').matches
+      : true
+  );
+  const mainTab = workspace.activeTab;
+  const setMainTab = useCallback(
+    (activeTab: WorkspaceMainTab) => updateWorkspace(current => ({ ...current, activeTab })),
+    [updateWorkspace]
+  );
+  const isDark = workspace.themeMode === 'system' ? systemDark : workspace.themeMode === 'dark';
   const [documentColorProfile, setDocumentColorProfile] =
     useState<NormalizedDocumentColorProfile>('unknown');
+  const [mutationStatus, setMutationStatus] = useState<{
+    success: boolean;
+    message: string;
+  } | null>(null);
 
   const theme = isDark ? styles.dark : styles.light;
   const profileLabel = profileLabels[documentColorProfile];
 
-  const handleToggleDark = useCallback(() => {
-    setIsDark(prev => !prev);
-  }, []);
+  const setThemeMode = useCallback(
+    (themeMode: WorkspaceThemeMode) => updateWorkspace(current => ({ ...current, themeMode })),
+    [updateWorkspace]
+  );
 
   const handleMainTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
@@ -55,14 +78,35 @@ export const App: React.FC = () => {
   };
 
   useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return undefined;
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const updateSystemTheme = () => setSystemDark(media.matches);
+    updateSystemTheme();
+    media.addEventListener?.('change', updateSystemTheme);
+    return () => media.removeEventListener?.('change', updateSystemTheme);
+  }, []);
+
+  useEffect(() => {
     const handleMessage = (event: MessageEvent<{ pluginMessage?: unknown }>) => {
-      const message = event.data?.pluginMessage as Partial<DocumentColorProfileMessage> | undefined;
+      const message = event.data?.pluginMessage as
+        | Partial<DocumentColorProfileMessage>
+        | Partial<MutationOperationResultMessage>
+        | undefined;
 
       if (
         message?.type === 'document-color-profile' &&
         isNormalizedDocumentColorProfile(message.profile)
       ) {
         setDocumentColorProfile(message.profile);
+      }
+      if (
+        message?.type === 'mutation-operation-result' &&
+        typeof message.requestId === 'string' &&
+        typeof message.success === 'boolean' &&
+        typeof message.message === 'string' &&
+        consumeRequestId(message.requestId)
+      ) {
+        setMutationStatus({ success: message.success, message: message.message });
       }
     };
 
@@ -85,6 +129,21 @@ export const App: React.FC = () => {
       }}
     >
       {/* Compact Unified Header */}
+      {mutationStatus && (
+        <div
+          role={mutationStatus.success ? 'status' : 'alert'}
+          style={{
+            flexShrink: 0,
+            padding: '7px 12px',
+            backgroundColor: mutationStatus.success ? '#166534' : '#991b1b',
+            color: '#ffffff',
+            fontSize: '11px',
+            textAlign: 'center',
+          }}
+        >
+          {mutationStatus.message}
+        </div>
+      )}
       <div
         style={{
           flexShrink: 0,
@@ -110,7 +169,7 @@ export const App: React.FC = () => {
               minWidth: 'fit-content',
             }}
           >
-            SW
+            Teul
           </div>
 
           <div
@@ -260,27 +319,26 @@ export const App: React.FC = () => {
             </button>
           </div>
 
-          {/* Theme Toggle */}
-          <button
-            onClick={handleToggleDark}
-            title="Toggle Theme"
-            aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+          <select
+            value={workspace.themeMode}
+            onChange={event => setThemeMode(event.target.value as WorkspaceThemeMode)}
+            title="Theme"
+            aria-label="Theme"
             style={{
-              width: '28px',
+              width: '56px',
               height: '28px',
               borderRadius: '6px',
               border: `1px solid ${theme.border}`,
-              backgroundColor: 'transparent',
+              backgroundColor: theme.bg,
               color: theme.text,
               cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '14px',
+              fontSize: '9px',
             }}
           >
-            {isDark ? '☀️' : '🌙'}
-          </button>
+            <option value="system">Auto</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
         </div>
         {documentColorProfile === 'display-p3' && (
           <div
@@ -349,6 +407,12 @@ export const App: React.FC = () => {
     </div>
   );
 };
+
+export const App: React.FC = () => (
+  <WorkspaceProvider>
+    <AppContent />
+  </WorkspaceProvider>
+);
 
 const container = document.getElementById('react-page');
 if (container) {

@@ -53,13 +53,6 @@ export interface ColorSystemData {
     light: ColorScaleMap;
     dark?: ColorScaleMap;
   };
-  usageProportions: {
-    primary: number;
-    secondary: number;
-    tertiary: number;
-    accent: number;
-    neutral: number;
-  };
   documentColorProfile?: NormalizedDocumentColorProfile;
   multiSelectMode?: boolean;
   colorCounts?: Record<ColorRole, number>;

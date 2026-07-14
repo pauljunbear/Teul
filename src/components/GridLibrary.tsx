@@ -9,15 +9,17 @@ import {
 } from '../lib/gridPresets';
 import {
   buildCreateGridFrameMessage,
-  buildApplyGridMessage,
   getPresetApplicationMode,
   getPresetFrameDimensions,
   getPresetSourceDimensions,
   presetToFrameName,
 } from '../lib/figmaGrids';
 import type { GridPreset, GridCategory, GridSelectionTarget } from '../types/grid';
-import type { SelectionInfoMessage } from '../types/messages';
 import { analyzeResolvedPresetFits, type GridFitAggregateAnalysis } from '../lib/gridFit';
+import { createRequestId } from '../lib/requestId';
+import { GridApplyModeDialog } from './GridApplyModeDialog';
+import { ClearGridDialog } from './ClearGridDialog';
+import { useGridApplyController } from '../lib/useGridApplyController';
 
 // CSS keyframe animations injected once
 const injectStyles = (() => {
@@ -147,10 +149,22 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
   const [selectedCategory, setSelectedCategory] = React.useState<GridCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = React.useState('');
   const [selectedPreset, setSelectedPreset] = React.useState<GridPreset | null>(null);
-  const [selectionInfo, setSelectionInfo] = React.useState<SelectionInfoMessage | null>(null);
   const [showSaveModal, setShowSaveModal] = React.useState(false);
-  const nextApplyRequestIdRef = React.useRef(0);
-  const pendingApplyRef = React.useRef<{ preset: GridPreset; requestId: string } | null>(null);
+  const [operationStatus, setOperationStatus] = React.useState<{
+    success: boolean;
+    message: string;
+  } | null>(null);
+  const gridController = useGridApplyController<GridPreset>({
+    requestPrefix: 'grid-library',
+    onResult: result =>
+      setOperationStatus({
+        success: result.success,
+        message: result.message || result.error || 'Grid operation finished',
+      }),
+    onFailure: message => setOperationStatus({ success: false, message }),
+    onPreflightFailure: preset => setSelectedPreset(preset),
+  });
+  const selectionInfo = gridController.selectionInfo;
 
   // Inject CSS animations on mount
   React.useEffect(() => {
@@ -213,127 +227,19 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
     [selectedPreset, selectedTargets]
   );
 
-  const applyGridToSelection = React.useCallback(
-    (preset: GridPreset, currentSelection: SelectionInfoMessage, requestId: string) => {
-      if (!currentSelection.hasSelection) {
-        parent.postMessage(
-          {
-            pluginMessage: {
-              type: 'notify',
-              text: 'Please select a frame first',
-            },
-          },
-          '*'
-        );
-        return;
-      }
-
-      const currentTargets = currentSelection.eligibleTargets;
-      if (currentTargets.length === 0) {
-        parent.postMessage(
-          {
-            pluginMessage: {
-              type: 'notify',
-              text: 'No selected elements can accept layout grids.',
-            },
-          },
-          '*'
-        );
-        return;
-      }
-
-      const sourceDimensions = getPresetSourceDimensions(preset);
-      const applicationMode = getPresetApplicationMode(preset);
-      const fit = analyzeResolvedPresetFits(preset, currentTargets, sourceDimensions);
-      if (fit.status === 'fail') {
-        const failedTarget = fit.representative.frame;
-        parent.postMessage(
-          {
-            pluginMessage: {
-              type: 'notify',
-              text:
-                fit.representative.recommendations[0]?.message ??
-                `This grid does not fit ${failedTarget.name ?? 'one selected target'}.`,
-            },
-          },
-          '*'
-        );
-        setSelectedPreset(preset);
-        return;
-      }
-
-      const message = buildApplyGridMessage({
-        requestId,
-        config: preset.config,
-        expectedTargetIds: currentTargets.map(target => target.id),
-        sourceDimensions,
-        applicationMode,
-        responsiveWidth: preset.responsiveWidth,
-        replaceExisting: true,
-      });
-
-      parent.postMessage({ pluginMessage: message }, '*');
-    },
-    []
-  );
-
-  // Listen for live selection geometry and consume a freshly requested snapshot before apply.
-  React.useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      const msg = event.data?.pluginMessage;
-      if (msg?.type !== 'selection-info') return;
-
-      const currentSelection: SelectionInfoMessage = {
-        type: 'selection-info',
-        requestId: typeof msg.requestId === 'string' ? msg.requestId : undefined,
-        hasSelection: msg.hasSelection,
-        isFrame: msg.isFrame,
-        selectedCount: msg.selectedCount,
-        eligibleTargets: Array.isArray(msg.eligibleTargets) ? msg.eligibleTargets : [],
-        ineligibleCount: msg.ineligibleCount,
-        width: msg.width,
-        height: msg.height,
-        name: msg.name,
-      };
-
-      setSelectionInfo(currentSelection);
-
-      const pendingApply = pendingApplyRef.current;
-      if (pendingApply && msg.requestId === pendingApply.requestId) {
-        pendingApplyRef.current = null;
-        applyGridToSelection(pendingApply.preset, currentSelection, pendingApply.requestId);
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-    parent.postMessage({ pluginMessage: { type: 'get-selection-for-grid' } }, '*');
-
-    return () => window.removeEventListener('message', handleMessage);
-  }, [applyGridToSelection]);
-
-  const handleApplyGrid = (preset: GridPreset) => {
-    const requestId = `grid-apply-${++nextApplyRequestIdRef.current}`;
-    pendingApplyRef.current = { preset, requestId };
-    parent.postMessage(
-      {
-        pluginMessage: {
-          type: 'get-selection-for-grid',
-          requestId,
-        },
-      },
-      '*'
-    );
-  };
+  const handleApplyGrid = (preset: GridPreset) => gridController.requestApply(preset);
 
   const handleCreateFrame = (preset: GridPreset) => {
     const { width, height } = getPresetFrameDimensions(preset);
 
     const message = buildCreateGridFrameMessage({
+      requestId: createRequestId('grid-frame'),
       config: preset.config,
       frameName: presetToFrameName(preset),
       width,
       height,
       positionNearSelection: true,
+      construction: preset.construction,
     });
 
     parent.postMessage({ pluginMessage: message }, '*');
@@ -364,14 +270,15 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
         }}
       >
         {/* Search */}
-        <div style={{ padding: '8px 12px 6px' }}>
+        <div style={{ padding: '8px 12px 6px', display: 'flex', gap: '6px' }}>
           <input
             type="text"
             placeholder="Search grids..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             style={{
-              width: '100%',
+              flex: 1,
+              minWidth: 0,
               padding: '8px 12px',
               borderRadius: '6px',
               border: `1px solid ${theme.border}`,
@@ -382,6 +289,22 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
               boxSizing: 'border-box',
             }}
           />
+          <button
+            onClick={() => gridController.requestClear()}
+            disabled={gridController.pending}
+            aria-busy={gridController.pending}
+            style={{
+              padding: '0 10px',
+              borderRadius: '6px',
+              border: `1px solid ${theme.border}`,
+              backgroundColor: theme.inputBg,
+              color: theme.text,
+              fontSize: '10px',
+              cursor: gridController.pending ? 'wait' : 'pointer',
+            }}
+          >
+            Clear
+          </button>
         </div>
 
         {/* Category Pills */}
@@ -462,6 +385,38 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
           >
             ⚠ Select a frame to apply
           </p>
+        </div>
+      )}
+
+      {operationStatus && (
+        <div
+          role={operationStatus.success ? 'status' : 'alert'}
+          style={{
+            position: 'absolute',
+            top: showHeader ? 125 : 6,
+            right: '8px',
+            zIndex: 6,
+            maxWidth: '260px',
+            padding: '5px 8px',
+            borderRadius: '6px',
+            backgroundColor: operationStatus.success
+              ? isDark
+                ? '#052e16'
+                : '#f0fdf4'
+              : isDark
+                ? '#450a0a'
+                : '#fef2f2',
+            color: operationStatus.success
+              ? isDark
+                ? '#86efac'
+                : '#166534'
+              : isDark
+                ? '#fca5a5'
+                : '#b91c1c',
+            fontSize: '9px',
+          }}
+        >
+          {operationStatus.message}
         </div>
       )}
 
@@ -773,6 +728,26 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
               '*'
             );
           }}
+        />
+      )}
+
+      {gridController.pendingChoice && (
+        <GridApplyModeDialog
+          isDark={isDark}
+          targetCount={gridController.pendingChoice.selection.eligibleTargets.length}
+          existingGridCount={gridController.pendingChoice.existingGridCount}
+          linkedResourceCount={gridController.pendingChoice.linkedResourceCount}
+          onChoose={gridController.chooseApply}
+          onCancel={gridController.cancelApplyChoice}
+        />
+      )}
+      {gridController.pendingClear && (
+        <ClearGridDialog
+          isDark={isDark}
+          targetCount={gridController.pendingClear.selection.eligibleTargets.length}
+          existingGridCount={gridController.pendingClear.existingGridCount}
+          onConfirm={gridController.confirmClear}
+          onCancel={gridController.cancelClear}
         />
       )}
     </div>

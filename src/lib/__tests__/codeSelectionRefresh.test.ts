@@ -2,13 +2,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const backendMocks = vi.hoisted(() => ({
   sendSelectionInfo: vi.fn(),
+  sendAccessibilitySelection: vi.fn(),
   sendDocumentColorProfile: vi.fn(),
+  detectDocumentColorProfile: vi.fn(),
   handleApplyFill: vi.fn(),
   handleApplyStroke: vi.fn(),
   handleCreateStyle: vi.fn(),
   handleApplyGradient: vi.fn(),
   handleCreateGridFrame: vi.fn(),
   handleApplyGrid: vi.fn(),
+  handleCaptureSelectedGrid: vi.fn(),
   handleGenerateColorSystem: vi.fn(),
   generateColorSystemFrames: vi.fn(),
 }));

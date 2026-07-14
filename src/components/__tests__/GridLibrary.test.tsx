@@ -27,6 +27,7 @@ interface PostedPayload {
     type?: string;
     requestId?: string;
     expectedTargetIds?: string[];
+    replaceExisting?: boolean;
     sourceConfig?: {
       columns?: {
         margin?: number;
@@ -37,7 +38,12 @@ interface PostedPayload {
 
 type PostMessageCall = [PostedPayload, string];
 
-function sendSelectionInfo(width: number, height: number, requestId?: string): void {
+function sendSelectionInfo(
+  width: number,
+  height: number,
+  requestId?: string,
+  layoutGridCount = 0
+): void {
   window.dispatchEvent(
     new MessageEvent('message', {
       data: {
@@ -46,7 +52,7 @@ function sendSelectionInfo(width: number, height: number, requestId?: string): v
           hasSelection: true,
           isFrame: true,
           selectedCount: 1,
-          eligibleTargets: [{ id: 'frame-1', name: 'Frame 1', width, height }],
+          eligibleTargets: [{ id: 'frame-1', name: 'Frame 1', width, height, layoutGridCount }],
           ineligibleCount: 0,
           width,
           height,
@@ -112,7 +118,7 @@ describe('GridLibrary live fit validation', () => {
 
     const calls = postMessage.mock.calls as unknown as PostMessageCall[];
     expect(calls.some(([payload]) => payload.pluginMessage?.type === 'apply-grid')).toBe(false);
-    expect(calls.some(([payload]) => payload.pluginMessage?.type === 'notify')).toBe(true);
+    expect(container.querySelector('[role="alert"]')?.textContent).toBeTruthy();
   });
 
   it('builds the apply message from the fresh snapshot rather than cached geometry', () => {
@@ -141,5 +147,63 @@ describe('GridLibrary live fit validation', () => {
     expect(applyCall?.[0].pluginMessage?.requestId).toBe(
       refreshRequest?.[0].pluginMessage?.requestId
     );
+  });
+
+  it('requires an explicit replace choice when the target already has grids', () => {
+    act(() => root.render(<GridLibrary isDark={false} />));
+    act(() => sendSelectionInfo(1200, 800));
+    postMessage.mockClear();
+
+    const applyButton = container.querySelector<HTMLButtonElement>('[data-preset-id="swiss-4col"]');
+    act(() => applyButton?.click());
+    const refreshRequest = (postMessage.mock.calls as unknown as PostMessageCall[]).find(
+      ([payload]) => payload.pluginMessage?.type === 'get-selection-for-grid'
+    );
+    act(() => sendSelectionInfo(1200, 800, refreshRequest?.[0].pluginMessage?.requestId, 2));
+
+    expect(container.querySelector('[role="dialog"]')?.textContent).toContain(
+      'Existing layout grids found'
+    );
+    expect(
+      (postMessage.mock.calls as unknown as PostMessageCall[]).some(
+        ([payload]) => payload.pluginMessage?.type === 'apply-grid'
+      )
+    ).toBe(false);
+
+    const replaceButton = Array.from(container.querySelectorAll('button')).find(
+      button => button.textContent === 'Replace'
+    );
+    act(() => replaceButton?.click());
+
+    const applyCall = (postMessage.mock.calls as unknown as PostMessageCall[]).find(
+      ([payload]) => payload.pluginMessage?.type === 'apply-grid'
+    );
+    expect(applyCall?.[0].pluginMessage?.replaceExisting).toBe(true);
+  });
+
+  it('preflights and confirms Clear for the current selection', () => {
+    act(() => root.render(<GridLibrary isDark={false} />));
+    act(() => sendSelectionInfo(1200, 800, undefined, 1));
+    postMessage.mockClear();
+
+    const clearButton = Array.from(container.querySelectorAll('button')).find(
+      button => button.textContent === 'Clear'
+    );
+    act(() => clearButton?.click());
+    const selectionRequest = (postMessage.mock.calls as unknown as PostMessageCall[]).find(
+      ([payload]) =>
+        payload.pluginMessage?.type === 'get-selection-for-grid' &&
+        typeof payload.pluginMessage.requestId === 'string'
+    );
+    act(() => sendSelectionInfo(1200, 800, selectionRequest?.[0].pluginMessage?.requestId, 1));
+    const confirm = Array.from(
+      container.querySelectorAll<HTMLButtonElement>('[role="alertdialog"] button')
+    ).find(button => button.textContent === 'Clear');
+    act(() => confirm?.click());
+
+    const clearCall = (postMessage.mock.calls as unknown as PostMessageCall[]).find(
+      ([payload]) => payload.pluginMessage?.type === 'clear-grid'
+    );
+    expect(clearCall?.[0].pluginMessage?.expectedTargetIds).toEqual(['frame-1']);
   });
 });

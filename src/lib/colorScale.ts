@@ -69,10 +69,6 @@ export interface ColorScale {
   validation: ColorScaleValidation;
 }
 
-export type ColorScaleBuildResult =
-  | { ok: true; scale: ColorScale }
-  | { ok: false; candidate: ColorScale; issues: ScaleValidationIssue[] };
-
 const STEP_USAGE: Record<number, string> = {
   1: 'App background',
   2: 'Subtle background',
@@ -450,26 +446,5 @@ export function generateColorScale(
     method: 'Teul OKLCH v2',
     anchorStep: 9,
     validation: validateScale(normalizedBase, steps, mode),
-  };
-}
-
-export function buildColorScale(
-  baseHex: string,
-  mode: ColorScaleMode = 'light',
-  name: string = 'Custom'
-): ColorScaleBuildResult {
-  const candidate = generateColorScale(baseHex, mode, name);
-  return candidate.validation.valid
-    ? { ok: true, scale: candidate }
-    : { ok: false, candidate, issues: candidate.validation.issues };
-}
-
-export function generateColorScales(
-  baseHex: string,
-  name: string = 'Custom'
-): { light: ColorScale; dark: ColorScale } {
-  return {
-    light: generateColorScale(baseHex, 'light', name),
-    dark: generateColorScale(baseHex, 'dark', name),
   };
 }

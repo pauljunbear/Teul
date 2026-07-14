@@ -6,6 +6,8 @@ import { getOrderedScaleKeys, stepToStyleSuffix } from '../lib/colorExport';
 import { isExactRadixScale } from '../lib/radixColors';
 import { isSemanticColorPolicyCurrent } from '../lib/semanticColorPolicy';
 import type { CreateStylesData } from '../types/colorSystem';
+import type { ColorCollisionPolicy } from './colorSystemCollision';
+import { isTeulColorResource, markTeulColorResource } from './colorResourceOwnership';
 export type { CreateStylesData } from '../types/colorSystem';
 
 // ============================================
@@ -17,6 +19,21 @@ interface RequestedStyle {
   hex: string;
   color: RGB;
   description?: string;
+}
+
+interface UpdatedStyleSnapshot {
+  style: PaintStyle;
+  name: string;
+  description: string;
+  paints: readonly Paint[];
+}
+
+export interface ColorStyleReport {
+  styleCount: number;
+  createdCount: number;
+  updatedCount: number;
+  skippedCount: number;
+  warnings: string[];
 }
 
 type SemanticMode = 'light' | 'dark';
@@ -59,25 +76,31 @@ function styleMatchesRequestedPaint(style: PaintStyle, requestedColor: RGB): boo
   );
 }
 
-function rollbackCreatedStyles(createdStyles: PaintStyle[]): number {
-  let failedRemovalCount = 0;
+function rollbackStyles(
+  createdStyles: PaintStyle[],
+  updatedStyles: UpdatedStyleSnapshot[]
+): string[] {
+  const failures: string[] = [];
 
   for (const style of [...createdStyles].reverse()) {
     try {
       style.remove();
     } catch (error) {
-      failedRemovalCount++;
+      failures.push(`style "${style.name}" removal failed`);
       console.error('Failed to roll back color style:', error);
     }
   }
-
-  return failedRemovalCount;
-}
-
-function withStyleRollbackFailure(error: unknown, failedRemovalCount: number): Error {
-  return new Error(
-    `${getErrorMessage(error)}; failed to roll back ${failedRemovalCount} created color style${failedRemovalCount === 1 ? '' : 's'}`
-  );
+  for (const snapshot of [...updatedStyles].reverse()) {
+    try {
+      snapshot.style.name = snapshot.name;
+      snapshot.style.description = snapshot.description;
+      snapshot.style.paints = snapshot.paints;
+    } catch (error) {
+      failures.push(`style "${snapshot.name}" restoration failed`);
+      console.error('Failed to roll back updated color style:', error);
+    }
+  }
+  return failures;
 }
 
 let colorStyleCreationQueue: Promise<void> = Promise.resolve();
@@ -93,8 +116,9 @@ let colorStyleCreationQueue: Promise<void> = Promise.resolve();
  */
 async function createColorStylesOperation(
   scalesData: CreateStylesData,
-  systemName: string
-): Promise<void> {
+  systemName: string,
+  collisionPolicy: ColorCollisionPolicy
+): Promise<ColorStyleReport> {
   if (
     scalesData.scaleMethod === 'wcag-constrained' &&
     !isSemanticColorPolicyCurrent(
@@ -255,6 +279,7 @@ async function createColorStylesOperation(
   }
 
   const stylesToCreate: RequestedStyle[] = [];
+  const stylesToUpdate: Array<{ style: PaintStyle; request: RequestedStyle }> = [];
   for (const requestedStyle of queuedStyles.values()) {
     const sameNameStyles = existingStylesByName.get(requestedStyle.name);
     if (!sameNameStyles) {
@@ -262,10 +287,25 @@ async function createColorStylesOperation(
       continue;
     }
 
-    if (!sameNameStyles.every(style => styleMatchesRequestedPaint(style, requestedStyle.color))) {
+    if (sameNameStyles.length > 1) {
+      throw new Error(`Multiple local color styles are named "${requestedStyle.name}"`);
+    }
+    if (collisionPolicy !== 'update-local') {
+      throw new Error(`Color style collision for "${requestedStyle.name}"`);
+    }
+    const existingStyle = sameNameStyles[0];
+    if (!isTeulColorResource(existingStyle)) {
       throw new Error(
-        `Color style conflict for "${requestedStyle.name}": existing paint does not match requested ${requestedStyle.hex}`
+        `Color style "${requestedStyle.name}" is not marked as Teul-owned. Choose Create copy.`
       );
+    }
+    if (!styleMatchesRequestedPaint(existingStyle, requestedStyle.color)) {
+      stylesToUpdate.push({ style: existingStyle, request: requestedStyle });
+      continue;
+    }
+    if (existingStyle.description !== (requestedStyle.description ?? '')) {
+      stylesToUpdate.push({ style: existingStyle, request: requestedStyle });
+      continue;
     }
 
     existingNameSkips++;
@@ -275,6 +315,7 @@ async function createColorStylesOperation(
   const BATCH_SIZE = 20;
   let created = 0;
   const createdStyles: PaintStyle[] = [];
+  const updatedStyles: UpdatedStyleSnapshot[] = [];
 
   try {
     for (let i = 0; i < stylesToCreate.length; i += BATCH_SIZE) {
@@ -286,35 +327,48 @@ async function createColorStylesOperation(
           style.name = name;
           if (description) style.description = description;
           style.paints = [{ type: 'SOLID', color }];
+          markTeulColorResource(style);
           created++;
           return Promise.resolve();
         })
       );
     }
 
-    const skipSummary = [
-      existingNameSkips > 0
-        ? `${existingNameSkips} existing name${existingNameSkips === 1 ? '' : 's'}`
-        : undefined,
-      duplicateNameSkips > 0
-        ? `${duplicateNameSkips} duplicate queued name${duplicateNameSkips === 1 ? '' : 's'}`
-        : undefined,
-    ].filter(Boolean);
-    figma.notify(
-      `Created ${created} color styles${skipSummary.length > 0 ? `; skipped ${skipSummary.join(', ')}` : ''}`
-    );
+    for (const { style, request } of stylesToUpdate) {
+      updatedStyles.push({
+        style,
+        name: style.name,
+        description: style.description,
+        paints: [...style.paints],
+      });
+      style.name = request.name;
+      style.description = request.description ?? '';
+      style.paints = [{ type: 'SOLID', color: request.color }];
+    }
+
+    return {
+      styleCount: queuedStyles.size,
+      createdCount: created,
+      updatedCount: stylesToUpdate.length,
+      skippedCount: existingNameSkips + duplicateNameSkips,
+      warnings: [],
+    };
   } catch (error) {
-    const failedRemovalCount = rollbackCreatedStyles(createdStyles);
-    if (failedRemovalCount > 0) {
-      throw withStyleRollbackFailure(error, failedRemovalCount);
+    const rollbackFailures = rollbackStyles(createdStyles, updatedStyles);
+    if (rollbackFailures.length > 0) {
+      throw new Error(`${getErrorMessage(error)}; rollback failed: ${rollbackFailures.join('; ')}`);
     }
     throw error;
   }
 }
 
-export function createColorStyles(scalesData: CreateStylesData, systemName: string): Promise<void> {
+export function createColorStyles(
+  scalesData: CreateStylesData,
+  systemName: string,
+  collisionPolicy: ColorCollisionPolicy = 'cancel'
+): Promise<ColorStyleReport> {
   const creation = colorStyleCreationQueue.then(() =>
-    createColorStylesOperation(scalesData, systemName)
+    createColorStylesOperation(scalesData, systemName, collisionPolicy)
   );
   colorStyleCreationQueue = creation.then(
     () => undefined,

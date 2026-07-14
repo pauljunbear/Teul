@@ -6,17 +6,17 @@ below.
 
 ## Runtime Libraries
 
-### React, ReactDOM, and Scheduler
+### Preact
 
-- Components: `react`, `react-dom`, and their runtime dependency `scheduler`
-- Bundled versions: React/ReactDOM 18.3.1; Scheduler 0.23.2
-- Source: https://github.com/facebook/react
+- Component: `preact` with its React compatibility layer
+- Bundled version: Preact 10.29.7
+- Source: https://github.com/preactjs/preact
 - License: MIT
 
 ```text
 MIT License
 
-Copyright (c) Facebook, Inc. and its affiliates.
+Copyright (c) 2015-present Jason Miller
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

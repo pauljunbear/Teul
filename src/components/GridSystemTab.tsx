@@ -1,7 +1,11 @@
 import * as React from 'react';
 import { GridLibrary } from './GridLibrary';
 import { MyGrids } from './MyGrids';
-import { getSavedGridCount, SAVED_GRIDS_CHANGED_EVENT } from '../lib/gridStorage';
+import {
+  getSavedGridCount,
+  invalidateGridCache,
+  SAVED_GRIDS_CHANGED_EVENT,
+} from '../lib/gridStorage';
 import { HelpPanel } from './HelpPanel';
 import { isAnyModalOpen } from '../lib/useModalAccessibility';
 
@@ -60,6 +64,7 @@ export const GridSystemTab: React.FC<GridSystemTabProps> = ({ isDark }) => {
   // Listen for storage changes
   React.useEffect(() => {
     const handleStorageChange = () => {
+      invalidateGridCache();
       void getSavedGridCount()
         .then(setSavedGridCount)
         .catch(error => {

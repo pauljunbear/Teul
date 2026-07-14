@@ -52,5 +52,20 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Enforce UI bundle budget
+        run: npm run check:ui-bundle
+
+      - name: Smoke-test production UI
+        run: npm run test:production-ui
+
+      - name: Report bundle composition
+        run: npm run report:bundle
+
+      - name: Reject production-dead exports
+        run: npm run report:dead-code
+
+      - name: Verify pinned Wada data
+        run: npm run verify:wada
+
       - name: Assert production artifacts
         run: npm run assert:artifacts

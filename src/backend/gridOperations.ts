@@ -4,13 +4,29 @@
 import { gridConfigToFigmaLayoutGrids } from '../lib/figmaGrids';
 import { analyzeResolvedGridFit } from '../lib/gridFit';
 import { resolveGridConfigForTarget } from '../lib/gridUtils';
+import { resolveGridConstructionForTarget } from '../lib/gridConstructionV2';
 import { isNodeOrAncestorLocked } from './figmaHelpers';
+import {
+  canGenerateConstructionOnNode,
+  createGeneratedConstructionOverlay,
+  getGeneratedConstructionOverlays,
+  type GeneratedConstructionTarget,
+} from './gridConstructionGeometry';
 import type {
   GridApplicationMode,
   GridConfig as SourceGridConfig,
   GridResponsiveWidth,
+  GridConfig,
+  GridColor,
+  GridBoundVariables,
 } from '../types/grid';
-import type { ApplyGridMessage, FigmaGridConfig, GridAppliedMessage } from '../types/messages';
+import type {
+  ApplyGridMessage,
+  ClearGridMessage,
+  FigmaGridConfig,
+  GridAppliedMessage,
+  GridCaptureResultMessage,
+} from '../types/messages';
 
 type LayoutGridNode = SceneNode & {
   layoutGrids: ReadonlyArray<LayoutGrid>;
@@ -23,6 +39,7 @@ interface GridApplyPlan {
   previousGrids: LayoutGrid[];
   previousGridStyleId: string;
   nextGrids: LayoutGrid[];
+  nextGridStyleId: string;
 }
 
 interface GridRollbackResult {
@@ -42,9 +59,13 @@ function hasGridEntry(config: FigmaGridConfig | SourceGridConfig): boolean {
 
 function getApplyGridPayloadError(
   sourceConfig: SourceGridConfig | undefined,
-  expectedTargetIds: readonly string[] | undefined
+  expectedTargetIds: readonly string[] | undefined,
+  construction: ApplyGridMessage['construction']
 ): string | null {
-  if (!sourceConfig || !hasGridEntry(sourceConfig)) {
+  const generatedConstruction =
+    construction?.realization.kind === 'generated-geometry' ||
+    construction?.realization.kind === 'approximation';
+  if ((!sourceConfig || !hasGridEntry(sourceConfig)) && !generatedConstruction) {
     return 'Grid payload sourceConfig must include at least one grid';
   }
   if (!expectedTargetIds || expectedTargetIds.length === 0) {
@@ -56,10 +77,187 @@ function getApplyGridPayloadError(
   return null;
 }
 
+async function applyGeneratedConstruction(params: {
+  message: ApplyGridMessage;
+  eligibleNodes: readonly LayoutGridNode[];
+  skippedCount: number;
+  postResult: (result: Omit<GridAppliedMessage, 'type' | 'requestId'>) => void;
+}): Promise<void> {
+  const { message, eligibleNodes, skippedCount, postResult } = params;
+  const construction = message.construction;
+  if (!construction) return;
+
+  const generatedTargets: GeneratedConstructionTarget[] = [];
+  try {
+    if (message.linkedResourcePolicy === 'preserve-if-available') {
+      throw new Error(
+        'Generated construction geometry cannot preserve native grid-style links. Choose numeric values.'
+      );
+    }
+    for (const node of eligibleNodes) {
+      if (!canGenerateConstructionOnNode(node)) {
+        throw new Error(
+          `Generated construction cannot be added inside ${node.type.toLowerCase()} "${node.name}". Use a frame or component.`
+        );
+      }
+      generatedTargets.push(node);
+    }
+  } catch (error) {
+    const messageText = 'Grid construction rejected: unsupported target or resource policy';
+    figma.notify(messageText);
+    postResult({
+      success: false,
+      appliedCount: 0,
+      skippedCount,
+      failedCount: eligibleNodes.length,
+      message: messageText,
+      error: error instanceof Error ? error.message : 'Generated construction preflight failed',
+      realization: construction.realization,
+    });
+    return;
+  }
+
+  let plans: Array<{
+    node: GeneratedConstructionTarget;
+    resolved: ReturnType<typeof resolveGridConstructionForTarget>;
+    previousGrids: LayoutGrid[];
+    previousGridStyleId: string;
+    previousOverlays: SceneNode[];
+  }>;
+  try {
+    plans = generatedTargets.map(node => ({
+      node,
+      resolved: resolveGridConstructionForTarget(
+        construction,
+        message.sourceDimensions,
+        { width: node.width, height: node.height },
+        message.applicationMode,
+        message.responsiveWidth
+      ),
+      previousGrids: snapshotLayoutGrids(node.layoutGrids),
+      previousGridStyleId: node.gridStyleId,
+      previousOverlays: getGeneratedConstructionOverlays(node),
+    }));
+  } catch (error) {
+    const messageText = 'Grid construction rejected: geometry does not fit the target';
+    figma.notify(messageText);
+    postResult({
+      success: false,
+      appliedCount: 0,
+      skippedCount,
+      failedCount: eligibleNodes.length,
+      message: messageText,
+      error: error instanceof Error ? error.message : 'Generated construction resolution failed',
+      realization: construction.realization,
+    });
+    return;
+  }
+  const created: FrameNode[] = [];
+
+  try {
+    for (const plan of plans) {
+      created.push(createGeneratedConstructionOverlay(plan.node, construction, plan.resolved));
+    }
+
+    if (message.replaceExisting) {
+      for (const plan of plans) {
+        if (plan.node.gridStyleId) await plan.node.setGridStyleIdAsync('');
+        plan.node.layoutGrids = [];
+      }
+      for (const plan of plans) {
+        for (const overlay of plan.previousOverlays) overlay.remove();
+      }
+    }
+
+    figma.commitUndo();
+    const realizationLabel =
+      construction.realization.kind === 'approximation'
+        ? 'generated approximation'
+        : 'generated construction';
+    const messageText = `Applied ${realizationLabel} to ${plans.length} target${plans.length === 1 ? '' : 's'}`;
+    figma.notify(messageText);
+    postResult({
+      success: plans.length > 0,
+      appliedCount: plans.length,
+      skippedCount,
+      failedCount: 0,
+      message: messageText,
+      frameName: plans[0]?.node.name,
+      frameWidth: plans[0]?.node.width,
+      frameHeight: plans[0]?.node.height,
+      realization: construction.realization,
+    });
+  } catch (error) {
+    for (const overlay of [...created].reverse()) {
+      if (!overlay.removed) {
+        try {
+          overlay.remove();
+        } catch (cleanupError) {
+          console.error('Failed to remove generated construction during rollback:', cleanupError);
+        }
+      }
+    }
+    const rollbackPlans: GridApplyPlan[] = plans.map(plan => ({
+      node: plan.node,
+      previousGrids: plan.previousGrids,
+      previousGridStyleId: plan.previousGridStyleId,
+      nextGrids: [],
+      nextGridStyleId: '',
+    }));
+    const rollback = await rollbackGridPlans(rollbackPlans);
+    const messageText = `Generated grid construction rolled back${rollback.remainingMutationCount > 0 ? ` with ${rollback.remainingMutationCount} remaining mutation${rollback.remainingMutationCount === 1 ? '' : 's'}` : ''}`;
+    figma.notify(messageText);
+    postResult({
+      success: false,
+      appliedCount: rollback.remainingMutationCount,
+      skippedCount,
+      failedCount: eligibleNodes.length - rollback.remainingMutationCount,
+      message: messageText,
+      error: error instanceof Error ? error.message : 'Generated construction failed',
+      realization: construction.realization,
+    });
+  }
+}
+
 function buildLayoutGrids(config: FigmaGridConfig): LayoutGrid[] {
   return [config.columns, config.rows, config.baseline]
     .filter(grid => grid !== undefined)
     .map(grid => ({ ...grid }) as LayoutGrid);
+}
+
+function removeBoundVariables(grids: readonly LayoutGrid[]): LayoutGrid[] {
+  return grids.map(grid => {
+    const { boundVariables: _boundVariables, ...numericGrid } = grid;
+    return numericGrid as LayoutGrid;
+  });
+}
+
+async function assertLinkedResourcesAvailable(message: ApplyGridMessage): Promise<void> {
+  if (message.linkedResourcePolicy !== 'preserve-if-available') return;
+  const resources = message.nativeResources;
+  if (!resources) throw new Error('No linked resource metadata was supplied');
+  if (resources.sourceFileKey && figma.fileKey && resources.sourceFileKey !== figma.fileKey) {
+    throw new Error(
+      'Captured grid links belong to another Figma file. Choose numeric values to apply without links.'
+    );
+  }
+
+  if (resources.gridStyleId) {
+    const style = await figma.getStyleByIdAsync(resources.gridStyleId);
+    if (!style || style.type !== 'GRID') {
+      throw new Error(
+        'The captured grid style is unavailable. Choose numeric values to replace the missing link.'
+      );
+    }
+  }
+
+  for (const variableId of resources.boundVariableIds) {
+    if (!(await figma.variables.getVariableByIdAsync(variableId))) {
+      throw new Error(
+        'A captured grid variable is unavailable. Choose numeric values to replace the missing link.'
+      );
+    }
+  }
 }
 
 function resolveLayoutGridsForNode(
@@ -207,6 +405,89 @@ function removeNodeOnFailure(node: BaseNode | undefined, label: string): void {
   }
 }
 
+export function handleCaptureSelectedGrid(requestId: string): void {
+  const result: GridCaptureResultMessage = {
+    type: 'grid-capture-result',
+    requestId,
+    success: false,
+  };
+
+  try {
+    const selection = figma.currentPage.selection;
+    if (selection.length !== 1 || !canHaveLayoutGrids(selection[0])) {
+      throw new Error('Select exactly one frame or component with layout grids');
+    }
+    const target = selection[0];
+    if (target.layoutGrids.length === 0) throw new Error('The selected target has no layout grids');
+
+    const config: GridConfig = {};
+    const boundVariableIds = new Set<string>();
+    for (const grid of target.layoutGrids) {
+      const color: GridColor = grid.color
+        ? { r: grid.color.r, g: grid.color.g, b: grid.color.b, a: grid.color.a }
+        : { r: 1, g: 0.2, b: 0.2, a: 0.1 };
+      const boundVariables: GridBoundVariables | undefined = grid.boundVariables
+        ? Object.fromEntries(
+            Object.entries(grid.boundVariables)
+              .filter((entry): entry is [string, VariableAlias] => entry[1] !== undefined)
+              .map(([field, alias]) => {
+                boundVariableIds.add(alias.id);
+                return [field, { type: 'VARIABLE_ALIAS' as const, id: alias.id }];
+              })
+          )
+        : undefined;
+      if (grid.pattern === 'COLUMNS' || grid.pattern === 'ROWS') {
+        if (grid.alignment !== 'STRETCH') {
+          throw new Error('Capture currently supports stretch column and row grids only');
+        }
+        const captured = {
+          count: grid.count,
+          gutterSize: grid.gutterSize,
+          gutterUnit: 'px' as const,
+          margin: grid.offset ?? 0,
+          marginUnit: 'px' as const,
+          alignment: grid.alignment,
+          visible: grid.visible !== false,
+          color,
+          ...(boundVariables ? { boundVariables } : {}),
+        };
+        if (grid.pattern === 'COLUMNS') {
+          if (config.columns)
+            throw new Error('Multiple column grids cannot be captured as one preset');
+          config.columns = captured;
+        } else {
+          if (config.rows) throw new Error('Multiple row grids cannot be captured as one preset');
+          config.rows = captured;
+        }
+      } else {
+        if (config.baseline)
+          throw new Error('Multiple uniform grids cannot be captured as one preset');
+        config.baseline = {
+          height: grid.sectionSize ?? 8,
+          offset: 0,
+          visible: grid.visible !== false,
+          color,
+          ...(boundVariables ? { boundVariables } : {}),
+        };
+      }
+    }
+
+    result.success = true;
+    result.config = config;
+    result.frameName = target.name;
+    result.dimensions = { width: target.width, height: target.height };
+    result.nativeResources = {
+      ...(target.gridStyleId ? { gridStyleId: target.gridStyleId } : {}),
+      boundVariableIds: [...boundVariableIds].sort(),
+      ...(figma.fileKey ? { sourceFileKey: figma.fileKey } : {}),
+    };
+  } catch (error) {
+    result.error = error instanceof Error ? error.message : 'Failed to capture selected grid';
+  }
+
+  figma.ui.postMessage(result);
+}
+
 // ============================================
 // Create Grid Frame
 // ============================================
@@ -217,14 +498,18 @@ export async function handleCreateGridFrame(msg: {
   width: number;
   height: number;
   positionNearSelection?: boolean;
-}): Promise<void> {
+  construction?: ApplyGridMessage['construction'];
+}): Promise<boolean> {
   let frame: FrameNode | undefined;
   const originalSelection = [...figma.currentPage.selection];
 
   try {
-    const { config, frameName, width, height, positionNearSelection = true } = msg;
+    const { config, frameName, width, height, positionNearSelection = true, construction } = msg;
+    const generatedConstruction =
+      construction?.realization.kind === 'generated-geometry' ||
+      construction?.realization.kind === 'approximation';
 
-    if (!hasGridEntry(config)) {
+    if (!hasGridEntry(config) && !generatedConstruction) {
       throw new Error('Grid frame config must include at least one grid');
     }
     frame = figma.createFrame();
@@ -233,7 +518,19 @@ export async function handleCreateGridFrame(msg: {
     frame.resize(width, height);
 
     // Apply layout grids
-    frame.layoutGrids = buildLayoutGrids(config);
+    frame.layoutGrids = generatedConstruction ? [] : buildLayoutGrids(config);
+    if (generatedConstruction && construction) {
+      createGeneratedConstructionOverlay(
+        frame,
+        construction,
+        resolveGridConstructionForTarget(
+          construction,
+          { width, height },
+          { width, height },
+          'fixed'
+        )
+      );
+    }
 
     // Position near selection or in viewport center
     const selection = figma.currentPage.selection;
@@ -264,10 +561,12 @@ export async function handleCreateGridFrame(msg: {
     const gridInfo: string[] = [];
     if (config.columns?.count) gridInfo.push(`${config.columns.count} columns`);
     if (config.rows?.count) gridInfo.push(`${config.rows.count} rows`);
-    if (config.baseline) gridInfo.push('baseline grid');
+    if (config.baseline && !generatedConstruction) gridInfo.push('baseline grid');
+    if (generatedConstruction) gridInfo.push('generated construction');
 
     const infoStr = gridInfo.length > 0 ? ` (${gridInfo.join(', ')})` : '';
     figma.notify(`Created: ${resolvedFrameName}${infoStr}`);
+    return true;
   } catch (error) {
     console.error('Error creating grid frame:', error);
     removeNodeOnFailure(frame, 'grid frame');
@@ -280,6 +579,7 @@ export async function handleCreateGridFrame(msg: {
       );
     }
     figma.notify('Failed to create grid frame');
+    return false;
   }
 }
 
@@ -297,8 +597,10 @@ export async function handleApplyGrid(msg: ApplyGridMessage): Promise<void> {
     responsiveWidth,
     expectedTargetIds,
     replaceExisting = true,
+    nativeResources,
+    linkedResourcePolicy = 'replace-with-values',
   } = msg;
-  const payloadError = getApplyGridPayloadError(sourceConfig, expectedTargetIds);
+  const payloadError = getApplyGridPayloadError(sourceConfig, expectedTargetIds, msg.construction);
   const postResult = (result: Omit<GridAppliedMessage, 'type' | 'requestId'>): void => {
     figma.ui.postMessage({ type: 'grid-applied', requestId, ...result });
   };
@@ -362,9 +664,19 @@ export async function handleApplyGrid(msg: ApplyGridMessage): Promise<void> {
     return;
   }
 
+  if (
+    msg.construction?.realization.kind === 'generated-geometry' ||
+    msg.construction?.realization.kind === 'approximation'
+  ) {
+    await applyGeneratedConstruction({ message: msg, eligibleNodes, skippedCount, postResult });
+    return;
+  }
+
   let plans: GridApplyPlan[];
   try {
-    plans = eligibleNodes.map(node => {
+    await assertLinkedResourcesAvailable(msg);
+    plans = [];
+    for (const node of eligibleNodes) {
       const fit = analyzeResolvedGridFit(
         sourceConfig,
         { id: node.id, name: node.name, width: node.width, height: node.height },
@@ -379,25 +691,42 @@ export async function handleApplyGrid(msg: ApplyGridMessage): Promise<void> {
         );
       }
 
-      const resolvedGrids = resolveLayoutGridsForNode(
+      const linkedGrids = resolveLayoutGridsForNode(
         sourceConfig,
         sourceDimensions,
         applicationMode,
         responsiveWidth,
         node
       );
+      const resolvedGrids =
+        linkedResourcePolicy === 'preserve-if-available'
+          ? linkedGrids
+          : removeBoundVariables(linkedGrids);
       if (resolvedGrids.length === 0) {
         throw new Error('Resolved grid payload contained no layout grids');
       }
 
       const previousGrids = snapshotLayoutGrids(node.layoutGrids);
-      return {
+      if (
+        linkedResourcePolicy === 'preserve-if-available' &&
+        !replaceExisting &&
+        (previousGrids.length > 0 || node.gridStyleId)
+      ) {
+        throw new Error(
+          'Linked grid resources cannot be added to existing guides without detaching them. Choose Replace or numeric values.'
+        );
+      }
+      plans.push({
         node,
         previousGrids,
         previousGridStyleId: node.gridStyleId,
         nextGrids: replaceExisting ? resolvedGrids : [...previousGrids, ...resolvedGrids],
-      };
-    });
+        nextGridStyleId:
+          linkedResourcePolicy === 'preserve-if-available'
+            ? (nativeResources?.gridStyleId ?? '')
+            : '',
+      });
+    }
   } catch (error) {
     console.error('Grid apply preflight failed:', error);
     const message = 'Grid apply rejected: current target geometry does not fit';
@@ -417,7 +746,9 @@ export async function handleApplyGrid(msg: ApplyGridMessage): Promise<void> {
   try {
     for (const plan of plans) {
       attemptedPlans.push(plan);
+      if (plan.node.gridStyleId) await plan.node.setGridStyleIdAsync('');
       plan.node.layoutGrids = plan.nextGrids;
+      if (plan.nextGridStyleId) await plan.node.setGridStyleIdAsync(plan.nextGridStyleId);
     }
 
     const gridInfo: string[] = [];
@@ -438,14 +769,20 @@ export async function handleApplyGrid(msg: ApplyGridMessage): Promise<void> {
           : applicationMode === 'canonical-only'
             ? ' [source-faithful]'
             : '';
+    const linkedResourceNote = nativeResources
+      ? linkedResourcePolicy === 'preserve-if-available'
+        ? ' [links preserved]'
+        : ' [numeric values]'
+      : '';
     const appliedCount = plans.length;
     const firstPlan = plans[0];
     const firstAppliedNode = firstPlan?.node;
     const message =
       selection.length === 1 && appliedCount === 1
-        ? `${replaceExisting ? (firstPlan.previousGrids.length > 0 ? 'Replaced' : 'Applied') : 'Added'} grid on "${firstAppliedNode.name}"${infoStr}${resolutionNote}`
-        : `Grid apply: ${appliedCount} applied, ${skippedCount} skipped, 0 failed${infoStr}${resolutionNote}`;
+        ? `${replaceExisting ? (firstPlan.previousGrids.length > 0 ? 'Replaced' : 'Applied') : 'Added'} grid on "${firstAppliedNode.name}"${infoStr}${resolutionNote}${linkedResourceNote}`
+        : `Grid apply: ${appliedCount} applied, ${skippedCount} skipped, 0 failed${infoStr}${resolutionNote}${linkedResourceNote}`;
 
+    figma.commitUndo();
     figma.notify(message);
 
     // Send success message back to UI
@@ -486,6 +823,183 @@ export async function handleApplyGrid(msg: ApplyGridMessage): Promise<void> {
         rollback.failedRestoreCount > 0
           ? `Failed to apply grid atomically; rollback restoration failed on ${rollback.failedRestoreCount} target${rollback.failedRestoreCount === 1 ? '' : 's'} and ${appliedCount} mutation${appliedCount === 1 ? '' : 's'} ${appliedCount === 1 ? 'remains' : 'remain'}`
           : 'Failed to apply grid atomically; prior targets were rolled back',
+    });
+  }
+}
+
+interface GeneratedOverlayBackup {
+  original: SceneNode;
+  backup: SceneNode;
+  parent: ChildrenMixin;
+  index: number;
+  visible: boolean;
+}
+
+function createGeneratedOverlayBackups(overlays: readonly SceneNode[]): GeneratedOverlayBackup[] {
+  const backups: GeneratedOverlayBackup[] = [];
+  try {
+    for (const original of overlays) {
+      const parent = original.parent;
+      if (!parent || !('children' in parent) || !('insertChild' in parent)) {
+        throw new Error(`Cannot safely clear generated overlay "${original.name}"`);
+      }
+      const index = parent.children.indexOf(original);
+      if (index < 0) throw new Error(`Generated overlay "${original.name}" is detached`);
+      const backup = original.clone();
+      backup.visible = false;
+      parent.insertChild(index, backup);
+      backups.push({ original, backup, parent, index, visible: original.visible });
+    }
+    return backups;
+  } catch (error) {
+    for (const item of [...backups].reverse()) {
+      if (!item.backup.removed) item.backup.remove();
+    }
+    throw error;
+  }
+}
+
+function restoreGeneratedOverlayBackups(backups: readonly GeneratedOverlayBackup[]): string[] {
+  const failures: string[] = [];
+  for (const item of backups) {
+    try {
+      if (item.original.removed) {
+        item.backup.visible = item.visible;
+        item.parent.insertChild(Math.min(item.index, item.parent.children.length), item.backup);
+      } else if (!item.backup.removed) {
+        item.backup.remove();
+      }
+    } catch (error) {
+      console.error('Failed to restore generated construction overlay:', error);
+      failures.push(`generated overlay "${item.original.name}" restoration failed`);
+    }
+  }
+  return failures;
+}
+
+/** Clear native guides, grid-style links, and Teul generated construction overlays. */
+export async function handleClearGrid(msg: ClearGridMessage): Promise<void> {
+  const selection = figma.currentPage.selection;
+  const postResult = (result: Omit<GridAppliedMessage, 'type' | 'requestId'>): void => {
+    figma.ui.postMessage({ type: 'grid-applied', requestId: msg.requestId, ...result });
+  };
+
+  if (selection.length === 0) {
+    postResult({
+      success: false,
+      appliedCount: 0,
+      skippedCount: 0,
+      failedCount: 0,
+      message: 'Grid clear: no selection',
+      error: 'No selection',
+    });
+    return;
+  }
+
+  const eligibleNodes = selection.filter(canHaveLayoutGrids);
+  const ineligibleCount = selection.length - eligibleNodes.length;
+  if (!haveMatchingTargetIds(eligibleNodes, msg.expectedTargetIds)) {
+    postResult({
+      success: false,
+      appliedCount: 0,
+      skippedCount: ineligibleCount,
+      failedCount: 0,
+      message: 'Grid clear rejected: selection changed before clear',
+      error: 'Selection changed after the grid target snapshot',
+    });
+    return;
+  }
+
+  const plans = eligibleNodes
+    .map(node => ({
+      node,
+      previousGrids: snapshotLayoutGrids(node.layoutGrids),
+      previousGridStyleId: node.gridStyleId,
+      overlays: canGenerateConstructionOnNode(node) ? getGeneratedConstructionOverlays(node) : [],
+    }))
+    .filter(
+      plan =>
+        plan.previousGrids.length > 0 ||
+        plan.previousGridStyleId.length > 0 ||
+        plan.overlays.length > 0
+    );
+  const skippedCount = selection.length - plans.length;
+  const lockedNodes = plans.filter(plan => isNodeOrAncestorLocked(plan.node));
+  if (lockedNodes.length > 0) {
+    postResult({
+      success: false,
+      appliedCount: 0,
+      skippedCount,
+      failedCount: lockedNodes.length,
+      message: 'Grid clear rejected: unlock selected targets first',
+      error: 'Locked grid targets cannot be edited',
+    });
+    return;
+  }
+  if (plans.length === 0) {
+    postResult({
+      success: false,
+      appliedCount: 0,
+      skippedCount: selection.length,
+      failedCount: 0,
+      message: 'Grid clear: no selected grids to clear',
+      error: 'No selected targets contain grids or Teul construction geometry',
+    });
+    return;
+  }
+
+  let backups: GeneratedOverlayBackup[] = [];
+  const attemptedPlans: GridApplyPlan[] = [];
+  try {
+    backups = createGeneratedOverlayBackups(plans.flatMap(plan => plan.overlays));
+    for (const plan of plans) {
+      attemptedPlans.push({
+        node: plan.node,
+        previousGrids: plan.previousGrids,
+        previousGridStyleId: plan.previousGridStyleId,
+        nextGrids: [],
+        nextGridStyleId: '',
+      });
+      if (plan.node.gridStyleId) await plan.node.setGridStyleIdAsync('');
+      plan.node.layoutGrids = [];
+    }
+    for (const plan of plans) {
+      for (const overlay of plan.overlays) overlay.remove();
+    }
+    for (const item of backups) item.backup.remove();
+
+    figma.commitUndo();
+    const message = `Cleared grids from ${plans.length} target${plans.length === 1 ? '' : 's'}`;
+    figma.notify(message);
+    postResult({
+      success: true,
+      appliedCount: plans.length,
+      skippedCount,
+      failedCount: 0,
+      message,
+      frameName: plans[0]?.node.name,
+      frameWidth: plans[0]?.node.width,
+      frameHeight: plans[0]?.node.height,
+    });
+  } catch (error) {
+    const rollback = await rollbackGridPlans(attemptedPlans);
+    const overlayFailures = restoreGeneratedOverlayBackups(backups);
+    const rollbackFailed = rollback.failedRestoreCount + overlayFailures.length;
+    const message =
+      rollbackFailed === 0
+        ? 'Grid clear rolled back'
+        : `Grid clear failed with ${rollbackFailed} rollback problem${rollbackFailed === 1 ? '' : 's'}`;
+    figma.notify(message);
+    postResult({
+      success: false,
+      appliedCount: rollback.remainingMutationCount,
+      skippedCount,
+      failedCount: plans.length - rollback.remainingMutationCount,
+      message,
+      error:
+        error instanceof Error
+          ? `${error.message}${overlayFailures.length > 0 ? `; ${overlayFailures.join('; ')}` : ''}`
+          : 'Failed to clear grids atomically',
     });
   }
 }

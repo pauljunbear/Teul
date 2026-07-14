@@ -42,6 +42,7 @@ export function sendDocumentColorProfile(): void {
 
 // Figma Helpers
 export { sendSelectionInfo } from './figmaHelpers';
+export { sendAccessibilitySelection } from './accessibilitySelection';
 
 // Color Operations
 export {
@@ -52,6 +53,11 @@ export {
 } from './colorOperations';
 
 // Grid Operations
-export { handleCreateGridFrame, handleApplyGrid } from './gridOperations';
+export {
+  handleCreateGridFrame,
+  handleApplyGrid,
+  handleClearGrid,
+  handleCaptureSelectedGrid,
+} from './gridOperations';
 
 export { handleGenerateColorSystem } from './colorSystemTransaction';

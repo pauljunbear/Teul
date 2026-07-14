@@ -2,6 +2,7 @@
 // Common utilities for Figma plugin backend operations
 
 import type { GridSelectionTarget } from '../types/grid';
+import { getGeneratedConstructionCount } from './gridConstructionGeometry';
 
 // ============================================
 // Type Definitions
@@ -87,6 +88,8 @@ export function getGridSelectionTargets(selection: readonly SceneNode[]): GridSe
       name: node.name,
       width: node.width,
       height: node.height,
+      layoutGridCount: node.layoutGrids.length,
+      teulConstructionCount: getGeneratedConstructionCount(node),
     }));
 }
 

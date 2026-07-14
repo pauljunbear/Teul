@@ -2,13 +2,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const backendMocks = vi.hoisted(() => ({
   sendSelectionInfo: vi.fn(),
+  sendAccessibilitySelection: vi.fn(),
   sendDocumentColorProfile: vi.fn(),
+  detectDocumentColorProfile: vi.fn(),
   handleApplyFill: vi.fn(),
   handleApplyStroke: vi.fn(),
   handleCreateStyle: vi.fn(),
   handleApplyGradient: vi.fn(),
   handleCreateGridFrame: vi.fn(),
   handleApplyGrid: vi.fn(),
+  handleCaptureSelectedGrid: vi.fn(),
   handleGenerateColorSystem: vi.fn(),
 }));
 
@@ -114,6 +117,38 @@ describe('backend saved-grid storage bridge', () => {
       operation: 'set',
       success: false,
       error: 'Invalid saved grid storage request',
+    });
+  });
+
+  it('routes versioned workspace preferences through a separate clientStorage key', async () => {
+    getAsync.mockResolvedValue('{"version":1,"activeTab":"grids"}');
+    await import('../../code');
+    const onmessage = figma.ui.onmessage as (message: unknown) => Promise<void>;
+
+    await onmessage({ type: 'get-workspace-storage', requestId: 'workspace-get' });
+    await onmessage({
+      type: 'set-workspace-storage',
+      requestId: 'workspace-set-1',
+      value: '{"version":1,"activeTab":"colors"}',
+    });
+
+    expect(getAsync).toHaveBeenCalledWith('teul-workspace-v1');
+    expect(setAsync).toHaveBeenCalledWith(
+      'teul-workspace-v1',
+      '{"version":1,"activeTab":"colors"}'
+    );
+    expect(postMessage).toHaveBeenCalledWith({
+      type: 'workspace-storage-result',
+      requestId: 'workspace-get',
+      operation: 'get',
+      success: true,
+      value: '{"version":1,"activeTab":"grids"}',
+    });
+    expect(postMessage).toHaveBeenCalledWith({
+      type: 'workspace-storage-result',
+      requestId: 'workspace-set-1',
+      operation: 'set',
+      success: true,
     });
   });
 });

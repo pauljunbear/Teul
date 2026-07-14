@@ -1,12 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import wadaColors from '../../colors.json';
 import wernerColors from '../../wernerColors.json';
-import {
-  buildColorScale,
-  generateColorScale,
-  isOklchInSrgbGamut,
-  mapOklchToSrgb,
-} from '../colorScale';
+import { generateColorScale, isOklchInSrgbGamut, mapOklchToSrgb } from '../colorScale';
 
 describe('mapOklchToSrgb', () => {
   it('reduces chroma rather than clipping out-of-gamut channels', () => {
@@ -82,14 +77,14 @@ describe('generateColorScale', () => {
       (['light', 'dark'] as const).map(mode => ({
         ...source,
         mode,
-        result: buildColorScale(source.hex, mode),
+        result: generateColorScale(source.hex, mode),
       }))
     );
-    const failures = results.filter(({ result }) => !result.ok);
+    const failures = results.filter(({ result }) => !result.validation.valid);
 
     expect(sources).toHaveLength(269);
     expect(results).toHaveLength(538);
-    expect(results.filter(({ result }) => result.ok)).toHaveLength(536);
+    expect(results.filter(({ result }) => result.validation.valid)).toHaveLength(536);
     expect(failures.map(({ collection, name, mode }) => ({ collection, name, mode }))).toEqual([
       { collection: 'Wada', name: 'White', mode: 'light' },
       { collection: 'Wada', name: 'White', mode: 'dark' },
@@ -97,20 +92,17 @@ describe('generateColorScale', () => {
   });
 
   it('returns explicit build failures for impossible exact anchors', () => {
-    const whiteLight = buildColorScale('#ffffff', 'light');
-    const blackDark = buildColorScale('#000000', 'dark');
+    const whiteLight = generateColorScale('#ffffff', 'light');
+    const blackDark = generateColorScale('#000000', 'dark');
 
-    expect(whiteLight.ok).toBe(false);
-    expect(blackDark.ok).toBe(false);
+    expect(whiteLight.validation.valid).toBe(false);
+    expect(blackDark.validation.valid).toBe(false);
   });
 
   it('returns an explicit validated result for a viable source color', () => {
-    const result = buildColorScale('#3366cc', 'light');
+    const result = generateColorScale('#3366cc', 'light');
 
-    expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.scale.validation.valid).toBe(true);
-    }
+    expect(result.validation.valid).toBe(true);
   });
 
   it('independently verifies final relative luminance ordering for valid scales', () => {

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AccessibilityTab } from '../AccessibilityTab';
 
 describe('AccessibilityTab', () => {
@@ -54,5 +54,45 @@ describe('AccessibilityTab', () => {
     );
     expect(options.find(option => option.startsWith('Protanopia'))).toContain('males');
     expect(options.join(' ')).not.toContain('~92% of population');
+  });
+
+  it('loads an exact supported text and background pair from the Figma selection', () => {
+    const postMessage = vi.spyOn(parent, 'postMessage');
+    act(() => root.render(<AccessibilityTab isDark={false} />));
+
+    const useSelection = Array.from(container.querySelectorAll('button')).find(
+      button => button.textContent === 'Use Selection'
+    );
+    act(() => useSelection?.click());
+
+    const request = postMessage.mock.calls.find(
+      call => call[0]?.pluginMessage?.type === 'get-selection-for-accessibility'
+    )?.[0].pluginMessage;
+    expect(request?.requestId).toEqual(expect.any(String));
+
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: {
+            pluginMessage: {
+              type: 'accessibility-selection-result',
+              requestId: request.requestId,
+              success: true,
+              profile: 'srgb',
+              foreground: '#123456',
+              background: '#FEDCBA',
+              foregroundSource: 'Label',
+              backgroundSource: 'Card',
+            },
+          },
+        })
+      );
+    });
+
+    const textInputs = Array.from(
+      container.querySelectorAll<HTMLInputElement>('input[type="text"]')
+    );
+    expect(textInputs.map(input => input.value)).toEqual(['#123456', '#FEDCBA']);
+    expect(container.textContent).toContain('Label on Card · srgb document');
   });
 });

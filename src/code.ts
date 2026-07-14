@@ -3,13 +3,17 @@
 
 import {
   sendSelectionInfo,
+  sendAccessibilitySelection,
   sendDocumentColorProfile,
+  detectDocumentColorProfile,
   handleApplyFill,
   handleApplyStroke,
   handleCreateStyle,
   handleApplyGradient,
   handleCreateGridFrame,
   handleApplyGrid,
+  handleClearGrid,
+  handleCaptureSelectedGrid,
   handleGenerateColorSystem,
 } from './backend';
 import { validateUIToPluginMessage } from './lib/messageValidation';
@@ -17,10 +21,36 @@ import type {
   ColorSystemOperationResultMessage,
   GridAppliedMessage,
   GridStorageResultMessage,
+  GridCaptureResultMessage,
+  MutationOperation,
+  MutationOperationResultMessage,
   UIToPluginMessage,
+  WorkspaceStorageResultMessage,
 } from './types/messages';
 
 const GRID_STORAGE_KEY = 'teul-saved-grids';
+const WORKSPACE_STORAGE_KEY = 'teul-workspace-v1';
+
+function commitUndoBoundary(): void {
+  figma.commitUndo();
+}
+
+function postMutationResult(
+  requestId: string,
+  operation: MutationOperation,
+  success: boolean,
+  message: string
+): void {
+  const result: MutationOperationResultMessage = {
+    type: 'mutation-operation-result',
+    requestId,
+    operation,
+    success,
+    message,
+    ...(success ? {} : { error: message }),
+  };
+  figma.ui.postMessage(result);
+}
 
 // ============================================
 // Plugin Initialization
@@ -103,7 +133,65 @@ figma.ui.onmessage = async (msg: unknown) => {
       typeof msg === 'object' &&
       msg !== null &&
       'type' in msg &&
-      msg.type === 'apply-grid' &&
+      (msg.type === 'get-workspace-storage' || msg.type === 'set-workspace-storage') &&
+      'requestId' in msg &&
+      typeof msg.requestId === 'string' &&
+      msg.requestId.trim().length > 0 &&
+      msg.requestId.length <= 128
+    ) {
+      const result: WorkspaceStorageResultMessage = {
+        type: 'workspace-storage-result',
+        requestId: msg.requestId,
+        operation: msg.type === 'get-workspace-storage' ? 'get' : 'set',
+        success: false,
+        error: 'Invalid workspace storage request',
+      };
+      figma.ui.postMessage(result);
+    }
+    if (
+      typeof msg === 'object' &&
+      msg !== null &&
+      'type' in msg &&
+      msg.type === 'capture-selected-grid' &&
+      'requestId' in msg &&
+      typeof msg.requestId === 'string' &&
+      msg.requestId.trim().length > 0 &&
+      msg.requestId.length <= 128
+    ) {
+      const result: GridCaptureResultMessage = {
+        type: 'grid-capture-result',
+        requestId: msg.requestId,
+        success: false,
+        error: 'Invalid grid capture request',
+      };
+      figma.ui.postMessage(result);
+    }
+    if (
+      typeof msg === 'object' &&
+      msg !== null &&
+      'type' in msg &&
+      (msg.type === 'apply-fill' ||
+        msg.type === 'apply-stroke' ||
+        msg.type === 'create-style' ||
+        msg.type === 'apply-gradient' ||
+        msg.type === 'create-grid-frame') &&
+      'requestId' in msg &&
+      typeof msg.requestId === 'string' &&
+      msg.requestId.trim().length > 0 &&
+      msg.requestId.length <= 128
+    ) {
+      postMutationResult(
+        msg.requestId,
+        msg.type,
+        false,
+        `Invalid ${msg.type.replace(/-/g, ' ')} request`
+      );
+    }
+    if (
+      typeof msg === 'object' &&
+      msg !== null &&
+      'type' in msg &&
+      (msg.type === 'apply-grid' || msg.type === 'clear-grid') &&
       'requestId' in msg &&
       typeof msg.requestId === 'string' &&
       msg.requestId.trim().length > 0 &&
@@ -116,8 +204,8 @@ figma.ui.onmessage = async (msg: unknown) => {
         appliedCount: 0,
         skippedCount: 0,
         failedCount: 0,
-        message: 'Grid apply rejected: invalid request',
-        error: 'Invalid grid apply request',
+        message: `Grid ${msg.type === 'clear-grid' ? 'clear' : 'apply'} rejected: invalid request`,
+        error: `Invalid grid ${msg.type === 'clear-grid' ? 'clear' : 'apply'} request`,
       };
       figma.ui.postMessage(result);
     }
@@ -155,17 +243,38 @@ figma.ui.onmessage = async (msg: unknown) => {
 
   // Color Operations
   if (message.type === 'apply-fill') {
-    await handleApplyFill(message);
+    const success = await handleApplyFill(message);
+    if (success) commitUndoBoundary();
+    postMutationResult(
+      message.requestId,
+      message.type,
+      success,
+      success ? 'Fill applied' : 'Fill not applied'
+    );
     return;
   }
 
   if (message.type === 'apply-stroke') {
-    await handleApplyStroke(message);
+    const success = await handleApplyStroke(message);
+    if (success) commitUndoBoundary();
+    postMutationResult(
+      message.requestId,
+      message.type,
+      success,
+      success ? 'Stroke applied' : 'Stroke not applied'
+    );
     return;
   }
 
   if (message.type === 'create-style') {
-    await handleCreateStyle(message);
+    const success = await handleCreateStyle(message);
+    if (success) commitUndoBoundary();
+    postMutationResult(
+      message.requestId,
+      message.type,
+      success,
+      success ? 'Style created' : 'Style not created'
+    );
     return;
   }
 
@@ -174,8 +283,18 @@ figma.ui.onmessage = async (msg: unknown) => {
     return;
   }
 
+  if (message.type === 'capture-selected-grid') {
+    handleCaptureSelectedGrid(message.requestId);
+    return;
+  }
+
   if (message.type === 'get-document-color-profile') {
     sendDocumentColorProfile();
+    return;
+  }
+
+  if (message.type === 'get-selection-for-accessibility') {
+    sendAccessibilitySelection(message.requestId, detectDocumentColorProfile(figma.root));
     return;
   }
 
@@ -238,8 +357,51 @@ figma.ui.onmessage = async (msg: unknown) => {
     return;
   }
 
+  if (message.type === 'get-workspace-storage') {
+    const result: WorkspaceStorageResultMessage = {
+      type: 'workspace-storage-result',
+      requestId: message.requestId,
+      operation: 'get',
+      success: true,
+      value: null,
+    };
+    try {
+      const value = await figma.clientStorage.getAsync(WORKSPACE_STORAGE_KEY);
+      result.value = typeof value === 'string' ? value : null;
+    } catch (error) {
+      result.success = false;
+      result.error = error instanceof Error ? error.message : 'Failed to load workspace';
+    }
+    figma.ui.postMessage(result);
+    return;
+  }
+
+  if (message.type === 'set-workspace-storage') {
+    const result: WorkspaceStorageResultMessage = {
+      type: 'workspace-storage-result',
+      requestId: message.requestId,
+      operation: 'set',
+      success: true,
+    };
+    try {
+      await figma.clientStorage.setAsync(WORKSPACE_STORAGE_KEY, message.value);
+    } catch (error) {
+      result.success = false;
+      result.error = error instanceof Error ? error.message : 'Failed to save workspace';
+    }
+    figma.ui.postMessage(result);
+    return;
+  }
+
   if (message.type === 'apply-gradient') {
-    await handleApplyGradient(message);
+    const success = await handleApplyGradient(message);
+    if (success) commitUndoBoundary();
+    postMutationResult(
+      message.requestId,
+      message.type,
+      success,
+      success ? 'Gradient applied' : 'Gradient not applied'
+    );
     return;
   }
 
@@ -257,12 +419,24 @@ figma.ui.onmessage = async (msg: unknown) => {
 
   // Grid Operations
   if (message.type === 'create-grid-frame') {
-    await handleCreateGridFrame(message);
+    const success = await handleCreateGridFrame(message);
+    if (success) commitUndoBoundary();
+    postMutationResult(
+      message.requestId,
+      message.type,
+      success,
+      success ? 'Grid frame created' : 'Grid frame not created'
+    );
     return;
   }
 
   if (message.type === 'apply-grid') {
     await handleApplyGrid(message);
+    return;
+  }
+
+  if (message.type === 'clear-grid') {
+    await handleClearGrid(message);
     return;
   }
 };
