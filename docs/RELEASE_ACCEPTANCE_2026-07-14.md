@@ -26,7 +26,7 @@ Results:
 
 - 53 test files and 676 tests pass.
 - Coverage is 80.12% statements, 73.38% branches, 73.52% functions, and
-  81.49% lines.
+  81.46% lines.
 - `dist/ui.html` is 360,101 bytes against the 409,600-byte product budget and
   the 450,560-byte artifact ceiling; `dist/code.js` is 121,108 bytes.
 - The production UI smoke finds 13 actionable buttons and two backend messages.
