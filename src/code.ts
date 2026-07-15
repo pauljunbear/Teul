@@ -58,7 +58,7 @@ function postMutationResult(
 
 figma.showUI(__html__, {
   width: 560,
-  height: 600,
+  height: 720,
   themeColors: true,
 });
 

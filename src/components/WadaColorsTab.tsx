@@ -1,5 +1,16 @@
 import * as React from 'react';
 import { useState, useMemo, useCallback } from 'react';
+import {
+  ArrowsClockwise,
+  Copy,
+  DownloadSimple,
+  MagicWand,
+  PaintBucket,
+  PencilSimple,
+  Question,
+  Swatches,
+  X,
+} from './Icons';
 import { colorData } from '../colorData';
 import { getContrastRatio } from '../lib/utils';
 import { copyToClipboard } from '../lib/clipboard';
@@ -184,6 +195,7 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
     [workspaceContext]
   );
   const [selectedColor, setSelectedColor] = useState<Color | null>(null);
+  const [showCombinations, setShowCombinations] = useState(false);
   const selectedSwatch = workspaceContext?.state.wada.selectedSwatch ?? localSelectedSwatch;
   const setSelectedSwatch = useCallback(
     (selectedSwatch: number) => {
@@ -345,11 +357,11 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
               boxSizing: 'border-box',
             }}
           />
-          {selectedColor && (
+          {showCombinations && selectedColor && (
             <button
-              onClick={() => setSelectedColor(null)}
-              title="Back"
-              aria-label="Go back to color list"
+              onClick={() => setShowCombinations(false)}
+              title="Return to library"
+              aria-label="Return to color library"
               style={{
                 width: '32px',
                 height: '32px',
@@ -365,7 +377,7 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
                 flexShrink: 0,
               }}
             >
-              ←
+              <X size={14} />
             </button>
           )}
           <button
@@ -373,6 +385,7 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
               if (colors.length === 0) return;
               const random = colors[Math.floor(Math.random() * colors.length)];
               setSelectedColor(random);
+              setShowCombinations(false);
             }}
             title="Random Wada Color"
             aria-label="Show random Wada color"
@@ -391,7 +404,7 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
               flexShrink: 0,
             }}
           >
-            ⟳
+            <ArrowsClockwise size={14} />
           </button>
           <button
             onClick={() => setShowAbout(true)}
@@ -413,11 +426,11 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
             title="About Sanzo Wada Colors"
             aria-label="Learn about Sanzo Wada and his color dictionary"
           >
-            ?
+            <Question size={14} />
           </button>
         </div>
 
-        {!selectedColor && (
+        {!showCombinations && (
           <div style={{ display: 'flex', gap: '3px', marginTop: '6px' }}>
             {SWATCH_GROUPS.map(g => (
               <button
@@ -445,37 +458,213 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
       </div>
 
       {/* Content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
-        {!selectedColor ? (
-          // Color Grid
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
-            {filteredColors.map(color => {
-              const combos = calculateCombinations(color, comboIndex);
-              return (
-                <HistoricalColorSwatchCard
-                  key={color.hex}
-                  color={color}
-                  onOpen={() => setSelectedColor(color)}
-                  trailingCount={combos.length}
-                />
-              );
-            })}
-            {filteredColors.length === 0 && (
+      <div style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+        {!showCombinations || !selectedColor ? (
+          <div
+            style={{
+              height: '100%',
+              display: 'grid',
+              gridTemplateColumns: selectedColor ? 'minmax(0, 1fr) 170px' : 'minmax(0, 1fr)',
+            }}
+          >
+            <div style={{ minWidth: 0, overflowY: 'auto', padding: '12px' }}>
               <div
                 style={{
-                  gridColumn: '1 / -1',
-                  textAlign: 'center',
-                  padding: '40px',
-                  color: theme.textMuted,
+                  display: 'grid',
+                  gridTemplateColumns: selectedColor ? 'repeat(3, 1fr)' : 'repeat(4, 1fr)',
+                  gap: '8px',
                 }}
               >
-                No colors found
+                {filteredColors.map(color => {
+                  const combos = calculateCombinations(color, comboIndex);
+                  return (
+                    <HistoricalColorSwatchCard
+                      key={color.hex}
+                      color={color}
+                      onOpen={() => {
+                        setSelectedColor(color);
+                        setShowCombinations(false);
+                      }}
+                      trailingCount={combos.length}
+                    />
+                  );
+                })}
+                {filteredColors.length === 0 && (
+                  <div
+                    style={{
+                      gridColumn: '1 / -1',
+                      textAlign: 'center',
+                      padding: '40px',
+                      color: theme.textMuted,
+                    }}
+                  >
+                    No colors found
+                  </div>
+                )}
               </div>
+            </div>
+
+            {selectedColor && (
+              <aside
+                aria-label={`${selectedColor.name} inspector`}
+                style={{
+                  minWidth: 0,
+                  padding: '10px',
+                  borderLeft: `1px solid ${theme.border}`,
+                  overflowY: 'auto',
+                  backgroundColor: theme.inputBg,
+                }}
+              >
+                <div
+                  style={{
+                    height: '86px',
+                    padding: '10px',
+                    borderRadius: '9px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'flex-end',
+                    backgroundColor: selectedColor.hex,
+                    color: getAccessibleTextColor(selectedColor.hex).hex,
+                  }}
+                >
+                  <strong style={{ fontSize: '12px', lineHeight: 1.2 }}>
+                    {selectedColor.name}
+                  </strong>
+                  <span style={{ marginTop: '3px', fontFamily: 'monospace', fontSize: '9px' }}>
+                    {selectedColor.hex.toUpperCase()}
+                  </span>
+                </div>
+
+                <dl style={{ margin: '10px 0', display: 'grid', gap: '5px' }}>
+                  {[
+                    { label: 'RGB', value: selectedColor.rgb.join(', ') },
+                    { label: 'CMYK', value: selectedColor.cmyk.join(', ') },
+                    {
+                      label: 'LAB',
+                      value: selectedColor.lab.map(channel => channel.toFixed(1)).join(', '),
+                    },
+                  ].map(item => (
+                    <div
+                      key={item.label}
+                      style={{ display: 'flex', justifyContent: 'space-between', gap: '6px' }}
+                    >
+                      <dt style={{ color: theme.textMuted, fontSize: '8px' }}>{item.label}</dt>
+                      <dd
+                        style={{
+                          margin: 0,
+                          overflow: 'hidden',
+                          color: theme.text,
+                          fontFamily: 'monospace',
+                          fontSize: '8px',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {item.value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+
+                <div style={{ display: 'grid', gap: '5px' }}>
+                  <button onClick={() => handleApplyFill(selectedColor)} style={buttonStyle(true)}>
+                    <PaintBucket size={13} /> Use as fill
+                  </button>
+                  <button onClick={() => handleApplyStroke(selectedColor)} style={buttonStyle()}>
+                    <PencilSimple size={13} /> Use as stroke
+                  </button>
+                  <button onClick={() => handleCreateStyle(selectedColor)} style={buttonStyle()}>
+                    <Swatches size={13} /> Create style
+                  </button>
+                  <button
+                    onClick={() => copyToClipboard(selectedColor.hex, selectedColor.hex)}
+                    style={buttonStyle()}
+                  >
+                    <Copy size={13} /> Copy value
+                  </button>
+                </div>
+
+                <section
+                  style={{
+                    marginTop: '12px',
+                    paddingTop: '10px',
+                    borderTop: `1px solid ${theme.border}`,
+                  }}
+                >
+                  <span style={{ display: 'block', color: theme.textMuted, fontSize: '8px' }}>
+                    Documented pairings
+                  </span>
+                  <strong style={{ display: 'block', margin: '3px 0 7px', fontSize: '10px' }}>
+                    {combinations.length} combinations
+                  </strong>
+                  {combinations.slice(0, 3).map((combo, index) => (
+                    <button
+                      key={combo.id}
+                      type="button"
+                      onClick={() => setShowCombinations(true)}
+                      style={{
+                        width: '100%',
+                        minHeight: '31px',
+                        padding: '4px 0',
+                        border: 0,
+                        borderTop: `1px solid ${theme.border}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        background: 'transparent',
+                        color: theme.textMuted,
+                        cursor: 'pointer',
+                        fontSize: '8px',
+                      }}
+                    >
+                      <span>Set {index + 1}</span>
+                      <span
+                        style={{
+                          width: '62px',
+                          height: '16px',
+                          display: 'flex',
+                          overflow: 'hidden',
+                          borderRadius: '4px',
+                        }}
+                      >
+                        {[selectedColor, ...combo.colors].map(color => (
+                          <i key={color.hex} style={{ flex: 1, backgroundColor: color.hex }} />
+                        ))}
+                      </span>
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setShowCombinations(true)}
+                    style={{
+                      ...buttonStyle(),
+                      width: '100%',
+                      marginTop: '7px',
+                      padding: '8px 5px',
+                      fontSize: '9px',
+                    }}
+                  >
+                    View all {combinations.length} pairings
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowCombinations(true)}
+                    style={{
+                      ...buttonStyle(true),
+                      width: '100%',
+                      marginTop: '5px',
+                      padding: '8px 5px',
+                      fontSize: '9px',
+                    }}
+                  >
+                    <MagicWand size={13} /> Choose pairing for system
+                  </button>
+                </section>
+              </aside>
             )}
           </div>
         ) : (
-          // Detail View
-          <div>
+          <div style={{ height: '100%', overflowY: 'auto', padding: '16px' }}>
             {/* Hero */}
             <div
               style={{
@@ -569,7 +758,7 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
                   gap: '8px',
                 }}
               >
-                🎨 Apply Fill
+                <PaintBucket size={14} /> Apply fill
               </button>
               <button
                 onClick={() => handleApplyStroke(selectedColor)}
@@ -579,7 +768,7 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
                   border: `1px solid ${theme.border}`,
                 }}
               >
-                ✏️ Apply Stroke
+                <PencilSimple size={14} /> Apply stroke
               </button>
               <button
                 onClick={() => handleCreateStyle(selectedColor)}
@@ -589,7 +778,7 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
                   border: `1px solid ${theme.border}`,
                 }}
               >
-                ✨ Create Style
+                <Swatches size={14} /> Create style
               </button>
               <button
                 onClick={() => copyToClipboard(selectedColor.hex, selectedColor.hex)}
@@ -599,7 +788,7 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
                   border: `1px solid ${theme.border}`,
                 }}
               >
-                📋 Copy Hex
+                <Copy size={14} /> Copy hex
               </button>
             </div>
 
@@ -658,7 +847,7 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
                           color: '#ffffff',
                         }}
                       >
-                        🎨 System
+                        <MagicWand size={13} /> System
                       </button>
                       <button
                         onClick={() => {
@@ -672,7 +861,7 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
                           border: `1px solid ${theme.border}`,
                         }}
                       >
-                        📥 Export
+                        <DownloadSimple size={13} /> Export
                       </button>
                     </div>
                   </div>

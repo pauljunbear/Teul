@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { Copy, MagicWand, PaintBucket, PencilSimple, Question, Swatches, X } from './Icons';
 import { wernerColors, WERNER_GROUPS, WernerColor, getWernerTextRecord } from '../wernerColorData';
 import { ColorSystemModal } from './ColorSystemModal';
 import { AboutPanel, WERNER_ABOUT_CONTENT } from './AboutPanel';
@@ -25,57 +26,55 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({
   const workspaceContext = useOptionalWorkspaceState();
   const [localSearchTerm, setLocalSearchTerm] = useState('');
   const [localSelectedGroup, setLocalSelectedGroup] = useState(-1);
-  const searchTerm = workspaceContext?.state.werner.searchTerm ?? localSearchTerm;
-  const setSearchTerm = React.useCallback(
-    (searchTerm: string) => {
-      if (!workspaceContext) setLocalSearchTerm(searchTerm);
-      else {
-        workspaceContext.update(current => ({
-          ...current,
-          werner: { ...current.werner, searchTerm },
-        }));
-      }
-    },
-    [workspaceContext]
-  );
   const [selectedColor, setSelectedColor] = useState<WernerColor | null>(null);
-  const selectedGroup = workspaceContext?.state.werner.selectedGroup ?? localSelectedGroup;
-  const setSelectedGroup = React.useCallback(
-    (selectedGroup: number) => {
-      if (!workspaceContext) setLocalSelectedGroup(selectedGroup);
-      else {
-        workspaceContext.update(current => ({
-          ...current,
-          werner: { ...current.werner, selectedGroup },
-        }));
-      }
-    },
-    [workspaceContext]
-  );
-  const addRecentColor = workspaceContext?.addRecentColor ?? (() => undefined);
-
-  // Color System Modal state
   const [showColorSystem, setShowColorSystem] = useState(false);
   const [colorSystemColors, setColorSystemColors] = useState<{ hex: string; name: string }[]>([]);
   const [colorSystemName, setColorSystemName] = useState('');
-
-  // About panel state
   const [showAbout, setShowAbout] = useState(false);
 
+  const searchTerm = workspaceContext?.state.werner.searchTerm ?? localSearchTerm;
+  const selectedGroup = workspaceContext?.state.werner.selectedGroup ?? localSelectedGroup;
+  const addRecentColor = workspaceContext?.addRecentColor ?? (() => undefined);
   const theme = isDark ? styles.dark : styles.light;
+
+  const setSearchTerm = React.useCallback(
+    (value: string) => {
+      if (!workspaceContext) setLocalSearchTerm(value);
+      else {
+        workspaceContext.update(current => ({
+          ...current,
+          werner: { ...current.werner, searchTerm: value },
+        }));
+      }
+    },
+    [workspaceContext]
+  );
+
+  const setSelectedGroup = React.useCallback(
+    (value: number) => {
+      if (!workspaceContext) setLocalSelectedGroup(value);
+      else {
+        workspaceContext.update(current => ({
+          ...current,
+          werner: { ...current.werner, selectedGroup: value },
+        }));
+      }
+    },
+    [workspaceContext]
+  );
 
   const filteredColors = useMemo(() => {
     let filtered = wernerColors;
-    if (selectedGroup >= 0) filtered = filtered.filter(c => c.groupId === selectedGroup);
+    if (selectedGroup >= 0) filtered = filtered.filter(color => color.groupId === selectedGroup);
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(
-        c =>
-          c.name.toLowerCase().includes(term) ||
-          c.hex.toLowerCase().includes(term) ||
-          c.group.toLowerCase().includes(term) ||
-          Object.values(c.text.normalized).some(value => value.toLowerCase().includes(term)) ||
-          Object.values(c.text.source).some(value => value.toLowerCase().includes(term))
+        color =>
+          color.name.toLowerCase().includes(term) ||
+          color.hex.toLowerCase().includes(term) ||
+          color.group.toLowerCase().includes(term) ||
+          Object.values(color.text.normalized).some(value => value.toLowerCase().includes(term)) ||
+          Object.values(color.text.source).some(value => value.toLowerCase().includes(term))
       );
     }
     return filtered;
@@ -87,173 +86,147 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({
   );
 
   const buttonStyle = (active = false): React.CSSProperties => ({
-    padding: '8px 16px',
-    borderRadius: '8px',
-    border: 'none',
-    cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: 600,
+    minHeight: '32px',
+    padding: '7px 8px',
+    border: `1px solid ${active ? theme.text : theme.border}`,
+    borderRadius: '7px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '5px',
     backgroundColor: active ? theme.btnActive : theme.btnBg,
     color: active ? theme.btnActiveText : theme.text,
-    transition: 'all 0.15s ease',
+    cursor: 'pointer',
+    fontSize: '9px',
+    fontWeight: 600,
   });
+
+  const postColorAction = (
+    type: 'apply-fill' | 'apply-stroke' | 'create-style',
+    color: WernerColor
+  ) => {
+    addRecentColor(color);
+    const prefix = type === 'apply-fill' ? 'fill' : type === 'apply-stroke' ? 'stroke' : 'style';
+    parent.postMessage(
+      {
+        pluginMessage: {
+          type,
+          requestId: createRequestId(prefix),
+          name: type === 'create-style' ? `Werner/${color.group}/${color.name}` : color.name,
+          hex: color.hex,
+        },
+      },
+      '*'
+    );
+  };
+
+  const beginColorSystem = (color: WernerColor) => {
+    setColorSystemColors([{ hex: color.hex, name: color.name }]);
+    setColorSystemName(`Werner/${color.name}`);
+    setShowColorSystem(true);
+  };
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {/* Search and filters */}
-      <div style={{ padding: '12px', borderBottom: `1px solid ${theme.border}` }}>
+      <div style={{ padding: '10px 12px', borderBottom: `1px solid ${theme.border}` }}>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           <input
             type="text"
             aria-label="Search Werner colors"
-            placeholder="Search Werner's colors..."
+            placeholder="Search Werner’s colors..."
             value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
+            onChange={event => setSearchTerm(event.target.value)}
             style={{
               flex: 1,
-              padding: '8px 12px',
-              borderRadius: '6px',
+              minWidth: 0,
+              padding: '8px 10px',
               border: `1px solid ${theme.border}`,
+              borderRadius: '6px',
               backgroundColor: theme.inputBg,
               color: theme.text,
-              fontSize: '12px',
+              fontSize: '11px',
               outline: 'none',
-              boxSizing: 'border-box',
             }}
           />
           <button
+            type="button"
             onClick={() => setShowAbout(true)}
-            style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '6px',
-              border: `1px solid ${theme.border}`,
-              backgroundColor: 'transparent',
-              color: theme.textMuted,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '13px',
-              fontWeight: 600,
-              flexShrink: 0,
-            }}
-            title="About Werner's Colors"
-            aria-label="Learn about Werner's Nomenclature of Colours"
+            title="About Werner’s Nomenclature"
+            aria-label="Learn about Werner’s Nomenclature of Colours"
+            style={{ ...buttonStyle(), width: '32px', minHeight: '32px', padding: 0 }}
           >
-            ?
+            <Question size={14} />
           </button>
         </div>
 
-        {!selectedColor && (
-          <div
-            style={{
-              display: 'flex',
-              gap: '3px',
-              marginTop: '8px',
-              flexWrap: 'wrap',
-              justifyContent: 'center',
-            }}
-          >
-            {WERNER_GROUPS.slice(0, 6).map(g => (
-              <button
-                key={g.id}
-                onClick={() => setSelectedGroup(g.id)}
-                style={{
-                  flex: '1 1 auto',
-                  minWidth: '48px',
-                  padding: '5px 4px',
-                  borderRadius: '5px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '9px',
-                  fontWeight: 600,
-                  backgroundColor: selectedGroup === g.id ? theme.btnActive : theme.btnBg,
-                  color: selectedGroup === g.id ? theme.btnActiveText : theme.text,
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                {g.name}
-              </button>
-            ))}
-          </div>
-        )}
-        {!selectedColor && (
-          <div
-            style={{
-              display: 'flex',
-              gap: '3px',
-              marginTop: '3px',
-              flexWrap: 'wrap',
-              justifyContent: 'center',
-            }}
-          >
-            {WERNER_GROUPS.slice(6).map(g => (
-              <button
-                key={g.id}
-                onClick={() => setSelectedGroup(g.id)}
-                style={{
-                  flex: '1 1 auto',
-                  minWidth: '48px',
-                  padding: '5px 4px',
-                  borderRadius: '5px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '9px',
-                  fontWeight: 600,
-                  backgroundColor: selectedGroup === g.id ? theme.btnActive : theme.btnBg,
-                  color: selectedGroup === g.id ? theme.btnActiveText : theme.text,
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                {g.name}
-              </button>
-            ))}
-          </div>
-        )}
+        <div
+          style={{
+            marginTop: '6px',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(6, 1fr)',
+            gap: '3px',
+          }}
+        >
+          {WERNER_GROUPS.map(group => (
+            <button
+              key={group.id}
+              type="button"
+              onClick={() => setSelectedGroup(group.id)}
+              style={{
+                minWidth: 0,
+                minHeight: '25px',
+                padding: '3px 2px',
+                border: 0,
+                borderRadius: '5px',
+                overflow: 'hidden',
+                backgroundColor: selectedGroup === group.id ? theme.btnActive : theme.btnBg,
+                color: selectedGroup === group.id ? theme.btnActiveText : theme.text,
+                cursor: 'pointer',
+                fontSize: '8px',
+                fontWeight: 600,
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+              title={group.name}
+            >
+              {group.name}
+            </button>
+          ))}
+        </div>
         <SourceProvenanceDisclosure provenance={WERNER_SOURCE_PROVENANCE} isDark={isDark} />
       </div>
 
-      {/* Back button when viewing detail */}
-      {selectedColor && (
-        <div style={{ padding: '8px 12px', borderBottom: `1px solid ${theme.border}` }}>
-          <button
-            onClick={() => setSelectedColor(null)}
+      <div
+        style={{
+          flex: 1,
+          minHeight: 0,
+          display: 'grid',
+          gridTemplateColumns: selectedColor ? 'minmax(0, 1fr) 170px' : 'minmax(0, 1fr)',
+          overflow: 'hidden',
+        }}
+      >
+        <div style={{ minWidth: 0, padding: '12px', overflowY: 'auto' }}>
+          <div
             style={{
-              ...buttonStyle(),
-              padding: '6px 12px',
-              fontSize: '11px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
+              display: 'grid',
+              gridTemplateColumns: selectedColor ? 'repeat(3, 1fr)' : 'repeat(4, 1fr)',
+              gap: '8px',
             }}
           >
-            ← Back to colors
-          </button>
-        </div>
-      )}
-
-      {/* Content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
-        {!selectedColor ? (
-          // Color Grid
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
-            {filteredColors.map(color => {
-              return (
-                <HistoricalColorSwatchCard
-                  key={color.id}
-                  color={color}
-                  onOpen={() => setSelectedColor(color)}
-                  markerLabel={color.characteristic ? 'Characteristic color' : undefined}
-                />
-              );
-            })}
+            {filteredColors.map(color => (
+              <HistoricalColorSwatchCard
+                key={color.id}
+                color={color}
+                onOpen={() => setSelectedColor(color)}
+                markerLabel={color.characteristic ? 'Characteristic color' : undefined}
+              />
+            ))}
             {filteredColors.length === 0 && (
               <div
                 style={{
                   gridColumn: '1 / -1',
-                  textAlign: 'center',
                   padding: '40px',
+                  textAlign: 'center',
                   color: theme.textMuted,
                 }}
               >
@@ -261,347 +234,163 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({
               </div>
             )}
           </div>
-        ) : (
-          // Detail View
-          <div>
-            {/* Hero */}
+        </div>
+
+        {selectedColor && selectedText && (
+          <aside
+            aria-label={`${selectedColor.name} inspector`}
+            style={{
+              minWidth: 0,
+              padding: '10px',
+              borderLeft: `1px solid ${theme.border}`,
+              overflowY: 'auto',
+              backgroundColor: theme.inputBg,
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '5px' }}>
+              <button
+                type="button"
+                aria-label="Close color inspector"
+                onClick={() => setSelectedColor(null)}
+                style={{ ...buttonStyle(), width: '26px', minHeight: '26px', padding: 0 }}
+              >
+                <X size={12} />
+              </button>
+            </div>
             <div
               style={{
+                minHeight: '92px',
+                padding: '10px',
+                borderRadius: '9px',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-end',
                 backgroundColor: selectedColor.hex,
-                borderRadius: '16px',
-                padding: '24px',
-                marginBottom: '16px',
+                color: getAccessibleTextColor(selectedColor.hex).hex,
               }}
             >
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <div>
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      color: getAccessibleTextColor(selectedColor.hex).hex,
-                      fontWeight: 600,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                    }}
-                  >
-                    {selectedColor.group}
-                  </span>
-                  <h2
-                    style={{
-                      fontSize: '22px',
-                      fontWeight: 800,
-                      color: getAccessibleTextColor(selectedColor.hex).hex,
-                      margin: '4px 0 8px 0',
-                    }}
-                  >
-                    {selectedColor.name}
-                  </h2>
-                  <p
-                    style={{
-                      fontSize: '13px',
-                      color: getAccessibleTextColor(selectedColor.hex).hex,
-                      margin: 0,
-                      fontFamily: 'monospace',
-                    }}
-                  >
-                    {selectedColor.hex.toUpperCase()}
-                  </p>
-                </div>
-                {selectedColor.characteristic && (
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      color: getAccessibleTextColor(selectedColor.hex).hex,
-                      padding: '4px 8px',
-                      borderRadius: '6px',
-                      fontWeight: 700,
-                    }}
-                  >
-                    ★ Characteristic
-                  </span>
-                )}
-              </div>
+              <span style={{ fontSize: '7px', fontWeight: 700, textTransform: 'uppercase' }}>
+                {selectedColor.group}
+              </span>
+              <strong style={{ marginTop: '3px', fontSize: '12px', lineHeight: 1.15 }}>
+                {selectedColor.name}
+              </strong>
+              <span style={{ marginTop: '3px', fontFamily: 'monospace', fontSize: '8px' }}>
+                {selectedColor.hex.toUpperCase()}
+              </span>
             </div>
 
-            {/* Description */}
-            <div
+            <p
               style={{
-                backgroundColor: theme.cardBg,
-                border: `1px solid ${theme.border}`,
-                borderRadius: '12px',
-                padding: '14px',
-                marginBottom: '12px',
+                margin: '10px 0',
+                color: theme.textMuted,
+                fontSize: '8px',
+                lineHeight: 1.45,
               }}
             >
-              <div
-                style={{
-                  fontSize: '10px',
-                  color: theme.textMuted,
-                  marginBottom: '6px',
-                  fontWeight: 600,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px',
-                }}
-              >
-                Description
-              </div>
-              <p
-                style={{
-                  fontSize: '12px',
-                  color: theme.text,
-                  margin: 0,
-                  lineHeight: 1.5,
-                  fontStyle: 'italic',
-                }}
-              >
-                &ldquo;{selectedText?.normalized.description}&rdquo;
-              </p>
-              <div style={{ marginTop: '8px', color: theme.textMuted, fontSize: '9px' }}>
-                Reviewed source transcription is preserved separately from normalized display text.
-                Every difference is recorded below.
-              </div>
-            </div>
+              {selectedText.normalized.description}
+            </p>
 
-            {selectedText && selectedText.normalizations.length > 0 && (
-              <details
-                style={{
-                  backgroundColor: theme.cardBg,
-                  border: `1px solid ${theme.border}`,
-                  borderRadius: '12px',
-                  padding: '12px 14px',
-                  marginBottom: '12px',
-                  color: theme.text,
-                }}
-              >
-                <summary style={{ cursor: 'pointer', fontSize: '10px', fontWeight: 700 }}>
-                  Source/display differences ({selectedText.normalizations.length})
-                </summary>
-                <div style={{ marginTop: '10px', display: 'grid', gap: '10px' }}>
-                  {selectedText.normalizations.map(normalization => (
-                    <div
-                      key={normalization.field}
+            <dl style={{ margin: '0 0 10px', display: 'grid', gap: '7px' }}>
+              {[
+                ['Animal', selectedText.normalized.animal],
+                ['Vegetable', selectedText.normalized.vegetable],
+                ['Mineral', selectedText.normalized.mineral],
+              ]
+                .filter(([, value]) => value)
+                .map(([label, value]) => (
+                  <div key={label}>
+                    <dt
                       style={{
-                        borderTop: `1px solid ${theme.border}`,
-                        paddingTop: '8px',
-                        fontSize: '9px',
-                        lineHeight: 1.5,
+                        color: theme.textMuted,
+                        fontSize: '7px',
+                        textTransform: 'uppercase',
                       }}
                     >
-                      <strong style={{ textTransform: 'capitalize' }}>{normalization.field}</strong>
-                      <div style={{ color: theme.textMuted }}>
-                        Source: &ldquo;{normalization.source}&rdquo;
-                      </div>
-                      <div>Display: &ldquo;{normalization.normalized}&rdquo;</div>
-                      <div style={{ marginTop: '4px', color: theme.textMuted }}>
-                        {normalization.reasons.join(' ')}
-                        {normalization.evidence.length > 0 &&
-                          ` Evidence: ${normalization.evidence.join(' ')}`}
-                      </div>
+                      {label}
+                    </dt>
+                    <dd
+                      style={{
+                        margin: '2px 0 0',
+                        color: theme.text,
+                        fontSize: '8px',
+                        lineHeight: 1.35,
+                      }}
+                    >
+                      {value}
+                    </dd>
+                  </div>
+                ))}
+            </dl>
+
+            {selectedText.normalizations.length > 0 && (
+              <details style={{ marginBottom: '10px', color: theme.textMuted, fontSize: '8px' }}>
+                <summary style={{ cursor: 'pointer' }}>
+                  Source/display differences ({selectedText.normalizations.length})
+                </summary>
+                <div style={{ marginTop: '6px', display: 'grid', gap: '6px' }}>
+                  {selectedText.normalizations.map(normalization => (
+                    <div key={normalization.field} style={{ lineHeight: 1.4 }}>
+                      <strong style={{ color: theme.text, textTransform: 'capitalize' }}>
+                        {normalization.field}
+                      </strong>
+                      <div>Source: “{normalization.source}”</div>
+                      <div>Display: “{normalization.normalized}”</div>
+                      <div>{normalization.reasons.join(' ')}</div>
+                      {normalization.evidence.length > 0 && (
+                        <div>Evidence: {normalization.evidence.join(' ')}</div>
+                      )}
                     </div>
                   ))}
                 </div>
               </details>
             )}
 
-            {/* Natural Examples */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: '8px',
-                marginBottom: '12px',
-              }}
-            >
-              {[
-                { label: '🦁 Animal', value: selectedText?.normalized.animal },
-                { label: '🌿 Vegetable', value: selectedText?.normalized.vegetable },
-                { label: '💎 Mineral', value: selectedText?.normalized.mineral },
-              ]
-                .filter(item => item.value)
-                .map(item => (
-                  <div
-                    key={item.label}
-                    style={{
-                      backgroundColor: theme.cardBg,
-                      border: `1px solid ${theme.border}`,
-                      borderRadius: '8px',
-                      padding: '10px',
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: '9px',
-                        color: theme.textMuted,
-                        marginBottom: '4px',
-                        fontWeight: 600,
-                      }}
-                    >
-                      {item.label}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: '10px',
-                        color: theme.text,
-                        lineHeight: 1.3,
-                      }}
-                    >
-                      {item.value}
-                    </div>
-                  </div>
-                ))}
-            </div>
-
-            {/* Actions */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(2, 1fr)',
-                gap: '8px',
-                marginBottom: '16px',
-              }}
-            >
+            <div style={{ display: 'grid', gap: '5px' }}>
               <button
-                onClick={() => {
-                  addRecentColor(selectedColor);
-                  parent.postMessage(
-                    {
-                      pluginMessage: {
-                        type: 'apply-fill',
-                        requestId: createRequestId('fill'),
-                        name: selectedColor.name,
-                        hex: selectedColor.hex,
-                      },
-                    },
-                    '*'
-                  );
-                }}
-                style={{
-                  ...buttonStyle(true),
-                  padding: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                }}
+                onClick={() => postColorAction('apply-fill', selectedColor)}
+                style={buttonStyle(true)}
               >
-                🎨 Apply Fill
+                <PaintBucket size={13} /> Use as fill
               </button>
               <button
-                onClick={() => {
-                  addRecentColor(selectedColor);
-                  parent.postMessage(
-                    {
-                      pluginMessage: {
-                        type: 'apply-stroke',
-                        requestId: createRequestId('stroke'),
-                        name: selectedColor.name,
-                        hex: selectedColor.hex,
-                      },
-                    },
-                    '*'
-                  );
-                }}
-                style={{
-                  ...buttonStyle(),
-                  padding: '12px',
-                  border: `1px solid ${theme.border}`,
-                }}
+                onClick={() => postColorAction('apply-stroke', selectedColor)}
+                style={buttonStyle()}
               >
-                ✏️ Apply Stroke
+                <PencilSimple size={13} /> Use as stroke
               </button>
               <button
-                onClick={() => {
-                  addRecentColor(selectedColor);
-                  parent.postMessage(
-                    {
-                      pluginMessage: {
-                        type: 'create-style',
-                        requestId: createRequestId('style'),
-                        name: `Werner/${selectedColor.group}/${selectedColor.name}`,
-                        hex: selectedColor.hex,
-                      },
-                    },
-                    '*'
-                  );
-                }}
-                style={{
-                  ...buttonStyle(),
-                  padding: '12px',
-                  border: `1px solid ${theme.border}`,
-                }}
+                onClick={() => postColorAction('create-style', selectedColor)}
+                style={buttonStyle()}
               >
-                ✨ Create Style
+                <Swatches size={13} /> Create style
               </button>
               <button
                 onClick={() => copyToClipboard(selectedColor.hex, selectedColor.hex)}
-                style={{
-                  ...buttonStyle(),
-                  padding: '12px',
-                  border: `1px solid ${theme.border}`,
-                }}
+                style={buttonStyle()}
               >
-                📋 Copy Hex
+                <Copy size={13} /> Copy value
+              </button>
+              <button onClick={() => beginColorSystem(selectedColor)} style={buttonStyle()}>
+                <MagicWand size={13} /> Create system
               </button>
             </div>
 
-            {/* Color System Button */}
-            <button
-              onClick={() => {
-                setColorSystemColors([{ hex: selectedColor.hex, name: selectedColor.name }]);
-                setColorSystemName(`Werner/${selectedColor.name}`);
-                setShowColorSystem(true);
-              }}
+            <p
               style={{
-                ...buttonStyle(),
-                width: '100%',
-                padding: '12px',
-                marginBottom: '16px',
-                border: `1px solid ${theme.border}`,
-                backgroundColor: '#3b82f6',
-                color: '#ffffff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
+                margin: '10px 0 0',
+                color: theme.textMuted,
+                fontSize: '7px',
+                lineHeight: 1.4,
               }}
             >
-              🎨 Generate Color System
-            </button>
-
-            {/* Credits */}
-            <div
-              style={{
-                marginTop: '16px',
-                padding: '12px',
-                backgroundColor: theme.inputBg,
-                borderRadius: '8px',
-                textAlign: 'center',
-              }}
-            >
-              <p
-                style={{
-                  fontSize: '9px',
-                  color: theme.textMuted,
-                  margin: 0,
-                  lineHeight: 1.4,
-                }}
-              >
-                Patrick Syme&apos;s 1821 second edition
-                <br />
-                Independently transcribed and sampled from the public-domain Getty scan
-              </p>
-            </div>
-          </div>
+              Patrick Syme’s 1821 second edition. Independently transcribed and sampled from the
+              public-domain Getty scan.
+            </p>
+          </aside>
         )}
       </div>
 
-      {/* Color System Modal */}
       <ColorSystemModal
         isOpen={showColorSystem}
         onClose={() => setShowColorSystem(false)}
@@ -611,7 +400,6 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({
         documentColorProfile={documentColorProfile}
       />
 
-      {/* About Panel */}
       <AboutPanel
         isOpen={showAbout}
         onClose={() => setShowAbout(false)}

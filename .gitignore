@@ -2,6 +2,8 @@
 *.log
 *.log.*
 node_modules
+.npm-cache/
+prototypes/navigation-study/.npmrc
 
 out/
 dist/
