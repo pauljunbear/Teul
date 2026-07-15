@@ -3,7 +3,13 @@
 import * as React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BookOpenText, CheckCircle, GearSix, GridFour, Palette } from './components/Icons';
+import {
+  BookOpenText,
+  CircleCheck as CheckCircle,
+  Grid2X2 as GridFour,
+  Palette,
+  Settings as GearSix,
+} from 'lucide-react';
 import { styles } from './lib/theme';
 import { GridSystemTab } from './components/GridSystemTab';
 import { WernerColorsTab } from './components/WernerColorsTab';
@@ -225,7 +231,7 @@ const AppContent: React.FC = () => {
                 onKeyDown={handleMainTabKeyDown}
                 style={railButton(active)}
               >
-                <Icon size={18} weight={active ? 'fill' : 'regular'} />
+                <Icon size={18} strokeWidth={active ? 2.3 : 1.7} />
                 <span>{section.label}</span>
               </button>
             );
@@ -237,7 +243,7 @@ const AppContent: React.FC = () => {
           onClick={() => setShowSettings(true)}
           style={{ ...railButton(showSettings), borderTop: `1px solid ${theme.border}` }}
         >
-          <GearSix size={18} weight={showSettings ? 'fill' : 'regular'} />
+          <GearSix size={18} strokeWidth={showSettings ? 2.3 : 1.7} />
           <span>Settings</span>
         </button>
       </nav>

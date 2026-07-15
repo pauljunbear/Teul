@@ -1,6 +1,14 @@
 import * as React from 'react';
 import { useMemo, useState } from 'react';
-import { Copy, MagicWand, PaintBucket, PencilSimple, Question, Swatches, X } from './Icons';
+import {
+  CircleHelp as Question,
+  Copy,
+  PaintBucket,
+  Pencil as PencilSimple,
+  SwatchBook as Swatches,
+  WandSparkles as MagicWand,
+  X,
+} from 'lucide-react';
 import { wernerColors, WERNER_GROUPS, WernerColor, getWernerTextRecord } from '../wernerColorData';
 import { ColorSystemModal } from './ColorSystemModal';
 import { AboutPanel, WERNER_ABOUT_CONTENT } from './AboutPanel';

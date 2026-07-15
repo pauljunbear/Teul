@@ -16,7 +16,7 @@ of truth for public color and grid claims remains `docs/SOURCE_PROVENANCE.md`.
   another color is optional rather than a required setup step.
 - Expanded the plugin window from 560 × 600 to 560 × 720 for the approved rail
   and inspector layout.
-- Replaced a large runtime icon dependency with a small local SVG primitive.
+- Replaced the heavier prototype icon package with tree-shaken Lucide icons.
 
 ## Automated release gate
 
@@ -40,9 +40,9 @@ Results:
 - 54 test files and 677 tests pass.
 - Coverage is 80.80% statements, 73.94% branches, 74.35% functions, and 82.05%
   lines.
-- The local-icon build produces a 363,609-byte UI artifact, leaving 45,991 bytes
-  under the 409,600-byte product budget and 86,951 bytes under the 450,560-byte
-  artifact ceiling.
+- The tree-shaken Lucide build produces a 367,221-byte UI artifact, leaving
+  42,379 bytes under the 409,600-byte product budget and 83,339 bytes under the
+  450,560-byte artifact ceiling.
 - Every exported source symbol has a production reference.
 - Production smoke confirms the bundled interface mounts and exchanges backend
   messages.

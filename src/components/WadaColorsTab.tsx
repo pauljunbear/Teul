@@ -1,16 +1,16 @@
 import * as React from 'react';
 import { useState, useMemo, useCallback } from 'react';
 import {
-  ArrowsClockwise,
+  CircleHelp as Question,
   Copy,
-  DownloadSimple,
-  MagicWand,
+  Download as DownloadSimple,
   PaintBucket,
-  PencilSimple,
-  Question,
-  Swatches,
+  Pencil as PencilSimple,
+  RefreshCw as ArrowsClockwise,
+  SwatchBook as Swatches,
+  WandSparkles as MagicWand,
   X,
-} from './Icons';
+} from 'lucide-react';
 import { colorData } from '../colorData';
 import { getContrastRatio } from '../lib/utils';
 import { copyToClipboard } from '../lib/clipboard';
