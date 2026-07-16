@@ -158,6 +158,10 @@ The complete source record, uncertainty notes, derivation methods, and grid
 references live in the
 [source and provenance ledger](docs/SOURCE_PROVENANCE.md).
 
+## Author
+
+Created by [Paul Jun](https://github.com/pauljunbear).
+
 ## License And Data Rights
 
 Teul's plugin code is MIT-licensed under [LICENSE](LICENSE). Bundled libraries,
