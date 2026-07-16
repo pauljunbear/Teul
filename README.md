@@ -2,7 +2,7 @@
 
 **Color gives work a voice. A grid gives it structure.**
 
-<img width="2790" height="1704" alt="Teul color browser in Figma" src="https://github.com/user-attachments/assets/c113f18a-76b2-4af8-bda9-1a195b91df7c" />
+<img width="1600" height="1000" alt="Teul's Sanzo Wada and Werner historical color libraries" src="docs/screenshots/teul-color-libraries.jpg" />
 
 Teul (틀) is Korean for _frame_, _mold_, or _pattern_. It is a Figma plugin for
 designers who want stronger starting points for color and layout.
@@ -51,6 +51,8 @@ swatch, or historical pigment.
 Passing color-pair tests does not make an entire product accessible. Teul names
 the guarantee it can prove and stops there.
 
+<img width="1600" height="1000" alt="Teul color-system methods, Figma variables, styles, and exports" src="docs/screenshots/teul-color-system-builder.jpg" />
+
 The accessibility checker can read one opaque text/background pair from the
 current Figma selection, including a bound color variable. It rejects mixed,
 layered, transparent, gradient, image, video, or role-ambiguous selections
@@ -75,7 +77,7 @@ the captured numeric values when moving between files. Saved grids move between
 files through a versioned JSON format and live in Figma's plugin storage; v1
 records migrate without changing their supported geometry.
 
-<img width="3888" height="2382" alt="Teul color system generator in Figma" src="https://github.com/user-attachments/assets/e1b04881-c29b-4691-8c9e-7867724328ff" />
+<img width="1600" height="1000" alt="Teul's documented grid library and application controls" src="docs/screenshots/teul-grid-library.jpg" />
 
 ## Why Teul Exists
 
