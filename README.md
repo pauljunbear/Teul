@@ -4,10 +4,21 @@
 
 <img width="2790" height="1704" alt="Teul color browser in Figma" src="https://github.com/user-attachments/assets/c113f18a-76b2-4af8-bda9-1a195b91df7c" />
 
-Teul (틀) is the Korean word for _frame_, _mold_, or _pattern_—the structure
-that shapes what comes next. Teul is a Figma plugin for building with color and
-grids: explore historical palettes from Sanzo Wada and Patrick Syme, turn
-colors into tested systems, and apply documented layout guides to real frames.
+Teul (틀) is Korean for _frame_, _mold_, or _pattern_. It is a Figma plugin for
+designers who want stronger starting points for color and layout.
+
+Use Teul to:
+
+- explore documented color relationships from Sanzo Wada and Werner's
+  Nomenclature of Colours;
+- turn a color or Wada pairing into a tested system, Figma variables, and
+  styles;
+- check contrast and preview common forms of color-vision deficiency; and
+- choose, fit, save, and apply one of 65 documented layout grids.
+
+Historical screen colors are digital approximations, not exact matches to
+printed swatches or pigments. Teul keeps the source, the approximation, and
+anything it generates clearly labeled.
 
 History is the source. Teul is the tool.
 
@@ -87,18 +98,19 @@ your own.
 
 To build a color system:
 
-1. Browse the Wada or Werner collection.
-2. Choose a color or combination.
-3. Select **System**.
-4. Assign roles and generate.
-5. Export the result or create it in Figma.
+1. Open **Wada** or **Werner** in the rail.
+2. Choose a color. Wada colors also show every documented pairing.
+3. Use the color directly as a fill, stroke, or style—or select **Create
+   system**. A chosen Wada pairing starts with both source colors included.
+4. Assign palette roles, choose a system method, and review the result.
+5. Create Figma variables and styles, or export the system.
 
 To apply a grid:
 
 1. Select a supported frame, component, or instance.
-2. Open the **Grids** tab.
-3. Choose a preset.
-4. Review the fit result and apply it.
+2. Open **Grids** in the rail.
+3. Choose a preset or one of your saved grids.
+4. Review its fit and application mode, then apply it.
 
 ## Development
 
