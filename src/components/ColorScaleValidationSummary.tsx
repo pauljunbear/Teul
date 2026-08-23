@@ -52,7 +52,7 @@ export const ColorScaleValidationSummary: React.FC<ColorScaleValidationSummaryPr
         <strong style={{ color: structurallyValid ? colors.success : colors.failure }}>
           {structurallyValid ? 'Structure validated' : 'Generation blocked'}
         </strong>
-        <span style={{ color: colors.muted }}>Teul OKLCH v2 · sRGB</span>
+        <span style={{ color: colors.muted }}>Teul OKLCH v3 · sRGB</span>
       </div>
 
       <div style={{ marginTop: '5px', color: colors.muted }}>

@@ -43,6 +43,7 @@ export interface SemanticColorModeReport {
 
 export interface SemanticColorPolicyReport {
   standard: 'WCAG 2.2';
+  colorSpace: 'sRGB';
   level: 'AA + enhanced primary text';
   modes: {
     light: SemanticColorModeReport;
@@ -381,6 +382,7 @@ export function buildSemanticColorPolicy(
 
   return {
     standard: 'WCAG 2.2',
+    colorSpace: 'sRGB',
     level: 'AA + enhanced primary text',
     modes,
     valid: modes.light.valid && (!modes.dark || modes.dark.valid),

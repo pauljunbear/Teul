@@ -8,7 +8,6 @@ import type {
 } from '../lib/semanticColorPolicy';
 import { isSemanticColorPolicyCurrent } from '../lib/semanticColorPolicy';
 import { areAllScalesExactRadix, haveExactRadixScaleClaims } from '../lib/radixColors';
-import { getWCAGContrastHex, getWCAGRating } from '../lib/accessibility';
 import type { ColorScaleData, ColorSystemData } from '../types/colorSystem';
 import { RADIX_STEP_LABELS, type ColorSystemLayoutContext } from './colorSystemLayoutContext';
 import { generateMinimalColorSystemLayout } from './colorSystemMinimalLayout';
@@ -35,6 +34,7 @@ interface GenerationOperation {
 
 interface GenerateColorSystemFramesOptions {
   notify?: boolean;
+  beforeFirstMutation?: () => void;
 }
 
 let activeGenerationOperation: GenerationOperation | null = null;
@@ -91,19 +91,6 @@ function removeOwnedNodes(operation: GenerationOperation): void {
     } catch (cleanupError) {
       console.error('Failed to remove partial color system node:', cleanupError);
     }
-  }
-}
-
-function getAccessibilityRating(contrast: number): { rating: string; color: RGB } {
-  const rating = getWCAGRating(contrast).level;
-  if (rating === 'AAA') {
-    return { rating: 'AAA', color: { r: 0.13, g: 0.55, b: 0.13 } };
-  } else if (rating === 'AA') {
-    return { rating: 'AA', color: { r: 0.2, g: 0.6, b: 0.86 } };
-  } else if (rating === 'AA Large') {
-    return { rating: 'AA Large', color: { r: 0.9, g: 0.65, b: 0.15 } };
-  } else {
-    return { rating: 'Fail', color: { r: 0.8, g: 0.2, b: 0.2 } };
   }
 }
 
@@ -285,42 +272,6 @@ async function createScaleRow(
     row.appendChild(labelsContainer);
   }
 
-  // Accessibility badges for text steps (11 and 12)
-  if (showLabels && showRadixGuidance && scale.steps.length >= 12) {
-    const accessibilityRow = createOwnedFrame();
-    accessibilityRow.name = 'Accessibility';
-    accessibilityRow.layoutMode = 'HORIZONTAL';
-    accessibilityRow.primaryAxisSizingMode = 'AUTO';
-    accessibilityRow.counterAxisSizingMode = 'AUTO';
-    accessibilityRow.itemSpacing = 2;
-    accessibilityRow.fills = [];
-
-    const bgColor = scale.steps[0].hex;
-
-    for (let i = 1; i <= 12; i++) {
-      const badgeFrame = createOwnedFrame();
-      badgeFrame.resize(swatchSize, 14);
-      badgeFrame.fills = [];
-      badgeFrame.layoutMode = 'VERTICAL';
-      badgeFrame.primaryAxisAlignItems = 'CENTER';
-      badgeFrame.counterAxisAlignItems = 'CENTER';
-      badgeFrame.primaryAxisSizingMode = 'FIXED';
-      badgeFrame.counterAxisSizingMode = 'FIXED';
-
-      if (i === 9 || i === 11 || i === 12) {
-        const contrast = getWCAGContrastHex(scale.steps[i - 1].hex, bgColor);
-        const { rating, color } = getAccessibilityRating(contrast);
-        const badge = createText(rating, 6, 'Medium', color);
-        badge.textAlignHorizontal = 'CENTER';
-        badgeFrame.appendChild(badge);
-      }
-
-      accessibilityRow.appendChild(badgeFrame);
-    }
-
-    row.appendChild(accessibilityRow);
-  }
-
   return row;
 }
 
@@ -404,7 +355,12 @@ function createSemanticPolicyReport(
 
   container.appendChild(createText('WCAG 2.2 SEMANTIC TOKEN POLICY', 11, 'Bold', textColor));
   container.appendChild(
-    createText(`${policy.standard} · ${policy.level}`, 10, 'Semi Bold', textColor)
+    createText(
+      `${policy.standard} / ${policy.level} / evaluated in ${policy.colorSpace}`,
+      10,
+      'Semi Bold',
+      textColor
+    )
   );
   container.appendChild(
     createText(report.valid ? 'MODE PASS' : 'MODE FAIL', 9, 'Bold', statusColor)
@@ -479,8 +435,6 @@ const layoutContext: ColorSystemLayoutContext = {
   createBWSwatches,
   createSemanticPolicyReport,
   getOrderedScaleKeys: getOrderedColorScaleKeys,
-  getAccessibilityRating,
-  getWCAGContrastHex,
 };
 
 // ============================================
@@ -493,13 +447,13 @@ export async function generateColorSystemFrames(
   options: GenerateColorSystemFramesOptions = {}
 ): Promise<FrameNode> {
   if (!haveExactRadixScaleClaims(scalesData.scales.light, scalesData.scales.dark)) {
-    throw new Error('Exact Radix Colors claims must match the pinned bundled values');
+    throw new Error('Exact Radix sRGB Solid claims must match the pinned bundled values');
   }
   if (
     scalesData.scaleMethod === 'radix-match' &&
     !areAllScalesExactRadix(scalesData.scales.light, scalesData.scales.dark)
   ) {
-    throw new Error('Exact Radix Colors mode requires only pinned bundled values');
+    throw new Error('Exact Radix sRGB Solid mode requires only pinned bundled values');
   }
 
   if (
@@ -519,6 +473,7 @@ export async function generateColorSystemFrames(
     if (!fontsLoaded) {
       throw new Error('Unable to generate color system: required fonts failed to load');
     }
+    options.beforeFirstMutation?.();
 
     const { detailLevel, includeDarkMode, systemName, scaleMethod } = scalesData;
     const { light: lightScales, dark: darkScales } = scalesData.scales;

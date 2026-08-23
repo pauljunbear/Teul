@@ -375,6 +375,8 @@ const AppContent: React.FC = () => {
                   }}
                 >
                   This Display P3 document may render preserved sRGB numeric values differently.
+                  Selection contrast and WCAG-constrained Figma creation require a confirmed sRGB
+                  document; manual hex remains explicitly sRGB.
                 </div>
               )}
             </div>
@@ -402,8 +404,9 @@ const AppContent: React.FC = () => {
                 About Teul
               </strong>
               Historical color, tested color systems, and documented layout grids. Wada and Werner
-              colors are labeled digital approximations. Exact Radix families retain their published
-              values; WCAG-constrained semantic output blocks when required pairs fail.
+              colors are labeled digital approximations. Exact Radix sRGB solid families retain
+              their published values; WCAG-constrained semantic output blocks when required pairs
+              fail.
             </div>
           </section>
         ) : (

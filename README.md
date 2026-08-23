@@ -13,7 +13,7 @@ Use Teul to:
   Nomenclature of Colours;
 - turn a color or Wada pairing into a tested system, Figma variables, and
   styles;
-- check contrast and preview common forms of color-vision deficiency; and
+- check proven opaque sRGB pairs and preview modeled color-confusion risks; and
 - choose, fit, save, and apply one of 65 documented layout grids.
 
 Historical screen colors are digital approximations, not exact matches to
@@ -38,12 +38,19 @@ swatch, or historical pigment.
 
 ### Build Color Systems
 
-- **Exact Radix Colors** selects an unmodified family from the pinned
-  `@radix-ui/colors` 3.0.0 library.
-- **Teul Generated** builds a 12-step light and dark system while preserving
-  the selected source color and reporting what was tested.
+- **Exact Radix sRGB Solid** uses the unmodified sRGB solid subset from pinned
+  `@radix-ui/colors` 3.0.0. Teul's Delta E OK matcher reports which published
+  mode and step selected the family; that matching method is not Radix source data.
+- **Teul Generated** uses the versioned `Teul OKLCH v3` Local MINDE mapper to
+  build a 12-step light and dark sRGB system while preserving the selected
+  source color and reporting what was tested.
 - **WCAG-Constrained Tokens** creates semantic tokens only when every declared
-  WCAG 2.2 color pairing passes.
+  WCAG 2.2 sRGB color pairing passes.
+- All three on-canvas methods require the backend to confirm and retain a live
+  sRGB Figma document before frames, variables, or styles are mutated. A P3,
+  legacy, unknown, or mid-operation profile change blocks and rolls back
+  mutation because raw sRGB hex channels would otherwise be reinterpreted.
+  Non-mutating export remains available.
 - Export CSS variables, Tailwind configuration, JSON, optional Figma styles,
   native Figma color variables with light and dark modes, and visual reference
   frames.
@@ -53,10 +60,14 @@ the guarantee it can prove and stops there.
 
 <img width="1600" height="1000" alt="Teul color-system methods, Figma variables, styles, and exports" src="docs/screenshots/teul-color-system-builder.jpg" />
 
-The accessibility checker can read one opaque text/background pair from the
-current Figma selection, including a bound color variable. It rejects mixed,
-layered, transparent, gradient, image, video, or role-ambiguous selections
-instead of estimating a rendered color.
+The accessibility checker can read one opaque text/background pair from a
+confirmed sRGB Figma document, including a bound color variable. It rejects
+Display-P3 or unknown profiles, mixed or layered paints, transparency,
+unsupported ancestor rendering, gradients, images, videos, masks, effects,
+non-overlap, and unprovable stacking instead of estimating a rendered color.
+Manual hex input is explicitly interpreted as sRGB. APCA remains supplemental;
+color-vision previews are advisory approximations rather than diagnosis or
+proof of accessibility.
 
 ### Apply Grids That Fit
 
@@ -138,6 +149,7 @@ npm run build
 npm run assert:artifacts
 npm run check:ui-bundle
 npm run test:production-ui
+npm run verify:color-foundations
 ```
 
 ## Sources And Credits
@@ -151,8 +163,9 @@ digital compilation.
 independently transcribed and sampled from the
 [Getty Research Institute public-domain scan](https://archive.org/details/gri_c00033125012743312).
 
-**Radix Colors** — Exact library data pinned to
-[`@radix-ui/colors` 3.0.0](https://www.radix-ui.com/colors).
+**Radix Colors** — Exact sRGB solid subset pinned to
+[`@radix-ui/colors` 3.0.0](https://www.radix-ui.com/colors); Display-P3 and
+alpha variants are not bundled as Teul product modes.
 
 The complete source record, uncertainty notes, derivation methods, and grid
 references live in the

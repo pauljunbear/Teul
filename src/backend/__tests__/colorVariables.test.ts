@@ -13,7 +13,7 @@ function makeScale(mode: 'light' | 'dark') {
       hex: mode === 'light' ? '#112233' : '#ddeeff',
     })),
     profile: 'sRGB' as const,
-    method: 'Teul OKLCH v2' as const,
+    method: 'Teul OKLCH v3' as const,
     mode,
   };
 }

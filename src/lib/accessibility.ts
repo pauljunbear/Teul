@@ -231,21 +231,75 @@ export function getAPCAUseCase(lc: number): APCAUseCase {
 }
 
 /**
- * Get minimum font size for APCA Lc value
- * Returns null below the basic content-text use-case levels
- *
- * Uses APCA's basic reference sizes for its use-case levels. The returned
- * size is for a reference Latin sans-serif and is not a universal minimum.
+ * APCA 0.1.9's public-beta font lookup table. Columns represent the reference
+ * weights 100 through 900. Values 777/999 are sentinels for non-content or
+ * prohibited use and are returned as null by Teul.
+ */
+const APCA_FONT_SIZE_MATRIX = [
+  [0, 999, 999, 999, 999, 999, 999, 999, 999, 999],
+  [10, 999, 999, 999, 999, 999, 999, 999, 999, 999],
+  [15, 777, 777, 777, 777, 777, 777, 777, 777, 777],
+  [20, 777, 777, 777, 777, 777, 777, 777, 777, 777],
+  [25, 777, 777, 777, 120, 120, 108, 96, 96, 96],
+  [30, 777, 777, 120, 108, 108, 96, 72, 72, 72],
+  [35, 777, 120, 108, 96, 72, 60, 48, 48, 48],
+  [40, 120, 108, 96, 60, 48, 42, 32, 32, 32],
+  [45, 108, 96, 72, 42, 32, 28, 24, 24, 24],
+  [50, 96, 72, 60, 32, 28, 24, 21, 21, 21],
+  [55, 80, 60, 48, 28, 24, 21, 18, 18, 18],
+  [60, 72, 48, 42, 24, 21, 18, 16, 16, 18],
+  [65, 68, 46, 32, 21.75, 19, 17, 15, 16, 18],
+  [70, 64, 44, 28, 19.5, 18, 16, 14.5, 16, 18],
+  [75, 60, 42, 24, 18, 16, 15, 14, 16, 18],
+  [80, 56, 38.25, 23, 17.25, 15.81, 14.81, 14, 16, 18],
+  [85, 52, 34.5, 22, 16.5, 15.625, 14.625, 14, 16, 18],
+  [90, 48, 32, 21, 16, 15.5, 14.5, 14, 16, 18],
+  [95, 45, 28, 19.5, 15.5, 15, 14, 13.5, 16, 18],
+  [100, 42, 26.5, 18.5, 15, 14.5, 13.5, 13, 16, 18],
+  [105, 39, 25, 18, 14.5, 14, 13, 12, 16, 18],
+  [110, 36, 24, 18, 14, 13, 12, 11, 16, 18],
+  [115, 34.5, 22.5, 17.25, 12.5, 11.875, 11.25, 10.625, 14.5, 16.5],
+  [120, 33, 21, 16.5, 11, 10.75, 10.5, 10.25, 13, 15],
+  [125, 32, 20, 16, 10, 10, 10, 10, 12, 14],
+] as const;
+
+/**
+ * Return the APCA 0.1.9 reference-table size for a canonical weight.
+ * This is supplemental beta guidance for the table's Barlow reference face,
+ * not a universal minimum and not a WCAG conformance result.
  */
 export function getAPCAMinFontSize(lc: number, weight: number = 400): number | null {
-  const absLc = Math.abs(lc);
-  const isBold = weight >= 700;
+  if (
+    !Number.isFinite(lc) ||
+    !Number.isInteger(weight) ||
+    weight < 100 ||
+    weight > 900 ||
+    weight % 100 !== 0
+  ) {
+    return null;
+  }
 
-  if (absLc >= 90) return 14;
-  if (absLc >= 75) return isBold ? 14 : 16;
-  if (absLc >= 60) return isBold ? 16 : 24;
-  if (absLc >= 45) return isBold ? 24 : 42;
-  return null;
+  const contrast = Math.min(125, Math.abs(lc));
+  const weightColumn = weight / 100;
+  let rowIndex = 0;
+  for (let index = 1; index < APCA_FONT_SIZE_MATRIX.length; index += 1) {
+    if (APCA_FONT_SIZE_MATRIX[index][0] > contrast) break;
+    rowIndex = index;
+  }
+
+  const row = APCA_FONT_SIZE_MATRIX[rowIndex];
+  const size = row[weightColumn];
+  if (size > 400 || contrast < 29.5) return null;
+
+  const nextRow = APCA_FONT_SIZE_MATRIX[Math.min(rowIndex + 1, APCA_FONT_SIZE_MATRIX.length - 1)];
+  const interval = nextRow[0] - row[0];
+  if (interval <= 0 || nextRow[weightColumn] > 400) return size;
+
+  const progress = (contrast - row[0]) / interval;
+  const delta = size - nextRow[weightColumn];
+  return size > 24
+    ? Math.round(size - delta * progress)
+    : size - Math.floor(2 * delta * progress) * 0.5;
 }
 
 // ============================================

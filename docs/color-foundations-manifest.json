@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-08-02",
+  "reviewBy": "2027-02-02",
+  "policy": {
+    "blockingContrastStandard": "WCAG 2.2 sRGB",
+    "generatedGamutMapping": "CSS Color 4 Binary Search with Local MINDE",
+    "supplementalContrast": "APCA 0.1.9",
+    "cvdSimulation": "Machado et al. 2009 advisory approximation",
+    "runtimeNetworkRequired": false
+  },
+  "sources": [
+    {
+      "id": "wcag-2.2",
+      "title": "Web Content Accessibility Guidelines (WCAG) 2.2",
+      "status": "W3C Recommendation updated 2024-12-12; normative Teul conformance basis for proven sRGB pairs",
+      "version": "2.2",
+      "url": "https://www.w3.org/TR/WCAG22/"
+    },
+    {
+      "id": "iso-40500",
+      "title": "ISO/IEC 40500:2025",
+      "status": "Published international standard based on WCAG 2.2; ISO stage 90.92 marks it to be revised",
+      "version": "2025",
+      "url": "https://www.iso.org/standard/91029.html"
+    },
+    {
+      "id": "wcag-3",
+      "title": "W3C Accessibility Guidelines (WCAG) 3.0",
+      "status": "Incomplete Working Draft 2026-03-03; not a Teul conformance basis",
+      "version": "Working Draft 2026-03-03",
+      "url": "https://www.w3.org/TR/wcag-3.0/"
+    },
+    {
+      "id": "css-color-4",
+      "title": "CSS Color Module Level 4",
+      "status": "Candidate Recommendation Draft 2026-07-28; Local MINDE algorithm source",
+      "version": "CRD 2026-07-28",
+      "url": "https://www.w3.org/TR/css-color-4/"
+    },
+    {
+      "id": "css-color-hdr",
+      "title": "CSS Color HDR Module Level 1",
+      "status": "Working Draft 2026-07-28; unsupported experimental frontier",
+      "version": "Working Draft 2026-07-28",
+      "url": "https://www.w3.org/TR/css-color-hdr-1/"
+    },
+    {
+      "id": "radix-colors",
+      "title": "Radix Colors",
+      "status": "Latest public package reviewed; exact sRGB solid subset is Teul source data",
+      "version": "3.0.0",
+      "url": "https://www.npmjs.com/package/@radix-ui/colors"
+    },
+    {
+      "id": "apca-w3",
+      "title": "APCA W3",
+      "status": "Beta research metric; supplemental only and not WCAG conformance",
+      "version": "0.1.9",
+      "url": "https://www.npmjs.com/package/apca-w3"
+    },
+    {
+      "id": "machado-2009",
+      "title": "A Physiologically-based Model for Simulation of Color Vision Deficiency",
+      "status": "Peer-reviewed advisory simulation source; not diagnostic and not intended to validate tritanopia",
+      "version": "IEEE TVCG 15(6), 2009",
+      "url": "https://doi.org/10.1109/TVCG.2009.113"
+    },
+    {
+      "id": "figma-color-profiles",
+      "title": "Figma color profile behavior",
+      "status": "Host contract for sRGB and Display-P3 document values",
+      "version": "Reviewed 2026-08-02",
+      "url": "https://help.figma.com/hc/en-us/articles/360039825114-Manage-color-profiles-in-design-files"
+    }
+  ]
+}

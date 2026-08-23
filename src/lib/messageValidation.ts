@@ -1,5 +1,6 @@
 import type { PluginToUIMessage, UIToPluginMessage } from '../types/messages';
 import { calculateContrastRatio, getLuminance, hexToOklch, hexToRgb } from './utils';
+import { isExactTeulGeneratedScale } from './colorScale';
 import { isSemanticColorPolicyCurrent } from './semanticColorPolicy';
 import { doesRadixSourceInputMatchFamily, isExactRadixScale } from './radixColors';
 import { parseGridConstructionV2 } from './gridConstructionV2';
@@ -28,7 +29,7 @@ const GRID_LINKED_RESOURCE_POLICIES = ['preserve-if-available', 'replace-with-va
 const GRADIENT_TYPES = ['LINEAR', 'RADIAL', 'ANGULAR', 'DIAMOND'] as const;
 const DETAIL_LEVELS = ['minimal', 'detailed', 'presentation'] as const;
 const SCALE_METHODS = ['custom', 'radix-match', 'wcag-constrained'] as const;
-const COLOR_SCALE_METHODS = ['Teul OKLCH v2', 'Radix Colors'] as const;
+const COLOR_SCALE_METHODS = ['Teul OKLCH v3', 'Radix Colors'] as const;
 const COLOR_ROLES = ['primary', 'secondary', 'tertiary', 'accent'] as const;
 const COLOR_COLLISION_POLICIES = ['cancel', 'update-local', 'create-copy'] as const;
 const NEUTRAL_FAMILIES = ['auto', 'gray', 'mauve', 'slate', 'sage', 'olive', 'sand'] as const;
@@ -525,7 +526,7 @@ function validateScale(
   const expectedMethod =
     systemScaleMethod === 'radix-match' || scaleKey === 'neutral'
       ? 'Radix Colors'
-      : 'Teul OKLCH v2';
+      : 'Teul OKLCH v3';
   if (value.method !== expectedMethod) return false;
 
   const hasRadixSourceMetadata =
@@ -548,7 +549,8 @@ function validateScale(
 
   return (
     validateScaleValidation(value.validation, value.steps) &&
-    validateFinalCustomScale(value.steps, expectedMode)
+    validateFinalCustomScale(value.steps, expectedMode) &&
+    isExactTeulGeneratedScale(value)
   );
 }
 
@@ -697,7 +699,7 @@ function validateCustomScaleAnchors(config: UnknownRecord, scalesData: UnknownRe
     if (!isRecord(scaleMap)) return false;
 
     return Object.entries(scaleMap).every(([key, scale]) => {
-      if (!isRecord(scale) || scale.method !== 'Teul OKLCH v2') return true;
+      if (!isRecord(scale) || scale.method !== 'Teul OKLCH v3') return true;
       if (!Array.isArray(scale.steps) || !isRecord(scale.steps[8])) return false;
       const role = /^(primary|secondary|tertiary|accent)/.exec(key)?.[1];
       if (!role || typeof scale.steps[8].hex !== 'string') return false;
@@ -875,14 +877,26 @@ export function validatePluginToUIMessage(message: unknown): PluginMessageValida
       validMessage = isOneOf(message.profile, DOCUMENT_COLOR_PROFILES);
       break;
     case 'accessibility-selection-result':
-      validMessage =
-        validResultEnvelope(message) &&
-        isOneOf(message.profile, DOCUMENT_COLOR_PROFILES) &&
-        optionalBoundedString(message.foreground) &&
-        optionalBoundedString(message.background) &&
-        optionalBoundedString(message.foregroundSource) &&
-        optionalBoundedString(message.backgroundSource) &&
-        optionalBoundedString(message.error, MAX_NOTIFICATION_LENGTH);
+      validMessage = validResultEnvelope(message);
+      if (validMessage && message.success === true) {
+        validMessage =
+          message.profile === 'srgb' &&
+          typeof message.foreground === 'string' &&
+          SERIALIZED_HEX_COLOR.test(message.foreground) &&
+          typeof message.background === 'string' &&
+          SERIALIZED_HEX_COLOR.test(message.background) &&
+          isBoundedString(message.foregroundSource) &&
+          isBoundedString(message.backgroundSource) &&
+          message.error === undefined;
+      } else if (validMessage) {
+        validMessage =
+          isOneOf(message.profile, DOCUMENT_COLOR_PROFILES) &&
+          isBoundedString(message.error, MAX_NOTIFICATION_LENGTH) &&
+          message.foreground === undefined &&
+          message.background === undefined &&
+          message.foregroundSource === undefined &&
+          message.backgroundSource === undefined;
+      }
       break;
     case 'color-system-operation-result':
       validMessage =

@@ -49,6 +49,4 @@ export interface ColorSystemLayoutContext {
     mode: ColorSystemSemanticMode
   ) => FrameNode;
   getOrderedScaleKeys: (scales: ColorSystemData['scales']['light']) => string[];
-  getAccessibilityRating: (contrast: number) => { rating: string; color: RGB };
-  getWCAGContrastHex: (foreground: string, background: string) => number;
 }

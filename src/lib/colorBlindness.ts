@@ -1,8 +1,9 @@
 /**
  * Color Vision Deficiency (CVD) Simulation Library
  *
- * Implements Machado et al. 2009's published matrices for approximating
- * dichromacy and anomalous trichromacy across supported severity levels.
+ * Implements Machado et al. 2009's published matrices as advisory previews
+ * for modeled color-confusion patterns across supported severity levels.
+ * The source paper does not validate its tritan endpoint as tritanopia.
  *
  * References:
  * - Machado et al. 2009: "A physiologically-based model for simulation of color vision deficiency"
@@ -20,7 +21,7 @@ export type CVDType =
   | 'protanomaly' // L-cone-related anomalous trichromacy
   | 'deuteranopia' // M-cone-related dichromacy
   | 'deuteranomaly' // M-cone-related anomalous trichromacy
-  | 'tritanopia' // S-cone-related dichromacy
+  | 'tritanopia' // Backward-compatible key for the severe tritanomaly endpoint
   | 'tritanomaly' // S-cone-related anomalous trichromacy
   | 'achromatopsia'; // Grayscale approximation for little/no color discrimination
 
@@ -79,8 +80,9 @@ export const CVD_INFO: Record<CVDType, CVDInfo> = {
   },
   tritanopia: {
     type: 'tritanopia',
-    name: 'Tritanopia',
-    description: 'An S-cone-related dichromacy that reduces blue-yellow discrimination.',
+    name: 'Severe tritanomaly approximation',
+    description:
+      'A tritan-like advisory preview using Machado’s severity-1 tritanomaly matrix; the source model is not validated for tritanopia.',
     prevalence: 'Rare; estimates vary by population',
     affectedCone: 'S',
   },
@@ -380,7 +382,8 @@ export function simulateDeuteranopia(rgb: RGB): RGB {
 }
 
 /**
- * Approximate tritanopia using Machado's full-severity tritan matrix.
+ * Preserve the historical API key while returning Machado's severity-1
+ * tritanomaly endpoint. The source paper does not validate this as tritanopia.
  */
 export function simulateTritanopia(rgb: RGB): RGB {
   return simulateAnomaly(rgb, 'tritanopia', 1);

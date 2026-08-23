@@ -211,17 +211,30 @@ export interface DocumentColorProfileMessage {
   profile: NormalizedDocumentColorProfile;
 }
 
-export interface AccessibilitySelectionResultMessage {
+interface AccessibilitySelectionResultBase {
   type: 'accessibility-selection-result';
   requestId: string;
-  success: boolean;
-  profile: NormalizedDocumentColorProfile;
-  foreground?: string;
-  background?: string;
-  foregroundSource?: string;
-  backgroundSource?: string;
-  error?: string;
 }
+
+export type AccessibilitySelectionResultMessage =
+  | (AccessibilitySelectionResultBase & {
+      success: true;
+      profile: 'srgb';
+      foreground: string;
+      background: string;
+      foregroundSource: string;
+      backgroundSource: string;
+      error?: never;
+    })
+  | (AccessibilitySelectionResultBase & {
+      success: false;
+      profile: NormalizedDocumentColorProfile;
+      foreground?: never;
+      background?: never;
+      foregroundSource?: never;
+      backgroundSource?: never;
+      error: string;
+    });
 
 export interface ColorSystemOperationResultMessage {
   type: 'color-system-operation-result';

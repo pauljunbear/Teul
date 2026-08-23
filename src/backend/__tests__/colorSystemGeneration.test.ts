@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { RADIX_COLORS_VERSION, radixColors } from '../../lib/radixColors';
 import { buildSemanticColorPolicy } from '../../lib/semanticColorPolicy';
 import { generateColorSystemFrames, type ColorSystemData } from '../colorSystemGeneration';
 
@@ -14,7 +15,7 @@ const scalesData: ColorSystemData = {
         role: 'neutral',
         steps: [],
         profile: 'sRGB',
-        method: 'Teul OKLCH v2',
+        method: 'Teul OKLCH v3',
         mode: 'light',
       },
     },
@@ -73,8 +74,25 @@ function makeFullScale(mode: 'light' | 'dark') {
               : '#eeeeee',
     })),
     profile: 'sRGB' as const,
-    method: 'Teul OKLCH v2' as const,
+    method: 'Teul OKLCH v3' as const,
     mode,
+  };
+}
+
+function makeExactRadixScale(familyName: 'blue', mode: 'light' | 'dark') {
+  const family = radixColors[familyName];
+  return {
+    name: family.displayName,
+    role: 'primary',
+    steps: Object.entries(family[mode]).map(([step, hex]) => ({
+      step: Number(step),
+      hex,
+    })),
+    profile: 'sRGB' as const,
+    method: 'Radix Colors' as const,
+    mode,
+    sourceVersion: RADIX_COLORS_VERSION,
+    sourceFamily: familyName,
   };
 }
 
@@ -130,6 +148,30 @@ describe('generateColorSystemFrames atomic generation', () => {
       'required fonts failed to load'
     );
 
+    expect(createFrame).not.toHaveBeenCalled();
+  });
+
+  it('runs the final authority guard after fonts load and before creating any node', async () => {
+    let resolveFonts!: () => void;
+    const fontsLoaded = new Promise<void>(resolve => {
+      resolveFonts = resolve;
+    });
+    const authorityError = new Error('live profile changed');
+    const createFrame = vi.fn();
+    const beforeFirstMutation = vi.fn(() => {
+      throw authorityError;
+    });
+    vi.stubGlobal('figma', {
+      loadFontAsync: vi.fn(() => fontsLoaded),
+      createFrame,
+    });
+
+    const generation = generateColorSystemFrames({}, scalesData, { beforeFirstMutation });
+    expect(createFrame).not.toHaveBeenCalled();
+    resolveFonts();
+
+    await expect(generation).rejects.toBe(authorityError);
+    expect(beforeFirstMutation).toHaveBeenCalledOnce();
     expect(createFrame).not.toHaveBeenCalled();
   });
 
@@ -278,7 +320,7 @@ describe('generateColorSystemFrames atomic generation', () => {
       expect(nodes.map(node => node.characters).filter(Boolean)).toEqual(
         expect.arrayContaining([
           'WCAG 2.2 SEMANTIC TOKEN POLICY',
-          'WCAG 2.2 · AA + enhanced primary text',
+          'WCAG 2.2 / AA + enhanced primary text / evaluated in sRGB',
           'MODE PASS',
           'Scope: declared semantic token pairings only; this is not whole-design WCAG conformance.',
           'TESTED PAIRINGS (13/13 pass)',
@@ -328,6 +370,30 @@ describe('generateColorSystemFrames atomic generation', () => {
     }
   );
 
+  it.each(['minimal', 'detailed', 'presentation'] as const)(
+    'does not attach a context-free WCAG rating badge to exact Radix swatches in %s output',
+    async detailLevel => {
+      const { nodes } = stubSuccessfulFigmaGeneration();
+      const radixData: ColorSystemData = {
+        ...scalesData,
+        detailLevel,
+        scaleMethod: 'radix-match',
+        scales: { light: { neutral: makeExactRadixScale('blue', 'light') } },
+      };
+
+      await generateColorSystemFrames({}, radixData, { notify: false });
+
+      const names = nodes.map(node => node.name);
+      const standaloneRatings = nodes
+        .map(node => node.characters)
+        .filter((characters): characters is string => Boolean(characters))
+        .filter(characters => /^(?:AAA|AA|AA Large|Fail)$/.test(characters));
+
+      expect(names).not.toContain('Accessibility');
+      expect(standaloneRatings).toEqual([]);
+    }
+  );
+
   it('rejects forged Exact Radix values before creating frames', async () => {
     const forgedScale = {
       ...makeFullScale('light'),
@@ -346,7 +412,7 @@ describe('generateColorSystemFrames atomic generation', () => {
         },
         { notify: false }
       )
-    ).rejects.toThrow('Exact Radix Colors claims must match the pinned bundled values');
+    ).rejects.toThrow('Exact Radix sRGB Solid claims must match the pinned bundled values');
   });
 
   it('rejects generated scales mislabeled as Exact Radix mode', async () => {
@@ -360,6 +426,6 @@ describe('generateColorSystemFrames atomic generation', () => {
         },
         { notify: false }
       )
-    ).rejects.toThrow('Exact Radix Colors mode requires only pinned bundled values');
+    ).rejects.toThrow('Exact Radix sRGB Solid mode requires only pinned bundled values');
   });
 });

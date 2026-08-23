@@ -19,7 +19,7 @@ export interface ExportScale {
   role: string;
   steps: { step: number; hex: string }[];
   profile?: 'sRGB';
-  method?: 'Teul OKLCH v2' | 'Radix Colors';
+  method?: 'Teul OKLCH v3' | 'Radix Colors';
   mode?: 'light' | 'dark';
   validation?: ColorScaleValidation;
   sourceVersion?: string;
@@ -58,7 +58,7 @@ interface ExportScaleData {
   role: string;
   colors: Record<string, string>;
   profile?: 'sRGB';
-  method?: 'Teul OKLCH v2' | 'Radix Colors';
+  method?: 'Teul OKLCH v3' | 'Radix Colors';
   mode?: 'light' | 'dark';
   validation?: ColorScaleValidation;
   sourceVersion?: string;
@@ -205,7 +205,7 @@ function isVerifiedExactRadixScale(scale: ExportScale): boolean {
 }
 
 function buildExportMetadataComments(metadata: ExactRadixExportMetadata, prefix = ''): string {
-  let comments = `${prefix}Exact Radix Colors: ${getExactRadixLabel(metadata)}\n`;
+  let comments = `${prefix}Exact Radix sRGB Solid: ${getExactRadixLabel(metadata)}\n`;
   if (metadata.matchedFamilies?.length) {
     comments += `${prefix}Matched families: ${metadata.matchedFamilies.join(', ')}\n`;
   }
@@ -311,7 +311,7 @@ function buildWCAGReportComments(
 ): string {
   let comments = `/* WCAG-constrained semantic token report */\n`;
   comments += `/* Scope: declared semantic token pairings only; not whole-product WCAG conformance. */\n`;
-  comments += `/* Policy: ${policy.standard} · ${policy.level} · ${report.mode} · ${report.valid ? 'PASS' : 'FAIL'} */\n`;
+  comments += `/* Policy: ${policy.standard} · ${policy.colorSpace} · ${policy.level} · ${report.mode} · ${report.valid ? 'PASS' : 'FAIL'} */\n`;
   for (const pairing of report.pairings) {
     const id = `${pairing.foregroundToken}-on-${pairing.backgroundToken}`;
     comments += `/* ${pairing.pass ? 'PASS' : 'FAIL'} ${id}: ${pairing.foregroundToken} on ${pairing.backgroundToken} · ${pairing.ratio.toFixed(2)}:1 / ${pairing.minimumRatio.toFixed(2)}:1 · ${pairing.category} · ${pairing.useCase} */\n`;

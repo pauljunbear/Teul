@@ -3,6 +3,7 @@ import type {
   GenerateColorSystemMessage,
 } from '../types/messages';
 import { isSemanticColorPolicyCurrent } from '../lib/semanticColorPolicy';
+import { haveExactTeulGeneratedScaleClaims } from '../lib/colorScale';
 import { areAllScalesExactRadix, haveExactRadixScaleClaims } from '../lib/radixColors';
 import { createColorStyles } from './colorStyles';
 import { generateColorSystemFrames } from './colorSystemGeneration';
@@ -27,6 +28,32 @@ interface PageViewSnapshot {
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error && error.message ? error.message : 'Color system generation failed';
+}
+
+function readLiveRootProfile(): 'srgb' | 'display-p3' | 'legacy' | 'unknown' {
+  try {
+    const root = figma.root as DocumentNode & { readonly documentColorProfile?: unknown };
+    if (root.documentColorProfile === 'SRGB') return 'srgb';
+    if (root.documentColorProfile === 'DISPLAY_P3') return 'display-p3';
+    if (root.documentColorProfile === 'LEGACY') return 'legacy';
+  } catch {
+    // An unavailable profile must fail closed for WCAG-constrained mutation.
+  }
+  return 'unknown';
+}
+
+function rootProfileLabel(profile: ReturnType<typeof readLiveRootProfile>): string {
+  if (profile === 'display-p3') return 'Display P3';
+  if (profile === 'legacy') return 'legacy';
+  return profile;
+}
+
+function unsupportedMutationProfileError(
+  profile: ReturnType<typeof readLiveRootProfile>
+): Error {
+  return new Error(
+    `On-canvas Teul color-system generation requires a live sRGB Figma document because generated and bundled hex channels are sRGB; current profile is ${rootProfileLabel(profile)}. Export remains available.`
+  );
 }
 
 function canonicalize(value: unknown): unknown {
@@ -144,15 +171,21 @@ interface ColorSystemTransactionReport {
 async function runColorSystemTransaction(
   message: GenerateColorSystemMessage
 ): Promise<ColorSystemTransactionReport> {
+  const initialRootProfile = readLiveRootProfile();
+  if (initialRootProfile !== 'srgb') throw unsupportedMutationProfileError(initialRootProfile);
+
   const scales = message.scales.scales;
+  if (scales && !haveExactTeulGeneratedScaleClaims(scales.light, scales.dark)) {
+    throw new Error('Teul OKLCH v3 claims must match backend-regenerated Local MINDE scales');
+  }
   if (scales && !haveExactRadixScaleClaims(scales.light, scales.dark)) {
-    throw new Error('Exact Radix Colors claims must match the pinned bundled values');
+    throw new Error('Exact Radix sRGB Solid claims must match the pinned bundled values');
   }
   if (
     message.scales.scaleMethod === 'radix-match' &&
     (!scales || !areAllScalesExactRadix(scales.light, scales.dark))
   ) {
-    throw new Error('Exact Radix Colors mode requires only pinned bundled values');
+    throw new Error('Exact Radix sRGB Solid mode requires only pinned bundled values');
   }
 
   if (message.scales.scaleMethod === 'wcag-constrained') {
@@ -168,35 +201,60 @@ async function runColorSystemTransaction(
 
   const collisionPolicy = message.collisionPolicy ?? 'cancel';
   const outputResolution = await resolveColorSystemOutputName(message);
+  const rootProfile = readLiveRootProfile();
+  if (rootProfile !== 'srgb') throw unsupportedMutationProfileError(rootProfile);
   const effectiveMessage: GenerateColorSystemMessage = {
     ...message,
     collisionPolicy,
-    config: { ...message.config, systemName: outputResolution.outputName },
-    scales: { ...message.scales, systemName: outputResolution.outputName },
+    config: {
+      ...message.config,
+      systemName: outputResolution.outputName,
+      documentColorProfile: rootProfile,
+    },
+    scales: {
+      ...message.scales,
+      systemName: outputResolution.outputName,
+      documentColorProfile: rootProfile,
+    },
   };
   const pageView = capturePageView();
   let generatedFrame: FrameNode | undefined;
   let variableTransaction: ColorVariableTransaction | undefined;
 
   try {
+    let mutationProfileLock: ReturnType<typeof readLiveRootProfile> | null = null;
+    const refreshProfileImmediatelyBeforeMutation = () => {
+      const mutationProfile = readLiveRootProfile();
+      if (mutationProfileLock !== null && mutationProfile !== mutationProfileLock) {
+        throw new Error(
+          `Figma document profile changed during color system generation (${rootProfileLabel(mutationProfileLock)} to ${rootProfileLabel(mutationProfile)}); no mixed-profile output was kept`
+        );
+      }
+      if (mutationProfile !== 'srgb') throw unsupportedMutationProfileError(mutationProfile);
+      mutationProfileLock = mutationProfile;
+      effectiveMessage.config.documentColorProfile = mutationProfile;
+      effectiveMessage.scales.documentColorProfile = mutationProfile;
+    };
     generatedFrame = await generateColorSystemFrames(
       effectiveMessage.config,
       effectiveMessage.scales,
-      { notify: false }
+      { notify: false, beforeFirstMutation: refreshProfileImmediatelyBeforeMutation }
     );
 
     if (effectiveMessage.createVariables) {
       variableTransaction = await createColorVariables(
         effectiveMessage.scales,
         outputResolution.outputName,
-        collisionPolicy
+        collisionPolicy,
+        refreshProfileImmediatelyBeforeMutation
       );
     }
     const styleReport = effectiveMessage.createStyles
       ? await createColorStyles(
           effectiveMessage.scales,
           outputResolution.outputName,
-          collisionPolicy
+          collisionPolicy,
+          refreshProfileImmediatelyBeforeMutation
         )
       : undefined;
     return {

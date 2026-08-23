@@ -58,6 +58,33 @@ const packageMetadata = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.j
 if (packageMetadata.license !== 'SEE LICENSE IN LICENSE') {
   fail('package.json must defer to the mixed-license project LICENSE file.');
 }
+if (
+  packageMetadata.dependencies?.['apca-w3'] ||
+  packageMetadata.dependencies?.colorparsley ||
+  packageMetadata.devDependencies?.['apca-w3'] !== '0.1.9'
+) {
+  fail('apca-w3 0.1.9 must remain an exact development-only verification dependency.');
+}
+
+const apcaPackage = JSON.parse(
+  fs.readFileSync(path.join(rootDir, 'node_modules', 'apca-w3', 'package.json'), 'utf8')
+);
+const colorParsleyPackage = JSON.parse(
+  fs.readFileSync(path.join(rootDir, 'node_modules', 'colorparsley', 'package.json'), 'utf8')
+);
+if (apcaPackage.license !== 'Limited W3 License') {
+  fail('The reviewed apca-w3 development dependency license changed.');
+}
+if (colorParsleyPackage.version !== '0.1.8' || colorParsleyPackage.license !== 'AGPL v3') {
+  fail('The reviewed colorparsley development-only transitive license boundary changed.');
+}
+
+for (const artifactName of ['ui.html', 'code.js']) {
+  const artifact = fs.readFileSync(path.join(distDir, artifactName), 'utf8');
+  if (/colorparsley/i.test(artifact)) {
+    fail(`dist/${artifactName} must not contain the development-only colorparsley oracle.`);
+  }
+}
 
 const distributedDocuments = [
   { source: 'LICENSE', output: 'LICENSE' },

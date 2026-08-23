@@ -41,7 +41,7 @@ function makePolicyScale(role: string, mode: 'light' | 'dark'): ExportScale {
   return {
     name: role,
     role,
-    method: 'Teul OKLCH v2',
+    method: 'Teul OKLCH v3',
     mode,
     steps: Array.from({ length: 12 }, (_, index) => ({
       step: index + 1,
@@ -113,7 +113,7 @@ describe('optional semantic and exact Radix export metadata', () => {
     const tailwind = exportAsTailwind(dynamicScales, undefined, 'Brand');
     const json = JSON.parse(exportAsJSON(dynamicScales, undefined, 'Brand'));
 
-    expect(css).not.toContain('Exact Radix Colors');
+    expect(css).not.toContain('Exact Radix sRGB Solid');
     expect(css).not.toContain('WCAG-constrained semantic tokens');
     expect(tailwind).not.toContain('exactRadix');
     expect(tailwind).not.toContain('semanticColorPolicy');
@@ -134,7 +134,7 @@ describe('optional semantic and exact Radix export metadata', () => {
     expect(css).toContain('--brand-system-semantic-action-background-hover: #222222;');
     expect(css).toContain('--brand-system-semantic-background-canvas: #000000;');
     expect(css).toContain('--brand-system-semantic-text-primary: #eeeeee;');
-    expect(css).toContain('Policy: WCAG 2.2 · AA + enhanced primary text · light · PASS');
+    expect(css).toContain('Policy: WCAG 2.2 · sRGB · AA + enhanced primary text · light · PASS');
     expect(css).toContain(
       'Scope: declared semantic token pairings only; not whole-product WCAG conformance.'
     );
@@ -156,6 +156,7 @@ describe('optional semantic and exact Radix export metadata', () => {
       "'background-canvas': 'var(--brand-system-semantic-background-canvas)'"
     );
     expect(tailwind).toContain("'semanticColorPolicy': {");
+    expect(tailwind).toContain("'colorSpace': 'sRGB'");
     expect(tailwind).toContain("'modes': {");
     expect(tailwind).toContain('// Dark mode colors');
     expect(tailwind).toContain('"background-canvas": "#000000"');
@@ -178,6 +179,7 @@ describe('optional semantic and exact Radix export metadata', () => {
     );
 
     expect(json.semanticPolicy).toEqual(constrainedExportOptions.semanticPolicy);
+    expect(json.semanticPolicy.colorSpace).toBe('sRGB');
     expect(json.semanticPolicy.modes.light.tokens['background.canvas']).toEqual({
       name: 'background.canvas',
       value: '#ffffff',
@@ -256,7 +258,7 @@ describe('optional semantic and exact Radix export metadata', () => {
     const css = exportAsCSS(radixScales, undefined, 'Brand');
     const json = JSON.parse(exportAsJSON(radixScales, undefined, 'Brand'));
 
-    expect(css).toContain('Exact Radix Colors: @radix-ui/colors v3.0.0');
+    expect(css).toContain('Exact Radix sRGB Solid: @radix-ui/colors v3.0.0');
     expect(css).toContain('Matched families: blue, slate');
     expect(css).toContain('@radix-ui/colors v3.0.0 · matched family blue · source input #0090ff');
     expect(json.metadata.exactRadix).toMatchObject({
@@ -275,7 +277,7 @@ describe('optional semantic and exact Radix export metadata', () => {
     const mixedScales: ExportScales = {
       primary: {
         ...makeScale('Primary'),
-        method: 'Teul OKLCH v2',
+        method: 'Teul OKLCH v3',
       },
       neutral: {
         name: 'Slate',
@@ -294,7 +296,7 @@ describe('optional semantic and exact Radix export metadata', () => {
     const css = exportAsCSS(mixedScales, undefined, 'Brand');
     const json = JSON.parse(exportAsJSON(mixedScales, undefined, 'Brand'));
 
-    expect(css).not.toContain('Exact Radix Colors:');
+    expect(css).not.toContain('Exact Radix sRGB Solid:');
     expect(json).not.toHaveProperty('metadata.exactRadix');
     expect(json.light.neutral).toMatchObject({
       sourceVersion: '3.0.0',
@@ -316,7 +318,7 @@ describe('optional semantic and exact Radix export metadata', () => {
     const css = exportAsCSS(forgedScales, undefined, 'Brand');
     const json = JSON.parse(exportAsJSON(forgedScales, undefined, 'Brand'));
 
-    expect(css).not.toContain('Exact Radix Colors');
+    expect(css).not.toContain('Exact Radix sRGB Solid');
     expect(css).not.toContain('@radix-ui/colors');
     expect(json).not.toHaveProperty('metadata');
     expect(json.light.neutral).not.toHaveProperty('sourceVersion');
@@ -328,7 +330,7 @@ describe('optional semantic and exact Radix export metadata', () => {
       neutral: {
         name: 'Slate',
         role: 'Neutral',
-        method: 'Teul OKLCH v2',
+        method: 'Teul OKLCH v3',
         mode: 'light',
         sourceVersion: '3.0.0',
         sourceFamily: 'slate',
@@ -342,7 +344,7 @@ describe('optional semantic and exact Radix export metadata', () => {
     const css = exportAsCSS(generatedWithRadixValues, undefined, 'Brand');
     const json = JSON.parse(exportAsJSON(generatedWithRadixValues, undefined, 'Brand'));
 
-    expect(css).not.toContain('Exact Radix Colors');
+    expect(css).not.toContain('Exact Radix sRGB Solid');
     expect(css).not.toContain('@radix-ui/colors');
     expect(json).not.toHaveProperty('metadata');
     expect(json.light.neutral).not.toHaveProperty('sourceVersion');

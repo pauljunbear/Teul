@@ -64,7 +64,7 @@ export interface ColorScale {
   steps: ColorStep[];
   mode: ColorScaleMode;
   profile: 'sRGB';
-  method: 'Teul OKLCH v2';
+  method: 'Teul OKLCH v3';
   anchorStep: 9;
   validation: ColorScaleValidation;
 }
@@ -86,11 +86,19 @@ const STEP_USAGE: Record<number, string> = {
 
 const CHROMA_MULTIPLIERS = [0.025, 0.05, 0.1, 0.17, 0.25, 0.36, 0.52, 0.72, 1, 0.92, 0.72, 0.52];
 const EPSILON = 0.00001;
+const LOCAL_MINDE_JND = 0.02;
+const LOCAL_MINDE_EPSILON = 0.0001;
 
 interface RawRgb {
   r: number;
   g: number;
   b: number;
+}
+
+interface ClippedSrgb {
+  hex: string;
+  oklch: OKLCH;
+  oklab: ReturnType<typeof rgbToOklab>;
 }
 
 function normalizeHex(hex: string): string {
@@ -140,46 +148,134 @@ export function isOklchInSrgbGamut(color: OKLCH): boolean {
   );
 }
 
+function normalizeHue(hue: number): number {
+  return ((hue % 360) + 360) % 360;
+}
+
+function clampChannel(channel: number): number {
+  return Math.max(0, Math.min(255, channel));
+}
+
+function clipOklchToSrgb(color: OKLCH): ClippedSrgb {
+  const raw = oklchToRawSrgb(color.l, color.c, color.h);
+  const clipped = {
+    r: clampChannel(raw.r),
+    g: clampChannel(raw.g),
+    b: clampChannel(raw.b),
+  };
+  const oklab = rgbToOklab(clipped.r, clipped.g, clipped.b);
+
+  return {
+    hex: rgbToHex(
+      Math.round(clipped.r),
+      Math.round(clipped.g),
+      Math.round(clipped.b)
+    ).toLowerCase(),
+    oklch: oklabToOklch(oklab.L, oklab.a, oklab.b),
+    oklab,
+  };
+}
+
+function deltaEOK(
+  first: ReturnType<typeof rgbToOklab>,
+  second: ReturnType<typeof rgbToOklab>
+): number {
+  return Math.sqrt(
+    Math.pow(first.L - second.L, 2) +
+      Math.pow(first.a - second.a, 2) +
+      Math.pow(first.b - second.b, 2)
+  );
+}
+
+function deltaFromClippedSrgb(color: OKLCH, clipped: ClippedSrgb): number {
+  const oklab = oklchToOklab(color.l, color.c, color.h);
+  return deltaEOK(clipped.oklab, oklab);
+}
+
 /**
- * Maps OKLCH into sRGB by preserving lightness and hue while reducing chroma.
- * This is deterministic and avoids clipping RGB channels, which can shift hue.
+ * Maps an individual SDR OKLCH color to sRGB using CSS Color 4's Binary Search
+ * Gamut Mapping with Local MINDE. In-gamut colors are unchanged. Out-of-gamut
+ * colors reduce chroma at constant lightness and hue until an sRGB clip is less
+ * than one deltaEOK JND away (0.02), using the specified 0.0001 epsilon.
  */
 export function mapOklchToSrgb(color: OKLCH): { oklch: OKLCH; hex: string; mapped: boolean } {
   if (!isFiniteOklch(color)) {
     throw new Error('OKLCH values must be finite.');
   }
 
-  const safe: OKLCH = {
-    l: Math.max(0, Math.min(1, color.l)),
-    c: Math.max(0, color.c),
-    h: ((color.h % 360) + 360) % 360,
-  };
-
-  let mapped = safe.l !== color.l || safe.c !== color.c || safe.h !== color.h;
-  if (!isOklchInSrgbGamut(safe)) {
-    let low = 0;
-    let high = safe.c;
-
-    for (let iteration = 0; iteration < 24; iteration++) {
-      const mid = (low + high) / 2;
-      if (isOklchInSrgbGamut({ ...safe, c: mid })) {
-        low = mid;
-      } else {
-        high = mid;
-      }
-    }
-    safe.c = low;
-    mapped = true;
+  const hue = normalizeHue(color.h);
+  if (color.l >= 1) {
+    return {
+      oklch: { l: 1, c: 0, h: hue },
+      hex: '#ffffff',
+      mapped: color.l !== 1 || color.c !== 0 || color.h !== hue,
+    };
+  }
+  if (color.l <= 0) {
+    return {
+      oklch: { l: 0, c: 0, h: hue },
+      hex: '#000000',
+      mapped: color.l !== 0 || color.c !== 0 || color.h !== hue,
+    };
   }
 
-  const raw = oklchToRawSrgb(safe.l, safe.c, safe.h);
-  const hex = rgbToHex(
-    Math.round(Math.max(0, Math.min(255, raw.r))),
-    Math.round(Math.max(0, Math.min(255, raw.g))),
-    Math.round(Math.max(0, Math.min(255, raw.b)))
-  ).toLowerCase();
+  const safe: OKLCH = {
+    l: color.l,
+    c: Math.max(0, color.c),
+    h: hue,
+  };
 
-  return { oklch: safe, hex, mapped };
+  const normalized = safe.c !== color.c || safe.h !== color.h;
+  if (isOklchInSrgbGamut(safe)) {
+    const raw = oklchToRawSrgb(safe.l, safe.c, safe.h);
+    return {
+      oklch: safe,
+      hex: rgbToHex(
+        Math.round(clampChannel(raw.r)),
+        Math.round(clampChannel(raw.g)),
+        Math.round(clampChannel(raw.b))
+      ).toLowerCase(),
+      mapped: normalized,
+    };
+  }
+
+  let current = safe;
+  let clipped = clipOklchToSrgb(current);
+  if (deltaFromClippedSrgb(current, clipped) < LOCAL_MINDE_JND) {
+    return { oklch: clipped.oklch, hex: clipped.hex, mapped: true };
+  }
+
+  let min = 0;
+  let max = safe.c;
+  let minInGamut = true;
+
+  // Typical sRGB inputs converge in fewer than 16 passes. The finite cap also
+  // makes this total for arbitrarily large-but-finite chroma supplied to the
+  // exported helper.
+  for (let iteration = 0; iteration < 2048 && max - min > LOCAL_MINDE_EPSILON; iteration++) {
+    const chroma = (min + max) / 2;
+    if (chroma === min || chroma === max) break;
+    current = { ...safe, c: chroma };
+
+    if (minInGamut && isOklchInSrgbGamut(current)) {
+      min = chroma;
+      continue;
+    }
+
+    clipped = clipOklchToSrgb(current);
+    const difference = deltaFromClippedSrgb(current, clipped);
+    if (difference < LOCAL_MINDE_JND) {
+      if (LOCAL_MINDE_JND - difference < LOCAL_MINDE_EPSILON) {
+        return { oklch: clipped.oklch, hex: clipped.hex, mapped: true };
+      }
+      minInGamut = false;
+      min = chroma;
+    } else {
+      max = chroma;
+    }
+  }
+
+  return { oklch: clipped.oklch, hex: clipped.hex, mapped: true };
 }
 
 function interpolate(start: number, end: number, index: number, count: number): number {
@@ -443,8 +539,59 @@ export function generateColorScale(
     steps,
     mode,
     profile: 'sRGB',
-    method: 'Teul OKLCH v2',
+    method: 'Teul OKLCH v3',
     anchorStep: 9,
     validation: validateScale(normalizedBase, steps, mode),
   };
+}
+
+export function isExactTeulGeneratedScale(scale: {
+  method?: unknown;
+  mode?: unknown;
+  steps?: readonly { step: number; hex: string }[];
+  validation?: unknown;
+}): boolean {
+  if (
+    scale.method !== 'Teul OKLCH v3' ||
+    (scale.mode !== 'light' && scale.mode !== 'dark') ||
+    !Array.isArray(scale.steps) ||
+    scale.steps.length !== 12 ||
+    scale.steps.some(
+      (step, index) =>
+        step.step !== index + 1 || typeof step.hex !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(step.hex)
+    )
+  ) {
+    return false;
+  }
+
+  const regenerated = generateColorScale(scale.steps[8].hex, scale.mode);
+  return (
+    regenerated.validation.valid &&
+    scale.steps.every(
+      (step, index) => step.hex.toLowerCase() === regenerated.steps[index].hex.toLowerCase()
+    ) &&
+    JSON.stringify(scale.validation) === JSON.stringify(regenerated.validation)
+  );
+}
+
+export function haveExactTeulGeneratedScaleClaims(
+  ...scaleMaps: Array<
+    | Record<
+        string,
+        | {
+            method?: unknown;
+            mode?: unknown;
+            steps?: readonly { step: number; hex: string }[];
+            validation?: unknown;
+          }
+        | undefined
+      >
+    | undefined
+  >
+): boolean {
+  return scaleMaps.every(scaleMap =>
+    Object.values(scaleMap ?? {}).every(
+      scale => scale?.method !== 'Teul OKLCH v3' || isExactTeulGeneratedScale(scale)
+    )
+  );
 }

@@ -5,7 +5,7 @@ export type NormalizedDocumentColorProfile = 'legacy' | 'srgb' | 'display-p3' | 
 
 type ColorRole = 'primary' | 'secondary' | 'tertiary' | 'accent';
 type ColorScaleMode = 'light' | 'dark';
-type ColorScaleMethod = 'Teul OKLCH v2' | 'Radix Colors';
+type ColorScaleMethod = 'Teul OKLCH v3' | 'Radix Colors';
 type ColorSystemScaleMethod = 'custom' | 'radix-match' | 'wcag-constrained';
 type ColorSystemDetailLevel = 'minimal' | 'detailed' | 'presentation';
 type NeutralFamily = 'auto' | 'gray' | 'mauve' | 'slate' | 'sage' | 'olive' | 'sand';

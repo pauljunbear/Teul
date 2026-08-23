@@ -5,7 +5,6 @@ import {
   sendSelectionInfo,
   sendAccessibilitySelection,
   sendDocumentColorProfile,
-  detectDocumentColorProfile,
   handleApplyFill,
   handleApplyStroke,
   handleCreateStyle,
@@ -294,7 +293,7 @@ figma.ui.onmessage = async (msg: unknown) => {
   }
 
   if (message.type === 'get-selection-for-accessibility') {
-    sendAccessibilitySelection(message.requestId, detectDocumentColorProfile(figma.root));
+    await sendAccessibilitySelection(message.requestId);
     return;
   }
 

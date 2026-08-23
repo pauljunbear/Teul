@@ -1,0 +1,156 @@
+{
+  "oracle": {
+    "package": "colorjs.io",
+    "version": "0.7.0",
+    "packageSha256": "9fcffedb8a1ba812bb695dc7ab100c1a3c77a52264cbd56050117e6c48fe453a",
+    "generatedOn": "2026-08-02",
+    "method": "Color#toGamut({ space: \"srgb\", method: \"css\" })",
+    "upstream": "https://github.com/color-js/color.js",
+    "specification": "https://www.w3.org/TR/2026/CRD-css-color-4-20260728/#binsearch"
+  },
+  "constants": {
+    "jnd": 0.02,
+    "epsilon": 0.0001,
+    "boundaryChroma": 0.1860587987410767
+  },
+  "vectors": [
+    {
+      "id": "in-gamut-relative-colorimetric",
+      "category": "in-gamut-identity",
+      "input": { "l": 0.6, "c": 0.05, "h": 240 },
+      "inputInSrgb": true,
+      "initialClipDeltaEOK": 3.5115191112877737e-16,
+      "expectedMapped": false,
+      "expected": {
+        "srgb": [0.3964625488376243, 0.5203084176340175, 0.6096572662662295],
+        "oklch": [0.6000000000000001, 0.05000000000000016, 239.99999999999963],
+        "hex": "#65859b"
+      }
+    },
+    {
+      "id": "media-white",
+      "category": "lightness-endpoint",
+      "input": { "l": 1.2, "c": 0.4, "h": 120 },
+      "inputInSrgb": false,
+      "initialClipDeltaEOK": 0.30370170355639287,
+      "expectedMapped": true,
+      "expected": {
+        "srgb": [1.0000000000000004, 0.9999999999999992, 0.9999999999999997],
+        "oklch": [0.9999999999999999, 0, null],
+        "hex": "#ffffff"
+      }
+    },
+    {
+      "id": "media-black",
+      "category": "lightness-endpoint",
+      "input": { "l": -0.2, "c": 0.4, "h": 240 },
+      "inputInSrgb": false,
+      "initialClipDeltaEOK": 0.6281343385094744,
+      "expectedMapped": true,
+      "expected": {
+        "srgb": [0, 0, 0],
+        "oklch": [0, 0, null],
+        "hex": "#000000"
+      }
+    },
+    {
+      "id": "boundary-inside-epsilon",
+      "category": "gamut-boundary",
+      "input": { "l": 0.65, "c": 0.1860087987410767, "h": 264 },
+      "inputInSrgb": true,
+      "initialClipDeltaEOK": 1.3947004136484323e-16,
+      "expectedMapped": false,
+      "expected": {
+        "srgb": [0.32547083715241776, 0.5322941704662111, 0.999885924751824],
+        "oklch": [0.65, 0.18600879874107687, 264],
+        "hex": "#5388ff"
+      }
+    },
+    {
+      "id": "boundary-outside-epsilon",
+      "category": "gamut-boundary",
+      "input": { "l": 0.65, "c": 0.1862087987410767, "h": 264 },
+      "inputInSrgb": false,
+      "initialClipDeltaEOK": 0.00013000797451002114,
+      "expectedMapped": true,
+      "expected": {
+        "srgb": [0.32519544859638166, 0.5322062302226731, 0.9999999999999999],
+        "oklch": [0.6499428914323852, 0.18609452401325488, 263.9925748265429],
+        "hex": "#5388ff"
+      }
+    },
+    {
+      "id": "initial-clip-below-jnd",
+      "category": "near-jnd",
+      "input": { "l": 0.74, "c": 0.1857470188958083, "h": 35 },
+      "inputInSrgb": false,
+      "initialClipDeltaEOK": 0.0199500000000001,
+      "expectedMapped": true,
+      "expected": {
+        "srgb": [0.9999999999999992, 0.46727498685497876, 0.3260098250312491],
+        "oklch": [0.7241911556089736, 0.17389097482132182, 35.87408613979926],
+        "hex": "#ff7753"
+      }
+    },
+    {
+      "id": "initial-clip-above-jnd",
+      "category": "near-jnd",
+      "input": { "l": 0.74, "c": 0.18587185798387024, "h": 35 },
+      "inputInSrgb": false,
+      "initialClipDeltaEOK": 0.020049999999999957,
+      "expectedMapped": true,
+      "expected": {
+        "srgb": [0.9999999999999992, 0.46736586712459244, 0.32614624027696787],
+        "oklch": [0.7242282724058173, 0.17385980435064594, 35.872375189492914],
+        "hex": "#ff7753"
+      }
+    },
+    {
+      "id": "display-p3-yellow",
+      "category": "shallow-concave-yellow",
+      "input": {
+        "l": 0.9647641197096958,
+        "c": 0.24503143904054167,
+        "h": 110.22980955562514
+      },
+      "inputInSrgb": false,
+      "initialClipDeltaEOK": 0.03422629761207496,
+      "expectedMapped": true,
+      "expected": {
+        "srgb": [0.9962332729609719, 0.9990138958496116, -4.6618264804010325e-15],
+        "oklch": [0.9666889258201702, 0.21100895393582342, 109.97670673558923],
+        "hex": "#feff00"
+      }
+    },
+    {
+      "id": "display-p3-cyan",
+      "category": "shallow-concave-cyan",
+      "input": {
+        "l": 0.892901616194442,
+        "c": 0.20566745905825426,
+        "h": 193.13768775138288
+      },
+      "inputInSrgb": false,
+      "initialClipDeltaEOK": 0.05286725532168595,
+      "expectedMapped": true,
+      "expected": {
+        "srgb": [-3.0122571104129746e-14, 0.9964471247079284, 0.9847142683228457],
+        "oklch": [0.9019634939043446, 0.15440733913272683, 193.24013100988262],
+        "hex": "#00fefb"
+      }
+    },
+    {
+      "id": "high-chroma-red",
+      "category": "deep-out-of-gamut",
+      "input": { "l": 0.7, "c": 0.5, "h": 30 },
+      "inputInSrgb": false,
+      "initialClipDeltaEOK": 0.2528454989759055,
+      "expectedMapped": true,
+      "expected": {
+        "srgb": [0.9999999999999997, 0.345135078748321, 0.26457511225176483],
+        "oklch": [0.6831016167292401, 0.2061957674944507, 30.18162813575651],
+        "hex": "#ff5843"
+      }
+    }
+  ]
+}

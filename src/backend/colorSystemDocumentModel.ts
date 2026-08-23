@@ -40,7 +40,7 @@ export function getColorSystemDocumentName(
       ? 'WCAG-Constrained Semantic Tokens'
       : data.scaleMethod === 'custom'
         ? 'Teul Generated'
-        : 'Exact Radix Colors';
+        : 'Exact Radix sRGB Solid';
   const profileLabel = data.documentColorProfile ? `, document ${data.documentColorProfile}` : '';
   return `Color System - ${data.systemName} (${methodLabel}, source sRGB${profileLabel})`;
 }

@@ -8,7 +8,7 @@ function scale(role: string): ColorScaleData {
     role,
     steps: [],
     profile: 'sRGB',
-    method: 'Teul OKLCH v2',
+    method: 'Teul OKLCH v3',
     mode: 'light',
   };
 }
@@ -29,7 +29,7 @@ describe('color system document model', () => {
 
   it.each([
     ['custom', 'Teul Generated'],
-    ['radix-match', 'Exact Radix Colors'],
+    ['radix-match', 'Exact Radix sRGB Solid'],
     ['wcag-constrained', 'WCAG-Constrained Semantic Tokens'],
   ] as const)('names %s output without overstating its source', (scaleMethod, label) => {
     expect(

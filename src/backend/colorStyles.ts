@@ -117,7 +117,8 @@ let colorStyleCreationQueue: Promise<void> = Promise.resolve();
 async function createColorStylesOperation(
   scalesData: CreateStylesData,
   systemName: string,
-  collisionPolicy: ColorCollisionPolicy
+  collisionPolicy: ColorCollisionPolicy,
+  beforeMutation?: () => void
 ): Promise<ColorStyleReport> {
   if (
     scalesData.scaleMethod === 'wcag-constrained' &&
@@ -319,6 +320,7 @@ async function createColorStylesOperation(
 
   try {
     for (let i = 0; i < stylesToCreate.length; i += BATCH_SIZE) {
+      beforeMutation?.();
       const batch = stylesToCreate.slice(i, i + BATCH_SIZE);
       await Promise.all(
         batch.map(({ name, color, description }) => {
@@ -334,6 +336,7 @@ async function createColorStylesOperation(
       );
     }
 
+    if (stylesToUpdate.length > 0) beforeMutation?.();
     for (const { style, request } of stylesToUpdate) {
       updatedStyles.push({
         style,
@@ -365,10 +368,11 @@ async function createColorStylesOperation(
 export function createColorStyles(
   scalesData: CreateStylesData,
   systemName: string,
-  collisionPolicy: ColorCollisionPolicy = 'cancel'
+  collisionPolicy: ColorCollisionPolicy = 'cancel',
+  beforeMutation?: () => void
 ): Promise<ColorStyleReport> {
   const creation = colorStyleCreationQueue.then(() =>
-    createColorStylesOperation(scalesData, systemName, collisionPolicy)
+    createColorStylesOperation(scalesData, systemName, collisionPolicy, beforeMutation)
   );
   colorStyleCreationQueue = creation.then(
     () => undefined,

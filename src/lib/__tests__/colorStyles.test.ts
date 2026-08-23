@@ -85,7 +85,7 @@ function makeConstrainedScale(mode: 'light' | 'dark') {
     name: 'Neutral',
     role: 'Neutral',
     profile: 'sRGB' as const,
-    method: 'Teul OKLCH v2' as const,
+    method: 'Teul OKLCH v3' as const,
     mode,
     steps: Array.from({ length: 12 }, (_, index) => ({
       step: index + 1,

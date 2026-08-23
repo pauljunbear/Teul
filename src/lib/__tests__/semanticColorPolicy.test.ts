@@ -174,6 +174,78 @@ describe('evaluateSemanticColorPolicy', () => {
       /text\.primary requires a valid neutral step 12/
     );
   });
+
+  it.each([
+    {
+      category: 'enhanced-text' as const,
+      below: '#949494',
+      above: '#959595',
+      token: 'text.primary',
+      apply: (scales: SemanticColorScales, value: string) => {
+        scales.neutral = makeScale('dark', {
+          1: '#000000',
+          2: '#000000',
+          3: '#000000',
+          11: '#ffffff',
+          12: value,
+        });
+      },
+    },
+    {
+      category: 'text' as const,
+      below: '#747474',
+      above: '#757575',
+      token: 'text.secondary',
+      apply: (scales: SemanticColorScales, value: string) => {
+        scales.neutral = makeScale('dark', {
+          1: '#000000',
+          2: '#000000',
+          3: '#000000',
+          11: value,
+          12: '#ffffff',
+        });
+      },
+    },
+  ])('uses the unrounded $category threshold at its nearest 8-bit boundary', fixture => {
+    const belowScales = makePassingScales('dark');
+    const aboveScales = makePassingScales('dark');
+    fixture.apply(belowScales, fixture.below);
+    fixture.apply(aboveScales, fixture.above);
+
+    const below = evaluateSemanticColorPolicy(belowScales, 'dark').pairings.find(
+      pairing =>
+        pairing.category === fixture.category && pairing.foregroundToken === fixture.token
+    );
+    const above = evaluateSemanticColorPolicy(aboveScales, 'dark').pairings.find(
+      pairing =>
+        pairing.category === fixture.category && pairing.foregroundToken === fixture.token
+    );
+
+    expect(below?.ratio).toBeLessThan(WCAG_CONTRAST_THRESHOLDS[fixture.category]);
+    expect(below?.pass).toBe(false);
+    expect(above?.ratio).toBeGreaterThan(WCAG_CONTRAST_THRESHOLDS[fixture.category]);
+    expect(above?.pass).toBe(true);
+  });
+
+  it('uses the unrounded non-text threshold during semantic candidate selection', () => {
+    const belowScales = makePassingScales('dark');
+    const aboveScales = makePassingScales('dark');
+    belowScales.primary = makeScale('dark', { 9: '#595959', 10: '#585858' });
+    aboveScales.primary = makeScale('dark', { 9: '#5a5a5a', 10: '#5b5b5b' });
+
+    const findActionPair = (scales: SemanticColorScales) =>
+      evaluateSemanticColorPolicy(scales, 'dark').pairings.find(
+        pairing =>
+          pairing.category === 'non-text' && pairing.foregroundToken === 'action.background'
+      );
+    const below = findActionPair(belowScales);
+    const above = findActionPair(aboveScales);
+
+    expect(below?.ratio).toBeLessThan(WCAG_CONTRAST_THRESHOLDS['non-text']);
+    expect(below?.pass).toBe(false);
+    expect(above?.ratio).toBeGreaterThan(WCAG_CONTRAST_THRESHOLDS['non-text']);
+    expect(above?.pass).toBe(true);
+  });
 });
 
 describe('buildSemanticColorPolicy', () => {
@@ -182,6 +254,7 @@ describe('buildSemanticColorPolicy', () => {
 
     expect(report).toMatchObject({
       standard: 'WCAG 2.2',
+      colorSpace: 'sRGB',
       level: 'AA + enhanced primary text',
       valid: true,
       modes: {

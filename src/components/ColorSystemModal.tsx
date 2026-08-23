@@ -13,8 +13,10 @@ import type {
 } from '../types/messages';
 import {
   findClosestRadixFamily,
+  matchRadixFamily,
   getNeutralForAccent,
   RADIX_COLORS_VERSION,
+  RADIX_FAMILY_MATCH_METHOD,
   radixColors,
   neutralFamilies,
   type NeutralName,
@@ -87,6 +89,14 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
   documentColorProfile = 'unknown',
 }) => {
   const theme = getStyles(isDark);
+  const documentProfileLabel =
+    documentColorProfile === 'display-p3'
+      ? 'Display P3'
+      : documentColorProfile === 'srgb'
+        ? 'sRGB'
+        : documentColorProfile === 'legacy'
+          ? 'Legacy'
+          : 'Unknown';
   const workspaceContext = useOptionalWorkspaceState();
   const updateWorkspace = workspaceContext?.update;
   const sourceSignature = useMemo(
@@ -457,11 +467,14 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
     if (scaleMethod !== 'radix-match') return null;
     const primary = getColorsForRole('primary')[0];
     if (!primary) return null;
-    const family = findClosestRadixFamily(primary.hex);
+    const match = matchRadixFamily(primary.hex);
     return {
       inputHex: primary.hex.toUpperCase(),
-      familyName: family.displayName,
-      familyStep9: family.light[9].toUpperCase(),
+      familyName: match.family.displayName,
+      matchedMode: match.matchedMode,
+      matchedStep: match.matchedStep,
+      matchedHex: match.matchedHex.toUpperCase(),
+      deltaEOK: match.deltaEOK,
     };
   }, [getColorsForRole, scaleMethod]);
 
@@ -593,17 +606,21 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
   const generatedOutputScales = [
     ...Object.values(exportScales.light),
     ...Object.values(exportScales.dark ?? {}),
-  ].filter(scale => scale?.method === 'Teul OKLCH v2');
+  ].filter(scale => scale?.method === 'Teul OKLCH v3');
   const generatedScalesValid =
     scaleMethod === 'radix-match' ||
     generatedOutputScales.every(scale => scale?.validation?.valid === true);
-  const semanticPolicyValid = scaleMethod !== 'wcag-constrained' || semanticPolicy?.valid === true;
+  const srgbMutationSupported = documentColorProfile === 'srgb';
+  const semanticPolicyValid =
+    scaleMethod !== 'wcag-constrained' || semanticPolicy?.valid === true;
   const canGenerate = generatedScalesValid && semanticPolicyValid;
-  const canSubmit = canGenerate && !systemNameError && !isSubmitting;
+  const canSubmit = canGenerate && srgbMutationSupported && !systemNameError && !isSubmitting;
   const hasPrimary = getColorsForRole('primary').length > 0;
   const generationErrorMessage = !generatedScalesValid
-    ? 'Generated scale fails structural or required contrast validation. Choose Exact Radix Colors or another source color.'
-    : 'The declared WCAG 2.2 semantic-token policy has failing pairings. Choose another source color or Exact Radix Colors.';
+    ? 'Generated scale fails structural or required contrast validation. Choose Exact Radix sRGB Solid or another source color.'
+    : !srgbMutationSupported
+      ? 'On-canvas creation requires a confirmed sRGB Figma document because Teul Generated and Exact Radix values are sRGB. Export remains available.'
+      : 'The declared WCAG 2.2 semantic-token policy has failing pairings. Choose another source color or Exact Radix sRGB Solid.';
   const generatedValidationItems = generatedOutputScales.flatMap(scale =>
     scale?.validation && scale.mode
       ? [{ name: scale.name, mode: scale.mode, validation: scale.validation }]
@@ -687,7 +704,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
               Create a complete design system from your palette
             </p>
           </div>
-          {documentColorProfile === 'display-p3' && (
+          {documentColorProfile !== 'srgb' && (
             <div
               role="status"
               style={{
@@ -700,8 +717,10 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
                 lineHeight: 1.4,
               }}
             >
-              The Figma document is Display P3. Generated and bundled hex values remain labeled
-              sRGB; preserving their numeric channels can change their appearance in this document.
+              The Figma document profile is {documentProfileLabel}. Generated and bundled hex values
+              remain sRGB. On-canvas frames, variables, and styles are blocked because Figma would
+              reinterpret those numeric channels in this document profile; export remains
+              available.
             </div>
           )}
           <button
@@ -1003,13 +1022,22 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
                   padding: '12px',
                 }}
               >
-                <span style={{ fontSize: '13px', fontWeight: 700 }}>Exact Radix Colors</span>
+                <span style={{ fontSize: '13px', fontWeight: 700 }}>Exact Radix sRGB Solid</span>
                 <span style={{ fontSize: '10px', opacity: 0.7, marginTop: '4px' }}>
-                  Use the closest unmodified @radix-ui/colors v{RADIX_COLORS_VERSION} family
+                  Teul match: {RADIX_FAMILY_MATCH_METHOD}; source @radix-ui/colors v
+                  {RADIX_COLORS_VERSION}
                 </span>
               </button>
               <button
-                onClick={() => setScaleMethod('wcag-constrained')}
+                onClick={() => {
+                  if (srgbMutationSupported) setScaleMethod('wcag-constrained');
+                }}
+                disabled={!srgbMutationSupported}
+                title={
+                  srgbMutationSupported
+                    ? 'Create sRGB semantic tokens with blocking pair tests'
+                    : 'Requires a confirmed sRGB Figma document'
+                }
                 aria-pressed={scaleMethod === 'wcag-constrained'}
                 style={{
                   ...buttonStyle(scaleMethod === 'wcag-constrained'),
@@ -1017,11 +1045,15 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
                   flexDirection: 'column',
                   alignItems: 'flex-start',
                   padding: '12px',
+                  cursor: srgbMutationSupported ? 'pointer' : 'not-allowed',
+                  opacity: srgbMutationSupported ? 1 : 0.55,
                 }}
               >
                 <span style={{ fontSize: '13px', fontWeight: 700 }}>WCAG-Constrained Tokens</span>
                 <span style={{ fontSize: '10px', opacity: 0.7, marginTop: '4px' }}>
-                  Derive semantic tokens and block output unless every declared pairing passes
+                  {srgbMutationSupported
+                    ? 'Derive sRGB semantic tokens and block output unless every declared pairing passes'
+                    : 'Requires a confirmed sRGB Figma document'}
                 </span>
               </button>
             </div>
@@ -1129,7 +1161,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
             <label style={labelStyle}>Scale Preview</label>
             <p style={{ fontSize: '11px', color: theme.textMuted, margin: '0 0 12px' }}>
               {scaleMethod === 'radix-match'
-                ? `Exact unmodified Radix Colors v${RADIX_COLORS_VERSION}; the source color selects the closest family`
+                ? `Exact unmodified Radix sRGB solid values v${RADIX_COLORS_VERSION}; Delta E OK selects the family containing the nearest published light or dark step`
                 : scaleMethod === 'wcag-constrained'
                   ? 'Teul-generated candidate scales plus a blocking WCAG 2.2 semantic-token policy'
                   : 'Teul-generated scale; only the reported pairings and structural guarantees have been tested'}
@@ -1150,8 +1182,10 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
               >
                 Primary input {primaryRadixMatch.inputHex} selects{' '}
                 <strong style={{ color: theme.text }}>{primaryRadixMatch.familyName}</strong>. Exact
-                Radix step 9 is {primaryRadixMatch.familyStep9}; the input color is not inserted
-                into the exact Radix scale.
+                Radix {primaryRadixMatch.matchedMode} step {primaryRadixMatch.matchedStep} at{' '}
+                {primaryRadixMatch.matchedHex} is nearest by Delta E OK (
+                {primaryRadixMatch.deltaEOK.toFixed(4)}); the input color is not inserted into the
+                exact Radix scale.
               </div>
             )}
 
@@ -1339,7 +1373,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
               <li>
                 Build {includeDarkMode ? 'light and dark' : 'light'} output with{' '}
                 {scaleMethod === 'radix-match'
-                  ? `exact Radix Colors v${RADIX_COLORS_VERSION}`
+                  ? `exact Radix sRGB solid values v${RADIX_COLORS_VERSION}`
                   : scaleMethod === 'wcag-constrained'
                     ? 'blocking WCAG-constrained semantic tokens'
                     : 'Teul Generated scales'}
@@ -1609,7 +1643,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
             aria-describedby={
               systemNameError
                 ? 'color-system-name-error'
-                : !canGenerate
+                : !canGenerate || (stage === 3 && !srgbMutationSupported)
                   ? 'color-system-generation-error'
                   : undefined
             }
@@ -1649,7 +1683,7 @@ export const ColorSystemModal: React.FC<ColorSystemModalProps> = ({
               {submissionError}
             </span>
           )}
-          {!canGenerate && (
+          {(!canGenerate || (stage === 3 && !srgbMutationSupported)) && (
             <span
               id="color-system-generation-error"
               role="alert"
