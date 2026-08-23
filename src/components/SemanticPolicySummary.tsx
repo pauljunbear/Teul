@@ -39,7 +39,7 @@ export const SemanticPolicySummary: React.FC<SemanticPolicySummaryProps> = ({ re
           marginBottom: '4px',
         }}
       >
-        WCAG 2.2 semantic color policy: {success ? 'Passed' : 'Failed'}
+        WCAG 2.2 {report.colorSpace} semantic color policy: {success ? 'Passed' : 'Failed'}
       </div>
       <div style={{ color: isDark ? '#d4d4d4' : '#525252', fontSize: '10px', lineHeight: 1.45 }}>
         {passed} of {pairings.length} declared pairings pass. The policy covers normal text,

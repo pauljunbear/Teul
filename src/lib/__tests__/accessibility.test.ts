@@ -6,6 +6,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
+// @ts-expect-error apca-w3 0.1.9 intentionally ships without TypeScript declarations.
+import { APCAcontrast, fontLookupAPCA, sRGBtoY } from 'apca-w3';
 import {
   getRelativeLuminance,
   getWCAGContrast,
@@ -19,6 +21,16 @@ import {
 } from '../accessibility';
 import wadaColors from '../../colors.json';
 import wernerColors from '../../wernerColors.json';
+
+function displayP3RelativeLuminance(r: number, g: number, b: number): number {
+  const [linearR, linearG, linearB] = [r, g, b].map(channel => {
+    const encoded = channel / 255;
+    return encoded <= 0.04045 ? encoded / 12.92 : Math.pow((encoded + 0.055) / 1.055, 2.4);
+  });
+
+  // Normalized Y row of CSS Color 4's Display-P3-to-XYZ D65 matrix.
+  return (35783 / 156275) * linearR + (247089 / 357200) * linearG + (198249 / 2500400) * linearB;
+}
 
 // ============================================
 // Relative Luminance Tests
@@ -58,6 +70,19 @@ describe('getRelativeLuminance', () => {
     const lum = getRelativeLuminance(10, 10, 10);
     expect(lum).toBeGreaterThan(0);
     expect(lum).toBeLessThan(0.01);
+  });
+});
+
+describe('document color-profile boundary', () => {
+  it('captures the real AA threshold reversal that requires P3 selection to fail closed', () => {
+    const srgbRatio = getWCAGContrastHex('#006dfd', '#ffffff');
+    const p3Y = displayP3RelativeLuminance(0, 109, 253);
+    const p3Ratio = (1 + 0.05) / (p3Y + 0.05);
+
+    expect(srgbRatio).toBeCloseTo(4.559443, 6);
+    expect(p3Ratio).toBeCloseTo(4.493622, 6);
+    expect(srgbRatio).toBeGreaterThanOrEqual(4.5);
+    expect(p3Ratio).toBeLessThan(4.5);
   });
 });
 
@@ -234,6 +259,31 @@ describe('getAPCAContrast', () => {
     expect(getAPCAContrast(text, background)).toBe(expected);
   });
 
+  it('matches the pinned package directly across representative sRGB pairs', () => {
+    const pairs = [
+      [
+        { r: 0, g: 0, b: 0 },
+        { r: 255, g: 255, b: 255 },
+      ],
+      [
+        { r: 59, g: 130, b: 246 },
+        { r: 255, g: 255, b: 255 },
+      ],
+      [
+        { r: 221, g: 238, b: 255 },
+        { r: 17, g: 34, b: 51 },
+      ],
+    ] as const;
+
+    for (const [text, background] of pairs) {
+      const expected = APCAcontrast(
+        sRGBtoY([text.r, text.g, text.b, 1]),
+        sRGBtoY([background.r, background.g, background.b, 1])
+      );
+      expect(getAPCAContrast(text, background)).toBe(expected);
+    }
+  });
+
   it('returns 0 for identical colors', () => {
     const lc = getAPCAContrast({ r: 128, g: 128, b: 128 }, { r: 128, g: 128, b: 128 });
     expect(lc).toBe(0);
@@ -279,16 +329,10 @@ describe('getAPCAUseCase', () => {
 });
 
 describe('getAPCAMinFontSize', () => {
-  it('uses the official basic reference size for high contrast at normal weight', () => {
-    expect(getAPCAMinFontSize(95)).toBe(14);
-  });
-
-  it('uses the official Arial 400 basic reference size at Lc 75', () => {
-    expect(getAPCAMinFontSize(75, 400)).toBe(16);
-  });
-
-  it('uses the official basic reference size for high contrast at bold weight', () => {
-    expect(getAPCAMinFontSize(95, 700)).toBe(14);
+  it('uses the canonical 0.1.9 reference sizes at exact table levels', () => {
+    expect(getAPCAMinFontSize(95, 400)).toBe(15.5);
+    expect(getAPCAMinFontSize(75, 400)).toBe(18);
+    expect(getAPCAMinFontSize(95, 700)).toBe(13.5);
   });
 
   it('returns the official Lc 60 reference sizes', () => {
@@ -312,13 +356,28 @@ describe('getAPCAMinFontSize', () => {
   });
 
   it('handles negative Lc values (takes absolute)', () => {
-    expect(getAPCAMinFontSize(-90)).toBe(14);
+    expect(getAPCAMinFontSize(-90)).toBe(16);
   });
 
   it('returns different sizes based on weight', () => {
     const normalSize = getAPCAMinFontSize(60, 400);
     const boldSize = getAPCAMinFontSize(60, 700);
     expect(normalSize).toBeGreaterThan(boldSize!);
+  });
+
+  it('matches the pinned apca-w3 font lookup across weights and interpolated Lc values', () => {
+    for (const lc of [29.5, 45, 52.3, 60, 68.541, 75, 90, 95, 106]) {
+      const official = fontLookupAPCA(lc);
+      for (const weight of [100, 200, 300, 400, 500, 600, 700, 800, 900]) {
+        const value = official[weight / 100];
+        const expected = typeof value === 'number' && value <= 400 ? value : null;
+        expect(getAPCAMinFontSize(lc, weight), `Lc ${lc}, weight ${weight}`).toBe(expected);
+      }
+    }
+  });
+
+  it('fails closed for weights outside the canonical 100-step table', () => {
+    expect(getAPCAMinFontSize(75, 450)).toBeNull();
   });
 });
 
@@ -346,7 +405,7 @@ describe('analyzeContrast', () => {
   it('includes APCA use case and canonical font size', () => {
     const result = analyzeContrast('#000000', '#ffffff');
     expect(result.apca.useCase).toBe('preferred-body');
-    expect(result.apca.minimumFontSize).toBe(14);
+    expect(result.apca.minimumFontSize).toBe(14.5);
   });
 
   it('handles low contrast colors', () => {

@@ -554,6 +554,34 @@ describe('validateUIToPluginMessage', () => {
     expect(validateUIToPluginMessage(message).valid).toBe(false);
   });
 
+  it('rejects monotonic custom steps forged under the Teul OKLCH v3 claim', () => {
+    const forgedSteps = customScale.steps.map(step =>
+      step.step === 8 ? { ...step, hex: customScale.steps[6].hex } : step
+    );
+    const forgedScale = {
+      ...customScale,
+      steps: forgedSteps,
+      validation: {
+        ...customScale.validation,
+        valid: true,
+        issues: [],
+      },
+    };
+    const message = {
+      type: 'generate-color-system',
+      ...generationRequest,
+      config: colorSystemConfig,
+      scales: {
+        ...colorSystemData,
+        scales: {
+          light: { ...colorSystemData.scales.light, primary: forgedScale },
+        },
+      },
+    };
+
+    expect(validateUIToPluginMessage(message).valid).toBe(false);
+  });
+
   it('accepts valid maximum grid bounds', () => {
     const message = {
       type: 'create-grid-frame',

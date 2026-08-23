@@ -1,16 +1,62 @@
+import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import wadaColors from '../../colors.json';
 import wernerColors from '../../wernerColors.json';
 import { generateColorScale, isOklchInSrgbGamut, mapOklchToSrgb } from '../colorScale';
+import { hexToOklch } from '../utils';
 
 describe('mapOklchToSrgb', () => {
-  it('reduces chroma rather than clipping out-of-gamut channels', () => {
+  it('maps out-of-gamut colors to finite sRGB output', () => {
     const result = mapOklchToSrgb({ l: 0.7, c: 0.5, h: 30 });
 
     expect(result.mapped).toBe(true);
     expect(result.oklch.c).toBeLessThan(0.5);
     expect(isOklchInSrgbGamut(result.oklch)).toBe(true);
     expect(result.hex).toMatch(/^#[0-9a-f]{6}$/);
+  });
+
+  it('preserves in-gamut colors under relative colorimetric intent', () => {
+    const source = { l: 0.6, c: 0.05, h: 240 };
+
+    expect(isOklchInSrgbGamut(source)).toBe(true);
+    expect(mapOklchToSrgb(source)).toMatchObject({ oklch: source, mapped: false });
+  });
+
+  it('returns the specified white and black endpoints for out-of-range lightness', () => {
+    expect(mapOklchToSrgb({ l: 1.2, c: 0.4, h: 120 })).toEqual({
+      oklch: { l: 1, c: 0, h: 120 },
+      hex: '#ffffff',
+      mapped: true,
+    });
+    expect(mapOklchToSrgb({ l: -0.2, c: 0.4, h: -120 })).toEqual({
+      oklch: { l: 0, c: 0, h: 240 },
+      hex: '#000000',
+      mapped: true,
+    });
+  });
+
+  it('uses Local MINDE for the CSS Color 4 Display-P3 yellow example', () => {
+    const result = mapOklchToSrgb({ l: 0.96476, c: 0.24503, h: 110.23 });
+
+    expect(result).toMatchObject({ hex: '#feff00', mapped: true });
+    expect(hexToOklch(result.hex).c).toBeGreaterThan(hexToOklch('#fdfe00').c);
+    expect(Object.values(result.oklch).every(Number.isFinite)).toBe(true);
+  });
+
+  it('is deterministic and always emits an in-gamut six-digit sRGB value', () => {
+    for (const l of [0, 0.02, 0.2, 0.5, 0.8, 0.98, 1]) {
+      for (const c of [0, 0.01, 0.1, 0.3, 0.6]) {
+        for (let h = 0; h < 360; h += 30) {
+          const source = { l, c, h };
+          const first = mapOklchToSrgb(source);
+          const second = mapOklchToSrgb(source);
+
+          expect(first, `${l} ${c} ${h}`).toEqual(second);
+          expect(first.hex, `${l} ${c} ${h}`).toMatch(/^#[0-9a-f]{6}$/);
+          expect(Object.values(first.oklch).every(Number.isFinite), `${l} ${c} ${h}`).toBe(true);
+        }
+      }
+    }
   });
 
   it('rejects non-finite input', () => {
@@ -31,7 +77,7 @@ describe('generateColorScale', () => {
     const scale = generateColorScale('#3366cc', 'light');
 
     expect(scale.profile).toBe('sRGB');
-    expect(scale.method).toBe('Teul OKLCH v2');
+    expect(scale.method).toBe('Teul OKLCH v3');
     expect(scale.validation.contrast).toHaveLength(3);
     expect(scale.validation.contrast.map(check => check.foregroundStep)).toEqual([9, 11, 12]);
     expect(scale.validation.contrast.map(check => check.required)).toEqual([false, true, true]);
@@ -89,6 +135,25 @@ describe('generateColorScale', () => {
       { collection: 'Wada', name: 'White', mode: 'light' },
       { collection: 'Wada', name: 'White', mode: 'dark' },
     ]);
+
+    const repeatedResults = results.map(({ hex, mode }) => generateColorScale(hex, mode));
+    expect(JSON.stringify(repeatedResults)).toBe(
+      JSON.stringify(results.map(({ result }) => result))
+    );
+
+    const corpusEvidence = results.map(({ collection, name, hex, mode, result }) => ({
+      collection,
+      name,
+      source: hex.toLowerCase(),
+      mode,
+      method: result.method,
+      steps: result.steps.map(step => step.hex),
+      valid: result.validation.valid,
+      issues: result.validation.issues.map(issue => issue.code),
+    }));
+    const checksum = createHash('sha256').update(JSON.stringify(corpusEvidence)).digest('hex');
+
+    expect(checksum).toBe('68485d2cc938988453c35fdb31992387c6079e24478377b6d7d9c78e92129050');
   });
 
   it('returns explicit build failures for impossible exact anchors', () => {

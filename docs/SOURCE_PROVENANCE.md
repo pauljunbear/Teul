@@ -1,7 +1,7 @@
 # Teul Source And Provenance Ledger
 
-Status: Current automated and manual release evidence
-Date: 2026-07-12
+Status: Current source evidence; 2026 color-foundation release verification in progress
+Date: 2026-08-02
 
 This ledger records what Teul can currently prove about its source material.
 It is intentionally stricter than the product's previous wording.
@@ -187,14 +187,22 @@ guarantees.
 
 - Teul bundles 31 complete light/dark solid-color families, 62 scales, and 744
   values.
-- `RADIX_COLORS_VERSION` pins Exact Radix Colors data to
+- `RADIX_COLORS_VERSION` pins Exact Radix sRGB Solid data to
   `@radix-ui/colors@3.0.0`.
-- The sorted bundled solid-scale payload exactly matches the reviewed package
-  payload and its pinned SHA-256 integrity fixture.
+- The exact development dependency imports the authoritative package in tests;
+  all 744 bundled values match it directly and the sorted payload also matches
+  the reviewed SHA-256 integrity fixture.
+- Teul-authored family matching uses Delta E OK across all 24 published sRGB
+  solid steps per accent family. The UI reports the matched mode, step, hex,
+  and distance; matching evidence is not part of the Radix source guarantee.
+- Exact-mode layouts do not attach standalone WCAG text grades to individual
+  swatches. WCAG evidence belongs to an explicit foreground/background/use
+  tuple.
 - Current focused Radix integrity tests pass.
 
-Exact Radix Colors is current exact-library data for the pinned package version.
-This does not transfer Radix's APCA guidance to generated Teul scales.
+Exact Radix sRGB Solid means the current exact **sRGB solid subset** for the pinned
+package version. It does not include the package's Display-P3 or alpha variants,
+and it does not transfer Radix's APCA guidance to generated Teul scales.
 
 ## 4. Color Science And Accessibility
 
@@ -203,6 +211,10 @@ This does not transfer Radix's APCA guidance to generated Teul scales.
 - WCAG 2.2:
   - https://www.w3.org/TR/WCAG22/
   - https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html
+- ISO/IEC 40500:2025:
+  - https://www.iso.org/standard/91029.html
+- WCAG 3.0 Working Draft:
+  - https://www.w3.org/TR/wcag-3.0/
 - APCA 0.1.9 canonical implementation and integration limits:
   - https://github.com/Myndex/apca-w3/tree/da50930ba8cf8a5ef85d1b269aeba3d83ad91a5a
   - https://git.apcacontrast.com/documentation/minimum_compliance.html
@@ -211,8 +223,11 @@ This does not transfer Radix's APCA guidance to generated Teul scales.
   - https://www.inf.ufrgs.br/~oliveira/pubs_files/CVD_Simulation/CVD_Simulation.html
 - National Eye Institute color-vision-deficiency overview:
   - https://www.nei.nih.gov/eye-health-information/eye-conditions-and-diseases/color-blindness
-- CSS Color 4 gamut mapping:
-  - https://www.w3.org/TR/css-color-4/#gamut-mapping
+- CSS Color 4 gamut mapping and Display-P3 conversion:
+  - https://www.w3.org/TR/css-color-4/#css-gamut-mapping
+  - https://www.w3.org/TR/css-color-4/#predefined-display-p3
+- CSS Color HDR Working Draft:
+  - https://www.w3.org/TR/css-color-hdr-1/
 - CSS Color 5 device CMYK:
   - https://www.w3.org/TR/css-color-5/#device-cmyk
 - ICC profiles:
@@ -220,8 +235,12 @@ This does not transfer Radix's APCA guidance to generated Teul scales.
 
 ### Current conclusions
 
-- WCAG 2.2 is the current conformance basis.
+- WCAG 2.2 is the current conformance basis. WCAG 3 remains an incomplete
+  Working Draft and does not make APCA a Teul conformance method.
 - Teul uses WCAG 2.2's corrected sRGB linearization breakpoint, `0.04045`.
+- WCAG 2.2 defines its relative-luminance formula for sRGB. Teul does not apply
+  those coefficients to Display-P3 component triples or label a colorimetric
+  P3 extension normative WCAG 2.2.
 - Teul's APCA calculation is an exact TypeScript port of `apca-w3` 0.1.9,
   base algorithm 0.0.98G-4g. Canonical polarity is preserved: dark text on a
   light background is positive and light text on a dark background is
@@ -230,19 +249,42 @@ This does not transfer Radix's APCA guidance to generated Teul scales.
 - APCA is experimental and supplemental, not a WCAG conformance method. Its
   Teul use is restricted to self-illuminated sRGB web content under the Limited
   W3 License reproduced in `APCA_LICENSE.md`.
+- `apca-w3@0.1.9` is pinned as an exact development dependency. Tests compare
+  the local contrast port and its complete 100-900 weight reference-table
+  interpolation with that package. The table's Barlow reference face, beta
+  status, and context limits remain visible; sizes are not universal minima.
+- The pinned package's `colorparsley@0.1.8` AGPL v3 dependency is a
+  development-only test-oracle dependency. Neither package is imported by the
+  plugin runtime or distributed bundle. The artifact gate pins the reviewed
+  license strings and rejects `colorparsley` in `dist`; any dependency,
+  licensing, or distribution-model change requires a fresh review.
 - Machado simulation uses the authors' complete protan, deutan, and tritan
-  matrices for both full-severity dichromacy and anomalous trichromacy at
-  severity increments of 0.1. Other values interpolate only between the
-  nearest two matrices, following the supplement's documented method.
-- Teul's tested-color APCA reference preview uses Arial/Helvetica 400, lists all
-  required basic Lc levels and warnings, preserves signed polarity, and links
-  the canonical guidance, integration limits, and discussion forum.
+  matrix tables at severity increments of 0.1. Other values interpolate only
+  between the nearest two matrices, following the supplement's documented
+  method. The original paper says its model is not intended to handle
+  tritanopia, so Teul labels that compatibility key as a severe tritanomaly,
+  tritan-like advisory approximation rather than validated tritanopia.
+- Teul's tested-color APCA reference preview labels the Barlow 400 source table,
+  but deliberately renders with a generic sans-serif because the plugin iframe
+  does not prove that Barlow is installed. It lists the basic Lc reference
+  levels and warnings, preserves signed polarity, and links the canonical
+  guidance, integration limits, and discussion forum.
 - CVD prevalence text is approximate and explicitly sex-specific where the
   source data are sex-specific; it is not generalized into a population-wide
   normal-vision percentage. Simulation labels describe algorithmic previews,
   not an individual's literal perception.
 - OKLCH is useful for perceptual construction but does not guarantee contrast.
-- RGB channel clipping is not an acceptable primary gamut-mapping strategy.
+- `Teul OKLCH v3` uses CSS Color 4 Binary Search with Local MINDE for generated
+  sRGB output: constant lightness/hue, Delta E OK JND `0.02`, epsilon `0.0001`,
+  in-gamut identity, and explicit black/white endpoints. RGB clipping is used
+  inside Local MINDE's perceptual comparison, not as a standalone mapping rule.
+- Ten fixed comparison vectors were independently generated with the CSS Color
+  editors' `colorjs.io@0.7.0` CSS gamut mapper (package tarball SHA-256
+  `9fcffedb8a1ba812bb695dc7ab100c1a3c77a52264cbd56050117e6c48fe453a`).
+  They cover identity, endpoints, gamut epsilon, Local MINDE JND boundaries,
+  shallow yellow/cyan boundaries, and deep out-of-gamut mapping. This is a
+  fixed SDR sRGB conformance set, not exhaustive proof over continuous color
+  space or a P3/HDR output guarantee.
 - CMYK conversion requires a named profile and print condition.
 
 ### Local generated-scale findings
@@ -255,6 +297,9 @@ colors in light and dark modes, for 538 generated outputs:
   `White` in dark mode.
 - All 538 candidates preserve the source anchor and report finite, in-gamut
   sRGB output.
+- Repeated v3 generation is byte-identical; the reviewed output-evidence
+  SHA-256 is
+  `68485d2cc938988453c35fdb31992387c6079e24478377b6d7d9c78e92129050`.
 - The two rejected White outputs contain duplicate adjacent steps and fail
   strict lightness and relative-luminance monotonicity.
 - Each output reports the exact tested WCAG pairings. No general accessibility
@@ -355,9 +400,23 @@ Do not call an unsourced preset "foundational Muller-Brockmann."
 - Layout guides do not lay out children.
 - Figma Design files can use sRGB or Display P3:
   - https://help.figma.com/hc/en-us/articles/360039825114-Manage-color-profiles-in-design-files
+- Figma RGB channels belong to the document profile. Teul selection contrast
+  therefore requires an authoritative sRGB document profile and rejects
+  Display-P3, legacy, and unknown profiles rather than relabeling their numeric
+  channels. Every Teul Generated, Exact Radix sRGB Solid, and WCAG-constrained
+  on-canvas generation path re-reads the live root profile after host awaits,
+  requires sRGB immediately before mutation, and locks that profile across
+  frame, variable, and style phases. Export remains available when mutation is
+  blocked.
+- Display-P3 is SDR. Teul does not claim HDR support or identical appearance
+  across monitors, calibration, operating-system color management, ambient
+  light, or font-rasterization environments.
 
 ## 7. Provenance Work Remaining
 
+- Re-review the machine-readable color-foundation evidence by 2027-02-02;
+  `npm run verify:color-foundations` blocks later release candidates until the
+  dated source ledger is refreshed.
 - Verify the Wada `Dull Violet Black` CMYK exception against the licensed
   publisher edition; it remains unresolved in the source audit.
 - Expand stable Wada original-card identifiers and primary-scan page links

@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { analyzeContrast, type ContrastResult, type APCAUseCase } from '../lib/accessibility';
 import { simulateCVDHex, CVD_INFO, type CVDType } from '../lib/colorBlindness';
+import { validatePluginToUIMessage } from '../lib/messageValidation';
 import { consumeRequestId, createRequestId } from '../lib/requestId';
-import type { AccessibilitySelectionResultMessage } from '../types/messages';
 import { useOptionalWorkspaceState } from '../lib/workspaceState';
 
 // ============================================
@@ -214,8 +214,8 @@ const Card: React.FC<{
 );
 
 const APCA_BASIC_REFERENCE_LEVELS = [
-  { lc: 90, label: 'Preferred Body Text', detail: '14px' },
-  { lc: 75, label: 'Minimum Body Text', detail: '16px' },
+  { lc: 90, label: 'Preferred Body Text', detail: '16px' },
+  { lc: 75, label: 'Minimum Body Text', detail: '18px' },
   { lc: 60, label: 'Minimum Fluent text', detail: '24px' },
   { lc: 45, label: 'Minimum Large text', detail: '42px' },
   { lc: 30, label: 'Minimum Any text', detail: 'non-content text only' },
@@ -237,51 +237,50 @@ const ContrastChecker: React.FC<{
     success: boolean;
     message: string;
   } | null>(null);
+  const latestSelectionRequest = useRef<string | null>(null);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent<{ pluginMessage?: unknown }>) => {
-      const message = event.data?.pluginMessage as Partial<AccessibilitySelectionResultMessage>;
-      if (
-        message?.type !== 'accessibility-selection-result' ||
-        typeof message.requestId !== 'string' ||
-        typeof message.success !== 'boolean' ||
-        !consumeRequestId(message.requestId)
-      ) {
+      const validation = validatePluginToUIMessage(event.data?.pluginMessage);
+      if (!validation.valid || validation.message.type !== 'accessibility-selection-result') {
         return;
       }
 
+      const message = validation.message;
+      if (message.requestId !== latestSelectionRequest.current) return;
+      if (!consumeRequestId(message.requestId)) return;
+      latestSelectionRequest.current = null;
+
       setSelectionPending(false);
-      if (
-        message.success &&
-        typeof message.foreground === 'string' &&
-        typeof message.background === 'string'
-      ) {
+      if (message.success) {
         setForeground(message.foreground);
         setBackground(message.background);
-        const sources =
-          typeof message.foregroundSource === 'string' &&
-          typeof message.backgroundSource === 'string'
-            ? `${message.foregroundSource} on ${message.backgroundSource}`
-            : 'Selected pair';
-        const profile = typeof message.profile === 'string' ? message.profile : 'unknown';
-        setSelectionStatus({ success: true, message: `${sources} · ${profile} document` });
+        const sources = `${message.foregroundSource} on ${message.backgroundSource}`;
+        setSelectionStatus({ success: true, message: `${sources} · sRGB document` });
       } else {
         setSelectionStatus({
           success: false,
-          message:
-            typeof message.error === 'string'
-              ? message.error
-              : 'The selected layers could not be reduced to one exact color pair.',
+          message: message.error,
         });
       }
     };
 
     window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      if (latestSelectionRequest.current) {
+        consumeRequestId(latestSelectionRequest.current);
+        latestSelectionRequest.current = null;
+      }
+    };
   }, []);
 
   const handleUseSelection = useCallback(() => {
+    if (latestSelectionRequest.current) {
+      consumeRequestId(latestSelectionRequest.current);
+    }
     const requestId = createRequestId('accessibility-selection');
+    latestSelectionRequest.current = requestId;
     setSelectionPending(true);
     setSelectionStatus(null);
     parent.postMessage(
@@ -352,6 +351,9 @@ const ContrastChecker: React.FC<{
       )}
 
       {/* Color Inputs */}
+      <div style={{ margin: '-4px 0 8px', color: styles.textMuted, fontSize: '10px' }}>
+        Manual hex and accepted selection values are evaluated as sRGB.
+      </div>
       <div
         style={{
           display: 'flex',
@@ -408,7 +410,7 @@ const ContrastChecker: React.FC<{
           color: styles.textMuted,
         }}
       >
-        Fluent Text Minimum Reference Font Sizes at Normal Weight (Arial 400)
+        APCA 0.1.9 Reference-Table Size at Weight 400 (Barlow)
       </div>
 
       {/* APCA-compatible reference-size preview */}
@@ -429,7 +431,7 @@ const ContrastChecker: React.FC<{
             style={{
               fontSize: `${referencePreviewSize}px`,
               fontWeight: 400,
-              fontFamily: 'Arial, Helvetica, sans-serif',
+              fontFamily: 'sans-serif',
             }}
           >
             Reference-size sample
@@ -448,8 +450,9 @@ const ContrastChecker: React.FC<{
           color: styles.textMuted,
         }}
       >
-        Preview uses the required Arial/Helvetica 400 reference at the current Lc level when a
-        content-text example is permitted. It is not approval for another typeface or context.
+        This illustrative sample uses the table’s numeric size, but the iframe does not prove the
+        Barlow reference face. It is not approval for another typeface, rendering environment, or
+        context.
       </div>
 
       {/* Results */}
@@ -577,7 +580,7 @@ const ContrastChecker: React.FC<{
               ))}
             </div>
             <div style={{ marginTop: '4px', fontSize: '10px', color: styles.textMuted }}>
-              Basic Latin reference-font levels for Arial 400. Typeface, rendering, spacing,
+              Public-beta reference-table levels for Barlow 400. Typeface, rendering, spacing,
               context, and user needs can require more contrast; see the adjacent use-case guide for
               fuller explanations.
             </div>

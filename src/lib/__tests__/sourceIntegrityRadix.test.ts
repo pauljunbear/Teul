@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import * as upstreamRadixColors from '@radix-ui/colors';
 import { radixColors } from '../radixColors';
 
 const RADIX_UI_COLORS_3_0_0_SOLID_SCALE_SHA256 =
@@ -43,5 +44,27 @@ describe('bundled Radix source integrity', () => {
 
   it('exactly matches the reviewed @radix-ui/colors 3.0.0 solid-scale payload', async () => {
     expect(await sha256(getBundledScalePayload())).toBe(RADIX_UI_COLORS_3_0_0_SOLID_SCALE_SHA256);
+  });
+
+  it('matches all 744 sRGB solid values in the installed @radix-ui/colors source package', () => {
+    const upstream = upstreamRadixColors as unknown as Record<string, Record<string, string>>;
+    let comparedValues = 0;
+
+    for (const [familyName, family] of Object.entries(radixColors)) {
+      for (const mode of ['light', 'dark'] as const) {
+        const upstreamExport = upstream[mode === 'light' ? familyName : `${familyName}Dark`];
+        expect(upstreamExport, `${familyName} ${mode} export`).toBeDefined();
+
+        for (let step = 1; step <= 12; step += 1) {
+          expect(
+            family[mode][step as keyof typeof family.light],
+            `${familyName} ${mode} step ${step}`
+          ).toBe(upstreamExport[`${familyName}${step}`]);
+          comparedValues += 1;
+        }
+      }
+    }
+
+    expect(comparedValues).toBe(31 * 2 * 12);
   });
 });

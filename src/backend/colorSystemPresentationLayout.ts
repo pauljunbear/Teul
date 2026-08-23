@@ -22,8 +22,6 @@ export async function generatePresentationColorSystemLayout(
     createBWSwatches,
     createSemanticPolicyReport,
     getOrderedScaleKeys,
-    getAccessibilityRating,
-    getWCAGContrastHex,
   } = context;
   const frame = createFrame();
   frame.name = `${systemName} - ${mode === 'dark' ? 'Dark' : 'Light'} Mode`;
@@ -117,7 +115,7 @@ export async function generatePresentationColorSystemLayout(
     semanticSection.appendChild(semanticTitle);
     semanticSection.appendChild(
       createText(
-        'Source guidance for pinned Radix Colors v3.0.0; not a Teul WCAG guarantee.',
+        'Source guidance for the pinned Radix sRGB solid subset v3.0.0; not a Teul WCAG guarantee.',
         9,
         'Regular',
         mutedColor
@@ -201,12 +199,6 @@ export async function generatePresentationColorSystemLayout(
 
           const semantic = RADIX_STEP_LABELS[stepNum];
           swatchContainer.appendChild(createText(semantic.short, 5, 'Regular', mutedColor));
-
-          if (stepNum === 11 || stepNum === 12) {
-            const contrast = getWCAGContrastHex(step.hex, scale.steps[0].hex);
-            const { rating, color } = getAccessibilityRating(contrast);
-            swatchContainer.appendChild(createText(rating, 5, 'Medium', color));
-          }
 
           swatchRow.appendChild(swatchContainer);
         }

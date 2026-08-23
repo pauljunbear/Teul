@@ -12,7 +12,7 @@
  * 11-12: Text colors
  */
 
-import { hexToHsl, colorDistance, rgbToLab, hexToRgb } from './utils';
+import { hexToHsl, hexToRgb, rgbToOklab, type OKLab } from './utils';
 
 export const RADIX_COLORS_VERSION = '3.0.0';
 
@@ -80,6 +80,19 @@ export interface RadixColorFamily {
   /** Approximate hue in degrees (0-360) for matching */
   hue: number;
 }
+
+export interface RadixFamilyMatch {
+  family: RadixColorFamily;
+  inputHex: string;
+  matchedMode: 'light' | 'dark';
+  matchedStep: number;
+  matchedHex: string;
+  /** Euclidean distance in OKLab (Delta E OK). Lower values are closer. */
+  deltaEOK: number;
+}
+
+export const RADIX_FAMILY_MATCH_METHOD =
+  'Delta E OK nearest exact published sRGB solid-scale step (light and dark, steps 1-12)';
 
 // ============================================
 // Light Mode Scales
@@ -1428,33 +1441,66 @@ function isRadixColorName(sourceFamily: string): sourceFamily is RadixColorName 
 // Color Matching Functions
 // ============================================
 
+function hexToOklab(hex: string): OKLab {
+  const rgb = hexToRgb(hex);
+  return rgbToOklab(rgb.r, rgb.g, rgb.b);
+}
+
+function deltaEOK(first: OKLab, second: OKLab): number {
+  return Math.hypot(first.L - second.L, first.a - second.a, first.b - second.b);
+}
+
 /**
- * Find the closest Radix color family for a given hex color
- * Uses LAB color space for perceptual accuracy
+ * Match an sRGB hex color to an exact published Radix accent family.
+ *
+ * The score is the smallest Delta E OK distance from the input to any of the
+ * family's 24 bundled solid-scale values (12 light and 12 dark). The stable
+ * tie-break order is the declared accent-family order, light before dark, then
+ * ascending step number. This is Teul-authored matching; the selected family's
+ * values remain the unmodified @radix-ui/colors payload.
  */
-export function findClosestRadixFamily(hex: string): RadixColorFamily {
+export function matchRadixFamily(hex: string): RadixFamilyMatch {
   const inputRgb = hexToRgb(hex);
-  const inputLab = rgbToLab(inputRgb.r, inputRgb.g, inputRgb.b);
+  const normalizedInput = `#${[inputRgb.r, inputRgb.g, inputRgb.b]
+    .map(channel => channel.toString(16).padStart(2, '0'))
+    .join('')}`;
+  const inputOklab = hexToOklab(normalizedInput);
+  let best: RadixFamilyMatch | undefined;
 
-  let closestFamily: RadixColorFamily = radixColors.blue;
-  let minDistance = Infinity;
-
-  // Only compare against accent colors (not neutrals)
   for (const colorName of accentColors) {
     const family = radixColors[colorName];
-    // Compare against step 9 (the solid/base color)
-    const step9Rgb = hexToRgb(family.light[9]);
-    const step9Lab = rgbToLab(step9Rgb.r, step9Rgb.g, step9Rgb.b);
+    for (const mode of ['light', 'dark'] as const) {
+      const scale = family[mode];
+      for (let step = 1; step <= 12; step += 1) {
+        const matchedHex = scale[step as keyof RadixScale];
+        const distance = deltaEOK(inputOklab, hexToOklab(matchedHex));
 
-    const distance = colorDistance(inputLab, step9Lab);
-
-    if (distance < minDistance) {
-      minDistance = distance;
-      closestFamily = family;
+        if (!best || distance < best.deltaEOK) {
+          best = {
+            family,
+            inputHex: normalizedInput,
+            matchedMode: mode,
+            matchedStep: step,
+            matchedHex,
+            deltaEOK: distance,
+          };
+        }
+      }
     }
   }
 
-  return closestFamily;
+  // accentColors is a non-empty constant; this protects the return contract if
+  // that invariant is changed later.
+  if (!best) {
+    throw new Error('No Radix accent families are available for matching');
+  }
+
+  return best;
+}
+
+/** Return only the family for consumers that do not need the match evidence. */
+export function findClosestRadixFamily(hex: string): RadixColorFamily {
+  return matchRadixFamily(hex).family;
 }
 
 /**

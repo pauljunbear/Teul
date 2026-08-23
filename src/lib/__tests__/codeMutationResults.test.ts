@@ -86,8 +86,7 @@ describe('correlated document mutation results', () => {
     });
   });
 
-  it('routes an accessibility selection request with its document profile', async () => {
-    backendMocks.detectDocumentColorProfile.mockReturnValue('srgb');
+  it('routes accessibility selection so the reader owns the live document profile', async () => {
     await import('../../code');
     const onmessage = figma.ui.onmessage as (message: unknown) => Promise<void>;
 
@@ -96,7 +95,6 @@ describe('correlated document mutation results', () => {
       requestId: 'accessibility-1',
     });
 
-    expect(backendMocks.detectDocumentColorProfile).toHaveBeenCalledWith(figma.root);
-    expect(backendMocks.sendAccessibilitySelection).toHaveBeenCalledWith('accessibility-1', 'srgb');
+    expect(backendMocks.sendAccessibilitySelection).toHaveBeenCalledWith('accessibility-1');
   });
 });

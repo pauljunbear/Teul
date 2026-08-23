@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { radixColors } from '../../lib/radixColors';
 import { buildSemanticColorPolicy } from '../../lib/semanticColorPolicy';
+import { generateColorScale } from '../../lib/colorScale';
 import type { GenerateColorSystemMessage } from '../../types/messages';
 
 const backendMocks = vi.hoisted(() => ({
@@ -90,6 +91,7 @@ beforeEach(() => {
   });
   const originalSelection = [{ id: 'original-selection' }] as unknown as SceneNode[];
   vi.stubGlobal('figma', {
+    root: { documentColorProfile: 'SRGB' },
     currentPage: { selection: originalSelection },
     notify: vi.fn(),
     ui: { postMessage: vi.fn() },
@@ -109,14 +111,22 @@ describe('handleGenerateColorSystem', () => {
     await handleGenerateColorSystem(message);
 
     expect(backendMocks.generateColorSystemFrames).toHaveBeenCalledWith(
-      { ...message.config, systemName: message.scales.systemName },
-      message.scales,
-      { notify: false }
+      {
+        ...message.config,
+        systemName: message.scales.systemName,
+        documentColorProfile: 'srgb',
+      },
+      { ...message.scales, documentColorProfile: 'srgb' },
+      {
+        notify: false,
+        beforeFirstMutation: expect.any(Function),
+      }
     );
     expect(backendMocks.createColorStyles).toHaveBeenCalledWith(
-      message.scales,
+      { ...message.scales, documentColorProfile: 'srgb' },
       message.scales.systemName,
-      'cancel'
+      'cancel',
+      expect.any(Function)
     );
     expect(frame.remove).not.toHaveBeenCalled();
     expect(figma.ui.postMessage).toHaveBeenCalledWith(
@@ -219,6 +229,162 @@ describe('handleGenerateColorSystem', () => {
     });
   });
 
+  it.each([
+    ['DISPLAY_P3', 'Display P3'],
+    ['LEGACY', 'legacy'],
+    [undefined, 'unknown'],
+  ])(
+    're-reads the live %s root profile and performs zero sRGB color-system mutations',
+    async (rootProfile, expectedLabel) => {
+      const message = createConstrainedMessage(`transaction-profile-${expectedLabel}`);
+      message.config.documentColorProfile = 'srgb';
+      message.scales.documentColorProfile = 'srgb';
+      (figma.root as unknown as { documentColorProfile?: unknown }).documentColorProfile =
+        rootProfile;
+
+      await handleGenerateColorSystem(message);
+
+      expect(backendMocks.resolveColorSystemOutputName).not.toHaveBeenCalled();
+      expect(backendMocks.generateColorSystemFrames).not.toHaveBeenCalled();
+      expect(backendMocks.createColorStyles).not.toHaveBeenCalled();
+      expect(figma.commitUndo).not.toHaveBeenCalled();
+      expect(figma.ui.postMessage).toHaveBeenCalledWith({
+        type: 'color-system-operation-result',
+        requestId: message.requestId,
+        success: false,
+        error: expect.stringContaining(`current profile is ${expectedLabel}`),
+      });
+    }
+  );
+
+  it('blocks non-constrained sRGB source mutation in a live Display P3 document', async () => {
+    const message = createMessage('transaction-live-profile');
+    message.config.documentColorProfile = 'srgb';
+    message.scales.documentColorProfile = 'srgb';
+    (figma.root as unknown as { documentColorProfile?: unknown }).documentColorProfile =
+      'DISPLAY_P3';
+
+    await handleGenerateColorSystem(message);
+
+    expect(backendMocks.resolveColorSystemOutputName).not.toHaveBeenCalled();
+    expect(backendMocks.generateColorSystemFrames).not.toHaveBeenCalled();
+    expect(figma.ui.postMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'color-system-operation-result',
+        requestId: message.requestId,
+        success: false,
+        error: expect.stringContaining('current profile is Display P3'),
+      })
+    );
+  });
+
+  it('rechecks the live profile after async collision preflight and before constrained mutation', async () => {
+    const message = createConstrainedMessage('transaction-profile-toctou');
+    backendMocks.resolveColorSystemOutputName.mockImplementationOnce(async () => {
+      (figma.root as unknown as { documentColorProfile?: unknown }).documentColorProfile =
+        'DISPLAY_P3';
+      return { outputName: 'Transaction Test', warnings: [] };
+    });
+
+    await handleGenerateColorSystem(message);
+
+    expect(backendMocks.generateColorSystemFrames).not.toHaveBeenCalled();
+    expect(backendMocks.createColorStyles).not.toHaveBeenCalled();
+    expect(figma.commitUndo).not.toHaveBeenCalled();
+    expect(figma.ui.postMessage).toHaveBeenCalledWith({
+      type: 'color-system-operation-result',
+      requestId: message.requestId,
+      success: false,
+      error: expect.stringContaining('current profile is Display P3'),
+    });
+  });
+
+  it('rechecks the live profile after async font loading immediately before first mutation', async () => {
+    const message = createConstrainedMessage('transaction-font-profile-race');
+    backendMocks.generateColorSystemFrames.mockImplementationOnce(
+      async (_config, _scales, options: { beforeFirstMutation: () => void }) => {
+        (figma.root as unknown as { documentColorProfile?: unknown }).documentColorProfile =
+          'DISPLAY_P3';
+        options.beforeFirstMutation();
+        return { remove: vi.fn() } as unknown as FrameNode;
+      }
+    );
+
+    await handleGenerateColorSystem(message);
+
+    expect(backendMocks.createColorStyles).not.toHaveBeenCalled();
+    expect(figma.commitUndo).not.toHaveBeenCalled();
+    expect(figma.ui.postMessage).toHaveBeenCalledWith({
+      type: 'color-system-operation-result',
+      requestId: message.requestId,
+      success: false,
+      error: expect.stringContaining('current profile is Display P3'),
+    });
+  });
+
+  it('rolls back if the document profile changes between frame and style mutations', async () => {
+    const frame = { remove: vi.fn() } as unknown as FrameNode;
+    const message = createMessage('transaction-mid-mutation-profile-race', true);
+    backendMocks.generateColorSystemFrames.mockImplementationOnce(
+      async (_config, _scales, options: { beforeFirstMutation: () => void }) => {
+        options.beforeFirstMutation();
+        return frame;
+      }
+    );
+    backendMocks.createColorStyles.mockImplementationOnce(
+      async (_scales, _name, _policy, beforeMutation: () => void) => {
+        (figma.root as unknown as { documentColorProfile?: unknown }).documentColorProfile =
+          'DISPLAY_P3';
+        beforeMutation();
+        return {
+          styleCount: 0,
+          createdCount: 0,
+          updatedCount: 0,
+          skippedCount: 0,
+          warnings: [],
+        };
+      }
+    );
+
+    await handleGenerateColorSystem(message);
+
+    expect(frame.remove).toHaveBeenCalledOnce();
+    expect(figma.commitUndo).not.toHaveBeenCalled();
+    expect(figma.ui.postMessage).toHaveBeenCalledWith({
+      type: 'color-system-operation-result',
+      requestId: message.requestId,
+      success: false,
+      error: expect.stringContaining('no mixed-profile output was kept'),
+    });
+  });
+
+  it('allows a current 13-pair sRGB constrained policy after the live profile preflight', async () => {
+    const frame = { remove: vi.fn() } as unknown as FrameNode;
+    backendMocks.generateColorSystemFrames.mockResolvedValue(frame);
+    const message = createConstrainedMessage('transaction-live-srgb');
+
+    expect(message.scales.semanticPolicy).toMatchObject({
+      standard: 'WCAG 2.2',
+      colorSpace: 'sRGB',
+      valid: true,
+    });
+    expect(message.scales.semanticPolicy?.modes.light.pairings).toHaveLength(13);
+    expect(message.scales.semanticPolicy?.modes.dark?.pairings).toHaveLength(13);
+
+    await handleGenerateColorSystem(message);
+
+    expect(backendMocks.generateColorSystemFrames).toHaveBeenCalledOnce();
+    expect(backendMocks.createColorStyles).toHaveBeenCalledOnce();
+    expect(figma.commitUndo).toHaveBeenCalledOnce();
+    expect(figma.ui.postMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'color-system-operation-result',
+        requestId: message.requestId,
+        success: true,
+      })
+    );
+  });
+
   it('recomputes the WCAG-constrained policy before starting any mutations', async () => {
     const message = createConstrainedMessage('transaction-forged-semantic-policy');
     message.scales.semanticPolicy = {
@@ -263,7 +429,37 @@ describe('handleGenerateColorSystem', () => {
       type: 'color-system-operation-result',
       requestId: message.requestId,
       success: false,
-      error: 'Exact Radix Colors claims must match the pinned bundled values',
+      error: 'Exact Radix sRGB Solid claims must match the pinned bundled values',
+    });
+  });
+
+  it('rejects forged values carrying a Teul OKLCH v3 method claim before mutation', async () => {
+    const message = createMessage('transaction-forged-local-minde');
+    const generated = generateColorScale('#3366cc', 'light', 'Primary');
+    message.scales.scales = {
+      light: {
+        neutral: {
+          name: 'Primary',
+          role: 'primary',
+          profile: 'sRGB',
+          method: 'Teul OKLCH v3',
+          mode: 'light',
+          steps: generated.steps.map(({ step, hex }) => ({ step, hex })),
+          validation: generated.validation,
+        },
+      },
+    };
+    message.scales.scales.light.neutral.steps[7].hex = generated.steps[6].hex;
+
+    await handleGenerateColorSystem(message);
+
+    expect(backendMocks.generateColorSystemFrames).not.toHaveBeenCalled();
+    expect(backendMocks.createColorStyles).not.toHaveBeenCalled();
+    expect(figma.ui.postMessage).toHaveBeenCalledWith({
+      type: 'color-system-operation-result',
+      requestId: message.requestId,
+      success: false,
+      error: 'Teul OKLCH v3 claims must match backend-regenerated Local MINDE scales',
     });
   });
 

@@ -236,7 +236,8 @@ function rollbackVariableResources(params: {
 export async function createColorVariables(
   scalesData: CreateStylesData,
   systemName: string,
-  collisionPolicy: ColorCollisionPolicy = 'cancel'
+  collisionPolicy: ColorCollisionPolicy = 'cancel',
+  beforeMutation?: () => void
 ): Promise<ColorVariableTransaction> {
   if (
     scalesData.scaleMethod === 'wcag-constrained' &&
@@ -263,6 +264,7 @@ export async function createColorVariables(
     throw new Error(`"${collectionName}" is not marked as Teul-owned. Choose Create copy.`);
   }
 
+  beforeMutation?.();
   const collectionWasCreated = matchingCollections.length === 0;
   const collection =
     matchingCollections[0] ?? figma.variables.createVariableCollection(collectionName);
@@ -277,6 +279,7 @@ export async function createColorVariables(
     const existingVariables = (await figma.variables.getLocalVariablesAsync('COLOR')).filter(
       variable => variable.variableCollectionId === collection.id
     );
+    beforeMutation?.();
     const existingByName = new Map<string, Variable[]>();
     for (const variable of existingVariables) {
       const matches = existingByName.get(variable.name) ?? [];

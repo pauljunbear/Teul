@@ -67,5 +67,8 @@ jobs:
       - name: Verify pinned Wada data
         run: npm run verify:wada
 
+      - name: Verify color-foundation evidence is current
+        run: npm run verify:color-foundations
+
       - name: Assert production artifacts
         run: npm run assert:artifacts

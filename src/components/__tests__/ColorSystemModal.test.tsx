@@ -12,7 +12,10 @@ describe('ColorSystemModal submission', () => {
   let onClose: () => void;
   let postMessage: ReturnType<typeof vi.spyOn>;
 
-  const renderModal = (combinationName: string) => {
+  const renderModal = (
+    combinationName: string,
+    documentColorProfile: 'srgb' | 'display-p3' | 'legacy' | 'unknown' = 'srgb'
+  ) => {
     act(() => {
       root.render(
         <ColorSystemModal
@@ -21,6 +24,7 @@ describe('ColorSystemModal submission', () => {
           colors={colors}
           combinationName={combinationName}
           isDark={false}
+          documentColorProfile={documentColorProfile}
         />
       );
     });
@@ -40,7 +44,7 @@ describe('ColorSystemModal submission', () => {
     });
   };
 
-  const advanceToReview = (method = 'Exact Radix Colors') => {
+  const advanceToReview = (method = 'Exact Radix sRGB Solid') => {
     act(() => findButton('Continue')?.click());
     act(() => findButton(method)?.click());
     act(() => findButton('Continue')?.click());
@@ -228,17 +232,42 @@ describe('ColorSystemModal submission', () => {
 
     act(() => findButton('Continue')?.click());
     expect(findButton('Teul Generated')).toBeDefined();
-    expect(findButton('Exact Radix Colors')).toBeDefined();
+    expect(findButton('Exact Radix sRGB Solid')).toBeDefined();
     expect(findButton('WCAG-Constrained Tokens')).toBeDefined();
-    expect(container.textContent).toContain('unmodified @radix-ui/colors v3.0.0');
+    expect(container.textContent).toContain(
+      'Delta E OK nearest exact published sRGB solid-scale step'
+    );
+    expect(container.textContent).toContain('source @radix-ui/colors v3.0.0');
     expect(container.textContent).toContain('block output unless every declared pairing passes');
+  });
+
+  it('blocks every on-canvas sRGB color-system mutation outside a confirmed sRGB document', () => {
+    renderModal('P3 System', 'display-p3');
+
+    act(() => findButton('Continue')?.click());
+    const constrainedButton = findButton('WCAG-Constrained Tokens');
+
+    expect(constrainedButton?.disabled).toBe(true);
+    expect(constrainedButton?.title).toContain('confirmed sRGB');
+    expect(container.textContent).toContain('frames, variables, and styles are blocked');
+
+    act(() => findButton('Exact Radix sRGB Solid')?.click());
+    act(() => findButton('Continue')?.click());
+    const createButton = findButton('Create Color System') as HTMLButtonElement | undefined;
+    expect(createButton?.disabled).toBe(true);
+    expect(container.textContent).toContain('Export remains available');
+    act(() => createButton?.click());
+    expect(postMessage).not.toHaveBeenCalled();
   });
 
   it('posts exact Radix source metadata instead of inserting the input color into the scale', () => {
     renderModal('Test System');
 
     act(() => findButton('Continue')?.click());
-    act(() => findButton('Exact Radix Colors')?.click());
+    act(() => findButton('Exact Radix sRGB Solid')?.click());
+    expect(container.textContent).toMatch(
+      /Exact Radix (light|dark) step \d+ at #[0-9A-F]{6} is nearest by Delta E OK \([0-9.]+\)/
+    );
     expect(container.textContent).toContain(
       'the input color is not inserted into the exact Radix scale'
     );
@@ -278,7 +307,7 @@ describe('ColorSystemModal submission', () => {
 
     act(() => findButton('Continue')?.click());
     act(() => findButton('WCAG-Constrained Tokens')?.click());
-    expect(container.textContent).toContain('WCAG 2.2 semantic color policy: Passed');
+    expect(container.textContent).toContain('WCAG 2.2 sRGB semantic color policy: Passed');
 
     act(() => findButton('Continue')?.click());
     act(() => findButton('Create Color System')?.click());

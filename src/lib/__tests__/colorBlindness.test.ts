@@ -84,6 +84,8 @@ describe('CVD_INFO', () => {
     expect(CVD_INFO.protanopia.description).not.toContain('Cannot perceive');
     expect(CVD_INFO.deuteranopia.description).not.toContain('Complete absence');
     expect(CVD_INFO.achromatopsia.description).toContain('approximation');
+    expect(CVD_INFO.tritanopia.name).toBe('Severe tritanomaly approximation');
+    expect(CVD_INFO.tritanopia.description).toContain('not validated for tritanopia');
   });
 });
 
