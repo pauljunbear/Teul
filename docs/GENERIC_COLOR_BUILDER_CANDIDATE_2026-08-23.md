@@ -46,16 +46,16 @@ names, corporate identifiers, Figma file key, node IDs, and fixture paths.
 
 Raw source serialization remains byte-preserving through `canonicalJson`.
 Hash receipts use `canonicalHashJson`, which quantizes generated non-integer
-numbers to 12 decimal places before SHA-256. Tests prove that sub-precision
+numbers to 9 decimal places before SHA-256. Tests prove that sub-precision
 runtime noise hashes identically while meaningful differences remain distinct.
 
 The normalized public secondary-engine golden hash is:
 
-`sha256:4d205676d6920d86b145f1d428a7ba4bf90151c479ba0fd1f74a4f9da26b39dc`
+`sha256:6573e79dacc69ce45f2c506ebb2cdbaf5d94dee6d7ed41fa53324602ee023f1f`
 
-Node 22.13.0 passes the focused hash test and full suite. Node 24 was not
-installed locally, so an independent Node 24 execution remains a release
-qualification check rather than claimed proof.
+Node 22.13.0 passes the focused hash test and full suite locally. GitHub CI runs
+the golden hash and complete coverage suite on Node 22 and Node 24; both jobs
+must pass before release.
 
 ## Build isolation and size
 

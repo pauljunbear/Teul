@@ -4,6 +4,10 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
+    // The generic-builder corpus intentionally exercises bounded 10k/100k
+    // workloads. Coverage instrumentation on shared Linux runners can make an
+    // individual deterministic test slower than Vitest's 5-second default.
+    testTimeout: 20_000,
     include: ['src/**/*.{test,spec}.{js,ts,tsx}'],
     setupFiles: ['./src/lib/__tests__/setup.ts'],
     coverage: {

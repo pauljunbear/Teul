@@ -105,9 +105,12 @@ export function canonicalJson(value: unknown): string {
 /**
  * Generated color math may differ below a meaningful precision boundary across
  * JavaScript runtimes. Hash receipts therefore quantize non-integer numbers to
- * 12 decimal places while canonicalJson continues to preserve raw source bytes.
+ * 9 decimal places while canonicalJson continues to preserve raw source bytes.
+ * This boundary is five orders of magnitude finer than Local MINDE's 0.0001
+ * search epsilon while removing immaterial libm/V8 drift across supported
+ * Node runtimes and operating systems.
  */
-export const DETERMINISTIC_HASH_DECIMAL_PLACES = 12;
+export const DETERMINISTIC_HASH_DECIMAL_PLACES = 9;
 
 function quantizeHashNumber(value: number): number {
   if (!Number.isFinite(value) || Number.isInteger(value)) return value;

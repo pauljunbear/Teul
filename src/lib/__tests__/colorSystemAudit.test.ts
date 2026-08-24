@@ -170,12 +170,12 @@ describe('color-system snapshot and accessibility evidence', () => {
     const first = { l: 0.51234567890124, c: -0, h: 241.0000000000004 };
     const equivalent = { l: 0.51234567890126, c: 0, h: 241.0000000000002 };
 
-    expect(DETERMINISTIC_HASH_DECIMAL_PLACES).toBe(12);
+    expect(DETERMINISTIC_HASH_DECIMAL_PLACES).toBe(9);
     expect(canonicalJson(first)).not.toBe(canonicalJson(equivalent));
     expect(canonicalHashJson(first)).toBe(canonicalHashJson(equivalent));
     expect(deterministicContentHash(first)).toBe(deterministicContentHash(equivalent));
-    expect(deterministicContentHash({ l: 0.512345678903 })).not.toBe(
-      deterministicContentHash({ l: 0.512345678901 })
+    expect(deterministicContentHash({ l: 0.512345681 })).not.toBe(
+      deterministicContentHash({ l: 0.512345679 })
     );
   });
 

@@ -328,7 +328,7 @@ describe('deterministic v2 Secondary engine', () => {
     expect(strategy.candidates[0]).not.toHaveProperty('typographySpecimens');
     expect(strategy.candidates[0]).not.toHaveProperty('ratings');
     expect(strategy.strategySetHash).toBe(
-      'sha256:4d205676d6920d86b145f1d428a7ba4bf90151c479ba0fd1f74a4f9da26b39dc'
+      'sha256:6573e79dacc69ce45f2c506ebb2cdbaf5d94dee6d7ed41fa53324602ee023f1f'
     );
     const referenceIds = new Set(brief.sourceReferenceColors.map(color => color.stableColorId));
     expect(brief.preservedColors.every(color => !referenceIds.has(color.stableColorId))).toBe(true);
