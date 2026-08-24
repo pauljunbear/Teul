@@ -310,35 +310,53 @@ function manifestHash(manifest: Omit<JournalManifestV2, 'manifestHash'>): string
   return deterministicContentHash(manifest);
 }
 
-function splitUtf8(value: string): string[] {
+function splitUtf8(value: string): { chunks: string[]; byteLength: number } {
   const chunks: string[] = [];
+  let byteLength = 0;
   let start = 0;
-  while (start < value.length) {
-    let low = start + 1;
-    let high = value.length;
-    let best = start;
-    while (low <= high) {
-      const middle = Math.floor((low + high) / 2);
-      if (
-        utf8ByteLength(value.slice(start, middle)) <= COLOR_SYSTEM_CREATE_JOURNAL_V2_MAX_CHUNK_BYTES
-      ) {
-        best = middle;
-        low = middle + 1;
+  let chunkBytes = 0;
+  let index = 0;
+  while (index < value.length) {
+    const codeUnit = value.charCodeAt(index);
+    let encodedBytes: number;
+    let codeUnits = 1;
+    if (codeUnit < 0x80) {
+      encodedBytes = 1;
+    } else if (codeUnit < 0x800) {
+      encodedBytes = 2;
+    } else if (codeUnit >= 0xd800 && codeUnit <= 0xdbff) {
+      const low = index + 1 < value.length ? value.charCodeAt(index + 1) : 0;
+      if (low >= 0xdc00 && low <= 0xdfff) {
+        encodedBytes = 4;
+        codeUnits = 2;
       } else {
-        high = middle - 1;
+        encodedBytes = 3;
       }
+    } else {
+      encodedBytes = 3;
     }
-    if (best === start)
-      throw new ColorSystemCreateJournalV2Error('Journal contains an unwriteable UTF-8 value.');
-    chunks.push(value.slice(start, best));
-    start = best;
+
+    if (
+      chunkBytes > 0 &&
+      chunkBytes + encodedBytes > COLOR_SYSTEM_CREATE_JOURNAL_V2_MAX_CHUNK_BYTES
+    ) {
+      chunks.push(value.slice(start, index));
+      start = index;
+      chunkBytes = 0;
+    }
+    chunkBytes += encodedBytes;
+    byteLength += encodedBytes;
+    index += codeUnits;
   }
+  if (start < value.length) chunks.push(value.slice(start));
+  if (chunks.length === 0)
+    throw new ColorSystemCreateJournalV2Error('Journal contains an unwriteable UTF-8 value.');
   if (chunks.length > COLOR_SYSTEM_CREATE_JOURNAL_V2_MAX_CHUNKS) {
     throw new ColorSystemCreateJournalV2Error(
       `Create journal exceeds ${COLOR_SYSTEM_CREATE_JOURNAL_V2_MAX_CHUNKS} plugin-data chunks.`
     );
   }
-  return chunks;
+  return { chunks, byteLength };
 }
 
 function parseManifest(raw: string): JournalManifestV2 {
@@ -516,6 +534,9 @@ export function createColorSystemCreateJournalRuntimeV2(host: ColorSystemCreateJ
   // repair a transient clientStorage failure when this runtime already observed
   // the renderer's post-commit acknowledgement call.
   const commitConfirmedTransactions = new Set<string>();
+  let cachedJournal: ColorSystemCreateJournalV2 | null = null;
+  let cachedManifestRaw = '';
+  let cachedChunks: readonly string[] = [];
   const readCompletion = async (
     currentFileIdentityHash: string
   ): Promise<ColorSystemCreateCompletionV2 | null> =>
@@ -523,9 +544,15 @@ export function createColorSystemCreateJournalRuntimeV2(host: ColorSystemCreateJ
 
   const read = (): ColorSystemCreateJournalV2 | null => {
     const rawManifest = host.getRootPluginData(COLOR_SYSTEM_CREATE_JOURNAL_V2_KEY);
-    if (!rawManifest) return null;
+    if (!rawManifest) {
+      cachedJournal = null;
+      cachedManifestRaw = '';
+      cachedChunks = [];
+      return null;
+    }
     const manifest = parseManifest(rawManifest);
     let raw = '';
+    const chunks: string[] = [];
     for (let index = 0; index < manifest.chunkCount; index += 1) {
       const chunk = host.getRootPluginData(chunkKey(manifest.generation, index));
       if (!chunk || utf8ByteLength(chunk) > COLOR_SYSTEM_CREATE_JOURNAL_V2_MAX_CHUNK_BYTES) {
@@ -533,6 +560,7 @@ export function createColorSystemCreateJournalRuntimeV2(host: ColorSystemCreateJ
           `Stored v2 Create journal chunk ${index} is missing or oversized.`
         );
       }
+      chunks.push(chunk);
       raw += chunk;
     }
     if (utf8ByteLength(raw) !== manifest.byteLength)
@@ -544,6 +572,9 @@ export function createColorSystemCreateJournalRuntimeV2(host: ColorSystemCreateJ
       throw new ColorSystemCreateJournalV2Error(
         'Stored v2 Create journal manifest does not match its content.'
       );
+    cachedJournal = journal;
+    cachedManifestRaw = rawManifest;
+    cachedChunks = chunks;
     return journal;
   };
 
@@ -552,19 +583,20 @@ export function createColorSystemCreateJournalRuntimeV2(host: ColorSystemCreateJ
     const currentGeneration = existingRaw ? parseManifest(existingRaw).generation : 1;
     const generation: 0 | 1 = currentGeneration === 0 ? 1 : 0;
     const raw = canonicalJson(journal);
-    const chunks = splitUtf8(raw);
+    const { chunks, byteLength } = splitUtf8(raw);
     chunks.forEach((chunk, index) => host.setRootPluginData(chunkKey(generation, index), chunk));
     const content = {
       version: COLOR_SYSTEM_CREATE_JOURNAL_V2_MANIFEST_VERSION,
       generation,
       chunkCount: chunks.length,
-      byteLength: utf8ByteLength(raw),
+      byteLength,
       journalHash: journal.journalHash,
     } as const;
-    host.setRootPluginData(
-      COLOR_SYSTEM_CREATE_JOURNAL_V2_KEY,
-      canonicalJson({ ...content, manifestHash: manifestHash(content) })
-    );
+    const manifestRaw = canonicalJson({ ...content, manifestHash: manifestHash(content) });
+    host.setRootPluginData(COLOR_SYSTEM_CREATE_JOURNAL_V2_KEY, manifestRaw);
+    cachedJournal = journal;
+    cachedManifestRaw = manifestRaw;
+    cachedChunks = chunks;
     return journal;
   };
 
@@ -574,6 +606,9 @@ export function createColorSystemCreateJournalRuntimeV2(host: ColorSystemCreateJ
     if (current.transactionId !== transactionId)
       throw new ColorSystemCreateJournalV2Error('Refused to clear a different v2 Create journal.');
     host.setRootPluginData(COLOR_SYSTEM_CREATE_JOURNAL_V2_KEY, '');
+    cachedJournal = null;
+    cachedManifestRaw = '';
+    cachedChunks = [];
   };
 
   const begin = (input: BeginColorSystemCreateJournalV2Input): ColorSystemCreateJournalV2 => {
@@ -619,6 +654,17 @@ export function createColorSystemCreateJournalRuntimeV2(host: ColorSystemCreateJ
   };
 
   const assertCurrent = (journal: ColorSystemCreateJournalV2): ColorSystemCreateJournalV2 => {
+    if (
+      cachedJournal === journal &&
+      cachedManifestRaw !== '' &&
+      host.getRootPluginData(COLOR_SYSTEM_CREATE_JOURNAL_V2_KEY) === cachedManifestRaw
+    ) {
+      const manifest = parseManifest(cachedManifestRaw);
+      const chunksMatch = cachedChunks.every(
+        (chunk, index) => host.getRootPluginData(chunkKey(manifest.generation, index)) === chunk
+      );
+      if (chunksMatch) return journal;
+    }
     const current = read();
     if (
       !current ||

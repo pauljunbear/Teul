@@ -289,17 +289,17 @@ describe('persistent v2 Create transaction journal', () => {
       ...Array.from({ length: 192 }, (_, index) => ({
         kind: 'variable' as const,
         id: `variable:${index}`,
-        recipeId: `variable/${index}/${'v'.repeat(120)}`,
+        recipeId: `variable/${index}/${'é'.repeat(120)}`,
       })),
       ...Array.from({ length: 192 }, (_, index) => ({
         kind: 'style' as const,
         id: `style:${index}`,
-        recipeId: `style/${index}/${'s'.repeat(120)}`,
+        recipeId: `style/${index}/${'한'.repeat(120)}`,
       })),
       ...Array.from({ length: 26 }, (_, index) => ({
         kind: 'component' as const,
         id: `component:${index}`,
-        recipeId: `component/${index}/${'c'.repeat(120)}`,
+        recipeId: `component/${index}/${'🎨'.repeat(60)}`,
       })),
       ...Array.from({ length: 5 }, (_, index) => ({
         kind: 'frame' as const,
@@ -326,6 +326,26 @@ describe('persistent v2 Create transaction journal', () => {
     const state = fixture({ failManifestWrites: true });
     expect(() => state.runtime.begin(beginInput())).toThrow('root plugin-data write failed');
     expect(state.rootData.has(COLOR_SYSTEM_CREATE_JOURNAL_V2_KEY)).toBe(false);
+  });
+
+  it('detects active-chunk tampering before the cached record fast path can mutate', () => {
+    const state = fixture();
+    const journal = state.runtime.begin(beginInput());
+    const manifest = JSON.parse(state.rootData.get(COLOR_SYSTEM_CREATE_JOURNAL_V2_KEY) ?? '{}') as {
+      generation: 0 | 1;
+    };
+    const activeChunkKey = `${COLOR_SYSTEM_CREATE_JOURNAL_V2_KEY}-g${manifest.generation}-chunk-0`;
+    const activeChunk = state.rootData.get(activeChunkKey);
+    expect(activeChunk).toContain('Studio');
+    state.rootData.set(activeChunkKey, activeChunk?.replace('Studio', 'Tamper') ?? '');
+
+    expect(() =>
+      state.runtime.record(journal, {
+        kind: 'collection',
+        id: 'collection:1',
+        recipeId: 'collection/primitives',
+      })
+    ).toThrow('hash validation');
   });
 
   it('removes only exact owned partial resources in reverse dependency order, with the page last', async () => {
