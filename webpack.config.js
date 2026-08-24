@@ -2,6 +2,13 @@ const path = require('path');
 const fs = require('fs');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
+const webpack = require('webpack');
+
+function genericColorBuilderChannel(env) {
+  return env?.genericColorBuilder === true || env?.genericColorBuilder === 'true'
+    ? 'candidate'
+    : 'disabled';
+}
 
 class InlineUiChunkHtmlPlugin {
   apply(compiler) {
@@ -57,6 +64,10 @@ class RemoveInlinedUiAssetPlugin {
 }
 
 class EmitLegalArtifactsPlugin {
+  constructor(genericChannel) {
+    this.genericChannel = genericChannel;
+  }
+
   apply(compiler) {
     compiler.hooks.thisCompilation.tap('EmitLegalArtifactsPlugin', compilation => {
       compilation.hooks.processAssets.tap(
@@ -79,6 +90,20 @@ class EmitLegalArtifactsPlugin {
               new compiler.webpack.sources.RawSource(contents)
             );
           }
+          compilation.emitAsset(
+            'GENERIC_COLOR_BUILDER_CHANNEL.json',
+            new compiler.webpack.sources.RawSource(
+              `${JSON.stringify(
+                {
+                  schemaVersion: 'teul.color-system.generic-release-channel.v2',
+                  channel: this.genericChannel,
+                  qualified: this.genericChannel === 'qualified',
+                },
+                null,
+                2
+              )}\n`
+            )
+          );
         }
       );
     });
@@ -103,13 +128,13 @@ module.exports = (env, argv) => ({
         exclude: /node_modules/,
       },
       {
-        test: /(?:colors|wernerColors)\.json$/,
+        test: /(?:colors|wernerColors|transcription-audit)\.json$/,
         type: 'javascript/auto',
         use: path.resolve(__dirname, 'scripts/compact-color-json-loader.js'),
       },
       {
         test: /\.json$/,
-        exclude: /(?:colors|wernerColors)\.json$/,
+        exclude: /(?:colors|wernerColors|transcription-audit)\.json$/,
         type: 'json',
         parser: {
           parse: JSON.parse,
@@ -120,19 +145,41 @@ module.exports = (env, argv) => ({
 
   resolve: {
     extensions: ['.tsx', '.ts', '.js', '.json'],
-    alias:
-      argv.mode === 'production'
+    alias: {
+      './backend/colorSystemBuilderReleaseRuntime$': path.resolve(
+        __dirname,
+        genericColorBuilderChannel(env) === 'candidate'
+          ? 'src/backend/colorSystemBuilderCandidateRuntime.ts'
+          : 'src/backend/colorSystemBuilderDisabledRuntime.ts'
+      ),
+      './backend/colorSystemAuditReleaseRuntime$': path.resolve(
+        __dirname,
+        genericColorBuilderChannel(env) === 'candidate'
+          ? 'src/backend/colorSystemAuditCandidateRuntime.ts'
+          : 'src/backend/colorSystemAuditDisabledRuntime.ts'
+      ),
+      './components/ColorSystemReleaseTab$': path.resolve(
+        __dirname,
+        genericColorBuilderChannel(env) === 'candidate'
+          ? 'src/components/ColorSystemReleaseTab.tsx'
+          : 'src/components/ColorSystemReleaseDisabledTab.tsx'
+      ),
+      ...(argv.mode === 'production'
         ? {
             'react$': 'preact/compat',
             'react-dom$': 'preact/compat',
             'react-dom/client$': 'preact/compat/client',
           }
-        : {},
+        : {}),
+    },
   },
 
   output: {
     filename: '[name].js',
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(
+      __dirname,
+      genericColorBuilderChannel(env) === 'candidate' ? 'figma-candidate/dist' : 'dist'
+    ),
     clean: true,
   },
 
@@ -141,8 +188,8 @@ module.exports = (env, argv) => ({
   // 244 KiB web-page recommendation.
   performance: {
     hints: 'warning',
-    maxAssetSize: 440 * 1024,
-    maxEntrypointSize: 440 * 1024,
+    maxAssetSize: 400 * 1024,
+    maxEntrypointSize: 400 * 1024,
   },
 
   optimization: {
@@ -151,7 +198,7 @@ module.exports = (env, argv) => ({
         extractComments: false,
         terserOptions: {
           compress: {
-            passes: 3,
+            passes: 5,
           },
           format: {
             comments: false,
@@ -162,6 +209,11 @@ module.exports = (env, argv) => ({
   },
 
   plugins: [
+    new webpack.DefinePlugin({
+      __TEUL_GENERIC_COLOR_BUILDER_V2_CHANNEL__: JSON.stringify(
+        genericColorBuilderChannel(env)
+      ),
+    }),
     new HtmlWebpackPlugin({
       template: './src/ui.html',
       filename: 'ui.html',
@@ -171,6 +223,6 @@ module.exports = (env, argv) => ({
     }),
     new InlineUiChunkHtmlPlugin(),
     new RemoveInlinedUiAssetPlugin(),
-    new EmitLegalArtifactsPlugin(),
+    new EmitLegalArtifactsPlugin(genericColorBuilderChannel(env)),
   ],
 });

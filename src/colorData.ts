@@ -1,14 +1,5 @@
 import colorJson from './colors.json';
-
-interface Color {
-  name: string;
-  combinations: number[];
-  swatch: number;
-  cmyk: number[];
-  lab: number[];
-  rgb: number[];
-  hex: string;
-}
+import type { WadaColor } from './types/historicalColorData';
 
 interface ColorCombination {
   name: string;
@@ -17,12 +8,12 @@ interface ColorCombination {
 }
 
 export interface ColorData {
-  colors: Color[];
+  colors: WadaColor[];
   combinations: ColorCombination[];
 }
 
 // Initialize and export the color data
 export const colorData: ColorData = {
-  colors: colorJson,
+  colors: colorJson as WadaColor[],
   combinations: [],
 };

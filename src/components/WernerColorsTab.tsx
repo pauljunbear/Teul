@@ -1,21 +1,13 @@
 import * as React from 'react';
 import { useMemo, useState } from 'react';
-import {
-  CircleHelp as Question,
-  Copy,
-  PaintBucket,
-  Pencil as PencilSimple,
-  SwatchBook as Swatches,
-  WandSparkles as MagicWand,
-  X,
-} from 'lucide-react';
-import { wernerColors, WERNER_GROUPS, WernerColor, getWernerTextRecord } from '../wernerColorData';
+import { Question, Copy, PaintBucket, PencilSimple, Swatches, MagicWand, X } from './TeulIcons';
+import type { WernerColor } from '../types/historicalColorData';
 import { ColorSystemModal } from './ColorSystemModal';
 import { AboutPanel, WERNER_ABOUT_CONTENT } from './AboutPanel';
 import { copyToClipboard } from '../lib/clipboard';
 import { styles } from '../lib/theme';
 import { getAccessibleTextColor } from '../lib/accessibility';
-import { WERNER_SOURCE_PROVENANCE } from '../lib/sourceProvenance';
+import { WERNER_SOURCE_PROVENANCE_DISCLOSURE } from '../lib/sourceProvenanceDisclosureData';
 import type { NormalizedDocumentColorProfile } from '../types/messages';
 import { SourceProvenanceDisclosure } from './SourceProvenanceDisclosure';
 import { createRequestId } from '../lib/requestId';
@@ -24,11 +16,27 @@ import { HistoricalColorSwatchCard } from './HistoricalColorSwatchCard';
 
 interface WernerColorsTabProps {
   isDark: boolean;
+  colors: WernerColor[];
   documentColorProfile?: NormalizedDocumentColorProfile;
 }
 
+const WERNER_GROUPS = [
+  { id: -1, name: 'All' },
+  { id: 0, name: 'Whites' },
+  { id: 1, name: 'Greys' },
+  { id: 2, name: 'Blacks' },
+  { id: 3, name: 'Blues' },
+  { id: 4, name: 'Purples' },
+  { id: 5, name: 'Greens' },
+  { id: 6, name: 'Yellows' },
+  { id: 7, name: 'Oranges' },
+  { id: 8, name: 'Reds' },
+  { id: 9, name: 'Browns' },
+];
+
 export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({
   isDark,
+  colors,
   documentColorProfile = 'unknown',
 }) => {
   const workspaceContext = useOptionalWorkspaceState();
@@ -72,7 +80,7 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({
   );
 
   const filteredColors = useMemo(() => {
-    let filtered = wernerColors;
+    let filtered = colors;
     if (selectedGroup >= 0) filtered = filtered.filter(color => color.groupId === selectedGroup);
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -86,12 +94,9 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({
       );
     }
     return filtered;
-  }, [searchTerm, selectedGroup]);
+  }, [colors, searchTerm, selectedGroup]);
 
-  const selectedText = useMemo(
-    () => (selectedColor ? getWernerTextRecord(selectedColor) : null),
-    [selectedColor]
-  );
+  const selectedText = useMemo(() => (selectedColor ? selectedColor.text : null), [selectedColor]);
 
   const buttonStyle = (active = false): React.CSSProperties => ({
     minHeight: '32px',
@@ -201,7 +206,10 @@ export const WernerColorsTab: React.FC<WernerColorsTabProps> = ({
             </button>
           ))}
         </div>
-        <SourceProvenanceDisclosure provenance={WERNER_SOURCE_PROVENANCE} isDark={isDark} />
+        <SourceProvenanceDisclosure
+          provenance={WERNER_SOURCE_PROVENANCE_DISCLOSURE}
+          isDark={isDark}
+        />
       </div>
 
       <div

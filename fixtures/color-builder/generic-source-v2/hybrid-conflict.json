@@ -1,0 +1,113 @@
+{
+  "capturedAt": "2026-08-21T12:00:00.000Z",
+  "scope": {
+    "kind": "current-file",
+    "usageScope": "current-page",
+    "selectedNodeIds": [],
+    "loadedPageIds": ["page-hybrid"],
+    "excludedPageIds": [],
+    "coverage": "complete-supported-scope"
+  },
+  "documentProfile": "srgb",
+  "collections": [
+    {
+      "collectionId": "collection-hybrid",
+      "name": "Primary and Secondary",
+      "defaultModeId": "mode-default",
+      "modes": [
+        {
+          "collectionId": "collection-hybrid",
+          "modeId": "mode-default",
+          "name": "Default",
+          "order": 1
+        }
+      ]
+    }
+  ],
+  "variables": [
+    {
+      "variableId": "variable-hybrid",
+      "name": "Primary/Secondary conflict",
+      "description": "One declaration contains two incompatible section labels.",
+      "collectionId": "collection-hybrid",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-default",
+          "modeName": "Default",
+          "rawValue": {
+            "kind": "color",
+            "value": { "colorSpace": "srgb", "components": [0.3, 0.45, 0.6], "alpha": 1 }
+          },
+          "resolvedValue": { "colorSpace": "srgb", "components": [0.3, 0.45, 0.6], "alpha": 1 },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-hybrid"]
+    }
+  ],
+  "paintStyles": [
+    {
+      "styleId": "style-hybrid",
+      "name": "Product Graphics/Hybrid",
+      "description": "Independent eligible style evidence.",
+      "paints": [
+        {
+          "order": 1,
+          "type": "SOLID",
+          "visible": true,
+          "opacity": 1,
+          "blendMode": "NORMAL",
+          "solidValue": { "colorSpace": "srgb", "components": [0.65, 0.25, 0.15], "alpha": 1 },
+          "payload": { "color": { "b": 0.15, "g": 0.25, "r": 0.65 }, "type": "SOLID" }
+        }
+      ],
+      "directDeclaration": {
+        "kind": "literal",
+        "value": { "colorSpace": "srgb", "components": [0.65, 0.25, 0.15], "alpha": 1 }
+      },
+      "governingEligibility": "eligible",
+      "evidenceIds": ["e-style-hybrid"]
+    }
+  ],
+  "paletteStructures": [
+    {
+      "structureId": "palette-structure:frame-data",
+      "sectionKind": "data-visualization",
+      "title": "Data visualization",
+      "sourceNodeId": "frame-data",
+      "extractionMethod": "explicit-heading",
+      "entries": [
+        {
+          "entryId": "entry-data-one",
+          "name": "Series one",
+          "order": 1,
+          "value": { "colorSpace": "srgb", "components": [0.15, 0.55, 0.4], "alpha": 1 },
+          "evidenceIds": ["e-entry-data-one"]
+        }
+      ],
+      "evidenceIds": ["e-frame-data"]
+    }
+  ],
+  "usageEvidence": [],
+  "unsupported": [],
+  "evidence": [
+    {
+      "evidenceId": "e-entry-data-one",
+      "kind": "figma-node",
+      "locator": "page-hybrid/frame-data/entry-data-one"
+    },
+    { "evidenceId": "e-frame-data", "kind": "figma-node", "locator": "page-hybrid/frame-data" },
+    { "evidenceId": "e-style-hybrid", "kind": "figma-resource", "locator": "style:style-hybrid" },
+    {
+      "evidenceId": "e-variable-hybrid",
+      "kind": "figma-resource",
+      "locator": "variable:variable-hybrid"
+    }
+  ],
+  "enabledLibraryDescriptors": [],
+  "libraryBoundaryNote": "No enabled-library metadata was requested.",
+  "scannedNodeCount": 4,
+  "cancelled": false,
+  "partial": false
+}

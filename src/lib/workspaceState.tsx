@@ -1,7 +1,7 @@
 import * as React from 'react';
 import type { WorkspaceStorageResultMessage } from '../types/messages';
 
-export type WorkspaceMainTab = 'colors' | 'werner' | 'grids' | 'a11y';
+export type WorkspaceMainTab = 'colors' | 'werner' | 'grids' | 'a11y' | 'system';
 export type WorkspaceThemeMode = 'system' | 'light' | 'dark';
 export type WorkspaceColorRole = 'primary' | 'secondary' | 'tertiary' | 'accent';
 export type WorkspaceScaleMethod = 'custom' | 'radix-match' | 'wcag-constrained';
@@ -57,7 +57,7 @@ export const DEFAULT_WORKSPACE_STATE: WorkspaceState = {
   recentColors: [],
 };
 
-const TABS: WorkspaceMainTab[] = ['colors', 'werner', 'grids', 'a11y'];
+const TABS: WorkspaceMainTab[] = ['colors', 'werner', 'grids', 'a11y', 'system'];
 const THEMES: WorkspaceThemeMode[] = ['system', 'light', 'dark'];
 const METHODS: WorkspaceScaleMethod[] = ['custom', 'radix-match', 'wcag-constrained'];
 const DETAILS: WorkspaceDetailLevel[] = ['minimal', 'detailed', 'presentation'];

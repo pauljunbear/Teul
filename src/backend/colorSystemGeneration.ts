@@ -26,8 +26,6 @@ type SemanticMode = 'light' | 'dark';
 // Constants
 // ============================================
 
-const FONT_LOAD_TIMEOUT = 5000;
-
 interface GenerationOperation {
   nodes: Set<SceneNode>;
 }
@@ -94,17 +92,9 @@ function removeOwnedNodes(operation: GenerationOperation): void {
   }
 }
 
-async function loadFontWithTimeout(family: string, style: string): Promise<boolean> {
+async function loadFontSafely(family: string, style: string): Promise<boolean> {
   try {
-    await Promise.race([
-      figma.loadFontAsync({ family, style }),
-      new Promise((_, reject) =>
-        setTimeout(
-          () => reject(new Error(`Font load timeout: ${family} ${style}`)),
-          FONT_LOAD_TIMEOUT
-        )
-      ),
-    ]);
+    await figma.loadFontAsync({ family, style });
     return true;
   } catch (error) {
     console.warn(`Failed to load font ${family} ${style}:`, error);
@@ -120,7 +110,7 @@ async function loadFonts(): Promise<boolean> {
     { family: 'Inter', style: 'Bold' },
   ];
 
-  const results = await Promise.all(fonts.map(f => loadFontWithTimeout(f.family, f.style)));
+  const results = await Promise.all(fonts.map(f => loadFontSafely(f.family, f.style)));
 
   const allLoaded = results.every(r => r);
   if (!allLoaded) {

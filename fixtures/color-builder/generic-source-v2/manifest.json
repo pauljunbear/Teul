@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "teul.color-system.generic-source-corpus.v2",
+  "corpusVersion": "2026-08-21.1",
+  "authority": "synthetic-local-engineering-evidence",
+  "releaseBoundary": "These fixtures prove local engineering behavior only. They are not live Figma observation, domain-expert judgment, owner acceptance, publication, or evidence that every company source is supported.",
+  "families": [
+    {
+      "id": "variable-first",
+      "file": "variable-first.json",
+      "purpose": "Exact collection modes, raw literals, per-mode aliases, scopes, alpha, and deterministic resource enumeration.",
+      "acceptanceIds": ["AC-801", "AC-802", "AC-810"],
+      "fileSha256": "sha256:3eb7f59b2bb458a53e13dc15ef327f164cc0bcd55da738a672e26c1774da086b",
+      "sourceSnapshotHash": "sha256:ad84f0b2acd48dc051321fed2f0a02330f321c8dd275b98de99f617437a8ea51"
+    },
+    {
+      "id": "style-first",
+      "file": "style-first.json",
+      "purpose": "Eligible opaque normal solid Paint Style declaration and exact structured paint payload.",
+      "acceptanceIds": ["AC-803"],
+      "fileSha256": "sha256:21d5de6762b89ae6b674df7d941c4c8cfd61102018b0c3ef086cccdc09ead9bb",
+      "sourceSnapshotHash": "sha256:4f99d777479bd452ff741cb677033182145cb8d0fc172afdba018f3a96d2ad10"
+    },
+    {
+      "id": "canvas-only",
+      "file": "canvas-only.json",
+      "purpose": "Explicitly headed palette structure with native swatch-card order and no authored resources.",
+      "acceptanceIds": ["AC-804"],
+      "fileSha256": "sha256:9f7f29f63b67aff088ebbc037bb7b49d0ccab15380e15e9b0a7872498a22d5a3",
+      "sourceSnapshotHash": "sha256:de2995cd42ceeb7a64c822e60875c4a92ebf7369d2af2d05469ae1039a520abd"
+    },
+    {
+      "id": "hybrid-conflict",
+      "file": "hybrid-conflict.json",
+      "purpose": "Variable, Style, and canvas evidence coexist while one declaration carries conflicting Primary and Secondary semantics.",
+      "acceptanceIds": ["AC-805", "AC-806", "AC-813"],
+      "fileSha256": "sha256:b1d070fd16f99269e81c2e1b018db78590bb24ae25c0d5596420a9bb5438fcca",
+      "sourceSnapshotHash": "sha256:6833ddf2c96df9aeec3a4e35ecaee02ed33c73b3f359d79986dc9a1aa55c95dd"
+    },
+    {
+      "id": "display-p3",
+      "file": "display-p3.json",
+      "purpose": "Exact Display P3 components remain unconverted and are blocked from the current sRGB engine.",
+      "acceptanceIds": ["AC-810"],
+      "fileSha256": "sha256:e105b503762a86e193e76e9982c1aeab2e801078d4adefeccc21fd2481bcda97",
+      "sourceSnapshotHash": "sha256:34dccd4f1b3ba0d4a9889acfb6b3044e2fde2ae2cd54b43dc31958742dd699df"
+    },
+    {
+      "id": "compositing-context",
+      "file": "compositing-context.json",
+      "purpose": "Gradient and translucent non-normal paint evidence remains structured and cannot govern a solid declaration.",
+      "acceptanceIds": ["AC-803", "AC-811"],
+      "fileSha256": "sha256:14228a5f115f2943dc18ec9325ecd517a5666d3c7094669f5ce2bb03a7193bb0",
+      "sourceSnapshotHash": "sha256:f9c8423371fb8ae34c03f660a9bf059c2d1848a7c845fa5f98c84696ebf39091"
+    },
+    {
+      "id": "empty-capacity",
+      "file": "empty-capacity.json",
+      "purpose": "Empty and capacity-blocked source state with no fabricated declaration or handoff authority.",
+      "acceptanceIds": ["AC-815", "AC-816", "AC-818"],
+      "fileSha256": "sha256:37bf407aede1ebc320c66bce9d0c575daa93066e3b07ae5041cec3dd7b42274d",
+      "sourceSnapshotHash": "sha256:a61de45af88857b636bbca83647152b6895d2fe05230f9969e5f7d18cad7a482"
+    }
+  ]
+}

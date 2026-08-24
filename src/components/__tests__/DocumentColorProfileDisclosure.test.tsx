@@ -40,7 +40,7 @@ describe('document color profile disclosure', () => {
     });
 
     const tablist = container.querySelector('[role="tablist"][aria-label="Teul sections"]');
-    expect(tablist?.querySelectorAll('[role="tab"]')).toHaveLength(4);
+    expect(tablist?.querySelectorAll('[role="tab"]')).toHaveLength(5);
     expect(tablist?.textContent).not.toBe('SW');
 
     expect(postMessage).toHaveBeenCalledWith(

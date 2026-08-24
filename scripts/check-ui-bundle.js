@@ -3,7 +3,8 @@ const path = require('path');
 
 const rootDir = path.resolve(__dirname, '..');
 const uiPath = path.join(rootDir, process.env.TEUL_DIST_DIR || 'dist', 'ui.html');
-const improvementBudgetBytes = 400 * 1024;
+// Preserve at least 8 KB of headroom below the former 400 KB ceiling.
+const improvementBudgetBytes = 392_000;
 
 if (!fs.existsSync(uiPath)) {
   console.error('UI bundle check failed: dist/ui.html does not exist. Run npm run build first.');

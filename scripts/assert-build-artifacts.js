@@ -6,6 +6,8 @@ const rootDir = path.resolve(__dirname, '..');
 const distDir = path.resolve(rootDir, process.env.TEUL_DIST_DIR || 'dist');
 const uiPath = path.join(distDir, 'ui.html');
 const maxUiBytes = 440 * 1024;
+const genericChannelArg = process.argv.find(argument => argument.startsWith('--generic-channel='));
+const expectedGenericChannel = genericChannelArg?.slice('--generic-channel='.length) ?? 'disabled';
 
 function fail(message) {
   console.error(`Build artifact assertion failed: ${message}`);
@@ -40,6 +42,22 @@ if (!fs.existsSync(uiPath)) {
 
 if (!fs.existsSync(path.join(distDir, 'code.js'))) {
   fail('dist/code.js is missing.');
+}
+
+const genericChannelPath = path.join(distDir, 'GENERIC_COLOR_BUILDER_CHANNEL.json');
+if (!fs.existsSync(genericChannelPath)) {
+  fail('GENERIC_COLOR_BUILDER_CHANNEL.json is missing.');
+} else {
+  const genericChannel = JSON.parse(fs.readFileSync(genericChannelPath, 'utf8'));
+  if (
+    genericChannel.schemaVersion !== 'teul.color-system.generic-release-channel.v2' ||
+    genericChannel.channel !== expectedGenericChannel ||
+    genericChannel.qualified !== (expectedGenericChannel === 'qualified')
+  ) {
+    fail(
+      `generic builder channel must be ${expectedGenericChannel}; received ${JSON.stringify(genericChannel)}.`
+    );
+  }
 }
 
 const manifest = JSON.parse(fs.readFileSync(path.join(rootDir, 'manifest.json'), 'utf8'));

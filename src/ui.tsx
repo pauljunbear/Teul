@@ -1,20 +1,22 @@
 /// <reference lib="dom" />
 
 import * as React from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   BookOpenText,
-  CircleCheck as CheckCircle,
-  Grid2X2 as GridFour,
+  CheckCircle,
+  GridFour,
   Palette,
-  Settings as GearSix,
-} from 'lucide-react';
+  ScanSearch,
+  GearSix,
+} from './components/TeulIcons';
 import { styles } from './lib/theme';
 import { GridSystemTab } from './components/GridSystemTab';
 import { WernerColorsTab } from './components/WernerColorsTab';
 import { WadaColorsTab } from './components/WadaColorsTab';
 import { AccessibilityTab } from './components/AccessibilityTab';
+import { ColorSystemReleaseTab } from './components/ColorSystemReleaseTab';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import {
   isNormalizedDocumentColorProfile,
@@ -22,7 +24,14 @@ import {
   type MutationOperationResultMessage,
   type NormalizedDocumentColorProfile,
 } from './types/messages';
-import { consumeRequestId } from './lib/requestId';
+import { consumeRequestId, createRequestId } from './lib/requestId';
+import { validateHistoricalColorDataResult } from './lib/historicalColorDataBridge';
+import {
+  HISTORICAL_COLOR_DATA_SCHEMA_VERSION,
+  type HistoricalColorDataset,
+  type WernerColor,
+  type WadaColor,
+} from './types/historicalColorData';
 import {
   WorkspaceProvider,
   useWorkspaceState,
@@ -77,7 +86,94 @@ const sections: Array<{
     meta: 'WCAG 2.2 · APCA supplemental',
     icon: CheckCircle,
   },
+  {
+    id: 'system',
+    label: 'System',
+    title: 'Build a color system',
+    eyebrow: 'Analyze and extend',
+    meta: 'Source colors first, reviewed copy',
+    icon: ScanSearch,
+  },
 ];
+
+type HistoricalDataState<T> =
+  | { status: 'idle' | 'loading' }
+  | { status: 'ready'; records: T[] }
+  | { status: 'error'; message: string };
+
+const HistoricalDataStatus: React.FC<{
+  dataset: HistoricalColorDataset;
+  isDark: boolean;
+  state: HistoricalDataState<unknown>;
+  onRetry: () => void;
+}> = ({ dataset, isDark, state, onRetry }) => {
+  const theme = isDark ? styles.dark : styles.light;
+  const label = dataset === 'wada' ? 'Wada colors' : 'Werner colors';
+  const failed = state.status === 'error';
+
+  return (
+    <div
+      role={failed ? 'alert' : 'status'}
+      aria-live="polite"
+      style={{
+        height: '100%',
+        padding: '24px',
+        display: 'grid',
+        placeItems: 'center',
+        backgroundColor: theme.bg,
+        color: theme.text,
+      }}
+    >
+      <div
+        style={{
+          maxWidth: '320px',
+          padding: '16px',
+          border: `1px solid ${theme.border}`,
+          borderRadius: '10px',
+          backgroundColor: theme.cardBg,
+          textAlign: 'center',
+        }}
+      >
+        <strong style={{ display: 'block', fontSize: '12px' }}>
+          {failed ? `${label} could not load` : `Loading ${label}…`}
+        </strong>
+        {failed && (
+          <>
+            <span
+              style={{
+                display: 'block',
+                marginTop: '6px',
+                color: theme.textMuted,
+                fontSize: '9px',
+                lineHeight: 1.5,
+              }}
+            >
+              {state.message}
+            </span>
+            <button
+              type="button"
+              onClick={onRetry}
+              style={{
+                marginTop: '12px',
+                minHeight: '32px',
+                padding: '7px 12px',
+                border: `1px solid ${theme.border}`,
+                borderRadius: '7px',
+                backgroundColor: theme.btnBg,
+                color: theme.text,
+                cursor: 'pointer',
+                fontSize: '9px',
+                fontWeight: 650,
+              }}
+            >
+              Retry loading {label}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const AppContent: React.FC = () => {
   const { state: workspace, update: updateWorkspace } = useWorkspaceState();
@@ -102,6 +198,11 @@ const AppContent: React.FC = () => {
     success: boolean;
     message: string;
   } | null>(null);
+  const [wadaData, setWadaData] = useState<HistoricalDataState<WadaColor>>({ status: 'idle' });
+  const [wernerData, setWernerData] = useState<HistoricalDataState<WernerColor>>({
+    status: 'idle',
+  });
+  const pendingHistoricalRequests = useRef<Partial<Record<HistoricalColorDataset, string>>>({});
 
   const theme = isDark ? styles.dark : styles.light;
   const profileLabel = profileLabels[documentColorProfile];
@@ -111,6 +212,24 @@ const AppContent: React.FC = () => {
     (themeMode: WorkspaceThemeMode) => updateWorkspace(current => ({ ...current, themeMode })),
     [updateWorkspace]
   );
+
+  const requestHistoricalData = useCallback((dataset: HistoricalColorDataset) => {
+    const requestId = createRequestId(`historical-${dataset}`);
+    pendingHistoricalRequests.current[dataset] = requestId;
+    if (dataset === 'wada') setWadaData({ status: 'loading' });
+    else setWernerData({ status: 'loading' });
+    parent.postMessage(
+      {
+        pluginMessage: {
+          type: 'get-historical-color-data',
+          schemaVersion: HISTORICAL_COLOR_DATA_SCHEMA_VERSION,
+          requestId,
+          dataset,
+        },
+      },
+      '*'
+    );
+  }, []);
 
   const handleMainTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
     if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) {
@@ -144,7 +263,64 @@ const AppContent: React.FC = () => {
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent<{ pluginMessage?: unknown }>) => {
-      const message = event.data?.pluginMessage as
+      const rawMessage = event.data?.pluginMessage;
+      if (
+        typeof rawMessage === 'object' &&
+        rawMessage !== null &&
+        'type' in rawMessage &&
+        rawMessage.type === 'historical-color-data-result'
+      ) {
+        const validation = validateHistoricalColorDataResult(rawMessage);
+        if (!validation.valid) {
+          const envelope = rawMessage as Partial<{
+            requestId: string;
+            dataset: HistoricalColorDataset;
+          }>;
+          const dataset = envelope.dataset;
+          if (
+            (dataset === 'wada' || dataset === 'werner') &&
+            typeof envelope.requestId === 'string' &&
+            pendingHistoricalRequests.current[dataset] === envelope.requestId &&
+            consumeRequestId(envelope.requestId)
+          ) {
+            delete pendingHistoricalRequests.current[dataset];
+            const errorState = {
+              status: 'error' as const,
+              message: 'Teul rejected an invalid historical color response. Try again.',
+            };
+            if (dataset === 'wada') setWadaData(errorState);
+            else setWernerData(errorState);
+          }
+          return;
+        }
+
+        const historicalMessage = validation.message;
+        if (
+          pendingHistoricalRequests.current[historicalMessage.dataset] !==
+            historicalMessage.requestId ||
+          !consumeRequestId(historicalMessage.requestId)
+        ) {
+          return;
+        }
+        delete pendingHistoricalRequests.current[historicalMessage.dataset];
+        if (!historicalMessage.success) {
+          const errorState = {
+            status: 'error' as const,
+            message: historicalMessage.error,
+          };
+          if (historicalMessage.dataset === 'wada') setWadaData(errorState);
+          else setWernerData(errorState);
+          return;
+        }
+        if (historicalMessage.dataset === 'wada') {
+          setWadaData({ status: 'ready', records: historicalMessage.records });
+        } else {
+          setWernerData({ status: 'ready', records: historicalMessage.records });
+        }
+        return;
+      }
+
+      const message = rawMessage as
         | Partial<DocumentColorProfileMessage>
         | Partial<MutationOperationResultMessage>
         | undefined;
@@ -169,8 +345,27 @@ const AppContent: React.FC = () => {
 
     window.addEventListener('message', handleMessage);
     parent.postMessage({ pluginMessage: { type: 'get-document-color-profile' } }, '*');
-    return () => window.removeEventListener('message', handleMessage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+      for (const requestId of Object.values(pendingHistoricalRequests.current)) {
+        if (requestId) consumeRequestId(requestId);
+      }
+      pendingHistoricalRequests.current = {};
+    };
   }, []);
+
+  useEffect(() => {
+    if (showSettings) return;
+    const dataset =
+      mainTab === 'colors' && wadaData.status === 'idle'
+        ? 'wada'
+        : mainTab === 'werner' && wernerData.status === 'idle'
+          ? 'werner'
+          : null;
+    if (!dataset) return;
+    const timeoutId = window.setTimeout(() => requestHistoricalData(dataset), 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [mainTab, requestHistoricalData, showSettings, wadaData.status, wernerData.status]);
 
   const railButton = (active: boolean): React.CSSProperties => ({
     width: '48px',
@@ -298,7 +493,7 @@ const AppContent: React.FC = () => {
           </div>
         </header>
 
-        {showSettings ? (
+        {showSettings && (
           <section style={{ flex: 1, minHeight: 0, padding: '16px', overflow: 'auto' }}>
             <div
               style={{
@@ -409,34 +604,60 @@ const AppContent: React.FC = () => {
               fail.
             </div>
           </section>
-        ) : (
-          <>
-            {sections.map(section => (
-              <div
-                key={section.id}
-                id={`main-${section.id}-panel`}
-                role="tabpanel"
-                aria-labelledby={`main-${section.id}-tab`}
-                hidden={mainTab !== section.id}
-                tabIndex={mainTab === section.id ? 0 : -1}
-                style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}
-              >
-                {mainTab === section.id && section.id === 'colors' && (
-                  <WadaColorsTab isDark={isDark} documentColorProfile={documentColorProfile} />
-                )}
-                {mainTab === section.id && section.id === 'werner' && (
-                  <WernerColorsTab isDark={isDark} documentColorProfile={documentColorProfile} />
-                )}
-                {mainTab === section.id && section.id === 'grids' && (
-                  <GridSystemTab isDark={isDark} />
-                )}
-                {mainTab === section.id && section.id === 'a11y' && (
-                  <AccessibilityTab isDark={isDark} />
-                )}
-              </div>
-            ))}
-          </>
         )}
+
+        {sections.map(section => {
+          const active = !showSettings && mainTab === section.id;
+          return (
+            <div
+              key={section.id}
+              id={`main-${section.id}-panel`}
+              role="tabpanel"
+              aria-labelledby={`main-${section.id}-tab`}
+              hidden={!active}
+              tabIndex={active ? 0 : -1}
+              style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}
+            >
+              {active &&
+                section.id === 'colors' &&
+                (wadaData.status === 'ready' ? (
+                  <WadaColorsTab
+                    isDark={isDark}
+                    colors={wadaData.records}
+                    documentColorProfile={documentColorProfile}
+                  />
+                ) : (
+                  <HistoricalDataStatus
+                    dataset="wada"
+                    isDark={isDark}
+                    state={wadaData}
+                    onRetry={() => requestHistoricalData('wada')}
+                  />
+                ))}
+              {active &&
+                section.id === 'werner' &&
+                (wernerData.status === 'ready' ? (
+                  <WernerColorsTab
+                    isDark={isDark}
+                    colors={wernerData.records}
+                    documentColorProfile={documentColorProfile}
+                  />
+                ) : (
+                  <HistoricalDataStatus
+                    dataset="werner"
+                    isDark={isDark}
+                    state={wernerData}
+                    onRetry={() => requestHistoricalData('werner')}
+                  />
+                ))}
+              {active && section.id === 'grids' && <GridSystemTab isDark={isDark} />}
+              {active && section.id === 'a11y' && <AccessibilityTab isDark={isDark} />}
+              {section.id === 'system' && (
+                <ColorSystemReleaseTab isDark={isDark} isActive={active} />
+              )}
+            </div>
+          );
+        })}
       </main>
 
       {mutationStatus && (

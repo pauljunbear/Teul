@@ -1,9 +1,9 @@
 import * as React from 'react';
-import type { HistoricalSourceProvenance } from '../lib/sourceProvenance';
+import type { HistoricalSourceProvenanceDisclosureData } from '../lib/sourceProvenanceDisclosureData';
 import { styles } from '../lib/theme';
 
 interface SourceProvenanceDisclosureProps {
-  provenance: HistoricalSourceProvenance;
+  provenance: HistoricalSourceProvenanceDisclosureData;
   isDark: boolean;
 }
 

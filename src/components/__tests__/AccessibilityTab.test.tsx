@@ -32,10 +32,10 @@ describe('AccessibilityTab', () => {
     expect(container.textContent).toContain('Lc 30: Minimum Any text — non-content text only');
     expect(container.textContent).not.toMatch(/Gold|Silver|Bronze/);
 
-    const referenceSample = container.querySelector<HTMLElement>('[data-apca-reference-sample]');
-    expect(referenceSample?.style.fontFamily).toBe('sans-serif');
-    expect(referenceSample?.style.fontWeight).toBe('400');
-    expect(container.textContent).toContain('iframe does not prove the Barlow reference face');
+    expect(container.querySelector('[data-apca-reference-sample]')).toBeNull();
+    expect(container.querySelector('[data-apca-reference-metadata]')).not.toBeNull();
+    expect(container.textContent).toContain('Numeric supplemental metadata only');
+    expect(container.textContent).toContain('does not render an APCA font-size example');
 
     const links = Array.from(container.querySelectorAll('a')).map(link => link.href);
     expect(links).toContain('https://git.apcacontrast.com/documentation/WhyAPCA');
