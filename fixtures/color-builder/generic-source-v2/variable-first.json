@@ -1,0 +1,111 @@
+{
+  "capturedAt": "2026-08-21T12:00:00.000Z",
+  "scope": {
+    "kind": "current-file",
+    "usageScope": "current-page",
+    "selectedNodeIds": [],
+    "loadedPageIds": ["page-main"],
+    "excludedPageIds": [],
+    "coverage": "complete-supported-scope"
+  },
+  "documentProfile": "srgb",
+  "collections": [
+    {
+      "collectionId": "collection-core",
+      "name": "Core colors",
+      "defaultModeId": "mode-light",
+      "modes": [
+        { "collectionId": "collection-core", "modeId": "mode-light", "name": "Light", "order": 1 },
+        { "collectionId": "collection-core", "modeId": "mode-dark", "name": "Dark", "order": 2 }
+      ]
+    }
+  ],
+  "variables": [
+    {
+      "variableId": "variable-accent",
+      "name": "Secondary/Accent",
+      "description": "Alias retained independently in every exact mode.",
+      "collectionId": "collection-core",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": { "kind": "alias", "targetVariableId": "variable-primary" },
+          "resolvedValue": { "colorSpace": "srgb", "components": [0.1, 0.2, 0.3], "alpha": 1 },
+          "resolution": "resolved-alias"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": { "kind": "alias", "targetVariableId": "variable-primary" },
+          "resolvedValue": { "colorSpace": "srgb", "components": [0.8, 0.7, 0.6], "alpha": 1 },
+          "resolution": "resolved-alias"
+        }
+      ],
+      "evidenceIds": ["e-variable-accent"]
+    },
+    {
+      "variableId": "variable-primary",
+      "name": "Primary/Brand",
+      "description": "Protected brand declaration.",
+      "collectionId": "collection-core",
+      "scopes": ["ALL_FILLS", "STROKE_COLOR"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": { "colorSpace": "srgb", "components": [0.1, 0.2, 0.3], "alpha": 1 }
+          },
+          "resolvedValue": { "colorSpace": "srgb", "components": [0.1, 0.2, 0.3], "alpha": 1 },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": { "colorSpace": "srgb", "components": [0.8, 0.7, 0.6], "alpha": 1 }
+          },
+          "resolvedValue": { "colorSpace": "srgb", "components": [0.8, 0.7, 0.6], "alpha": 1 },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary"]
+    }
+  ],
+  "paintStyles": [],
+  "paletteStructures": [],
+  "usageEvidence": [
+    {
+      "usageId": "usage-primary",
+      "tokenId": "variable-primary",
+      "mode": "Light",
+      "value": { "colorSpace": "srgb", "components": [0.1, 0.2, 0.3], "alpha": 1 },
+      "count": 7,
+      "contextKinds": ["unknown"],
+      "evidenceIds": ["e-usage-primary"]
+    }
+  ],
+  "unsupported": [],
+  "evidence": [
+    { "evidenceId": "e-usage-primary", "kind": "figma-node", "locator": "page-main/node-usage" },
+    {
+      "evidenceId": "e-variable-accent",
+      "kind": "figma-resource",
+      "locator": "variable:variable-accent"
+    },
+    {
+      "evidenceId": "e-variable-primary",
+      "kind": "figma-resource",
+      "locator": "variable:variable-primary"
+    }
+  ],
+  "enabledLibraryDescriptors": [],
+  "libraryBoundaryNote": "No enabled-library metadata was requested.",
+  "scannedNodeCount": 7,
+  "cancelled": false,
+  "partial": false
+}

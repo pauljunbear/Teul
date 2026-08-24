@@ -1,44 +1,22 @@
 import wernerColorJson from './wernerColors.json';
-import wernerTranscriptionAuditJson from '../scripts/werner-sampling/transcription-audit.json';
+import wernerNormalizationAuditJson from '../scripts/werner-sampling/transcription-audit.json';
+import type {
+  WernerColor,
+  WernerText,
+  WernerTextField,
+  WernerTextRecord,
+} from './types/historicalColorData';
 
-export interface WernerColor {
-  id: number;
-  name: string;
-  group: string;
-  groupId: number;
-  hex: string;
-  characteristic: boolean;
-  text: WernerTextRecord;
-}
+export type {
+  WernerColor,
+  WernerTextField,
+  WernerTextNormalization,
+  WernerTextRecord,
+} from './types/historicalColorData';
 
 export interface WernerColorGroup {
   id: number;
   name: string;
-}
-
-interface WernerText {
-  name: string;
-  description: string;
-  animal: string;
-  vegetable: string;
-  mineral: string;
-}
-
-export type WernerTextField = keyof WernerText;
-
-interface WernerTextNormalization {
-  field: WernerTextField;
-  source: string;
-  normalized: string;
-  reasons: string[];
-  evidence: string[];
-}
-
-export interface WernerTextRecord {
-  source: WernerText;
-  normalized: WernerText;
-  normalizations: WernerTextNormalization[];
-  status: 'reviewed-public-domain-source-with-audited-normalization';
 }
 
 interface WernerSourceRecord extends Omit<WernerColor, 'text'>, WernerText {}
@@ -61,22 +39,12 @@ interface WernerNormalizationOverride {
   evidence: string;
 }
 
-interface WernerSourceCorrection {
-  id?: number;
-  ids?: number[];
-  field: string;
-  correction: string;
-  evidence: string;
-}
-
-interface WernerTranscriptionAudit {
-  schemaVersion: number;
-  sourceCorrections: WernerSourceCorrection[];
+interface WernerNormalizationAudit {
   normalizationRules: WernerNormalizationRule[];
   normalizationOverrides: WernerNormalizationOverride[];
 }
 
-export const WERNER_TRANSCRIPTION_AUDIT = wernerTranscriptionAuditJson as WernerTranscriptionAudit;
+const WERNER_NORMALIZATION_AUDIT = wernerNormalizationAuditJson as WernerNormalizationAudit;
 
 // Groups based on Werner's original organization
 export const WERNER_GROUPS: WernerColorGroup[] = [
@@ -100,7 +68,7 @@ const normalizeWernerText = (id: number, source: WernerText): WernerTextRecord =
   const reasons = new Map<WernerTextField, string[]>();
   const evidence = new Map<WernerTextField, string[]>();
 
-  for (const rule of WERNER_TRANSCRIPTION_AUDIT.normalizationRules) {
+  for (const rule of WERNER_NORMALIZATION_AUDIT.normalizationRules) {
     if (!rule.ids.includes(id)) continue;
 
     for (const field of rule.fields) {
@@ -113,7 +81,7 @@ const normalizeWernerText = (id: number, source: WernerText): WernerTextRecord =
     }
   }
 
-  for (const override of WERNER_TRANSCRIPTION_AUDIT.normalizationOverrides) {
+  for (const override of WERNER_NORMALIZATION_AUDIT.normalizationOverrides) {
     if (override.id !== id) continue;
     if (source[override.field] !== override.source) {
       throw new Error(`Werner normalization override source mismatch for ${id}.${override.field}`);

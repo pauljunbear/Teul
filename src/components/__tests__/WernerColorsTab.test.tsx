@@ -3,6 +3,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WernerColorsTab } from '../WernerColorsTab';
+import { wernerColors } from '../../wernerColorData';
 
 describe('WernerColorsTab transcription disclosure', () => {
   let container: HTMLDivElement;
@@ -26,7 +27,7 @@ describe('WernerColorsTab transcription disclosure', () => {
 
   it('shows the source text and normalization reason for a printed inconsistency', () => {
     act(() => {
-      root.render(<WernerColorsTab isDark={false} />);
+      root.render(<WernerColorsTab isDark={false} colors={wernerColors} />);
     });
 
     const cloveBrown = container.querySelector<HTMLElement>('[aria-label^="Open Clove Brown,"]');

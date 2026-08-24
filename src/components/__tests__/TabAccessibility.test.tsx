@@ -58,7 +58,7 @@ describe('tab accessibility relationships', () => {
     });
 
     assertTabRelationships(container, 'Teul sections');
-    expect(container.querySelectorAll('[role="tabpanel"][id^="main-"]')).toHaveLength(4);
+    expect(container.querySelectorAll('[role="tabpanel"][id^="main-"]')).toHaveLength(5);
     expect(container.querySelector('#main-colors-panel')?.hasAttribute('hidden')).toBe(false);
     expect(container.querySelector('#main-werner-panel')?.hasAttribute('hidden')).toBe(true);
 
@@ -69,10 +69,143 @@ describe('tab accessibility relationships', () => {
     });
 
     assertTabRelationships(container, 'Teul sections');
-    expect(container.querySelectorAll('[role="tabpanel"][id^="main-"]')).toHaveLength(4);
+    expect(container.querySelectorAll('[role="tabpanel"][id^="main-"]')).toHaveLength(5);
     expect(container.querySelector('#main-colors-panel')?.hasAttribute('hidden')).toBe(true);
     expect(container.querySelector('#main-werner-panel')?.hasAttribute('hidden')).toBe(false);
     expect(document.activeElement?.id).toBe('main-werner-tab');
+  });
+
+  it('keeps System mounted and stateful while Settings hides every main tabpanel', () => {
+    act(() => {
+      root.render(<App />);
+    });
+
+    const systemTab = container.querySelector<HTMLButtonElement>('#main-system-tab')!;
+    act(() => systemTab.click());
+    expect(container.textContent).toContain('Qualification build — testing only; not released.');
+
+    const advanced = Array.from(container.querySelectorAll<HTMLElement>('summary')).find(
+      summary => summary.textContent?.trim() === 'Advanced'
+    )!;
+    act(() => advanced.click());
+    const sourceScope = container.querySelector<HTMLSelectElement>('#teul-v2-source-scope')!;
+    expect(sourceScope).toBeDefined();
+    act(() => {
+      const valueSetter = Object.getOwnPropertyDescriptor(
+        HTMLSelectElement.prototype,
+        'value'
+      )?.set;
+      valueSetter?.call(sourceScope, 'current-page');
+      sourceScope.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(sourceScope.value).toBe('current-page');
+    expect(container.querySelectorAll('main')).toHaveLength(1);
+
+    const analyzeButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find(
+      button => button.textContent?.trim() === 'Analyze and build suggestions'
+    )!;
+    act(() => analyzeButton.click());
+    const postedMessages = postMessage.mock.calls as unknown as Array<
+      [{ pluginMessage?: { type?: string; requestId?: string } }, ...unknown[]]
+    >;
+    const analyzeMessage = postedMessages
+      .map(call => call[0])
+      .find(
+        envelope => envelope.pluginMessage?.type === 'analyze-generic-color-system-v2'
+      )?.pluginMessage;
+    expect(analyzeMessage?.requestId).toBeTruthy();
+    expect(analyzeButton.textContent).toBe('Building suggestions…');
+
+    const settingsButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find(
+      button => button.textContent?.trim() === 'Settings'
+    )!;
+    act(() => settingsButton.click());
+
+    assertTabRelationships(container, 'Teul sections');
+    const panelsWhileSettings = Array.from(
+      container.querySelectorAll<HTMLElement>('[role="tabpanel"][id^="main-"]')
+    );
+    expect(panelsWhileSettings).toHaveLength(5);
+    expect(panelsWhileSettings.every(panel => panel.hidden)).toBe(true);
+    expect(settingsButton.getAttribute('aria-pressed')).toBe('true');
+    expect(systemTab.getAttribute('aria-selected')).toBe('false');
+    expect(sourceScope.isConnected).toBe(false);
+
+    act(() => {
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          data: {
+            pluginMessage: {
+              type: 'generic-color-system-v2-plan-result',
+              requestId: analyzeMessage?.requestId,
+              analysisId: null,
+              snapshotHash: `sha256:${'a'.repeat(64)}`,
+              state: {
+                kind: 'source-incomplete',
+                firstBlockerId: 'gap:hidden-source-incomplete',
+              },
+              proposal: null,
+              gaps: [
+                {
+                  id: 'gap:hidden-source-incomplete',
+                  kind: 'missing-source',
+                  title: 'The source is incomplete',
+                  message: 'Hidden lifecycle result received.',
+                  remediation: 'Choose a complete palette and analyze again.',
+                  blocking: true,
+                },
+              ],
+            },
+          },
+        })
+      );
+    });
+
+    act(() => systemTab.click());
+
+    expect(settingsButton.getAttribute('aria-pressed')).toBe('false');
+    expect(systemTab.getAttribute('aria-selected')).toBe('true');
+    expect(container.querySelector<HTMLElement>('#main-system-panel')?.hidden).toBe(false);
+    expect(container.querySelectorAll('main')).toHaveLength(1);
+    expect(container.textContent).toContain('Hidden lifecycle result received.');
+    expect(container.textContent).toContain('Choose a complete palette');
+
+    const startOverButton = Array.from(
+      container.querySelectorAll<HTMLButtonElement>('button')
+    ).find(button => button.textContent?.trim() === 'Start over')!;
+    act(() => startOverButton.click());
+
+    const restoredScope = container.querySelector<HTMLSelectElement>('#teul-v2-source-scope');
+    expect(restoredScope).not.toBe(sourceScope);
+    expect(restoredScope?.value).toBe('current-page');
+    expect(container.textContent).toContain('Qualification build — testing only; not released.');
+    expect(
+      Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find(
+        button => button.textContent?.trim() === 'Analyze and build suggestions'
+      )
+    ).toBeDefined();
+  });
+
+  it('unmounts inactive tab bodies so Settings cannot trigger hidden global shortcuts', () => {
+    act(() => {
+      root.render(<App />);
+    });
+
+    const gridsTab = container.querySelector<HTMLButtonElement>('#main-grids-tab')!;
+    act(() => gridsTab.click());
+    expect(container.querySelector<HTMLButtonElement>('button[title="Help (F1)"]')).not.toBeNull();
+
+    const settingsButton = Array.from(container.querySelectorAll<HTMLButtonElement>('button')).find(
+      button => button.textContent?.trim() === 'Settings'
+    )!;
+    act(() => settingsButton.click());
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'F1' }));
+    });
+
+    expect(container.querySelector('[role="dialog"]')).toBeNull();
+    expect(container.querySelector('main')?.hasAttribute('inert')).toBe(false);
+    expect(container.querySelector('main')?.getAttribute('aria-hidden')).not.toBe('true');
   });
 
   it('keeps every grid tabpanel mounted with valid relationships while switching tabs', () => {

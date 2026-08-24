@@ -25,6 +25,14 @@ lines, increases the backend bundle from approximately 121 KB to approximately
 977 KB in the donor checkout, and has one unresolved cross-machine
 deterministic-hash failure.
 
+Follow-up implementation later on 2026-08-23 selectively rebuilt the useful
+program as a sanitized, generic-only candidate and resolved the local
+deterministic-hash defect. It remains isolated from the normal production
+bundle and still requires current Figma-host acceptance. See
+`docs/GENERIC_COLOR_BUILDER_CANDIDATE_2026-08-23.md` for the current state and
+verification receipt; the decisions below preserve the original archive-review
+record.
+
 ## Import decisions
 
 | Donor capability | Teul destination | Decision | Verification |

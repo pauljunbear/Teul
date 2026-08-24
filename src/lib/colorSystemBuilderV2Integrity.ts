@@ -1,0 +1,1467 @@
+import { canonicalJson, deterministicContentHash } from './colorSystemAudit';
+import {
+  COLOR_SYSTEM_BUILDER_BRIEF_V2_SCHEMA_VERSION,
+  COLOR_SYSTEM_BUILDER_V2_LIMITS,
+  COLOR_SYSTEM_BUILDER_V2_POLICY_VERSION,
+  COLOR_SYSTEM_SECTION_ROLES_V2,
+  COLOR_SYSTEM_STRATEGY_CANDIDATE_V2_SCHEMA_VERSION,
+  COLOR_SYSTEM_STRATEGY_SET_V2_SCHEMA_VERSION,
+  type ColorSystemApprovedColorRefV2,
+  type ColorSystemBrandFitProfileV2,
+  type ColorSystemBuilderBriefV2,
+  type ColorSystemColorValueV2,
+  type ColorSystemExactPrimaryLockV2,
+  type ColorSystemFamilyMemberV2,
+  type ColorSystemGeneratedDivergingPolarityV2,
+  type ColorSystemJobV2,
+  type ColorSystemPreservedColorV2,
+  type ColorSystemSecondaryFamilyV2,
+  type ColorSystemSecondarySystemShapeV2,
+  type ColorSystemSectionIntentV2,
+  type ColorSystemSectionRatingDimensionV2,
+  type ColorSystemSourceReferenceColorV2,
+  type ColorSystemStrategyCandidateV2,
+  type ColorSystemStrategySetV2,
+} from './colorSystemBuilderV2Contracts';
+import { compareText, hexToOklch, hexToRgb } from './utils';
+
+const HASH_PATTERN = /^sha256:[0-9a-f]{64}$/;
+const HEX_PATTERN = /^#[0-9a-f]{6}$/i;
+const JOBS = [
+  'brand-primary',
+  'marketing-accent',
+  'product-graphics',
+  'functional-iconography',
+  'product-ui-surface',
+  'product-semantics',
+  'categorical-data',
+  'sequential-data',
+  'diverging-data',
+  'rendered-text-pair',
+] as const;
+const DISPOSITIONS = ['preserve', 'rebuild', 'derive', 'omit'] as const;
+const CONFIRMATIONS = ['source-evidenced', 'owner-confirmed'] as const;
+const PROMINENCE = ['supporting', 'accent', 'leading'] as const;
+const TERRITORY_STATUSES = ['allowed', 'limited', 'excluded'] as const;
+const CANDIDATE_STATUSES = ['complete', 'underfilled'] as const;
+const STRATEGY_SET_STATUSES = ['ready', 'no-solution'] as const;
+const SYSTEM_SHAPES = [
+  'named-base-light-pairs',
+  'full-light-dark-scales',
+  'source-derived-mix',
+] as const;
+const BLOCKER_CODES = [
+  'MISSING_REQUIRED_JOB',
+  'FAMILY_TARGET_UNDERFILLED',
+  'NO_VALID_FAMILY_SET',
+  'BRAND_FIT_EVIDENCE_INSUFFICIENT',
+] as const;
+
+export class ColorSystemBuilderV2IntegrityError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ColorSystemBuilderV2IntegrityError';
+  }
+}
+
+type BriefContent = Omit<ColorSystemBuilderBriefV2, 'briefHash'>;
+type BriefBuildInput = Omit<BriefContent, 'sourceReferenceColors'> & {
+  /** Legacy callers normalize to explicit empty evidence; canonical briefs always retain the field. */
+  sourceReferenceColors?: readonly ColorSystemSourceReferenceColorV2[];
+};
+type BrandFitProfileContent = Omit<ColorSystemBrandFitProfileV2, 'profileHash'>;
+type PrimaryLockContent = Omit<ColorSystemExactPrimaryLockV2, 'lockHash'>;
+type CandidateInput = Omit<
+  ColorSystemStrategyCandidateV2,
+  'actualSystemHash' | 'candidateHash' | 'compositionReceipt'
+>;
+type CandidateContent = Omit<ColorSystemStrategyCandidateV2, 'candidateHash'>;
+type StrategySetContent = Omit<ColorSystemStrategySetV2, 'strategySetHash'>;
+
+function fail(message: string): never {
+  throw new ColorSystemBuilderV2IntegrityError(message);
+}
+
+function requireNonEmpty(value: string, label: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) fail(`${label} must not be empty.`);
+  return trimmed;
+}
+
+function requireHash(value: string, label: string): string {
+  if (!HASH_PATTERN.test(value)) fail(`${label} must be a canonical SHA-256 content hash.`);
+  return value;
+}
+
+function requireOneOf<const T extends readonly string[]>(
+  value: string,
+  allowed: T,
+  label: string
+): T[number] {
+  if (!allowed.includes(value as T[number])) {
+    fail(`${label} must be one of: ${allowed.join(', ')}.`);
+  }
+  return value as T[number];
+}
+
+function requireKnownKeys(value: object, allowed: readonly string[], label: string): void {
+  const unexpected = Object.keys(value).filter(key => !allowed.includes(key));
+  if (unexpected.length > 0) {
+    fail(`${label} contains unsupported fields: ${unexpected.sort(compareText).join(', ')}.`);
+  }
+}
+
+function requireIntegerInRange(
+  value: number,
+  minimum: number,
+  maximum: number,
+  label: string
+): void {
+  if (!Number.isInteger(value) || value < minimum || value > maximum) {
+    fail(`${label} must be an integer from ${minimum} through ${maximum}.`);
+  }
+}
+
+function requireFiniteInRange(
+  value: number,
+  minimum: number,
+  maximum: number,
+  label: string
+): void {
+  if (!Number.isFinite(value) || value < minimum || value > maximum) {
+    fail(`${label} must be a finite number from ${minimum} through ${maximum}.`);
+  }
+}
+
+function sortedUniqueStrings(values: readonly string[], label: string): string[] {
+  const normalized = values.map((value, index) => requireNonEmpty(value, `${label}[${index}]`));
+  if (new Set(normalized).size !== normalized.length) fail(`${label} must not contain duplicates.`);
+  return [...normalized].sort(compareText);
+}
+
+function sortedUniqueJobs(values: readonly ColorSystemJobV2[], label: string): ColorSystemJobV2[] {
+  const normalized = sortedUniqueStrings(values, label);
+  normalized.forEach((value, index) => requireOneOf(value, JOBS, `${label}[${index}]`));
+  return normalized as ColorSystemJobV2[];
+}
+
+function requireUniqueIds(values: readonly { readonly id: string }[], label: string): void {
+  const seen = new Set<string>();
+  values.forEach((value, index) => {
+    const id = requireNonEmpty(value.id, `${label}[${index}].id`);
+    if (seen.has(id)) fail(`${label} contains duplicate id "${id}".`);
+    seen.add(id);
+  });
+}
+
+function assertContiguousOrder(values: readonly { readonly order: number }[], label: string): void {
+  values.forEach((value, index) => {
+    if (value.order !== index + 1) {
+      fail(`${label} order must be contiguous and start at 1.`);
+    }
+  });
+}
+
+function normalizeColorValue(
+  value: ColorSystemColorValueV2,
+  label: string
+): ColorSystemColorValueV2 {
+  if (value.colorSpace !== 'srgb') fail(`${label}.colorSpace must be srgb in v2 release one.`);
+  if (!HEX_PATTERN.test(value.hex)) fail(`${label}.hex must be a six-digit sRGB hex color.`);
+  const expected = hexToRgb(value.hex);
+  const components = value.components;
+  if (!components) fail(`${label}.components must retain exact normalized sRGB channels.`);
+  (['r', 'g', 'b'] as const).forEach(channel => {
+    requireFiniteInRange(components[channel], 0, 1, `${label}.components.${channel}`);
+    const expectedComponent = expected[channel] / 255;
+    if (Math.abs(components[channel] - expectedComponent) > 1e-12) {
+      fail(`${label}.components.${channel} does not match the exact sRGB hex channel.`);
+    }
+  });
+  requireFiniteInRange(value.alpha, 0, 1, `${label}.alpha`);
+  return {
+    colorSpace: 'srgb',
+    hex: value.hex.toUpperCase(),
+    components,
+    alpha: value.alpha,
+  };
+}
+
+function normalizeValuesByMode(
+  valuesByMode: Readonly<Record<string, ColorSystemColorValueV2>>,
+  label: string
+): Readonly<Record<string, ColorSystemColorValueV2>> {
+  const modes = Object.keys(valuesByMode).sort(compareText);
+  if (modes.length === 0 || modes.length > COLOR_SYSTEM_BUILDER_V2_LIMITS.maximumModes) {
+    fail(`${label} must contain 1 through ${COLOR_SYSTEM_BUILDER_V2_LIMITS.maximumModes} modes.`);
+  }
+  const folded = new Set<string>();
+  const normalized: Record<string, ColorSystemColorValueV2> = Object.create(null);
+  for (const mode of modes) {
+    requireNonEmpty(mode, `${label} mode`);
+    const key = mode.toLowerCase();
+    if (folded.has(key)) fail(`${label} contains modes that differ only by case.`);
+    folded.add(key);
+    normalized[mode] = normalizeColorValue(valuesByMode[mode], `${label}.${mode}`);
+  }
+  return normalized;
+}
+
+function sectionRank(role: string): number {
+  const rank = COLOR_SYSTEM_SECTION_ROLES_V2.indexOf(
+    role as (typeof COLOR_SYSTEM_SECTION_ROLES_V2)[number]
+  );
+  return rank;
+}
+
+function normalizeSectionIntent(
+  section: ColorSystemSectionIntentV2,
+  expectedOrder: number
+): ColorSystemSectionIntentV2 {
+  if (section.role !== COLOR_SYSTEM_SECTION_ROLES_V2[expectedOrder - 1]) {
+    fail('Builder brief sections must use the canonical five-section role order.');
+  }
+  if (section.order !== expectedOrder) fail('Builder brief section order must be contiguous.');
+  requireOneOf(section.disposition, DISPOSITIONS, `${section.role} disposition`);
+  requireOneOf(section.confirmation, CONFIRMATIONS, `${section.role} confirmation`);
+  if (section.role === 'primary' && section.disposition !== 'preserve') {
+    fail('Primary must remain preserved in the v2 builder brief.');
+  }
+  return {
+    ...section,
+    guidance: requireNonEmpty(section.guidance, `${section.role} guidance`),
+    jobs: sortedUniqueJobs(section.jobs, `${section.role} jobs`),
+    evidenceIds: sortedUniqueStrings(section.evidenceIds, `${section.role} evidenceIds`),
+  };
+}
+
+function normalizePreservedColor(color: ColorSystemPreservedColorV2): ColorSystemPreservedColorV2 {
+  requireNonEmpty(color.stableColorId, 'Preserved color id');
+  requireNonEmpty(color.displayName, `${color.stableColorId} displayName`);
+  if (sectionRank(color.section) < 0) fail(`${color.stableColorId} has an unknown section.`);
+  requireIntegerInRange(color.order, 1, 100_000, `${color.stableColorId} order`);
+  return {
+    ...color,
+    valuesByMode: normalizeValuesByMode(color.valuesByMode, `${color.stableColorId} valuesByMode`),
+    evidenceIds: sortedUniqueStrings(color.evidenceIds, `${color.stableColorId} evidenceIds`),
+  };
+}
+
+function normalizeSourceReferenceColor(
+  color: ColorSystemSourceReferenceColorV2
+): ColorSystemSourceReferenceColorV2 {
+  requireKnownKeys(
+    color,
+    [
+      'stableColorId',
+      'displayName',
+      'sourceSection',
+      'sourceOrder',
+      'valuesByMode',
+      'applicationRoles',
+      'evidenceIds',
+    ],
+    'Source reference color'
+  );
+  const stableColorId = requireNonEmpty(color.stableColorId, 'Source reference color id');
+  const displayName = requireNonEmpty(color.displayName, `${stableColorId} displayName`);
+  if (sectionRank(color.sourceSection) < 0) {
+    fail(`${stableColorId} has an unknown source section.`);
+  }
+  requireIntegerInRange(color.sourceOrder, 1, 100_000, `${stableColorId} sourceOrder`);
+  const evidenceIds = sortedUniqueStrings(
+    color.evidenceIds,
+    `${stableColorId} reference evidenceIds`
+  );
+  if (evidenceIds.length === 0) fail(`${stableColorId} source reference requires evidence.`);
+  const applicationRoles = sortedUniqueStrings(
+    color.applicationRoles ?? [],
+    `${stableColorId} applicationRoles`
+  );
+  applicationRoles.forEach((role, index) =>
+    requireOneOf(
+      role,
+      ['diverging-negative', 'diverging-positive'],
+      `${stableColorId} applicationRoles[${index}]`
+    )
+  );
+  const normalizedApplicationRoles = applicationRoles as Array<
+    'diverging-negative' | 'diverging-positive'
+  >;
+  return {
+    stableColorId,
+    displayName,
+    sourceSection: color.sourceSection,
+    sourceOrder: color.sourceOrder,
+    valuesByMode: normalizeValuesByMode(
+      color.valuesByMode,
+      `${stableColorId} reference valuesByMode`
+    ),
+    ...(normalizedApplicationRoles.length === 0
+      ? {}
+      : { applicationRoles: normalizedApplicationRoles }),
+    evidenceIds,
+  };
+}
+
+function normalizePrimaryLockContent(input: PrimaryLockContent): PrimaryLockContent {
+  if (input.version !== 'teul-exact-primary-lock/v2') {
+    fail('Primary lock is not the supported v2 schema.');
+  }
+  const lockId = requireNonEmpty(input.lockId, 'Primary lock id');
+  const stableColorId = requireNonEmpty(input.stableColorId, `${lockId} stableColorId`);
+  const sourcePath = requireNonEmpty(input.sourcePath, `${lockId} sourcePath`);
+  const mode = requireNonEmpty(input.mode, `${lockId} mode`);
+  const aliasTargetId =
+    input.aliasTargetId === undefined
+      ? undefined
+      : requireNonEmpty(input.aliasTargetId, `${lockId} aliasTargetId`);
+  const evidenceIds = sortedUniqueStrings(input.evidenceIds, `${lockId} evidenceIds`);
+  if (evidenceIds.length === 0) fail(`${lockId} requires evidence.`);
+  return {
+    version: 'teul-exact-primary-lock/v2',
+    lockId,
+    stableColorId,
+    sourcePath,
+    mode,
+    expectedValue: normalizeColorValue(input.expectedValue, `${lockId} expectedValue`),
+    ...(aliasTargetId === undefined ? {} : { aliasTargetId }),
+    evidenceIds,
+  };
+}
+
+export function buildColorSystemExactPrimaryLockV2(
+  input: PrimaryLockContent
+): ColorSystemExactPrimaryLockV2 {
+  const content = normalizePrimaryLockContent(input);
+  return { ...content, lockHash: deterministicContentHash(content) };
+}
+
+function normalizePrimaryLock(lock: ColorSystemExactPrimaryLockV2): ColorSystemExactPrimaryLockV2 {
+  requireHash(lock.lockHash, `${lock.lockId} lockHash`);
+  const content: PrimaryLockContent = {
+    version: lock.version,
+    lockId: lock.lockId,
+    stableColorId: lock.stableColorId,
+    sourcePath: lock.sourcePath,
+    mode: lock.mode,
+    expectedValue: lock.expectedValue,
+    ...(lock.aliasTargetId === undefined ? {} : { aliasTargetId: lock.aliasTargetId }),
+    evidenceIds: lock.evidenceIds,
+  };
+  const rebuilt = buildColorSystemExactPrimaryLockV2(content);
+  if (canonicalJson(rebuilt) !== canonicalJson(lock)) {
+    fail('Primary lock failed canonical v2 integrity validation.');
+  }
+  return rebuilt;
+}
+
+function normalizeBrandFitProfileContent(input: BrandFitProfileContent): BrandFitProfileContent {
+  if (input.version !== 'teul-brand-fit-profile/v2') {
+    fail('Brand-fit profile is not the supported v2 schema.');
+  }
+  const evidenceIds = sortedUniqueStrings(input.evidenceIds, 'brandFitProfile.evidenceIds');
+  if (evidenceIds.length === 0) fail('Brand-fit profile requires source evidence.');
+  const territories = [...input.territories]
+    .map(territory => {
+      const territoryId = requireNonEmpty(territory.territoryId, 'Brand territory id');
+      requireNonEmpty(territory.label, `${territoryId} label`);
+      requireOneOf(territory.status, TERRITORY_STATUSES, `${territoryId} status`);
+      const allowedJobs = sortedUniqueJobs(territory.allowedJobs, `${territoryId} allowedJobs`);
+      const allowedProminence = sortedUniqueStrings(
+        territory.allowedProminence,
+        `${territoryId} allowedProminence`
+      );
+      allowedProminence.forEach((value, index) =>
+        requireOneOf(value, PROMINENCE, `${territoryId} allowedProminence[${index}]`)
+      );
+      const appliesToProminence = sortedUniqueStrings(
+        territory.appliesToProminence,
+        `${territoryId} appliesToProminence`
+      );
+      appliesToProminence.forEach((value, index) =>
+        requireOneOf(value, PROMINENCE, `${territoryId} appliesToProminence[${index}]`)
+      );
+      if (appliesToProminence.length === 0) {
+        fail(`${territoryId} requires an explicit prominence scope.`);
+      }
+      const hueRanges = territory.perceptualBounds.hueRanges.map((range, index) => {
+        requireFiniteInRange(range.minimum, 0, 360, `${territoryId} hue[${index}].minimum`);
+        requireFiniteInRange(range.maximum, 0, 360, `${territoryId} hue[${index}].maximum`);
+        if (range.minimum > range.maximum) fail(`${territoryId} hue range is reversed.`);
+        return { minimum: range.minimum, maximum: range.maximum };
+      });
+      if (hueRanges.length === 0) fail(`${territoryId} requires a hue range.`);
+      const normalizeRange = (
+        range: Readonly<{ minimum: number; maximum: number }>,
+        maximum: number,
+        name: string
+      ) => {
+        requireFiniteInRange(range.minimum, 0, maximum, `${territoryId} ${name}.minimum`);
+        requireFiniteInRange(range.maximum, 0, maximum, `${territoryId} ${name}.maximum`);
+        if (range.minimum > range.maximum) fail(`${territoryId} ${name} range is reversed.`);
+        return { minimum: range.minimum, maximum: range.maximum };
+      };
+      const perceptualBounds = {
+        hueRanges,
+        chroma: normalizeRange(territory.perceptualBounds.chroma, 0.5, 'chroma'),
+        lightness: normalizeRange(territory.perceptualBounds.lightness, 1, 'lightness'),
+      };
+      const territoryEvidence = sortedUniqueStrings(
+        territory.evidenceIds,
+        `${territoryId} evidenceIds`
+      );
+      if (territoryEvidence.length === 0) fail(`${territoryId} requires evidence.`);
+      if (
+        territory.status === 'excluded' &&
+        (allowedJobs.length > 0 || allowedProminence.length > 0)
+      ) {
+        fail(`${territoryId} is excluded and cannot grant jobs or prominence.`);
+      }
+      if (
+        territory.status !== 'excluded' &&
+        (allowedJobs.length === 0 || allowedProminence.length === 0)
+      ) {
+        fail(`${territoryId} must grant at least one job and prominence.`);
+      }
+      return {
+        ...territory,
+        territoryId,
+        allowedJobs,
+        allowedProminence:
+          allowedProminence as BrandFitProfileContent['territories'][number]['allowedProminence'],
+        appliesToProminence:
+          appliesToProminence as BrandFitProfileContent['territories'][number]['appliesToProminence'],
+        perceptualBounds,
+        evidenceIds: territoryEvidence,
+      };
+    })
+    .sort((left, right) => compareText(left.territoryId, right.territoryId));
+  if (territories.length === 0) fail('Brand-fit profile requires at least one territory.');
+  if (new Set(territories.map(territory => territory.territoryId)).size !== territories.length) {
+    fail('Brand-fit territory identities must be unique.');
+  }
+  return { ...input, territories, evidenceIds };
+}
+
+export function buildColorSystemBrandFitProfileV2(
+  input: BrandFitProfileContent
+): ColorSystemBrandFitProfileV2 {
+  const content = normalizeBrandFitProfileContent(input);
+  return { ...content, profileHash: deterministicContentHash(content) };
+}
+
+function normalizeBrandFitProfile(
+  profile: ColorSystemBrandFitProfileV2
+): ColorSystemBrandFitProfileV2 {
+  requireHash(profile.profileHash, 'brandFitProfile.profileHash');
+  const content: BrandFitProfileContent = {
+    version: profile.version,
+    territories: profile.territories,
+    evidenceIds: profile.evidenceIds,
+  };
+  const rebuilt = buildColorSystemBrandFitProfileV2(content);
+  if (canonicalJson(rebuilt) !== canonicalJson(profile)) {
+    fail('Brand-fit profile failed canonical v2 integrity validation.');
+  }
+  return rebuilt;
+}
+
+function normalizeSecondaryTargetPolicy(
+  policy: BriefContent['secondaryTargetPolicy'],
+  requiredJobs: readonly ColorSystemJobV2[]
+): { policy: BriefContent['secondaryTargetPolicy']; derivedTarget: number } {
+  requireKnownKeys(
+    policy,
+    [
+      'version',
+      'derivationRule',
+      'retainedSourceFamilyGroupIds',
+      'assemblyContributionIds',
+      'jobMinimums',
+      'evidenceIds',
+    ],
+    'secondaryTargetPolicy'
+  );
+  if (policy.version !== 'teul-secondary-target-policy/v2') {
+    fail('Secondary target policy is not the supported schema.');
+  }
+  if (
+    policy.derivationRule !== 'max-retained-groups-and-job-minima-clamped' &&
+    policy.derivationRule !== 'teul-generated-contribution-count'
+  ) {
+    fail('Secondary target policy uses an unsupported derivation rule.');
+  }
+  const retainedSourceFamilyGroupIds = sortedUniqueStrings(
+    policy.retainedSourceFamilyGroupIds,
+    'secondaryTarget.retainedSourceFamilyGroupIds'
+  );
+  if (
+    policy.derivationRule === 'max-retained-groups-and-job-minima-clamped' &&
+    retainedSourceFamilyGroupIds.length === 0
+  ) {
+    fail('Secondary target policy requires at least one retained source family group.');
+  }
+  if (
+    policy.derivationRule === 'teul-generated-contribution-count' &&
+    retainedSourceFamilyGroupIds.length !== 0
+  ) {
+    fail('Teul-generated Secondary policy cannot masquerade Primary anchors as source families.');
+  }
+  const assemblyContributionIds = sortedUniqueStrings(
+    policy.assemblyContributionIds,
+    'secondaryTarget.assemblyContributionIds'
+  );
+  const evidenceIds = sortedUniqueStrings(policy.evidenceIds, 'secondaryTarget.evidenceIds');
+  if (evidenceIds.length === 0) fail('Secondary target policy requires evidence.');
+  const jobMinimums = [...policy.jobMinimums]
+    .map(entry => {
+      requireOneOf(entry.job, JOBS, 'secondaryTarget job');
+      requireIntegerInRange(
+        entry.minimumFamilies,
+        1,
+        COLOR_SYSTEM_BUILDER_V2_LIMITS.maximumSecondaryFamilyTarget,
+        `${entry.job} minimumFamilies`
+      );
+      const entryEvidence = sortedUniqueStrings(
+        entry.evidenceIds,
+        `${entry.job} target evidenceIds`
+      );
+      if (entryEvidence.length === 0) fail(`${entry.job} target minimum requires evidence.`);
+      if (entry.authority !== 'teul-policy-evidence') {
+        fail(`${entry.job} target minimum must be labeled as Teul policy evidence.`);
+      }
+      return { ...entry, authority: 'teul-policy-evidence' as const, evidenceIds: entryEvidence };
+    })
+    .sort((left, right) => compareText(left.job, right.job));
+  if (new Set(jobMinimums.map(entry => entry.job)).size !== jobMinimums.length) {
+    fail('Secondary target job minima must have unique jobs.');
+  }
+  const minimumByJob = new Map(jobMinimums.map(entry => [entry.job, entry.minimumFamilies]));
+  requiredJobs.forEach(job => {
+    if (!minimumByJob.has(job)) fail(`Secondary target policy is missing a minimum for ${job}.`);
+  });
+  jobMinimums.forEach(entry => {
+    if (!requiredJobs.includes(entry.job)) {
+      fail(`Secondary target policy includes undeclared job ${entry.job}.`);
+    }
+  });
+  const rawTarget =
+    policy.derivationRule === 'teul-generated-contribution-count'
+      ? assemblyContributionIds.length
+      : Math.max(
+          COLOR_SYSTEM_BUILDER_V2_LIMITS.minimumSecondaryFamilyTarget,
+          retainedSourceFamilyGroupIds.length,
+          ...jobMinimums.map(entry => entry.minimumFamilies)
+        );
+  const derivedTarget = Math.min(
+    COLOR_SYSTEM_BUILDER_V2_LIMITS.maximumSecondaryFamilyTarget,
+    rawTarget
+  );
+  if (assemblyContributionIds.length !== derivedTarget) {
+    fail('Secondary assembly contribution count must equal the derived target family count.');
+  }
+  if (
+    policy.derivationRule === 'teul-generated-contribution-count' &&
+    (derivedTarget < COLOR_SYSTEM_BUILDER_V2_LIMITS.minimumSecondaryFamilyTarget ||
+      jobMinimums.some(entry => entry.minimumFamilies > derivedTarget))
+  ) {
+    fail('Teul-generated Secondary contributions do not satisfy the bounded target or job minima.');
+  }
+  return {
+    policy: {
+      ...policy,
+      retainedSourceFamilyGroupIds,
+      assemblyContributionIds,
+      jobMinimums,
+      evidenceIds,
+    },
+    derivedTarget,
+  };
+}
+
+function normalizeGeneratedDivergingPolarity(
+  value: ColorSystemGeneratedDivergingPolarityV2 | undefined,
+  contributionIds: readonly string[]
+): ColorSystemGeneratedDivergingPolarityV2 | undefined {
+  if (value === undefined) return undefined;
+  requireKnownKeys(
+    value,
+    [
+      'policyVersion',
+      'negativeContributionId',
+      'positiveContributionId',
+      'authority',
+      'evidenceIds',
+    ],
+    'divergingPolarity'
+  );
+  if (
+    value.policyVersion !== 'teul-owner-confirmed-generated-diverging-semantics/v1' ||
+    value.authority !== 'owner-confirmed'
+  ) {
+    fail('Generated diverging polarity requires the owner-confirmed v1 policy.');
+  }
+  const negativeContributionId = requireNonEmpty(
+    value.negativeContributionId,
+    'divergingPolarity.negativeContributionId'
+  );
+  const positiveContributionId = requireNonEmpty(
+    value.positiveContributionId,
+    'divergingPolarity.positiveContributionId'
+  );
+  if (
+    negativeContributionId === positiveContributionId ||
+    !contributionIds.includes(negativeContributionId) ||
+    !contributionIds.includes(positiveContributionId)
+  ) {
+    fail('Generated diverging polarity must resolve to two distinct assembly contributions.');
+  }
+  const evidenceIds = sortedUniqueStrings(value.evidenceIds, 'divergingPolarity.evidenceIds');
+  if (evidenceIds.length === 0) fail('Generated diverging polarity requires owner evidence.');
+  return {
+    policyVersion: 'teul-owner-confirmed-generated-diverging-semantics/v1',
+    negativeContributionId,
+    positiveContributionId,
+    authority: 'owner-confirmed',
+    evidenceIds,
+  };
+}
+
+function normalizedBriefContent(input: BriefBuildInput): BriefContent {
+  if (input.version !== COLOR_SYSTEM_BUILDER_BRIEF_V2_SCHEMA_VERSION) {
+    fail('Builder brief is not the supported v2 schema.');
+  }
+  if (input.policyVersion !== COLOR_SYSTEM_BUILDER_V2_POLICY_VERSION) {
+    fail('Builder brief policy version is not supported.');
+  }
+  requireHash(input.sourceHash, 'sourceHash');
+  requireHash(input.sourcePackageHash, 'sourcePackageHash');
+  requireHash(input.brandFitProfileHash, 'brandFitProfileHash');
+  const brandFitProfile = normalizeBrandFitProfile(input.brandFitProfile);
+  if (input.brandFitProfileHash !== brandFitProfile.profileHash) {
+    fail('brandFitProfileHash must match the retained structured profile.');
+  }
+  requireHash(input.presentationProfileHash, 'presentationProfileHash');
+  requireIntegerInRange(
+    input.secondaryTargetFamilyCount,
+    COLOR_SYSTEM_BUILDER_V2_LIMITS.minimumSecondaryFamilyTarget,
+    COLOR_SYSTEM_BUILDER_V2_LIMITS.maximumSecondaryFamilyTarget,
+    'secondaryTargetFamilyCount'
+  );
+  if (input.sections.length !== COLOR_SYSTEM_BUILDER_V2_LIMITS.sectionCount) {
+    fail('Builder brief must contain exactly five sections.');
+  }
+  const sections = input.sections.map((section, index) =>
+    normalizeSectionIntent(section, index + 1)
+  ) as unknown as BriefContent['sections'];
+  const preservedColors = input.preservedColors
+    .map(normalizePreservedColor)
+    .sort(
+      (left, right) =>
+        sectionRank(left.section) - sectionRank(right.section) ||
+        left.order - right.order ||
+        compareText(left.stableColorId, right.stableColorId)
+    );
+  const preservedIds = preservedColors.map(color => color.stableColorId);
+  if (new Set(preservedIds).size !== preservedIds.length) {
+    fail('Preserved colors must have unique stable identities.');
+  }
+  const dispositionBySection = new Map(
+    sections.map(section => [section.role, section.disposition] as const)
+  );
+  preservedColors.forEach(color => {
+    if (dispositionBySection.get(color.section) !== 'preserve') {
+      fail(
+        `${color.stableColorId} cannot be preserved because its section is not dispositioned preserve.`
+      );
+    }
+  });
+  const sourceReferenceColors = [...(input.sourceReferenceColors ?? [])]
+    .map(normalizeSourceReferenceColor)
+    .sort(
+      (left, right) =>
+        sectionRank(left.sourceSection) - sectionRank(right.sourceSection) ||
+        left.sourceOrder - right.sourceOrder ||
+        compareText(left.stableColorId, right.stableColorId)
+    );
+  const sourceReferenceIds = sourceReferenceColors.map(color => color.stableColorId);
+  if (new Set(sourceReferenceIds).size !== sourceReferenceIds.length) {
+    fail('Source reference colors must have unique stable identities.');
+  }
+  const allSourceIds = [...preservedIds, ...sourceReferenceIds];
+  if (new Set(allSourceIds).size !== allSourceIds.length) {
+    fail('Preserved and source reference colors must not share stable identities.');
+  }
+  const primaryLocks = input.primaryLocks
+    .map(normalizePrimaryLock)
+    .sort((left, right) => compareText(left.lockId, right.lockId));
+  if (primaryLocks.length === 0) fail('Builder brief requires at least one Primary lock.');
+  if (new Set(primaryLocks.map(lock => lock.lockId)).size !== primaryLocks.length) {
+    fail('Primary locks must have unique lock identities.');
+  }
+  const primaryLockIds = sortedUniqueStrings(input.primaryLockIds, 'primaryLockIds');
+  const preservedById = new Map(preservedColors.map(color => [color.stableColorId, color]));
+  if (
+    canonicalJson(primaryLockIds) !==
+    canonicalJson(primaryLocks.map(lock => lock.lockId).sort(compareText))
+  ) {
+    fail('primaryLockIds must exactly match the retained Primary lock receipts.');
+  }
+  for (const lock of primaryLocks) {
+    const color = preservedById.get(lock.stableColorId);
+    if (!color || color.section !== 'primary') {
+      fail(`Primary lock "${lock.lockId}" must resolve to a preserved Primary color.`);
+    }
+    const expected = color.valuesByMode[lock.mode];
+    if (!expected || canonicalJson(expected) !== canonicalJson(lock.expectedValue)) {
+      fail(`Primary lock "${lock.lockId}" does not match its exact source mode value.`);
+    }
+  }
+  const requiredSecondaryJobs = sortedUniqueJobs(
+    input.requiredSecondaryJobs,
+    'requiredSecondaryJobs'
+  );
+  if (requiredSecondaryJobs.length === 0) fail('At least one Secondary job is required.');
+  const targetPolicy = normalizeSecondaryTargetPolicy(
+    input.secondaryTargetPolicy,
+    requiredSecondaryJobs
+  );
+  if (input.secondaryTargetFamilyCount !== targetPolicy.derivedTarget) {
+    fail(
+      'secondaryTargetFamilyCount must be derived from retained source groups and per-job minima.'
+    );
+  }
+  const divergingPolarity = normalizeGeneratedDivergingPolarity(
+    input.divergingPolarity,
+    targetPolicy.policy.assemblyContributionIds
+  );
+  return {
+    ...input,
+    brandFitProfile,
+    sections,
+    preservedColors,
+    sourceReferenceColors,
+    primaryLocks,
+    primaryLockIds,
+    secondaryTargetPolicy: targetPolicy.policy,
+    requiredSecondaryJobs,
+    ...(divergingPolarity ? { divergingPolarity } : {}),
+  };
+}
+
+export function buildColorSystemBuilderBriefV2(input: BriefBuildInput): ColorSystemBuilderBriefV2 {
+  const content = normalizedBriefContent(input);
+  // An empty evidence collection is the canonical legacy-equivalent state. Non-empty
+  // source references are included in full, so every admitted value and receipt is hash-bound.
+  const hashContent =
+    content.sourceReferenceColors.length === 0
+      ? (({ sourceReferenceColors: _empty, ...legacyEquivalent }) => legacyEquivalent)(content)
+      : content;
+  return { ...content, briefHash: deterministicContentHash(hashContent) };
+}
+
+export function assertColorSystemBuilderBriefV2Integrity(brief: ColorSystemBuilderBriefV2): void {
+  const { briefHash, ...content } = brief;
+  requireHash(briefHash, 'briefHash');
+  const rebuilt = buildColorSystemBuilderBriefV2(content);
+  if (canonicalJson(rebuilt) !== canonicalJson(brief)) {
+    fail('Builder brief failed canonical v2 integrity validation.');
+  }
+}
+
+function normalizeFamilyMember(
+  member: ColorSystemFamilyMemberV2,
+  familyId: string,
+  preservedIds: ReadonlySet<string>,
+  sourceReferenceIds: ReadonlySet<string>
+): ColorSystemFamilyMemberV2 {
+  requireNonEmpty(member.stableMemberId, `${familyId} member id`);
+  requireNonEmpty(member.displayName, `${familyId}/${member.stableMemberId} displayName`);
+  requireNonEmpty(member.role, `${familyId}/${member.stableMemberId} role`);
+  requireIntegerInRange(member.order, 1, 12, `${familyId}/${member.stableMemberId} order`);
+  const provenanceLabel = `${familyId}/${member.stableMemberId} provenance`;
+  requireOneOf(
+    member.provenance.kind,
+    ['source-preserved', 'teul-generated'],
+    `${provenanceLabel}.kind`
+  );
+  const sourceColorIds = sortedUniqueStrings(
+    member.provenance.sourceColorIds,
+    `${provenanceLabel}.sourceColorIds`
+  );
+  const evidenceIds = sortedUniqueStrings(
+    member.provenance.evidenceIds,
+    `${provenanceLabel}.evidenceIds`
+  );
+  if (sourceColorIds.length === 0 || evidenceIds.length === 0) {
+    fail(`${provenanceLabel} requires source colors and evidence.`);
+  }
+  const valuesByMode = normalizeValuesByMode(
+    member.valuesByMode,
+    `${familyId}/${member.stableMemberId} valuesByMode`
+  );
+  let provenance: ColorSystemFamilyMemberV2['provenance'];
+  if (member.provenance.kind === 'teul-generated') {
+    sourceColorIds.forEach(sourceColorId => {
+      if (!preservedIds.has(sourceColorId) && !sourceReferenceIds.has(sourceColorId)) {
+        fail(`${provenanceLabel} references unknown source color ${sourceColorId}.`);
+      }
+    });
+    const generatedProvenance = member.provenance;
+    requireKnownKeys(
+      generatedProvenance,
+      [
+        'kind',
+        'authority',
+        'algorithmVersion',
+        'seedId',
+        'directionId',
+        'hueOffsetDegrees',
+        'requestedOklchByMode',
+        'mappedOklchByMode',
+        'gamutMapping',
+        'sourceColorIds',
+        'evidenceIds',
+      ],
+      provenanceLabel
+    );
+    if (generatedProvenance.authority !== 'teul-proposal') {
+      fail(`${provenanceLabel} must identify generated values as a Teul proposal.`);
+    }
+    const algorithmVersion = requireNonEmpty(
+      generatedProvenance.algorithmVersion,
+      `${provenanceLabel}.algorithmVersion`
+    );
+    const seedId = requireNonEmpty(generatedProvenance.seedId, `${provenanceLabel}.seedId`);
+    const directionId = requireNonEmpty(
+      generatedProvenance.directionId,
+      `${provenanceLabel}.directionId`
+    );
+    requireFiniteInRange(
+      generatedProvenance.hueOffsetDegrees,
+      -360,
+      360,
+      `${provenanceLabel}.hueOffsetDegrees`
+    );
+    const modeKeys = Object.keys(valuesByMode).sort(compareText);
+    const requestedModeKeys = Object.keys(generatedProvenance.requestedOklchByMode).sort(
+      compareText
+    );
+    const mappedModeKeys = Object.keys(generatedProvenance.mappedOklchByMode).sort(compareText);
+    if (
+      canonicalJson(modeKeys) !== canonicalJson(requestedModeKeys) ||
+      canonicalJson(modeKeys) !== canonicalJson(mappedModeKeys)
+    ) {
+      fail(`${provenanceLabel} must record requested and mapped OKLCH for every exact mode.`);
+    }
+    for (const mode of modeKeys) {
+      for (const [name, oklch] of [
+        ['requestedOklchByMode', generatedProvenance.requestedOklchByMode[mode]],
+        ['mappedOklchByMode', generatedProvenance.mappedOklchByMode[mode]],
+      ] as const) {
+        requireFiniteInRange(oklch.l, 0, 1, `${provenanceLabel}.${name}.${mode}.l`);
+        requireFiniteInRange(oklch.c, 0, 0.5, `${provenanceLabel}.${name}.${mode}.c`);
+        requireFiniteInRange(oklch.h, 0, 360, `${provenanceLabel}.${name}.${mode}.h`);
+      }
+    }
+    if (generatedProvenance.gamutMapping !== 'local-minde-v1') {
+      fail(`${provenanceLabel}.gamutMapping is not supported.`);
+    }
+    Object.entries(valuesByMode).forEach(([mode, value]) => {
+      if (value.alpha !== 1) fail(`${provenanceLabel} generated colors must be opaque.`);
+      const observed = hexToOklch(value.hex);
+      const mapped = generatedProvenance.mappedOklchByMode[mode];
+      const hueDifference = Math.min(
+        Math.abs(observed.h - mapped.h),
+        360 - Math.abs(observed.h - mapped.h)
+      );
+      if (
+        Math.abs(observed.l - mapped.l) > 0.005 ||
+        Math.abs(observed.c - mapped.c) > 0.005 ||
+        (observed.c > 0.005 && hueDifference > 2)
+      ) {
+        fail(`${provenanceLabel}.mappedOklch does not reproduce its exact sRGB value.`);
+      }
+    });
+    provenance = {
+      kind: 'teul-generated',
+      authority: 'teul-proposal',
+      algorithmVersion,
+      seedId,
+      directionId,
+      hueOffsetDegrees: generatedProvenance.hueOffsetDegrees,
+      requestedOklchByMode: generatedProvenance.requestedOklchByMode,
+      mappedOklchByMode: generatedProvenance.mappedOklchByMode,
+      gamutMapping: 'local-minde-v1',
+      sourceColorIds,
+      evidenceIds,
+    };
+  } else {
+    sourceColorIds.forEach(sourceColorId => {
+      if (!preservedIds.has(sourceColorId)) {
+        fail(
+          `${provenanceLabel} source-preserved provenance must resolve only to preserved output color ${sourceColorId}.`
+        );
+      }
+    });
+    requireKnownKeys(member.provenance, ['kind', 'sourceColorIds', 'evidenceIds'], provenanceLabel);
+    provenance = { kind: 'source-preserved', sourceColorIds, evidenceIds };
+  }
+  return {
+    ...member,
+    valuesByMode,
+    provenance,
+  };
+}
+
+function normalizeFamily(
+  family: ColorSystemSecondaryFamilyV2,
+  brief: ColorSystemBuilderBriefV2
+): ColorSystemSecondaryFamilyV2 {
+  requireKnownKeys(
+    family,
+    ['stableFamilyId', 'displayName', 'order', 'contributionId', 'shape', 'brandFit', 'members'],
+    'Secondary family'
+  );
+  const familyId = requireNonEmpty(family.stableFamilyId, 'Family id');
+  requireNonEmpty(family.displayName, `${familyId} displayName`);
+  const contributionId = requireNonEmpty(family.contributionId, `${familyId} contributionId`);
+  if (!brief.secondaryTargetPolicy.assemblyContributionIds.includes(contributionId)) {
+    fail(`${familyId} contribution is not declared by the target policy.`);
+  }
+  requireIntegerInRange(family.order, 1, 12, `${familyId} order`);
+  requireOneOf(
+    family.shape.kind,
+    ['named-base-light-pair', 'full-light-dark-scale'],
+    `${familyId} shape.kind`
+  );
+  if (
+    family.members.length === 0 ||
+    family.members.length > COLOR_SYSTEM_BUILDER_V2_LIMITS.maximumMembersPerFamily
+  ) {
+    fail(
+      `${familyId} must contain 1 through ${COLOR_SYSTEM_BUILDER_V2_LIMITS.maximumMembersPerFamily} members.`
+    );
+  }
+  const members = family.members
+    .map(member =>
+      normalizeFamilyMember(
+        member,
+        familyId,
+        new Set(brief.preservedColors.map(color => color.stableColorId)),
+        new Set(brief.sourceReferenceColors.map(color => color.stableColorId))
+      )
+    )
+    .sort(
+      (left, right) =>
+        left.order - right.order || compareText(left.stableMemberId, right.stableMemberId)
+    );
+  assertContiguousOrder(members, `${familyId} members`);
+  const memberIds = members.map(member => member.stableMemberId);
+  if (new Set(memberIds).size !== memberIds.length)
+    fail(`${familyId} contains duplicate member ids.`);
+  if (family.shape.kind === 'named-base-light-pair') {
+    const shape = family.shape;
+    if (members.length !== 2) fail(`${familyId} named pair must contain exactly two members.`);
+    if (
+      shape.baseMemberId === shape.lightMemberId ||
+      !memberIds.includes(shape.baseMemberId) ||
+      !memberIds.includes(shape.lightMemberId)
+    ) {
+      fail(`${familyId} named pair member identities do not resolve exactly.`);
+    }
+    const base = members.find(member => member.stableMemberId === shape.baseMemberId);
+    const light = members.find(member => member.stableMemberId === shape.lightMemberId);
+    if (base?.role !== 'base' || light?.role !== 'light') {
+      fail(`${familyId} named pair must use explicit base and light member roles.`);
+    }
+  } else {
+    if (family.shape.stepCount !== 12 || members.length !== 12) {
+      fail(`${familyId} full scale must contain exactly twelve members.`);
+    }
+    members.forEach((member, index) => {
+      if (member.role !== `step-${index + 1}`) {
+        fail(`${familyId} full scale members must use ordered step-1 through step-12 roles.`);
+      }
+      if (!member.valuesByMode.Light || !member.valuesByMode.Dark) {
+        fail(`${familyId} full scale requires exact Light and Dark values for every step.`);
+      }
+    });
+  }
+  const territoryId = requireNonEmpty(family.brandFit.territoryId, `${familyId} territoryId`);
+  requireOneOf(family.brandFit.prominence, PROMINENCE, `${familyId} prominence`);
+  const brandEvidenceIds = sortedUniqueStrings(
+    family.brandFit.evidenceIds,
+    `${familyId} brandFit evidenceIds`
+  );
+  if (brandEvidenceIds.length === 0) fail(`${familyId} brand fit requires evidence.`);
+  const territory = brief.brandFitProfile.territories.find(
+    item => item.territoryId === territoryId
+  );
+  if (!territory || territory.status === 'excluded') {
+    fail(`${familyId} uses an excluded or unknown brand territory.`);
+  }
+  if (!territory.allowedProminence.includes(family.brandFit.prominence)) {
+    fail(`${familyId} brand territory does not permit ${family.brandFit.prominence} prominence.`);
+  }
+  if (!territory.appliesToProminence.includes(family.brandFit.prominence)) {
+    fail(`${familyId} brand territory does not apply to its declared prominence.`);
+  }
+  const representativeId =
+    family.shape.kind === 'named-base-light-pair' ? family.shape.baseMemberId : null;
+  const representative =
+    representativeId === null
+      ? members.find(member => member.role === 'step-9')
+      : members.find(member => member.stableMemberId === representativeId);
+  if (!representative) fail(`${familyId} has no representative brand-fit member.`);
+  const representativeMode = Object.keys(representative.valuesByMode).sort(compareText)[0];
+  const representativeOklch = hexToOklch(representative.valuesByMode[representativeMode].hex);
+  if (!territoryContainsColor(territory, representativeOklch)) {
+    fail(`${familyId} exact representative color is outside its claimed brand territory.`);
+  }
+  for (const member of members) {
+    for (const [mode, value] of Object.entries(member.valuesByMode)) {
+      const exactOklch = hexToOklch(value.hex);
+      const excludedMatch = brief.brandFitProfile.territories.find(
+        item =>
+          item.status === 'excluded' &&
+          item.appliesToProminence.includes(family.brandFit.prominence) &&
+          territoryContainsColor(item, exactOklch)
+      );
+      if (excludedMatch) {
+        fail(
+          `${familyId}/${member.stableMemberId}/${mode} enters excluded territory ${excludedMatch.territoryId}.`
+        );
+      }
+    }
+  }
+  return {
+    ...family,
+    contributionId,
+    brandFit: {
+      territoryId,
+      prominence: family.brandFit.prominence,
+      evidenceIds: brandEvidenceIds,
+    },
+    members,
+  };
+}
+
+function derivedSystemShape(
+  families: readonly ColorSystemSecondaryFamilyV2[]
+): ColorSystemSecondarySystemShapeV2 {
+  const kinds = new Set(families.map(family => family.shape.kind));
+  if (kinds.size > 1) return 'source-derived-mix';
+  return kinds.has('named-base-light-pair') ? 'named-base-light-pairs' : 'full-light-dark-scales';
+}
+
+function actualFamilyHash(family: ColorSystemSecondaryFamilyV2): string {
+  const values = family.members
+    .flatMap(member =>
+      Object.values(member.valuesByMode).map(value => ({
+        colorSpace: value.colorSpace,
+        hex: value.hex,
+        components: value.components,
+        alpha: value.alpha,
+      }))
+    )
+    .sort((left, right) => compareText(canonicalJson(left), canonicalJson(right)));
+  return deterministicContentHash(values);
+}
+
+function actualSystemHash(families: readonly ColorSystemSecondaryFamilyV2[]): string {
+  return deterministicContentHash([...families.map(actualFamilyHash)].sort(compareText));
+}
+
+function territoryContainsColor(
+  territory: ColorSystemBrandFitProfileV2['territories'][number],
+  color: ReturnType<typeof hexToOklch>
+): boolean {
+  const bounds = territory.perceptualBounds;
+  return (
+    bounds.hueRanges.some(range => color.h >= range.minimum && color.h <= range.maximum) &&
+    color.c >= bounds.chroma.minimum &&
+    color.c <= bounds.chroma.maximum &&
+    color.l >= bounds.lightness.minimum &&
+    color.l <= bounds.lightness.maximum
+  );
+}
+
+function approvedRefIdentity(ref: ColorSystemApprovedColorRefV2): string {
+  return `${ref.familyId}\u0000${ref.memberId}\u0000${ref.mode}`;
+}
+
+function normalizeJobEligibility(
+  brief: ColorSystemBuilderBriefV2,
+  families: readonly ColorSystemSecondaryFamilyV2[],
+  entries: ColorSystemStrategyCandidateV2['jobEligibility']
+): ColorSystemStrategyCandidateV2['jobEligibility'] {
+  const familyById = new Map(families.map(family => [family.stableFamilyId, family]));
+  const seen = new Set<string>();
+  return [...entries]
+    .map((entry, index) => {
+      const ref = {
+        familyId: requireNonEmpty(entry.ref.familyId, `jobEligibility[${index}].familyId`),
+        memberId: requireNonEmpty(entry.ref.memberId, `jobEligibility[${index}].memberId`),
+        mode: requireNonEmpty(entry.ref.mode, `jobEligibility[${index}].mode`),
+      };
+      const identity = approvedRefIdentity(ref);
+      if (seen.has(identity)) fail('Job eligibility must contain unique member/mode identities.');
+      seen.add(identity);
+      const family = familyById.get(ref.familyId);
+      const member = family?.members.find(item => item.stableMemberId === ref.memberId);
+      if (!family || !member?.valuesByMode[ref.mode]) {
+        fail(`jobEligibility[${index}] does not resolve to a candidate family member and mode.`);
+      }
+      const jobs = sortedUniqueJobs(entry.jobs, `jobEligibility[${index}].jobs`);
+      if (jobs.length === 0) fail(`jobEligibility[${index}] requires at least one job.`);
+      const territory = brief.brandFitProfile.territories.find(
+        item => item.territoryId === family.brandFit.territoryId
+      );
+      jobs.forEach(job => {
+        if (!brief.requiredSecondaryJobs.includes(job)) {
+          fail(`jobEligibility[${index}] contains undeclared Secondary job ${job}.`);
+        }
+        if (!territory?.allowedJobs.includes(job)) {
+          fail(`${family.stableFamilyId} brand territory does not permit job ${job}.`);
+        }
+      });
+      const evidenceIds = sortedUniqueStrings(
+        entry.evidenceIds,
+        `jobEligibility[${index}].evidenceIds`
+      );
+      if (evidenceIds.length === 0) fail(`jobEligibility[${index}] requires evidence.`);
+      if (entry.authority !== 'teul-policy-evidence') {
+        fail(`jobEligibility[${index}] must be labeled as Teul policy evidence.`);
+      }
+      return { ref, jobs, authority: 'teul-policy-evidence' as const, evidenceIds };
+    })
+    .sort((left, right) =>
+      compareText(approvedRefIdentity(left.ref), approvedRefIdentity(right.ref))
+    );
+}
+
+function normalizeSecondaryMeasures(
+  measures: readonly ColorSystemSectionRatingDimensionV2[]
+): ColorSystemSectionRatingDimensionV2[] {
+  if (measures.length === 0) fail('Candidate requires at least one Secondary measure.');
+  requireUniqueIds(measures, 'Secondary measures');
+  return [...measures]
+    .map(measure => {
+      requireNonEmpty(measure.label, `${measure.id} label`);
+      requireNonEmpty(measure.unit, `${measure.id} unit`);
+      if (!Number.isFinite(measure.measuredValue))
+        fail(`${measure.id} measuredValue must be finite.`);
+      if (measure.threshold !== undefined && !Number.isFinite(measure.threshold)) {
+        fail(`${measure.id} threshold must be finite when present.`);
+      }
+      const evidenceIds = sortedUniqueStrings(measure.evidenceIds, `${measure.id} evidenceIds`);
+      if (evidenceIds.length === 0) fail(`${measure.id} requires evidence.`);
+      return { ...measure, evidenceIds };
+    })
+    .sort((left, right) => compareText(left.id, right.id));
+}
+
+function buildCompositionReceipt(
+  families: readonly ColorSystemSecondaryFamilyV2[]
+): ColorSystemStrategyCandidateV2['compositionReceipt'] {
+  const byProminence = (prominence: ColorSystemSecondaryFamilyV2['brandFit']['prominence']) =>
+    families
+      .filter(family => family.brandFit.prominence === prominence)
+      .map(family => family.stableFamilyId)
+      .sort(compareText);
+  const leadingFamilyIds = byProminence('leading');
+  if (leadingFamilyIds.length > 1) {
+    fail('Secondary composition permits at most one leading family.');
+  }
+  const accentFamilyIds = byProminence('accent');
+  const supportingFamilyIds = byProminence('supporting');
+  const evidenceIds = [...new Set(families.flatMap(family => family.brandFit.evidenceIds))].sort(
+    compareText
+  );
+  const content = {
+    policyVersion: 'teul-secondary-composition/v1' as const,
+    maximumLeadingFamilies: 1 as const,
+    leadingFamilyIds,
+    accentFamilyIds,
+    supportingFamilyIds,
+    evidenceIds,
+  };
+  return { ...content, compositionHash: deterministicContentHash(content) };
+}
+
+function normalizedCandidateContent(
+  brief: ColorSystemBuilderBriefV2,
+  input: CandidateInput
+): CandidateInput {
+  assertColorSystemBuilderBriefV2Integrity(brief);
+  requireKnownKeys(
+    input,
+    [
+      'version',
+      'policyVersion',
+      'id',
+      'label',
+      'status',
+      'targetFamilyCount',
+      'actualFamilyCount',
+      'systemShape',
+      'requiredJobs',
+      'missingJobs',
+      'families',
+      'jobEligibility',
+      'measures',
+      'explanation',
+      'blockers',
+    ],
+    'Strategy candidate'
+  );
+  if (input.version !== COLOR_SYSTEM_STRATEGY_CANDIDATE_V2_SCHEMA_VERSION) {
+    fail('Strategy candidate is not the supported v2 schema.');
+  }
+  if (input.policyVersion !== COLOR_SYSTEM_BUILDER_V2_POLICY_VERSION) {
+    fail('Strategy candidate policy version is not supported.');
+  }
+  requireNonEmpty(input.id, 'Candidate id');
+  requireNonEmpty(input.label, `${input.id} label`);
+  requireOneOf(input.status, CANDIDATE_STATUSES, `${input.id} status`);
+  requireOneOf(input.systemShape, SYSTEM_SHAPES, `${input.id} systemShape`);
+  if (input.targetFamilyCount !== brief.secondaryTargetFamilyCount) {
+    fail('Candidate target family count must equal the reviewed builder brief.');
+  }
+  requireIntegerInRange(
+    input.targetFamilyCount,
+    COLOR_SYSTEM_BUILDER_V2_LIMITS.minimumSecondaryFamilyTarget,
+    COLOR_SYSTEM_BUILDER_V2_LIMITS.maximumSecondaryFamilyTarget,
+    'targetFamilyCount'
+  );
+  const families = input.families
+    .map(family => normalizeFamily(family, brief))
+    .sort(
+      (left, right) =>
+        left.order - right.order || compareText(left.stableFamilyId, right.stableFamilyId)
+    );
+  assertContiguousOrder(families, 'Secondary families');
+  if (new Set(families.map(family => family.stableFamilyId)).size !== families.length) {
+    fail('Secondary families must have unique stable identities.');
+  }
+  if (new Set(families.map(family => family.contributionId)).size !== families.length) {
+    fail('Every Secondary family must satisfy a unique assembly contribution.');
+  }
+  if (new Set(families.map(actualFamilyHash)).size !== families.length) {
+    fail('Secondary families must be distinct actual color systems, not relabeled duplicates.');
+  }
+  if (families.length === 0 || families.length > input.targetFamilyCount) {
+    fail('A candidate must contain 1 through its target number of families.');
+  }
+  if (input.actualFamilyCount !== families.length) {
+    fail('Candidate actual family count must equal its family collection length.');
+  }
+  if (input.systemShape !== derivedSystemShape(families)) {
+    fail('Candidate system shape must be derived from its family shapes.');
+  }
+  const requiredJobs = sortedUniqueJobs(input.requiredJobs, `${input.id} requiredJobs`);
+  if (canonicalJson(requiredJobs) !== canonicalJson(brief.requiredSecondaryJobs)) {
+    fail('Candidate required jobs must equal the reviewed builder brief.');
+  }
+  const jobEligibility = normalizeJobEligibility(brief, families, input.jobEligibility);
+  const coveredJobs = new Set(jobEligibility.flatMap(entry => entry.jobs));
+  const computedMissingJobs = requiredJobs.filter(job => !coveredJobs.has(job));
+  const missingJobs = sortedUniqueJobs(input.missingJobs, `${input.id} missingJobs`);
+  if (canonicalJson(missingJobs) !== canonicalJson(computedMissingJobs)) {
+    fail('Candidate missing jobs do not match its actual family coverage.');
+  }
+  const blockers = [...input.blockers].sort(
+    (left, right) =>
+      compareText(left.code, right.code) || compareText(left.job ?? '', right.job ?? '')
+  );
+  blockers.forEach(blocker => {
+    requireOneOf(blocker.code, BLOCKER_CODES, `${input.id} blocker code`);
+    requireNonEmpty(blocker.message, `${input.id}/${blocker.code} message`);
+    if (blocker.job !== undefined) requireOneOf(blocker.job, JOBS, `${input.id} blocker job`);
+  });
+  const shouldBeComplete =
+    families.length === input.targetFamilyCount &&
+    missingJobs.length === 0 &&
+    blockers.length === 0;
+  if ((input.status === 'complete') !== shouldBeComplete) {
+    fail('Candidate complete status does not match target, jobs, and blockers.');
+  }
+  const tokenCount =
+    brief.preservedColors.reduce(
+      (count, color) => count + Object.keys(color.valuesByMode).length,
+      0
+    ) +
+    families.reduce(
+      (count, family) =>
+        count +
+        family.members.reduce(
+          (memberCount, member) => memberCount + Object.keys(member.valuesByMode).length,
+          0
+        ),
+      0
+    );
+  const familyModeVariantCount = families.reduce((count, family) => {
+    const modes = new Set(family.members.flatMap(member => Object.keys(member.valuesByMode)));
+    return count + modes.size;
+  }, 0);
+  if (tokenCount > COLOR_SYSTEM_BUILDER_V2_LIMITS.maximumTokens) {
+    fail('Candidate exceeds the deterministic token resource cap.');
+  }
+  if (familyModeVariantCount > COLOR_SYSTEM_BUILDER_V2_LIMITS.maximumFamilyModeComponentVariants) {
+    fail('Candidate exceeds the family-mode component variant cap.');
+  }
+  const measures = normalizeSecondaryMeasures(input.measures);
+  requireNonEmpty(input.explanation.summary, `${input.id} explanation summary`);
+  if (input.explanation.intendedUses.length === 0) {
+    fail(`${input.id} explanation requires at least one intended use.`);
+  }
+  const explanation = {
+    summary: input.explanation.summary.trim(),
+    intendedUses: input.explanation.intendedUses.map((value, index) =>
+      requireNonEmpty(value, `${input.id} intendedUses[${index}]`)
+    ),
+    excludedUses: input.explanation.excludedUses.map((value, index) =>
+      requireNonEmpty(value, `${input.id} excludedUses[${index}]`)
+    ),
+    tradeoffs: input.explanation.tradeoffs.map((value, index) =>
+      requireNonEmpty(value, `${input.id} tradeoffs[${index}]`)
+    ),
+  };
+  return {
+    ...input,
+    requiredJobs,
+    missingJobs,
+    families,
+    jobEligibility,
+    measures,
+    explanation,
+    blockers,
+  };
+}
+
+export function buildColorSystemStrategyCandidateV2(
+  brief: ColorSystemBuilderBriefV2,
+  input: CandidateInput
+): ColorSystemStrategyCandidateV2 {
+  const normalized = normalizedCandidateContent(brief, input);
+  const content: CandidateContent = {
+    ...normalized,
+    compositionReceipt: buildCompositionReceipt(normalized.families),
+    actualSystemHash: actualSystemHash(normalized.families),
+  };
+  const candidateHash = deterministicContentHash({
+    policyVersion: COLOR_SYSTEM_BUILDER_V2_POLICY_VERSION,
+    sourceHash: brief.sourceHash,
+    sourcePackageHash: brief.sourcePackageHash,
+    briefHash: brief.briefHash,
+    candidate: content,
+  });
+  return { ...content, candidateHash };
+}
+
+export function assertColorSystemStrategyCandidateV2Integrity(
+  brief: ColorSystemBuilderBriefV2,
+  candidate: ColorSystemStrategyCandidateV2
+): void {
+  const {
+    candidateHash,
+    actualSystemHash: suppliedActualSystemHash,
+    compositionReceipt: suppliedCompositionReceipt,
+    ...input
+  } = candidate;
+  requireHash(candidateHash, 'candidateHash');
+  requireHash(suppliedActualSystemHash, 'actualSystemHash');
+  requireHash(suppliedCompositionReceipt.compositionHash, 'compositionReceipt.compositionHash');
+  const rebuilt = buildColorSystemStrategyCandidateV2(brief, input);
+  if (canonicalJson(rebuilt) !== canonicalJson(candidate)) {
+    fail('Strategy candidate failed canonical v2 integrity validation.');
+  }
+}
+
+export function buildColorSystemStrategySetV2(
+  brief: ColorSystemBuilderBriefV2,
+  input: Pick<StrategySetContent, 'status' | 'candidates' | 'blockers'>
+): ColorSystemStrategySetV2 {
+  assertColorSystemBuilderBriefV2Integrity(brief);
+  const candidates = [...input.candidates];
+  candidates.forEach(candidate => assertColorSystemStrategyCandidateV2Integrity(brief, candidate));
+  if (new Set(candidates.map(candidate => candidate.id)).size !== candidates.length) {
+    fail('Strategy set candidate identities must be unique.');
+  }
+  if (new Set(candidates.map(candidate => candidate.actualSystemHash)).size !== candidates.length) {
+    fail('Strategy set candidates must be distinct actual color systems.');
+  }
+  requireOneOf(input.status, STRATEGY_SET_STATUSES, 'Strategy set status');
+  if (input.status === 'ready') {
+    requireIntegerInRange(
+      candidates.length,
+      COLOR_SYSTEM_BUILDER_V2_LIMITS.minimumCandidateCount,
+      COLOR_SYSTEM_BUILDER_V2_LIMITS.maximumCandidateCount,
+      'Strategy candidate count'
+    );
+    if (!candidates.some(candidate => candidate.status === 'complete')) {
+      fail('A ready strategy set requires at least one complete candidate.');
+    }
+  } else if (candidates.length !== 0 || input.blockers.length === 0) {
+    fail('A no-solution strategy set must contain no candidates and at least one blocker.');
+  }
+  const blockers = [...input.blockers].sort(
+    (left, right) =>
+      compareText(left.code, right.code) || compareText(left.job ?? '', right.job ?? '')
+  );
+  blockers.forEach(blocker => {
+    requireOneOf(blocker.code, BLOCKER_CODES, 'Strategy blocker code');
+    requireNonEmpty(blocker.message, `${blocker.code} message`);
+    if (blocker.job !== undefined) requireOneOf(blocker.job, JOBS, 'Strategy blocker job');
+  });
+  const content: StrategySetContent = {
+    version: COLOR_SYSTEM_STRATEGY_SET_V2_SCHEMA_VERSION,
+    policyVersion: COLOR_SYSTEM_BUILDER_V2_POLICY_VERSION,
+    sourceHash: brief.sourceHash,
+    sourcePackageHash: brief.sourcePackageHash,
+    briefHash: brief.briefHash,
+    status: input.status,
+    candidates,
+    blockers,
+  };
+  const strategySetHash = deterministicContentHash({
+    version: content.version,
+    policyVersion: content.policyVersion,
+    sourceHash: content.sourceHash,
+    sourcePackageHash: content.sourcePackageHash,
+    briefHash: content.briefHash,
+    candidates: candidates.map(candidate => ({
+      id: candidate.id,
+      candidateHash: candidate.candidateHash,
+      status: candidate.status,
+    })),
+    blockers,
+  });
+  return { ...content, strategySetHash };
+}
+
+export function assertColorSystemStrategySetV2Integrity(
+  brief: ColorSystemBuilderBriefV2,
+  strategySet: ColorSystemStrategySetV2
+): void {
+  requireHash(strategySet.strategySetHash, 'strategySetHash');
+  if (
+    strategySet.version !== COLOR_SYSTEM_STRATEGY_SET_V2_SCHEMA_VERSION ||
+    strategySet.policyVersion !== COLOR_SYSTEM_BUILDER_V2_POLICY_VERSION ||
+    strategySet.sourceHash !== brief.sourceHash ||
+    strategySet.sourcePackageHash !== brief.sourcePackageHash ||
+    strategySet.briefHash !== brief.briefHash
+  ) {
+    fail('Strategy set authority does not match the v2 builder brief.');
+  }
+  const rebuilt = buildColorSystemStrategySetV2(brief, {
+    status: strategySet.status,
+    candidates: strategySet.candidates,
+    blockers: strategySet.blockers,
+  });
+  if (canonicalJson(rebuilt) !== canonicalJson(strategySet)) {
+    fail('Strategy set failed canonical v2 integrity validation.');
+  }
+}

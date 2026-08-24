@@ -71,7 +71,7 @@ export const WADA_SOURCE_PROVENANCE = {
   schemaVersion: 1,
   collectionId: 'wada',
   source: {
-    title: 'Sanzo Wada color-combination corpus',
+    title: WADA_SOURCE_PROVENANCE_DISCLOSURE.source.title,
     creators: ['Sanzo Wada'],
     edition: '1930s 360-combination A-series; modern 348-combination Seigensha selection',
     year: null,
@@ -82,8 +82,7 @@ export const WADA_SOURCE_PROVENANCE = {
       'https://en.seigensha.com/books/978-4-86152-247-5/',
       'https://sanzo-wada.dmbk.io/',
     ],
-    citation:
-      "Sanzo Wada's original 360-combination A-series; modern 348-combination Seigensha selection",
+    citation: WADA_SOURCE_PROVENANCE_DISCLOSURE.source.citation,
   },
   profile: {
     colorCount: 159,
@@ -96,14 +95,12 @@ export const WADA_SOURCE_PROVENANCE = {
     digitalColorSpace: 'sRGB IEC61966-2.1',
     sourceColorProfile: 'U.S. Web Coated (SWOP) v2',
     renderingIntent: 'relative colorimetric with black-point compensation',
-    summary:
-      '159 normalized colors in a modern 348-of-360 selection; bundled names are upstream transcriptions, and RGB/hex are sRGB approximations.',
+    summary: WADA_SOURCE_PROVENANCE_DISCLOSURE.profile.summary,
   },
   transcription: {
     status: 'partially-reviewed',
     ledgerPath: 'src/wadaSourceAudit.json',
-    summary:
-      'The original A-series has 360 combinations; the modern Seigensha selection has 348 and omits A.XII four-color Nos. 109-120. Bundled names are modern upstream transcriptions and are not classified wholesale as verified primary-source text.',
+    summary: WADA_SOURCE_PROVENANCE_DISCLOSURE.transcription.summary,
   },
   derivation: {
     classification: 'digital-approximation',
@@ -116,7 +113,7 @@ export const WADA_SOURCE_PROVENANCE = {
       versionOrCommit: 'c142bd0bc8049ea48db4da5eb397981f047e8ef4',
       license: 'MIT',
     },
-    summary: 'Modern Seigensha CMYK recipes converted from U.S. Web Coated (SWOP) v2 to sRGB.',
+    summary: WADA_SOURCE_PROVENANCE_DISCLOSURE.derivation.summary,
   },
   uncertainty: {
     exactHistoricalMatch: false,
@@ -128,26 +125,21 @@ export const WADA_SOURCE_PROVENANCE = {
       'The modern selection omits original A.XII four-color Nos. 109-120.',
       'Bundled names are not classified wholesale as verified primary-source transcriptions.',
     ],
-    summary: 'Screen values are modern approximations, not exact historical RGB colors.',
+    summary: WADA_SOURCE_PROVENANCE_DISCLOSURE.uncertainty.summary,
   },
   credit: {
     short:
       "mattdesl's dictionary-of-colour-combinations; original compilation by Dain M. Blodorn Kim",
-    full: "Bundled data converted by mattdesl's dictionary-of-colour-combinations project, which credits Dain M. Blodorn Kim's original digital compilation.",
+    full: WADA_SOURCE_PROVENANCE_DISCLOSURE.credit.full,
   },
-  disclosure: {
-    label: 'Digital approximation',
-    compact: '348 of 360 original combinations; names are qualified and sRGB is approximate.',
-    detail:
-      'Modern Seigensha selection of 348 of the original 360 combinations; A.XII four-color Nos. 109-120 are omitted. Names are upstream transcriptions with reviewed variants logged separately. Color values are digital sRGB approximations based on Seigensha CMYK, converted with U.S. Web Coated (SWOP) v2 using relative colorimetric intent and black-point compensation.',
-  },
+  disclosure: WADA_SOURCE_PROVENANCE_DISCLOSURE.disclosure,
 } as const satisfies HistoricalSourceProvenance;
 
 export const WERNER_SOURCE_PROVENANCE = {
   schemaVersion: 1,
   collectionId: 'werner',
   source: {
-    title: "Werner's Nomenclature of Colours",
+    title: WERNER_SOURCE_PROVENANCE_DISCLOSURE.source.title,
     creators: ['Abraham Gottlob Werner', 'Patrick Syme'],
     edition: "Patrick Syme's second edition",
     year: 1821,
@@ -158,8 +150,7 @@ export const WERNER_SOURCE_PROVENANCE = {
       'https://archive.org/details/gri_c00033125012743312',
       'https://www.biodiversitylibrary.org/item/304442',
     ],
-    citation:
-      "Patrick Syme's 1821 second edition, adapted from Abraham Gottlob Werner's nomenclature",
+    citation: WERNER_SOURCE_PROVENANCE_DISCLOSURE.source.citation,
   },
   profile: {
     colorCount: 110,
@@ -179,7 +170,7 @@ export const WERNER_SOURCE_PROVENANCE = {
     digitalColorSpace: '8-bit sRGB (decoder interpretation)',
     sourceColorProfile: null,
     renderingIntent: null,
-    summary: "110 colors from Syme's 1821 second edition; bundled hex values assume sRGB.",
+    summary: WERNER_SOURCE_PROVENANCE_DISCLOSURE.profile.summary,
   },
   derivation: {
     classification: 'digital-approximation',
@@ -193,8 +184,7 @@ export const WERNER_SOURCE_PROVENANCE = {
         'JP2 archive SHA-256 fdc2e5dbd04dec41e46ce85f1406193823c3667c61b0b83b66c76ef6de3da4d9',
       license: 'Public domain / NOT_IN_COPYRIGHT',
     },
-    summary:
-      "Independent transcription and reproducible digital samples from the public-domain Getty scan of Syme's 1821 second edition.",
+    summary: WERNER_SOURCE_PROVENANCE_DISCLOSURE.derivation.summary,
   },
   uncertainty: {
     exactHistoricalMatch: false,
@@ -205,16 +195,15 @@ export const WERNER_SOURCE_PROVENANCE = {
       'The scan contains no reliable color-calibration target.',
       'Printed inconsistencies and display normalizations are preserved in a machine-readable transcription audit.',
     ],
-    summary: 'Hex values are scan-sampled estimates, not device-independent Werner colors.',
+    summary: WERNER_SOURCE_PROVENANCE_DISCLOSURE.uncertainty.summary,
   },
   credit: {
     short: 'Patrick Syme 1821; Getty Research Institute public-domain scan',
-    full: "Independent Teul transcription and sampling from Getty Research Institute's public-domain scan of Patrick Syme's 1821 second edition.",
+    full: WERNER_SOURCE_PROVENANCE_DISCLOSURE.credit.full,
   },
-  disclosure: {
-    label: 'Digital approximation',
-    compact: 'Getty 1821 swatch scan represented as sRGB; not a measured original.',
-    detail:
-      "Reproducible median sample from Getty's aged scan of Patrick Syme's 1821 painted swatch.",
-  },
+  disclosure: WERNER_SOURCE_PROVENANCE_DISCLOSURE.disclosure,
 } as const satisfies HistoricalSourceProvenance;
+import {
+  WADA_SOURCE_PROVENANCE_DISCLOSURE,
+  WERNER_SOURCE_PROVENANCE_DISCLOSURE,
+} from './sourceProvenanceDisclosureData';

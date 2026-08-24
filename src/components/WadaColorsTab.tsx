@@ -1,40 +1,32 @@
 import * as React from 'react';
 import { useState, useMemo, useCallback } from 'react';
 import {
-  CircleHelp as Question,
+  Question,
   Copy,
-  Download as DownloadSimple,
+  DownloadSimple,
   PaintBucket,
-  Pencil as PencilSimple,
-  RefreshCw as ArrowsClockwise,
-  SwatchBook as Swatches,
-  WandSparkles as MagicWand,
+  PencilSimple,
+  ArrowsClockwise,
+  Swatches,
+  MagicWand,
   X,
-} from 'lucide-react';
-import { colorData } from '../colorData';
+} from './TeulIcons';
 import { getContrastRatio } from '../lib/utils';
 import { copyToClipboard } from '../lib/clipboard';
 import { styles } from '../lib/theme';
 import { ColorSystemModal } from './ColorSystemModal';
 import { AboutPanel, WADA_ABOUT_CONTENT } from './AboutPanel';
 import { getAccessibleTextColor } from '../lib/accessibility';
-import { WADA_SOURCE_PROVENANCE } from '../lib/sourceProvenance';
+import { WADA_SOURCE_PROVENANCE_DISCLOSURE } from '../lib/sourceProvenanceDisclosureData';
 import { useModalAccessibility } from '../lib/useModalAccessibility';
 import type { NormalizedDocumentColorProfile } from '../types/messages';
 import { SourceProvenanceDisclosure } from './SourceProvenanceDisclosure';
 import { createRequestId } from '../lib/requestId';
 import { useOptionalWorkspaceState } from '../lib/workspaceState';
 import { HistoricalColorSwatchCard } from './HistoricalColorSwatchCard';
+import type { WadaColor } from '../types/historicalColorData';
 
-interface Color {
-  name: string;
-  combinations: number[];
-  swatch: number;
-  cmyk: number[];
-  lab: number[];
-  rgb: number[];
-  hex: string;
-}
+type Color = WadaColor;
 
 interface ColorCombo {
   id: number;
@@ -43,6 +35,7 @@ interface ColorCombo {
 
 interface WadaColorsTabProps {
   isDark: boolean;
+  colors: WadaColor[];
   documentColorProfile?: NormalizedDocumentColorProfile;
 }
 
@@ -176,6 +169,7 @@ const ContrastTooltip: React.FC<{
 
 export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
   isDark,
+  colors,
   documentColorProfile = 'unknown',
 }) => {
   const workspaceContext = useOptionalWorkspaceState();
@@ -222,8 +216,6 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
     initialFocusRef: exportCloseButtonRef,
   });
 
-  // Color data (loaded synchronously)
-  const colors = colorData.colors as Color[];
   const comboIndex = useMemo(() => buildComboIndex(colors), [colors]);
 
   // Color System Modal state
@@ -454,7 +446,10 @@ export const WadaColorsTab: React.FC<WadaColorsTabProps> = ({
             ))}
           </div>
         )}
-        <SourceProvenanceDisclosure provenance={WADA_SOURCE_PROVENANCE} isDark={isDark} />
+        <SourceProvenanceDisclosure
+          provenance={WADA_SOURCE_PROVENANCE_DISCLOSURE}
+          isDark={isDark}
+        />
       </div>
 
       {/* Content */}

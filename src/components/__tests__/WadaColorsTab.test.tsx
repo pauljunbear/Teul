@@ -3,6 +3,7 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { WadaColorsTab } from '../WadaColorsTab';
+import wadaColors from '../../colors.json';
 
 describe('WadaColorsTab studio flow', () => {
   let container: HTMLDivElement;
@@ -26,7 +27,7 @@ describe('WadaColorsTab studio flow', () => {
 
   it('keeps the library visible, exposes all Corinthian Pink pairings, and preloads a pairing', () => {
     act(() => {
-      root.render(<WadaColorsTab isDark={false} />);
+      root.render(<WadaColorsTab isDark={false} colors={wadaColors} />);
     });
 
     const corinthianPink = container.querySelector<HTMLElement>(

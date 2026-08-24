@@ -11,6 +11,15 @@ coverage/
 code.js
 .DS_Store
 
+# Local qualification and agent scratch artifacts
+.codex-private-quarantine/
+.codex-temp-audit-proxy.mjs
+figma-candidate/dist/
+node_modules.generated/
+node_modules.partial/
+node_modules.shared
+release/
+
 # Environment files
 .env
 .env.local

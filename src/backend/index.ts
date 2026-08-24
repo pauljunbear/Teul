@@ -43,6 +43,7 @@ export function sendDocumentColorProfile(): void {
 // Figma Helpers
 export { sendSelectionInfo } from './figmaHelpers';
 export { sendAccessibilitySelection } from './accessibilitySelection';
+export { getHistoricalColorData } from './historicalColorData';
 
 // Color Operations
 export {

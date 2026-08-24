@@ -1,11 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import WERNER_TRANSCRIPTION_AUDIT from '../../../scripts/werner-sampling/transcription-audit.json';
 import wernerSourceColors from '../../wernerColors.json';
-import {
-  getWernerTextRecord,
-  WERNER_TRANSCRIPTION_AUDIT,
-  WernerTextField,
-  wernerColors,
-} from '../../wernerColorData';
+import { getWernerTextRecord, WernerTextField, wernerColors } from '../../wernerColorData';
 
 const textFields: WernerTextField[] = ['name', 'description', 'animal', 'vegetable', 'mineral'];
 

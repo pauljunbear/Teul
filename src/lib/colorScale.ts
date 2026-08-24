@@ -15,6 +15,10 @@ export type ColorScaleMode = 'light' | 'dark';
 interface ColorStep {
   step: number;
   hex: string;
+  /** Exact coordinates requested before gamut mapping for this finalized step. */
+  requestedOklch: OKLCH;
+  /** Exact coordinates returned by Local MINDE before hex quantization. */
+  mappedOklch: OKLCH;
   oklch: OKLCH;
   usage: string;
   gamutMapped: boolean;
@@ -318,14 +322,17 @@ function relativeLuminance(hex: string): number {
 }
 
 function createGeneratedStep(step: number, lightness: number, baseOklch: OKLCH): ColorStep {
-  const mapped = mapOklchToSrgb({
+  const requestedOklch = {
     l: lightness,
     c: baseOklch.c * CHROMA_MULTIPLIERS[step - 1],
     h: baseOklch.h,
-  });
+  };
+  const mapped = mapOklchToSrgb(requestedOklch);
   return {
     step,
     hex: mapped.hex,
+    requestedOklch,
+    mappedOklch: mapped.oklch,
     oklch: finalOklch(mapped.hex),
     usage: STEP_USAGE[step],
     gamutMapped: mapped.mapped,
@@ -520,10 +527,13 @@ export function generateColorScale(
   const initialSteps = lightnessTargets.map((lightness, index): ColorStep => {
     const step = index + 1;
     if (step === 9) {
+      const anchorOklch = finalOklch(normalizedBase);
       return {
         step,
         hex: normalizedBase,
-        oklch: finalOklch(normalizedBase),
+        requestedOklch: anchorOklch,
+        mappedOklch: anchorOklch,
+        oklch: anchorOklch,
         usage: STEP_USAGE[step],
         gamutMapped: false,
       };
@@ -558,7 +568,9 @@ export function isExactTeulGeneratedScale(scale: {
     scale.steps.length !== 12 ||
     scale.steps.some(
       (step, index) =>
-        step.step !== index + 1 || typeof step.hex !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(step.hex)
+        step.step !== index + 1 ||
+        typeof step.hex !== 'string' ||
+        !/^#[0-9a-fA-F]{6}$/.test(step.hex)
     )
   ) {
     return false;

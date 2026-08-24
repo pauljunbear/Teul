@@ -297,8 +297,7 @@ const ContrastChecker: React.FC<{
     }
   }, [foreground, background]);
 
-  const referencePreviewSize = contrastResult?.apca.minimumFontSize ?? null;
-  const showReferencePreview = referencePreviewSize !== null && referencePreviewSize <= 48;
+  const referenceTableSize = contrastResult?.apca.minimumFontSize ?? null;
 
   return (
     <Card styles={styles}>
@@ -413,46 +412,24 @@ const ContrastChecker: React.FC<{
         APCA 0.1.9 Reference-Table Size at Weight 400 (Barlow)
       </div>
 
-      {/* APCA-compatible reference-size preview */}
       <div
+        data-apca-reference-metadata="true"
         style={{
-          padding: '16px',
+          padding: '10px 12px',
           borderRadius: '8px',
-          backgroundColor: showReferencePreview ? background : styles.bg,
-          color: showReferencePreview ? foreground : styles.text,
-          textAlign: 'center',
+          backgroundColor: styles.bg,
+          color: styles.text,
           marginBottom: '16px',
           border: `1px solid ${styles.border}`,
+          fontSize: '11px',
+          lineHeight: 1.45,
         }}
       >
-        {showReferencePreview ? (
-          <div
-            data-apca-reference-sample="true"
-            style={{
-              fontSize: `${referencePreviewSize}px`,
-              fontWeight: 400,
-              fontFamily: 'sans-serif',
-            }}
-          >
-            Reference-size sample
-          </div>
-        ) : (
-          <div style={{ fontSize: '12px' }}>
-            No practical normal-weight content-text preview at this Lc.
-          </div>
-        )}
-      </div>
-      <div
-        style={{
-          marginTop: '-10px',
-          marginBottom: '16px',
-          fontSize: '10px',
-          color: styles.textMuted,
-        }}
-      >
-        This illustrative sample uses the table’s numeric size, but the iframe does not prove the
-        Barlow reference face. It is not approval for another typeface, rendering environment, or
-        context.
+        {referenceTableSize === null
+          ? 'No practical normal-weight content-text size is listed at this Lc.'
+          : `Barlow 400 reference-table result: ${referenceTableSize}px.`}{' '}
+        Numeric supplemental metadata only; Teul does not render an APCA font-size example or claim
+        APCA Compatible integration.
       </div>
 
       {/* Results */}
