@@ -1,0 +1,92 @@
+{
+  "version": "teul.authoring-board-budget-verification.v1",
+  "decision": "DEC-040",
+  "baseCommit": "3e373710b0d27a35f97a5a994d044c19cf651cb4",
+  "status": "implemented-and-focused-verified; full-gates-pending",
+  "limits": {
+    "boardAndStandaloneVertices": 16384,
+    "totalVertices": 32768,
+    "nodes": 1024,
+    "comparisons": 8000000,
+    "snapshotValueNodes": 100000,
+    "bytes": 2097152,
+    "coordinateMaximum": 8192,
+    "gridScale": 64
+  },
+  "focusedTests": {
+    "tests": 143,
+    "files": 6,
+    "nodeVersions": ["v22.13.1", "v24.19.0"],
+    "passed": true
+  },
+  "sourceOnlyFixture": {
+    "applications": 7,
+    "uses": 107,
+    "regions": 179,
+    "vertices": 25628,
+    "exactIndependentGeometryAndLayoutHashes": true,
+    "noColorGeneration": true,
+    "noDeliveryClaim": true
+  },
+  "candidateBundle": {
+    "bytes": 429989,
+    "unchangedMaximumBytes": 430080,
+    "sha256": "ffef0da3b79354c31a514cfa85ad01b91e11acfedf6e63ae602d03846106ed10"
+  },
+  "reviews": {
+    "independentPlan": "go",
+    "reuse": "clear",
+    "quality": "clear",
+    "efficiency": "clear"
+  },
+  "evidence": [
+    {
+      "path": "/Users/paul.jun/Documents/private-jobs/teul-brand-system-2026-09-24/implementation-baseline/task008-repair6/verification/geometry-board-budget-review/REVIEW.md",
+      "bytes": 10369,
+      "sha256": "134cb64c6c35ebf326f0543ab83dda2de76d65e0193550b8adc409d0a08e6095"
+    },
+    {
+      "path": "/Users/paul.jun/Documents/private-jobs/teul-brand-system-2026-09-24/implementation-baseline/task008-repair6/verification/dec040-implementation/exact-diff.patch",
+      "bytes": 8561,
+      "sha256": "91da49e0ac97fec15bc3de01b0d8d822a8c6b589b4ad5226b333dc3360469427"
+    },
+    {
+      "path": "/Users/paul.jun/Documents/private-jobs/teul-brand-system-2026-09-24/implementation-baseline/task008-repair6/verification/dec040-implementation/simplify-reuse.md",
+      "bytes": 2588,
+      "sha256": "c600a414f7152a1aba7ee624970e76ac5b2148e6633c7f3edfb4c385633f1608"
+    },
+    {
+      "path": "/Users/paul.jun/Documents/private-jobs/teul-brand-system-2026-09-24/implementation-baseline/task008-repair6/verification/dec040-implementation/simplify-quality.md",
+      "bytes": 4693,
+      "sha256": "97d30d9e9e2bbc9e62faaea46cd196f0f2fae31f4e38a18aba47a0da80f4d680"
+    },
+    {
+      "path": "/Users/paul.jun/Documents/private-jobs/teul-brand-system-2026-09-24/implementation-baseline/task008-repair6/verification/dec040-implementation/simplify-efficiency.md",
+      "bytes": 4420,
+      "sha256": "a1d3277b0b436d190a9f7cdc95825e7f4bd77fedf97e41d13ce707a2b014658e"
+    },
+    {
+      "path": "/Users/paul.jun/Documents/private-jobs/teul-brand-system-2026-09-24/implementation-baseline/task008-repair6/verification/dec040-implementation/fixture-v22.13.1.json",
+      "bytes": 2549,
+      "sha256": "b0013b39a7536a9d9f886199e3b118a206dc1d93f6c2186ef0788db7701484ff"
+    },
+    {
+      "path": "/Users/paul.jun/Documents/private-jobs/teul-brand-system-2026-09-24/implementation-baseline/task008-repair6/verification/dec040-implementation/fixture-v24.19.0.json",
+      "bytes": 2549,
+      "sha256": "aec6f2e08d5cd1aa333c71cc716dbe641a69b394a3bb3c9f8390e05de89a83ce"
+    },
+    {
+      "path": "/Users/paul.jun/Documents/private-jobs/teul-brand-system-2026-09-24/implementation-baseline/task008-repair6/verification/dec040-implementation/focused22.log",
+      "bytes": 231,
+      "sha256": "f50a3e625acda2ffcf695795fa89c69e3aee620a65775c368404956a88cd7c66"
+    },
+    {
+      "path": "/Users/paul.jun/Documents/private-jobs/teul-brand-system-2026-09-24/implementation-baseline/task008-repair6/verification/dec040-implementation/focused24.log",
+      "bytes": 231,
+      "sha256": "f51ab0f1a400bc1b03d320589a3b6ddef946237addba431764259211f418e79e"
+    }
+  ],
+  "qualified": false,
+  "nativeWrites": false,
+  "ownerAcceptance": false
+}

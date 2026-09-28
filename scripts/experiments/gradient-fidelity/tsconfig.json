@@ -1,0 +1,12 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": { "noEmit": true },
+  "include": [
+    "./*.ts",
+    "../../../src/lib/__tests__/colorSystemGradientIntervalsV1.test.ts",
+    "../../../src/lib/__tests__/colorSystemGradientKernelV1.test.ts",
+    "../../../src/lib/__tests__/colorSystemGradientDualIntervalsV1.test.ts",
+    "../../../src/lib/__tests__/colorSystemGradientReferenceRouteV2.test.ts",
+    "../../../src/lib/__tests__/colorSystemGradientFidelityV2.test.ts"
+  ]
+}

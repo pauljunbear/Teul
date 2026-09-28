@@ -1,15 +1,31 @@
-import { getRelativeLuminance, getWCAGContrast } from './accessibility';
+import {
+  COLOR_SYSTEM_STRUCTURAL_GROUND_SOURCES_V2,
+  COLOR_SYSTEM_CHART_ORDER_SOURCES_V2,
+  COLOR_SYSTEM_VISUALIZATION_MARK_ORIGINS_V2,
+  COLOR_SYSTEM_PRODUCT_SEMANTIC_ROLES_V2,
+  COLOR_SYSTEM_SEMANTIC_MEANING_ROLES_V2,
+  COLOR_SYSTEM_SEMANTIC_MEANING_SOURCES_V2,
+} from './colorSystemApplicationVocabularyV2';
+export {
+  COLOR_SYSTEM_STRUCTURAL_GROUND_SOURCES_V2,
+  COLOR_SYSTEM_CHART_ORDER_SOURCES_V2,
+  COLOR_SYSTEM_VISUALIZATION_MARK_ORIGINS_V2,
+  COLOR_SYSTEM_PRODUCT_SEMANTIC_ROLES_V2,
+  COLOR_SYSTEM_SEMANTIC_MEANING_ROLES_V2,
+  COLOR_SYSTEM_SEMANTIC_MEANING_SOURCES_V2,
+} from './colorSystemApplicationVocabularyV2';
+import { getAPCAContrast, getRelativeLuminance, getWCAGContrast } from './accessibility';
 import { simulateCVD, type CVDType } from './colorBlindness';
-import { canonicalJson, deterministicContentHash } from './colorSystemAudit';
+import { canonicalJson, canonicalNumber, deterministicContentHash } from './colorSystemHashing';
 import {
   COLOR_SYSTEM_BUILDER_V2_POLICY_VERSION,
   COLOR_SYSTEM_SECTION_BLUEPRINT_V2_SCHEMA_VERSION,
   COLOR_SYSTEM_SECTION_ROLES_V2,
+  COLOR_SYSTEM_STATUS_RESERVE_CONTRIBUTION_PREFIX_V2,
   type ColorSystemApplicationColorRefV2,
   type ColorSystemApprovedColorRefV2,
   type ColorSystemBuilderBriefV2,
   type ColorSystemColorValueV2,
-  type ColorSystemDataVisualizationMarkV2,
   type ColorSystemJobV2,
   type ColorSystemProductGraphicsJobV2,
   type ColorSystemRoleFrameRecipeV2,
@@ -22,24 +38,140 @@ import {
   assertColorSystemBuilderBriefV2Integrity,
   assertColorSystemStrategyCandidateV2Integrity,
 } from './colorSystemBuilderV2Integrity';
-import { compareText, hexToRgb, rgbToOklab, type RGB } from './utils';
+import { compareText, hexToOklch, rgbToOklab, type RGB } from './utils';
+import {
+  buildColorSystemSrgbValueV1,
+  colorSystemRgbDeltaEOKV1 as deltaEOK,
+  colorSystemSrgbToOklchV1,
+  colorSystemSrgbToRgbV1 as colorRgb,
+  compositeColorSystemRgbV1 as composite,
+  normalizeColorSystemSrgbValueV1,
+} from './colorSystemSrgbValueV1';
+import {
+  COLOR_SYSTEM_INTERACTION_PLAN_V1_LIMITS,
+  normalizeColorSystemInteractionRequirementsV1,
+  type ColorSystemInteractionApplicationInputV1,
+  type ColorSystemInteractionApplicationV1,
+  type ColorSystemInteractionStatePlanV1,
+} from './colorSystemInteractionPlanV1';
+import { selectColorSystemInteractionStatesV1 } from './colorSystemInteractionStatesV1';
+import {
+  buildColorSystemProductGraphicsRenderingV1,
+  colorSystemProductGraphicsCandidateAllowedV1,
+  normalizeColorSystemProductGraphicsRequirementsV1,
+  type ColorSystemProductGraphicsRequirementsV1,
+  type ColorSystemProductGraphicsRenderingV1,
+} from './colorSystemProductGraphicsPlanV1';
 
 export const COLOR_SYSTEM_APPLICATION_BLUEPRINT_V2_SCHEMA_VERSION =
   'teul-application-system-v2' as const;
 export const COLOR_SYSTEM_APPLICATION_COMPILER_V2_POLICY_VERSION =
   'teul-application-system-compiler/v2' as const;
 export const COLOR_SYSTEM_APPLICATION_WCAG_POLICY_VERSION = 'wcag-2.2-srgb-rendered-pairs' as const;
+/**
+ * APCA (Accessible Perceptual Contrast Algorithm, apca-w3 0.1.9) Lc values are
+ * recorded beside every assessed rendered pair as supplementary evidence. Teul
+ * never gates on Lc; WCAG 2.2 ratios remain the only pass/fail authority.
+ */
+export const COLOR_SYSTEM_APPLICATION_APCA_POLICY_VERSION =
+  'apca-w3-0.1.9-supplementary-lc' as const;
 export const COLOR_SYSTEM_APPLICATION_CVD_POLICY_VERSION =
   'machado-2009-severity-1-advisory' as const;
 export const COLOR_SYSTEM_APPLICATION_CVD_MINIMUM_DELTA_E_OK = 0.08;
 export const COLOR_SYSTEM_APPLICATION_SEQUENTIAL_POLICY_VERSION =
-  'teul-sequential-perceptual-separation/v1' as const;
-export const COLOR_SYSTEM_APPLICATION_SEQUENTIAL_MINIMUM_ADJACENT_DELTA_E_OK = 0.03;
+  'teul-sequential-perceptual-separation/v2' as const;
+export const COLOR_SYSTEM_APPLICATION_SEQUENTIAL_MINIMUM_ADJACENT_DELTA_E_OK = 0.04;
 export const COLOR_SYSTEM_APPLICATION_SEQUENTIAL_MINIMUM_SURFACE_DELTA_E_OK = 0.03;
 export const COLOR_SYSTEM_APPLICATION_DIVERGING_SEMANTICS_POLICY_VERSION =
   'teul-governed-diverging-semantics/v1' as const;
 export const COLOR_SYSTEM_APPLICATION_GENERATED_DIVERGING_SEMANTICS_POLICY_VERSION =
   'teul-owner-confirmed-generated-diverging-semantics/v1' as const;
+/**
+ * p3-I: a recorded chart set (a `data-visualization` section the brief carries
+ * with an order) is used in its recorded order. The 3:1 and modeled-CVD gates
+ * are measured and reported as warnings on that order; they never re-order or
+ * replace a recorded color.
+ */
+export const COLOR_SYSTEM_APPLICATION_RECORDED_ORDER_POLICY_VERSION =
+  'teul-recorded-chart-order/v1' as const;
+/** p3-I: diverging arms taken from recorded chart colors (by polarity claim or hue separation). */
+export const COLOR_SYSTEM_APPLICATION_RECORDED_DIVERGING_SEMANTICS_POLICY_VERSION =
+  'teul-recorded-order-diverging-semantics/v1' as const;
+/** p3-I: where a structural product role (background, surface, text, border, disabled) came from. */
+export type ColorSystemStructuralGroundSourceV2 =
+  (typeof COLOR_SYSTEM_STRUCTURAL_GROUND_SOURCES_V2)[number];
+/** p3-I: whether a chart selection follows the brand's recorded order or Teul's generated selection. */
+export type ColorSystemChartOrderSourceV2 = (typeof COLOR_SYSTEM_CHART_ORDER_SOURCES_V2)[number];
+/**
+ * p4-B: a chart mark that reproduces one of the brief's recorded chart colors
+ * exactly — through the family member that carries the value or, when no
+ * family does, through the preserved color itself. Absent on Teul's own marks.
+ */
+export type ColorSystemVisualizationMarkOriginV2 =
+  (typeof COLOR_SYSTEM_VISUALIZATION_MARK_ORIGINS_V2)[number];
+/**
+ * A diverging midpoint that cannot be told apart from its chart surface reads as
+ * "no data" rather than "zero". The midpoint must therefore keep at least this
+ * Delta E OK against the declared surface, and each arm must be as uniform as a
+ * sequential ramp (same adjacent-step floor).
+ */
+export const COLOR_SYSTEM_APPLICATION_DIVERGING_MIDPOINT_POLICY_VERSION =
+  'teul-diverging-midpoint-visibility/v1' as const;
+export const COLOR_SYSTEM_APPLICATION_DIVERGING_MINIMUM_MIDPOINT_SURFACE_DELTA_E_OK = 0.05;
+export const COLOR_SYSTEM_APPLICATION_SEMANTIC_HUE_POLICY_VERSION =
+  'teul-semantic-hue-meaning/v1' as const;
+
+export interface ColorSystemHueRangeV2 {
+  /** OKLCH hue in degrees, 0 through 360. A minimum above the maximum wraps through 0. */
+  minimum: number;
+  maximum: number;
+}
+
+/**
+ * Meaning-bearing hue ranges in OKLCH degrees. OKLCH places pure sRGB red near
+ * 29 degrees, orange near 53, yellow near 110, green near 142, blue near 264 and
+ * magenta near 328, so these bands describe the conventional status colors:
+ * green for success, amber for warning, red for error and destructive, blue for
+ * information. `link` follows the information family unless the brand Primary
+ * sits in a distinct hue, and `focus` plus `selected` follow the brand family.
+ */
+export const COLOR_SYSTEM_SEMANTIC_HUE_RANGES_V2 = {
+  success: { minimum: 120, maximum: 170 },
+  warning: { minimum: 55, maximum: 95 },
+  error: { minimum: 15, maximum: 45 },
+  destructive: { minimum: 15, maximum: 45 },
+  information: { minimum: 230, maximum: 275 },
+} as const satisfies Readonly<Record<string, ColorSystemHueRangeV2>>;
+
+export type ColorSystemSemanticHueRangeRoleV2 = keyof typeof COLOR_SYSTEM_SEMANTIC_HUE_RANGES_V2;
+
+function normalizeHueDegrees(hue: number): number {
+  const wrapped = hue % 360;
+  return wrapped < 0 ? wrapped + 360 : wrapped;
+}
+
+/** Shortest circular distance between two OKLCH hues, in degrees (0 through 180). */
+export function colorSystemHueDistanceV2(first: number, second: number): number {
+  const difference = Math.abs(normalizeHueDegrees(first) - normalizeHueDegrees(second));
+  return Math.min(difference, 360 - difference);
+}
+
+export function colorSystemHueWithinRangeV2(hue: number, range: ColorSystemHueRangeV2): boolean {
+  const value = normalizeHueDegrees(hue);
+  const minimum = normalizeHueDegrees(range.minimum);
+  const maximum = normalizeHueDegrees(range.maximum);
+  if (minimum <= maximum) return value >= minimum && value <= maximum;
+  return value >= minimum || value <= maximum;
+}
+
+/** Zero inside the range; otherwise the circular distance to the nearer bound. */
+export function colorSystemHueDistanceToRangeV2(hue: number, range: ColorSystemHueRangeV2): number {
+  if (colorSystemHueWithinRangeV2(hue, range)) return 0;
+  return Math.min(
+    colorSystemHueDistanceV2(hue, range.minimum),
+    colorSystemHueDistanceV2(hue, range.maximum)
+  );
+}
 
 export const COLOR_SYSTEM_PRODUCT_GRAPHICS_JOBS_V2 = [
   'product-graphic',
@@ -55,24 +187,54 @@ const PRODUCT_GRAPHICS_ELIGIBILITY_JOBS: Readonly<
   'product-ui-surface': 'product-ui-surface',
 };
 
-export const COLOR_SYSTEM_PRODUCT_SEMANTIC_ROLES_V2 = [
-  'background',
-  'surface',
-  'text',
-  'border',
-  'focus',
-  'disabled',
+export type ColorSystemProductSemanticRoleNameV2 =
+  (typeof COLOR_SYSTEM_PRODUCT_SEMANTIC_ROLES_V2)[number];
+
+/**
+ * `on-<role>` roles are the foreground placed on the solid `<role>` fill. Their
+ * pair evidence must therefore be normal text whose background is the parent
+ * role's own reference in the same mode.
+ */
+export const COLOR_SYSTEM_PRODUCT_SEMANTIC_ON_ROLE_PARENTS_V2 = {
+  'on-success': 'success',
+  'on-warning': 'warning',
+  'on-error': 'error',
+  'on-information': 'information',
+  'on-destructive': 'destructive',
+  'on-selected': 'selected',
+} as const satisfies Readonly<
+  Partial<Record<ColorSystemProductSemanticRoleNameV2, ColorSystemProductSemanticRoleNameV2>>
+>;
+
+export type ColorSystemProductSemanticOnRoleNameV2 =
+  keyof typeof COLOR_SYSTEM_PRODUCT_SEMANTIC_ON_ROLE_PARENTS_V2;
+
+export function isColorSystemProductSemanticOnRoleV2(
+  role: ColorSystemProductSemanticRoleNameV2
+): role is ColorSystemProductSemanticOnRoleNameV2 {
+  return role in COLOR_SYSTEM_PRODUCT_SEMANTIC_ON_ROLE_PARENTS_V2;
+}
+
+/** Roles that carry a measured hue-meaning record in `semanticMeaning`. */
+export type ColorSystemSemanticMeaningRoleV2 =
+  (typeof COLOR_SYSTEM_SEMANTIC_MEANING_ROLES_V2)[number];
+
+/**
+ * Meaning-bearing fills must be pairwise distinct: two status colors that read as
+ * the same swatch make the status system unusable. Distinctness is measured as
+ * Delta E OK between the resolved fills in one mode. `error` and `destructive`
+ * may intentionally share a fill (declared through `sharedFill`) when the brand
+ * has at most one red family; every other collision must be declared through
+ * `collision` on both roles.
+ */
+export const COLOR_SYSTEM_SEMANTIC_FILL_ROLES_V2 = [
   'success',
   'warning',
   'error',
-  'information',
   'destructive',
-  'link',
-  'selected',
-] as const;
-
-export type ColorSystemProductSemanticRoleNameV2 =
-  (typeof COLOR_SYSTEM_PRODUCT_SEMANTIC_ROLES_V2)[number];
+  'information',
+] as const satisfies readonly ColorSystemSemanticMeaningRoleV2[];
+export const COLOR_SYSTEM_APPLICATION_MEANING_FILL_MINIMUM_DELTA_E_OK = 0.08;
 
 const MEANING_BEARING_SEMANTIC_ROLES = new Set<ColorSystemProductSemanticRoleNameV2>([
   'focus',
@@ -150,6 +312,7 @@ export interface ColorSystemProductGraphicsColorUseV2 extends ColorSystemResolve
 export interface ColorSystemProductGraphicsSpecimenV2 extends ColorSystemProductGraphicsSpecimenInputV2 {
   colors: readonly ColorSystemProductGraphicsColorUseV2[];
   accessibilityStatus: 'pass' | 'exempt' | 'blocked';
+  rendering?: ColorSystemProductGraphicsRenderingV1;
 }
 
 export interface ColorSystemProductSemanticRoleInputV2 {
@@ -160,6 +323,12 @@ export interface ColorSystemProductSemanticRoleInputV2 {
   nonColorCue: string | null;
   intendedUse: string;
   evidenceIds: readonly string[];
+  /**
+   * p3-I: present on the structural roles only. `observed-claim` and
+   * `observed-neutral` resolve to a preserved source color; `generated-ramp`
+   * resolves to an approved neutral-family member.
+   */
+  groundSource?: ColorSystemStructuralGroundSourceV2;
 }
 
 export interface ColorSystemProductSemanticRoleV2 extends ColorSystemProductSemanticRoleInputV2 {
@@ -169,12 +338,16 @@ export interface ColorSystemProductSemanticRoleV2 extends ColorSystemProductSema
 
 export type ColorSystemRenderedPairCategoryV2 = 'normal-text' | 'large-text' | 'non-text';
 export type ColorSystemRenderedPairBackdropKindV2 =
-  | 'solid'
-  | 'unknown'
-  | 'image'
-  | 'gradient'
-  | 'blend-mode';
-export type ColorSystemRenderedPairAssessmentV2 = 'required' | 'inactive-exempt';
+  'solid' | 'unknown' | 'image' | 'gradient' | 'blend-mode';
+/**
+ * `required` pairs must pass and block when they fail; `inactive-exempt` pairs
+ * are measured only. p3-I: `recorded-advisory` pairs belong to a chart mark the
+ * brand recorded in a fixed order: they are measured against the same
+ * threshold, a failure is reported as a warning on the selection, and they are
+ * counted neither as required pairs nor as blockers.
+ */
+export type ColorSystemRenderedPairAssessmentV2 =
+  'required' | 'inactive-exempt' | 'recorded-advisory';
 export type ColorSystemRenderedPairStatusV2 = 'pass' | 'fail' | 'unassessed' | 'inactive-exempt';
 export type ColorSystemRenderedPairUnassessedReasonV2 =
   | 'UNKNOWN_UNDERLAY'
@@ -208,14 +381,32 @@ export interface ColorSystemRenderedPairEvidenceV2 {
   requiredRatio: 3 | 4.5;
   ratio: number | null;
   passesThreshold: boolean | null;
+  /**
+   * Supplementary APCA Lc for the rendered text-on-background polarity: positive
+   * for dark text on a light background, negative for light text on dark. Null
+   * when the pair is unassessed. Never used as a gate.
+   */
+  apcaLc: number | null;
   status: ColorSystemRenderedPairStatusV2;
   unassessedReason: ColorSystemRenderedPairUnassessedReasonV2 | null;
   limitation: string;
 }
 
+/**
+ * p4-B: a chart mark as the composer submits it. `ref` is an approved member
+ * (bare or kinded) or, for a recorded chart color no member reproduces, the
+ * preserved color itself; a preserved-color mark must carry `origin: 'recorded'`.
+ */
+export interface ColorSystemVisualizationMarkInputV2 {
+  order: number;
+  label: string;
+  ref: ColorSystemApprovedColorRefV2 | ColorSystemApplicationColorRefV2;
+  origin?: ColorSystemVisualizationMarkOriginV2;
+}
+
 interface ColorSystemVisualizationContextBaseV2 {
   selectionId: string;
-  marks: readonly ColorSystemDataVisualizationMarkV2[];
+  marks: readonly ColorSystemVisualizationMarkInputV2[];
   surface: ColorSystemApplicationColorRefV2;
   evidenceIds: readonly string[];
 }
@@ -226,6 +417,28 @@ export interface ColorSystemCategoricalContextV2 extends ColorSystemVisualizatio
   markPairEvidenceIds: readonly string[];
   directLabels: true;
   nonColorCue: 'shape' | 'pattern';
+  /** Marks the owner asked for in this mode (2 through 8). */
+  requestedMarkCount: number;
+  /**
+   * Marks that actually pass 3:1 on the surface and the modeled-CVD gate; equals
+   * `marks.length`. A shortfall is recorded, not hidden: `limitation` is set
+   * exactly when this is below the request.
+   */
+  achievedMarkCount: number;
+  limitation: string | null;
+  /**
+   * p3-I: `recorded` when the marks follow the brand's recorded chart order
+   * (see COLOR_SYSTEM_APPLICATION_RECORDED_ORDER_POLICY_VERSION); absent or
+   * `generated` for Teul's own hue-first selection.
+   */
+  orderSource?: ColorSystemChartOrderSourceV2;
+  /**
+   * p3-I: the 3:1 and modeled-CVD findings on a recorded order, one sentence
+   * each, naming the marks; empty when every gate passes or the order is generated.
+   * p4-B: also the note for a recorded color reproduced from its own value because
+   * no family carries it (it names the nearest family and the distance).
+   */
+  orderWarnings?: readonly string[];
 }
 
 export interface ColorSystemSequentialContextV2 extends ColorSystemVisualizationContextBaseV2 {
@@ -233,6 +446,8 @@ export interface ColorSystemSequentialContextV2 extends ColorSystemVisualization
   axisLabel: string;
   endpointLabels: readonly [string, string];
   nonColorCue: 'axis-and-endpoint-labels';
+  /** p3-I: `recorded` when the ramp is drawn from the first recorded chart color's family. */
+  orderSource?: ColorSystemChartOrderSourceV2;
 }
 
 export type ColorSystemDivergingPolarityV2 =
@@ -242,6 +457,8 @@ export type ColorSystemDivergingPolarityV2 =
       positiveSourceColorId: string;
       negativeContributionId?: never;
       positiveContributionId?: never;
+      negativeColorId?: never;
+      positiveColorId?: never;
       authority: 'governed-source';
       evidenceIds: readonly string[];
     }
@@ -251,7 +468,34 @@ export type ColorSystemDivergingPolarityV2 =
       positiveContributionId: string;
       negativeSourceColorId?: never;
       positiveSourceColorId?: never;
+      negativeColorId?: never;
+      positiveColorId?: never;
       authority: 'owner-confirmed';
+      evidenceIds: readonly string[];
+    }
+  | {
+      /**
+       * p3-I: arms drawn from the brand's recorded chart set. Each arm is the
+       * family whose members reproduce a recorded color exactly; the recorded
+       * color's name claimed the polarity, or the two most separated recorded
+       * hues were taken when no name did.
+       */
+      policyVersion: typeof COLOR_SYSTEM_APPLICATION_RECORDED_DIVERGING_SEMANTICS_POLICY_VERSION;
+      negativeFamilyId: string;
+      positiveFamilyId: string;
+      /**
+       * p4-B: present when the recorded color on that side has no family member
+       * of its own: the arm's outermost mark is then the preserved color itself
+       * (`origin: 'recorded'`) and the family named above is the nearest one,
+       * which supplies the steps toward the midpoint.
+       */
+      negativeColorId?: string;
+      positiveColorId?: string;
+      negativeContributionId?: never;
+      positiveContributionId?: never;
+      negativeSourceColorId?: never;
+      positiveSourceColorId?: never;
+      authority: 'recorded-order';
       evidenceIds: readonly string[];
     };
 
@@ -264,12 +508,16 @@ export interface ColorSystemDivergingContextV2 extends ColorSystemVisualizationC
   negativeLabel: string;
   positiveLabel: string;
   nonColorCue: 'zero-line-and-sign-labels';
+  /** p3-I: `recorded` when both arms come from recorded chart colors. */
+  orderSource?: ColorSystemChartOrderSourceV2;
 }
 
 export interface ColorSystemVisualizationMarkEvidenceV2 {
   order: number;
   label: string;
   ref: ColorSystemApplicationColorRefV2;
+  /** p4-B: present exactly when the mark reproduces a recorded chart color; hashed with the selection. */
+  origin?: ColorSystemVisualizationMarkOriginV2;
   resolved: ColorSystemResolvedApplicationColorV2;
   renderedRgb: RGB;
   renderedHex: string;
@@ -303,30 +551,118 @@ export interface ColorSystemSequentialPerceptualEvidenceV2 {
   }[];
   observedMinimumAdjacentDeltaEOK: number;
   observedMinimumSurfaceDeltaEOK: number;
+  /**
+   * Coefficient of variation (population standard deviation divided by the mean)
+   * of the adjacent Delta E OK steps. Zero is a perfectly even ramp. Recorded as
+   * evidence for ranking; the composer minimises it but the blueprint does not
+   * gate on it.
+   */
+  adjacentDeltaEOKCoefficientOfVariation: number;
   status: 'pass';
   limitation: string;
 }
 
-export type ColorSystemCategoricalSelectionV2 = Omit<ColorSystemCategoricalContextV2, 'marks'> & {
+export interface ColorSystemDivergingMidpointEvidenceV2 {
+  policyVersion: typeof COLOR_SYSTEM_APPLICATION_DIVERGING_MIDPOINT_POLICY_VERSION;
+  minimumSurfaceDeltaEOK: typeof COLOR_SYSTEM_APPLICATION_DIVERGING_MINIMUM_MIDPOINT_SURFACE_DELTA_E_OK;
+  observedSurfaceDeltaEOK: number;
+  status: 'pass';
+  limitation: string;
+}
+
+export interface ColorSystemDivergingArmEvidenceV2 {
+  adjacent: readonly {
+    fromOrder: number;
+    toOrder: number;
+    deltaEOK: number;
+  }[];
+  observedMinimumAdjacentDeltaEOK: number;
+  adjacentDeltaEOKCoefficientOfVariation: number;
+}
+
+export interface ColorSystemDivergingArmUniformityEvidenceV2 {
+  minimumAdjacentDeltaEOK: typeof COLOR_SYSTEM_APPLICATION_SEQUENTIAL_MINIMUM_ADJACENT_DELTA_E_OK;
+  negative: ColorSystemDivergingArmEvidenceV2;
+  positive: ColorSystemDivergingArmEvidenceV2;
+  status: 'pass';
+}
+
+export type ColorSystemSemanticMeaningBasisV2 =
+  'hue-range' | 'nearest-hue' | 'brand-primary-hue' | 'information-family' | 'functional-fit';
+
+/**
+ * p3-B: where the family behind a meaning role came from. `brand` reproduces a
+ * confirmed brand color or sits on the Primary hue; `reserve` is a conventional
+ * status family the planner added because the palette owned no hue in that
+ * range; `generated` is any other proposed family inside the range; `nearest`
+ * is the out-of-range fallback that carries the range warning.
+ */
+export type ColorSystemSemanticMeaningSourceV2 =
+  (typeof COLOR_SYSTEM_SEMANTIC_MEANING_SOURCES_V2)[number];
+
+export interface ColorSystemSemanticMeaningInputV2 {
+  role: ColorSystemSemanticMeaningRoleV2;
+  mode: string;
+  /** Null when the role follows a family rather than a hue band (focus, selected, brand link). */
+  targetHueRange: ColorSystemHueRangeV2 | null;
+  basis: ColorSystemSemanticMeaningBasisV2;
+  /** p3-B: `nearest` exactly when the role left its range; `reserve` only on status fills. */
+  meaningSource: ColorSystemSemanticMeaningSourceV2;
+  familyId: string;
+  memberId: string;
+  /** OKLCH hue of the resolved role value; recomputed and verified by the blueprint. */
+  measuredHueDegrees: number;
+  measuredChroma: number;
+  inRange: boolean;
+  /** Present exactly when a hue-band role landed outside its band. */
+  warning: string | null;
+  /** `destructive` may declare that it intentionally shares the `error` fill. */
+  sharedFill: ColorSystemSemanticMeaningRoleV2 | null;
+  /** Present exactly when this fill sits within the distinctness floor of another meaning fill. */
+  collision: string | null;
+  evidenceIds: readonly string[];
+}
+
+export interface ColorSystemSemanticMeaningEvidenceV2 extends ColorSystemSemanticMeaningInputV2 {
+  policyVersion: typeof COLOR_SYSTEM_APPLICATION_SEMANTIC_HUE_POLICY_VERSION;
+}
+
+export type ColorSystemCategoricalSelectionV2 = Omit<
+  ColorSystemCategoricalContextV2,
+  'marks' | 'orderSource' | 'orderWarnings'
+> & {
   kind: 'categorical';
   marks: readonly ColorSystemVisualizationMarkEvidenceV2[];
   surfaceResolved: ColorSystemResolvedApplicationColorV2;
   boundaryResolved: ColorSystemResolvedApplicationColorV2 | null;
   cvdAdvisory: ColorSystemCvdAdvisoryEvidenceV2;
+  /** p3-I: always recorded on the selection; `generated` when the input omitted it. */
+  orderSource: ColorSystemChartOrderSourceV2;
+  orderWarnings: readonly string[];
 };
 
-export type ColorSystemSequentialSelectionV2 = Omit<ColorSystemSequentialContextV2, 'marks'> & {
+export type ColorSystemSequentialSelectionV2 = Omit<
+  ColorSystemSequentialContextV2,
+  'marks' | 'orderSource'
+> & {
   kind: 'sequential';
   marks: readonly ColorSystemVisualizationMarkEvidenceV2[];
   surfaceResolved: ColorSystemResolvedApplicationColorV2;
   perceptualEvidence: ColorSystemSequentialPerceptualEvidenceV2;
+  orderSource: ColorSystemChartOrderSourceV2;
 };
 
-export type ColorSystemDivergingSelectionV2 = Omit<ColorSystemDivergingContextV2, 'marks'> & {
+export type ColorSystemDivergingSelectionV2 = Omit<
+  ColorSystemDivergingContextV2,
+  'marks' | 'orderSource'
+> & {
   kind: 'diverging';
   marks: readonly ColorSystemVisualizationMarkEvidenceV2[];
   surfaceResolved: ColorSystemResolvedApplicationColorV2;
   cvdAdvisory: ColorSystemCvdAdvisoryEvidenceV2;
+  midpointVisibility: ColorSystemDivergingMidpointEvidenceV2;
+  armUniformity: ColorSystemDivergingArmUniformityEvidenceV2;
+  orderSource: ColorSystemChartOrderSourceV2;
 };
 
 export interface ColorSystemTypographySpecimenInputV2 {
@@ -352,9 +688,7 @@ export interface ColorSystemTypographySpecimenV2 extends ColorSystemTypographySp
 }
 
 export type ColorSystemApplicationBlockerCodeV2 =
-  | 'PAIR_THRESHOLD_FAILED'
-  | 'PAIR_CONTEXT_UNASSESSED'
-  | 'CVD_ADVISORY_SEPARATION_FAILED';
+  'PAIR_THRESHOLD_FAILED' | 'PAIR_CONTEXT_UNASSESSED' | 'CVD_ADVISORY_SEPARATION_FAILED';
 
 export interface ColorSystemApplicationBlockerV2 {
   code: ColorSystemApplicationBlockerCodeV2;
@@ -365,9 +699,14 @@ export interface ColorSystemApplicationBlockerV2 {
 export interface ColorSystemApplicationPolicyVersionsV2 {
   compiler: typeof COLOR_SYSTEM_APPLICATION_COMPILER_V2_POLICY_VERSION;
   wcag: typeof COLOR_SYSTEM_APPLICATION_WCAG_POLICY_VERSION;
+  apcaSupplementary: typeof COLOR_SYSTEM_APPLICATION_APCA_POLICY_VERSION;
   cvdAdvisory: typeof COLOR_SYSTEM_APPLICATION_CVD_POLICY_VERSION;
   sequentialPerceptual: typeof COLOR_SYSTEM_APPLICATION_SEQUENTIAL_POLICY_VERSION;
   divergingSemantics: typeof COLOR_SYSTEM_APPLICATION_DIVERGING_SEMANTICS_POLICY_VERSION;
+  divergingMidpoint: typeof COLOR_SYSTEM_APPLICATION_DIVERGING_MIDPOINT_POLICY_VERSION;
+  semanticHue: typeof COLOR_SYSTEM_APPLICATION_SEMANTIC_HUE_POLICY_VERSION;
+  /** p3-I: how a recorded chart order is honoured and gated. */
+  recordedOrder: typeof COLOR_SYSTEM_APPLICATION_RECORDED_ORDER_POLICY_VERSION;
   sourcePolicy: string;
 }
 
@@ -385,13 +724,24 @@ export interface ColorSystemApplicationSystemBlueprintV2 {
   status: 'ready' | 'blocked';
   productGraphics: readonly ColorSystemProductGraphicsSpecimenV2[];
   productSemantics: readonly ColorSystemProductSemanticRoleV2[];
+  /** One measured hue-meaning record per mode for every meaning role. */
+  semanticMeaning: readonly ColorSystemSemanticMeaningEvidenceV2[];
   visualization: {
     categorical: ColorSystemCategoricalSelectionV2;
-    sequential: ColorSystemSequentialSelectionV2;
-    diverging: ColorSystemDivergingSelectionV2;
+    /** Null only for Keep when the corresponding derived chart job is not required. */
+    sequential: ColorSystemSequentialSelectionV2 | null;
+    diverging: ColorSystemDivergingSelectionV2 | null;
   };
+  /**
+   * Categorical systems composed for every declared mode other than the one in
+   * `visualization`, each on that mode's own surface, sorted by mode.
+   */
+  additionalCategorical: readonly ColorSystemCategoricalSelectionV2[];
   typography: readonly ColorSystemTypographySpecimenV2[];
   pairEvidence: readonly ColorSystemRenderedPairEvidenceV2[];
+  /** Present only when the caller declared required component uses and source surfaces. */
+  interaction?: ColorSystemInteractionApplicationV1;
+  productGraphicsRequirements?: ColorSystemProductGraphicsRequirementsV1;
   limitations: readonly string[];
   policyVersions: ColorSystemApplicationPolicyVersionsV2;
   ratings: readonly ColorSystemSectionRatingV2[];
@@ -405,13 +755,18 @@ export interface ColorSystemApplicationSystemBlueprintV2Input {
   modes: readonly string[];
   productGraphics: readonly ColorSystemProductGraphicsSpecimenInputV2[];
   productSemantics: readonly ColorSystemProductSemanticRoleInputV2[];
+  semanticMeaning: readonly ColorSystemSemanticMeaningInputV2[];
   visualization: {
     categorical: ColorSystemCategoricalContextV2;
-    sequential: ColorSystemSequentialContextV2;
-    diverging: ColorSystemDivergingContextV2;
+    /** Explicit null requires a preserve disposition and no corresponding derived job. */
+    sequential: ColorSystemSequentialContextV2 | null;
+    diverging: ColorSystemDivergingContextV2 | null;
   };
+  additionalCategorical: readonly ColorSystemCategoricalContextV2[];
   typography: readonly ColorSystemTypographySpecimenInputV2[];
   pairContexts: readonly ColorSystemRenderedPairContextV2[];
+  interaction?: ColorSystemInteractionApplicationInputV1;
+  productGraphicsRequirements?: ColorSystemProductGraphicsRequirementsV1;
   limitations: readonly string[];
 }
 
@@ -428,6 +783,7 @@ const STANDARD_LIMITATIONS = [
   'Sequential heatmap visibility uses exact rendered Delta E OK separation on the declared surface; WCAG text and non-text contrast ratios are not claimed for the continuous ramp.',
   'Machado simulations and Delta E OK separation are advisory Teul policy evidence, not WCAG conformance, diagnosis, or a colorblind-safe claim.',
   'sRGB values do not guarantee identical appearance across monitors, calibration, brightness, ambient light, operating systems, or application color management.',
+  'APCA Lc values are recorded as supplementary evidence only; Teul gates rendered pairs on WCAG 2.2 ratios and never on Lc.',
 ] as const;
 
 function fail(code: ColorSystemApplicationBlueprintV2ErrorCode, message: string): never {
@@ -438,11 +794,69 @@ function isObject(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
+/** Derive the nearby legend from normalized marks and their existing paints, without copying color values. */
+export function buildColorSystemVisualizationLegendV2<Paint>(
+  marks: unknown,
+  paints: readonly { order: number; paint: Paint }[]
+): { order: number; label: string; paint: Paint }[] {
+  if (!Array.isArray(marks) || marks.length === 0 || paints.length !== marks.length) {
+    fail(
+      'INVALID_DATA_VISUALIZATION_POLICY',
+      'Chart legend requires marks and a paint for every mark.'
+    );
+  }
+  const byOrder = new Map<number, Paint>();
+  for (const binding of paints) {
+    if (
+      !Number.isInteger(binding.order) ||
+      binding.order < 1 ||
+      binding.order > marks.length ||
+      byOrder.has(binding.order) ||
+      binding.paint == null
+    ) {
+      fail(
+        'INVALID_DATA_VISUALIZATION_POLICY',
+        'Chart legend paint orders must match the marks exactly.'
+      );
+    }
+    byOrder.set(binding.order, binding.paint);
+  }
+  return marks.map((mark: unknown, index: number) => {
+    if (
+      !isObject(mark) ||
+      mark.order !== index + 1 ||
+      typeof mark.label !== 'string' ||
+      !mark.label.trim()
+    ) {
+      fail(
+        'INVALID_DATA_VISUALIZATION_POLICY',
+        'Chart legend requires contiguous mark order and labels.'
+      );
+    }
+    return { order: index + 1, label: mark.label, paint: byOrder.get(index + 1)! };
+  });
+}
+
 function assertExactKeys(value: unknown, expected: readonly string[], label: string): void {
   if (!isObject(value)) fail('INVALID_APPLICATION_INPUT', `${label} must be an object.`);
   const actual = Object.keys(value).sort(compareText);
   const wanted = [...expected].sort(compareText);
   if (canonicalJson(actual) !== canonicalJson(wanted)) {
+    fail('INVALID_APPLICATION_INPUT', `${label} contains unexpected or missing fields.`);
+  }
+}
+
+/** p3-I: exact required keys plus a closed set of optional ones; any other key fails. */
+function assertKeys(
+  value: unknown,
+  required: readonly string[],
+  optional: readonly string[],
+  label: string
+): void {
+  if (!isObject(value)) fail('INVALID_APPLICATION_INPUT', `${label} must be an object.`);
+  const actual = Object.keys(value);
+  const allowed = new Set([...required, ...optional]);
+  if (required.some(key => !(key in value)) || actual.some(key => !allowed.has(key))) {
     fail('INVALID_APPLICATION_INPUT', `${label} contains unexpected or missing fields.`);
   }
 }
@@ -599,50 +1013,69 @@ function assertEvidenceEligibleForJob(
   }
 }
 
-function assertSrgbValue(value: ColorSystemColorValueV2, label: string): void {
-  const expected = hexToRgb(value.hex);
-  const components = value.components;
-  if (
-    value.colorSpace !== 'srgb' ||
-    !HEX_PATTERN.test(value.hex) ||
-    !components ||
-    !Number.isFinite(components.r) ||
-    !Number.isFinite(components.g) ||
-    !Number.isFinite(components.b) ||
-    components.r < 0 ||
-    components.r > 1 ||
-    components.g < 0 ||
-    components.g > 1 ||
-    components.b < 0 ||
-    components.b > 1 ||
-    Math.abs(components.r - expected.r / 255) > 1e-12 ||
-    Math.abs(components.g - expected.g / 255) > 1e-12 ||
-    Math.abs(components.b - expected.b / 255) > 1e-12 ||
-    !Number.isFinite(value.alpha) ||
-    value.alpha < 0 ||
-    value.alpha > 1
-  ) {
+/** Like assertRefEligibleForJob, but any one of the listed jobs satisfies the reference. */
+function assertRefEligibleForAnyJob(
+  resolver: Resolver,
+  inputRef: ColorSystemApplicationColorRefV2,
+  jobs: readonly ColorSystemJobV2[],
+  label: string
+): void {
+  const ref = normalizeRef(inputRef, label);
+  if (ref.kind === 'preserved-source-color') return;
+  const identity = approvedRefIdentity(ref.ref);
+  const eligibility = resolver.candidate.jobEligibility.find(
+    entry => approvedRefIdentity(entry.ref) === identity
+  );
+  if (!eligibility) {
     fail(
       'ORPHAN_APPLICATION_REFERENCE',
-      `${label} must preserve an exact six-digit sRGB value and alpha from zero through one.`
+      `${label} has no reviewed member/mode job eligibility receipt.`
+    );
+  }
+  if (!jobs.some(job => eligibility.jobs.includes(job))) {
+    fail(
+      'ORPHAN_APPLICATION_REFERENCE',
+      `${label} is not eligible for any of the application jobs ${jobs.join(', ')}.`
     );
   }
 }
 
-function colorRgb(value: ColorSystemColorValueV2): RGB {
-  return {
-    r: value.components.r * 255,
-    g: value.components.g * 255,
-    b: value.components.b * 255,
-  };
+/**
+ * Structural roles are the product UI surface system (page, raised surface,
+ * border, disabled tone, and the text placed on them), so a member eligible for
+ * `product-ui-surface` may serve them; that is the job a neutral ramp is reviewed
+ * for. Meaning fills still require `product-semantics`. Surfaces and underlays
+ * inside any semantic pair follow the structural rule.
+ */
+const STRUCTURAL_SEMANTIC_ROLES = new Set<ColorSystemProductSemanticRoleNameV2>([
+  'background',
+  'surface',
+  'text',
+  'border',
+  'disabled',
+]);
+const STRUCTURAL_ROLE_JOBS: readonly ColorSystemJobV2[] = [
+  'product-ui-surface',
+  'product-semantics',
+];
+const MEANING_ROLE_JOBS: readonly ColorSystemJobV2[] = ['product-semantics'];
+
+function semanticRoleJobs(role: ColorSystemProductSemanticRoleNameV2): readonly ColorSystemJobV2[] {
+  return STRUCTURAL_SEMANTIC_ROLES.has(role) || isColorSystemProductSemanticOnRoleV2(role)
+    ? STRUCTURAL_ROLE_JOBS
+    : MEANING_ROLE_JOBS;
 }
 
-function composite(foreground: RGB, alpha: number, background: RGB): RGB {
-  return {
-    r: foreground.r * alpha + background.r * (1 - alpha),
-    g: foreground.g * alpha + background.g * (1 - alpha),
-    b: foreground.b * alpha + background.b * (1 - alpha),
-  };
+function assertSrgbValue(value: ColorSystemColorValueV2, label: string): void {
+  try {
+    if (!HEX_PATTERN.test(value.hex)) throw new Error('Display hex must be canonical.');
+    normalizeColorSystemSrgbValueV1(value);
+  } catch {
+    fail(
+      'ORPHAN_APPLICATION_REFERENCE',
+      `${label} must preserve a valid exact sRGB value and alpha from zero through one.`
+    );
+  }
 }
 
 function canonicalHex(rgb: RGB): string {
@@ -755,7 +1188,7 @@ function normalizePairContext(
   if (
     !['solid', 'unknown', 'image', 'gradient', 'blend-mode'].includes(context.backdropKind) ||
     !['normal-text', 'large-text', 'non-text'].includes(context.category) ||
-    !['required', 'inactive-exempt'].includes(context.assessment)
+    !['required', 'inactive-exempt', 'recorded-advisory'].includes(context.assessment)
   ) {
     fail('INVALID_APPLICATION_INPUT', `${id} has an unsupported pair policy value.`);
   }
@@ -801,6 +1234,7 @@ function normalizePairContext(
       requiredRatio: threshold,
       ratio: null,
       passesThreshold: null,
+      apcaLc: null,
       status: normalizedContext.assessment === 'inactive-exempt' ? 'inactive-exempt' : 'unassessed',
       unassessedReason: reason,
       limitation:
@@ -828,6 +1262,7 @@ function normalizePairContext(
     requiredRatio: threshold,
     ratio,
     passesThreshold: normalizedContext.assessment === 'inactive-exempt' ? null : passesThreshold,
+    apcaLc: getAPCAContrast(renderedForeground, renderedBackground),
     status:
       normalizedContext.assessment === 'inactive-exempt'
         ? 'inactive-exempt'
@@ -838,8 +1273,20 @@ function normalizePairContext(
     limitation:
       normalizedContext.assessment === 'inactive-exempt'
         ? 'Inactive controls are exempt and are not counted as passing required pairs.'
-        : 'This result applies only to this exact rendered sRGB pair, alpha, underlay, size, weight, and use case.',
+        : normalizedContext.assessment === 'recorded-advisory'
+          ? 'This chart color keeps its recorded order; a failed threshold is reported as a warning on the selection and is not counted as a required pair or a blocker.'
+          : 'This result applies only to this exact rendered sRGB pair, alpha, underlay, size, weight, and use case.',
   };
+}
+
+/** Reuses the final exact-pair gate during bounded candidate filtering. */
+export function createColorSystemRenderedPairAssessorV2(
+  brief: ColorSystemBuilderBriefV2,
+  candidate: ColorSystemStrategyCandidateV2,
+  modes: readonly string[]
+): (context: ColorSystemRenderedPairContextV2) => ColorSystemRenderedPairEvidenceV2 {
+  const resolver: Resolver = { brief, candidate, modes: new Set(modes) };
+  return context => normalizePairContext(resolver, context);
 }
 
 function pairContainsRef(
@@ -866,7 +1313,8 @@ function requireEvidence(
 function normalizeProductGraphics(
   resolver: Resolver,
   inputs: readonly ColorSystemProductGraphicsSpecimenInputV2[],
-  evidenceById: ReadonlyMap<string, ColorSystemRenderedPairEvidenceV2>
+  evidenceById: ReadonlyMap<string, ColorSystemRenderedPairEvidenceV2>,
+  requirements?: ColorSystemProductGraphicsRequirementsV1
 ): ColorSystemProductGraphicsSpecimenV2[] {
   const normalized = [...inputs]
     .sort(
@@ -936,10 +1384,10 @@ function normalizeProductGraphics(
         const appliedValue =
           input.transform.kind === 'identity'
             ? resolved.value
-            : {
-                ...resolved.value,
-                alpha: resolved.value.alpha * input.transform.alpha,
-              };
+            : buildColorSystemSrgbValueV1(
+                resolved.value.components,
+                resolved.value.alpha * input.transform.alpha
+              );
         return { ...resolved, appliedValue };
       });
       const pairEvidenceIds = sortedUniqueStrings(
@@ -1016,6 +1464,42 @@ function normalizeProductGraphics(
               ? 'pass'
               : 'blocked',
       };
+      if (requirements) {
+        const context = requirements.contexts[index];
+        if (
+          input.assessment !== 'informative' ||
+          input.transform.kind !== 'identity' ||
+          colors.length !== 1 ||
+          context.job !== input.job ||
+          context.mode !== mode ||
+          !colorSystemProductGraphicsCandidateAllowedV1(
+            context,
+            colors[0].appliedValue,
+            ref => resolveRef(resolver, ref, context.id).value
+          )
+        ) {
+          fail(
+            'INVALID_APPLICATION_INPUT',
+            `${derivationId} does not fulfill its declared graphics context.`
+          );
+        }
+        const rendering = buildColorSystemProductGraphicsRenderingV1(
+          requirements,
+          context,
+          colors[0].ref,
+          [...evidenceById.values()]
+        );
+        if (
+          canonicalJson([...rendering.pairs.map(pair => pair.pairEvidenceId)].sort(compareText)) !==
+          canonicalJson(pairEvidenceIds)
+        ) {
+          fail(
+            'INVALID_APPLICATION_INPUT',
+            `${derivationId} must retain every declared graphic pair exactly.`
+          );
+        }
+        specimen.rendering = rendering;
+      }
       return specimen;
     });
   if (normalized.length !== 3) {
@@ -1041,9 +1525,10 @@ function normalizeProductSemantics(
         semanticRoleRank(left.role) - semanticRoleRank(right.role)
     )
     .map((input, index) => {
-      assertExactKeys(
+      assertKeys(
         input,
         ['role', 'mode', 'ref', 'pairEvidenceIds', 'nonColorCue', 'intendedUse', 'evidenceIds'],
+        ['groundSource'], // p3-I
         `productSemantics[${index}]`
       );
       if (semanticRoleRank(input.role) < 0) {
@@ -1056,12 +1541,23 @@ function normalizeProductSemantics(
           `${input.mode}/${input.role} reference mode does not match the role mode.`
         );
       }
-      assertRefEligibleForJob(
-        resolver,
-        ref,
-        'product-semantics',
-        `${input.mode}/${input.role}.ref`
-      );
+      // p3-I: a ground source is a claim about where a structural role came from,
+      // so it must agree with the reference kind: observed sources are preserved
+      // source colors, the generated ramp is an approved family member.
+      if (input.groundSource !== undefined) {
+        if (
+          !STRUCTURAL_SEMANTIC_ROLES.has(input.role) ||
+          !COLOR_SYSTEM_STRUCTURAL_GROUND_SOURCES_V2.includes(input.groundSource) ||
+          (input.groundSource === 'generated-ramp') !== (ref.kind === 'approved-family-member')
+        ) {
+          fail(
+            'INVALID_APPLICATION_INPUT',
+            `${input.mode}/${input.role} ground source must name a structural role and agree with its reference kind.`
+          );
+        }
+      }
+      const roleJobs = semanticRoleJobs(input.role);
+      assertRefEligibleForAnyJob(resolver, ref, roleJobs, `${input.mode}/${input.role}.ref`);
       const pairEvidenceIds = sortedUniqueStrings(
         input.pairEvidenceIds,
         `${input.mode}/${input.role}.pairEvidenceIds`
@@ -1084,11 +1580,25 @@ function normalizeProductSemantics(
             `${input.mode}/${input.role} pair evidence must include the role reference and mode.`
           );
         }
-        assertEvidenceEligibleForJob(
-          resolver,
-          evidence,
-          'product-semantics',
-          `${input.mode}/${input.role}.pairEvidenceIds`
+        // The role's own reference answers to the role's jobs; every other member
+        // of the pair is a surface or underlay and answers to the structural jobs.
+        const pairRefs: [string, ColorSystemApplicationColorRefV2][] = [
+          ['foreground', evidence.context.foreground],
+          ['background', evidence.context.background],
+          ...(evidence.context.underlay !== null
+            ? ([['underlay', evidence.context.underlay]] as [
+                string,
+                ColorSystemApplicationColorRefV2,
+              ][])
+            : []),
+        ];
+        pairRefs.forEach(([position, pairRef]) =>
+          assertRefEligibleForAnyJob(
+            resolver,
+            pairRef,
+            sameRef(pairRef, ref) ? roleJobs : STRUCTURAL_ROLE_JOBS,
+            `${input.mode}/${input.role}.pairEvidenceIds.${position}`
+          )
         );
         return evidence;
       });
@@ -1099,6 +1609,29 @@ function normalizeProductSemantics(
       }
       if (input.role === 'link' && !input.nonColorCue?.toLowerCase().includes('underline')) {
         fail('MISSING_NON_COLOR_CUE', `${input.mode}/link requires a persistent underline cue.`);
+      }
+      if (isColorSystemProductSemanticOnRoleV2(input.role)) {
+        const parentRole = COLOR_SYSTEM_PRODUCT_SEMANTIC_ON_ROLE_PARENTS_V2[input.role];
+        const parent = inputs.find(item => item.mode === input.mode && item.role === parentRole);
+        if (!parent) {
+          fail(
+            'MISSING_PRODUCT_SEMANTIC_ROLE',
+            `${input.mode}/${input.role} requires its parent role ${parentRole} in the same mode.`
+          );
+        }
+        const parentRef = normalizeRef(parent.ref, `${input.mode}/${parentRole}.ref`);
+        pairEvidence.forEach(evidence => {
+          if (
+            evidence.context.category !== 'normal-text' ||
+            !sameRef(evidence.context.foreground, ref) ||
+            !sameRef(evidence.context.background, parentRef)
+          ) {
+            fail(
+              'INVALID_APPLICATION_INPUT',
+              `${input.mode}/${input.role} must be assessed as normal text on the ${parentRole} fill.`
+            );
+          }
+        });
       }
       const accessibilityStatus =
         input.role === 'disabled'
@@ -1126,7 +1659,7 @@ function normalizeProductSemantics(
   if (normalized.length !== expectedCount) {
     fail(
       'MISSING_PRODUCT_SEMANTIC_ROLE',
-      `Product semantics require exactly 13 roles per mode; expected ${expectedCount}.`
+      `Product semantics require exactly ${COLOR_SYSTEM_PRODUCT_SEMANTIC_ROLES_V2.length} roles per mode; expected ${expectedCount}.`
     );
   }
   for (const mode of modes) {
@@ -1144,13 +1677,30 @@ function normalizeProductSemantics(
 interface VisualizationSelectionInput {
   id: string;
   kind: 'categorical' | 'sequential' | 'diverging';
-  marks: readonly ColorSystemDataVisualizationMarkV2[];
+  marks: readonly ColorSystemVisualizationMarkInputV2[];
 }
 
-function deltaEOK(first: RGB, second: RGB): number {
-  const left = rgbToOklab(first.r, first.g, first.b);
-  const right = rgbToOklab(second.r, second.g, second.b);
-  return Math.hypot(left.L - right.L, left.a - right.a, left.b - right.b);
+/**
+ * Population coefficient of variation of a set of step sizes: standard deviation
+ * over mean. Zero when every step is identical or when there is nothing to vary.
+ */
+export function colorSystemCoefficientOfVariationV2(values: readonly number[]): number {
+  if (values.length === 0) return 0;
+  const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
+  if (mean <= 0) return 0;
+  const variance =
+    values.reduce((sum, value) => sum + (value - mean) * (value - mean), 0) / values.length;
+  return Math.sqrt(variance) / mean;
+}
+
+function adjacentDeltas(
+  marks: readonly ColorSystemVisualizationMarkEvidenceV2[]
+): { fromOrder: number; toOrder: number; deltaEOK: number }[] {
+  return marks.slice(0, -1).map((mark, index) => ({
+    fromOrder: mark.order,
+    toOrder: marks[index + 1].order,
+    deltaEOK: deltaEOK(mark.renderedRgb, marks[index + 1].renderedRgb),
+  }));
 }
 
 function simulated(rgb: RGB, type: CVDType): RGB {
@@ -1204,33 +1754,115 @@ function cvdAdvisory(
   };
 }
 
+/** p4-B: a mark's reference as submitted — a bare approved ref or a kinded application ref. */
+function normalizeMarkRef(ref: unknown, label: string): ColorSystemApplicationColorRefV2 {
+  if (!isObject(ref)) {
+    fail('ORPHAN_APPLICATION_REFERENCE', `${label} must be an approved reference.`);
+  }
+  if (typeof ref.kind === 'string') {
+    return normalizeRef(ref as ColorSystemApplicationColorRefV2, label);
+  }
+  assertExactKeys(ref, ['familyId', 'memberId', 'mode'], label);
+  const field = (key: 'familyId' | 'memberId' | 'mode'): string => {
+    const value = ref[key];
+    return requireNonEmpty(typeof value === 'string' ? value : '', `${label}.${key}`);
+  };
+  return {
+    kind: 'approved-family-member',
+    ref: { familyId: field('familyId'), memberId: field('memberId'), mode: field('mode') },
+  };
+}
+
+/**
+ * p4-B: every hex the brief records for its data-visualization section in
+ * `mode`, upper-cased; a color without a value in that mode contributes the
+ * value of its first mode, as the composer reads it.
+ */
+function recordedChartHexesForMode(brief: ColorSystemBuilderBriefV2, mode: string): Set<string> {
+  const entries = [
+    ...brief.preservedColors
+      .filter(color => color.section === 'data-visualization')
+      .map(color => color.valuesByMode),
+    ...brief.sourceReferenceColors
+      .filter(color => color.sourceSection === 'data-visualization')
+      .map(color => color.valuesByMode),
+  ];
+  return new Set(
+    entries.flatMap(values => {
+      const modes = Object.keys(values).sort(compareText);
+      const value = values[mode] ?? (modes.length > 0 ? values[modes[0]] : undefined);
+      return value ? [value.hex.toUpperCase()] : [];
+    })
+  );
+}
+
+/**
+ * Resolves and measures a selection's marks. p4-B: a mark may reference a
+ * preserved color only when it is a recorded chart color (`origin: 'recorded'`,
+ * section `data-visualization`); any recorded mark must reproduce a recorded
+ * hex in its mode and may appear only on a recorded order.
+ */
 function visualizationMarks(
   resolver: Resolver,
   selection: VisualizationSelectionInput,
   surface: ColorSystemResolvedApplicationColorV2,
-  job: ColorSystemJobV2
+  job: ColorSystemJobV2,
+  orderSource: ColorSystemChartOrderSourceV2
 ): ColorSystemVisualizationMarkEvidenceV2[] {
   const identities = new Set<string>();
   const hexes = new Set<string>();
+  const recordedByMode = new Map<string, Set<string>>();
   return selection.marks.map((mark, index) => {
+    const label = `${selection.id}.marks[${index}]`;
+    assertKeys(mark, ['order', 'label', 'ref'], ['origin'], label);
     if (mark.order !== index + 1 || !mark.label.trim()) {
       fail(
         'INVALID_DATA_VISUALIZATION_POLICY',
         `${selection.id} marks require contiguous order and direct labels.`
       );
     }
-    const ref: ColorSystemApplicationColorRefV2 = {
-      kind: 'approved-family-member',
-      ref: mark.ref,
-    };
-    assertRefEligibleForJob(resolver, ref, job, `${selection.id}.marks[${index}]`);
-    const resolved = resolveRef(resolver, ref, `${selection.id}.marks[${index}]`);
-    const identity = `${mark.ref.familyId}\u0000${mark.ref.memberId}\u0000${mark.ref.mode}`;
+    const origin = mark.origin;
+    if (origin !== undefined && !COLOR_SYSTEM_VISUALIZATION_MARK_ORIGINS_V2.includes(origin)) {
+      fail('INVALID_DATA_VISUALIZATION_POLICY', `${label} has an unsupported mark origin.`);
+    }
+    const ref = normalizeMarkRef(mark.ref, label);
+    if (ref.kind === 'preserved-source-color') {
+      const preserved = resolver.brief.preservedColors.find(
+        color => color.stableColorId === ref.stableColorId
+      );
+      if (origin !== 'recorded' || preserved?.section !== 'data-visualization') {
+        fail(
+          'INVALID_DATA_VISUALIZATION_POLICY',
+          `${label} may reference a preserved color only as a recorded chart color (a data-visualization color with origin recorded).`
+        );
+      }
+    }
+    if (origin === 'recorded' && orderSource !== 'recorded') {
+      fail(
+        'INVALID_DATA_VISUALIZATION_POLICY',
+        `${label} carries a recorded mark on a generated order.`
+      );
+    }
+    assertRefEligibleForJob(resolver, ref, job, label);
+    const resolved = resolveRef(resolver, ref, label);
+    if (origin === 'recorded') {
+      const mode = refMode(ref);
+      const recorded =
+        recordedByMode.get(mode) ??
+        recordedByMode.set(mode, recordedChartHexesForMode(resolver.brief, mode)).get(mode)!;
+      if (!recorded.has(resolved.value.hex.toUpperCase())) {
+        fail(
+          'INVALID_DATA_VISUALIZATION_POLICY',
+          `${label} claims a recorded origin but ${resolved.value.hex} is not a recorded chart color in ${mode}.`
+        );
+      }
+    }
+    const identity = canonicalJson(ref);
     if (identities.has(identity)) {
       fail('INVALID_DATA_VISUALIZATION_POLICY', `${selection.id} mark identities must be unique.`);
     }
     identities.add(identity);
-    const renderedRgb = renderedOnSurface(resolved, surface, `${selection.id}.marks[${index}]`);
+    const renderedRgb = renderedOnSurface(resolved, surface, label);
     const renderedHex = canonicalHex(renderedRgb);
     if (hexes.has(renderedHex)) {
       fail(
@@ -1243,6 +1875,7 @@ function visualizationMarks(
       order: mark.order,
       label: mark.label.trim(),
       ref,
+      ...(origin === undefined ? {} : { origin }),
       resolved,
       renderedRgb,
       renderedHex,
@@ -1266,7 +1899,7 @@ function normalizeCategorical(
   input: ColorSystemCategoricalContextV2,
   evidenceById: ReadonlyMap<string, ColorSystemRenderedPairEvidenceV2>
 ): ColorSystemCategoricalSelectionV2 {
-  assertExactKeys(
+  assertKeys(
     input,
     [
       'selectionId',
@@ -1278,7 +1911,11 @@ function normalizeCategorical(
       'markPairEvidenceIds',
       'directLabels',
       'nonColorCue',
+      'requestedMarkCount',
+      'achievedMarkCount',
+      'limitation',
     ],
+    ['orderSource', 'orderWarnings'], // p3-I
     'visualization.categorical'
   );
   const selection: VisualizationSelectionInput = {
@@ -1286,10 +1923,39 @@ function normalizeCategorical(
     kind: 'categorical',
     marks: input.marks,
   };
+  const orderSource = orderSourceOf(input.orderSource, selection.id);
+  const orderWarnings = uniqueStringsInDeclaredOrder(
+    input.orderWarnings ?? [],
+    `${selection.id}.orderWarnings`
+  );
+  if (orderSource === 'generated' && orderWarnings.length > 0) {
+    fail(
+      'INVALID_DATA_VISUALIZATION_POLICY',
+      `${selection.id} may carry order warnings only on a recorded order.`
+    );
+  }
   if (selection.marks.length < 2 || selection.marks.length > 8) {
     fail(
       'INVALID_DATA_VISUALIZATION_POLICY',
       'Categorical selections support exactly the requested 2 through 8 marks; nine is not truncated.'
+    );
+  }
+  if (
+    !Number.isInteger(input.requestedMarkCount) ||
+    input.requestedMarkCount < 2 ||
+    input.requestedMarkCount > 8 ||
+    input.achievedMarkCount !== selection.marks.length ||
+    input.achievedMarkCount > input.requestedMarkCount
+  ) {
+    fail(
+      'INVALID_DATA_VISUALIZATION_POLICY',
+      `${selection.id} must record the requested mark count (2 through 8) and an achieved count equal to its marks and never above the request.`
+    );
+  }
+  if ((input.limitation === null) !== (input.achievedMarkCount === input.requestedMarkCount)) {
+    fail(
+      'INVALID_DATA_VISUALIZATION_POLICY',
+      `${selection.id} must carry a limitation exactly when it achieves fewer marks than requested.`
     );
   }
   if (input.directLabels !== true || !['shape', 'pattern'].includes(input.nonColorCue)) {
@@ -1300,7 +1966,15 @@ function normalizeCategorical(
   }
   assertRefEligibleForJob(resolver, input.surface, 'categorical-data', `${selection.id}.surface`);
   const surface = resolveRef(resolver, input.surface, `${selection.id}.surface`);
-  const marks = visualizationMarks(resolver, selection, surface, 'categorical-data');
+  const marks = visualizationMarks(resolver, selection, surface, 'categorical-data', orderSource);
+  // p4-B: a recorded order reproduces at least one recorded chart color, and recorded
+  // marks correspond one for one with the selection's recorded-advisory pairs (below).
+  if (orderSource === 'recorded' && !marks.some(mark => mark.origin === 'recorded')) {
+    fail(
+      'INVALID_DATA_VISUALIZATION_POLICY',
+      `${selection.id} claims a recorded order but reproduces no recorded chart color.`
+    );
+  }
   const pairEvidenceIds = uniqueStringsInDeclaredOrder(
     input.markPairEvidenceIds,
     `${selection.id}.markPairEvidenceIds`
@@ -1311,6 +1985,7 @@ function normalizeCategorical(
       `${selection.id} requires one exact non-text pair for each categorical mark.`
     );
   }
+  let failingRecordedPairs = 0;
   marks.forEach((mark, index) => {
     const evidence = requireEvidence(
       evidenceById,
@@ -1323,18 +1998,36 @@ function normalizeCategorical(
       'categorical-data',
       `${selection.id}.markPairEvidenceIds[${index}]`
     );
+    // p3-I: a recorded mark is judged by the same 3:1 rule but kept in its
+    // recorded place; its pair is `recorded-advisory` and may record a failure.
+    const recordedPair = evidence.context.assessment === 'recorded-advisory';
+    if (recordedPair !== (mark.origin === 'recorded')) {
+      fail(
+        'INVALID_DATA_VISUALIZATION_POLICY',
+        `${selection.id} mark ${mark.order} must carry a recorded-advisory pair exactly when it reproduces a recorded chart color.`
+      );
+    }
     if (
       evidence.context.category !== 'non-text' ||
-      evidence.status !== 'pass' ||
       !pairContainsRef(evidence, mark.ref) ||
-      !pairContainsRef(evidence, surface.ref)
+      !pairContainsRef(evidence, surface.ref) ||
+      (recordedPair
+        ? orderSource !== 'recorded' || (evidence.status !== 'pass' && evidence.status !== 'fail')
+        : evidence.status !== 'pass')
     ) {
       fail(
         'INVALID_DATA_VISUALIZATION_POLICY',
         `${selection.id} categorical marks must pass 3:1 against the declared surface.`
       );
     }
+    if (recordedPair && evidence.status === 'fail') failingRecordedPairs += 1;
   });
+  if (failingRecordedPairs > 0 && orderWarnings.length === 0) {
+    fail(
+      'INVALID_DATA_VISUALIZATION_POLICY',
+      `${selection.id} keeps ${failingRecordedPairs} recorded marks below 3:1 and must say so in its order warnings.`
+    );
+  }
   let boundaryResolved: ColorSystemResolvedApplicationColorV2 | null = null;
   if (input.adjacency === 'separated') {
     if (input.boundary !== null) {
@@ -1374,6 +2067,12 @@ function normalizeCategorical(
       input.boundary === null ? null : normalizeRef(input.boundary, `${selection.id}.boundary`),
     markPairEvidenceIds: pairEvidenceIds,
     evidenceIds: sortedUniqueStrings(input.evidenceIds, `${selection.id}.evidenceIds`),
+    requestedMarkCount: input.requestedMarkCount,
+    achievedMarkCount: input.achievedMarkCount,
+    limitation:
+      input.limitation === null
+        ? null
+        : requireNonEmpty(input.limitation, `${selection.id}.limitation`),
     kind: 'categorical',
     marks,
     surfaceResolved: surface,
@@ -1382,14 +2081,38 @@ function normalizeCategorical(
       marks.map(mark => mark.renderedRgb),
       'all-pairs'
     ),
+    orderSource,
+    orderWarnings,
   };
+}
+
+/** p3-I: an omitted order source is Teul's own generated selection. */
+function orderSourceOf(
+  value: ColorSystemChartOrderSourceV2 | undefined,
+  label: string
+): ColorSystemChartOrderSourceV2 {
+  if (value === undefined) return 'generated';
+  if (!COLOR_SYSTEM_CHART_ORDER_SOURCES_V2.includes(value)) {
+    fail('INVALID_DATA_VISUALIZATION_POLICY', `${label} has an unsupported order source.`);
+  }
+  return value;
+}
+
+/** p3-I: every hex the brief records for its data-visualization section, in any mode, upper-cased. */
+function recordedChartHexes(brief: ColorSystemBuilderBriefV2): Set<string> {
+  return new Set(
+    [
+      ...brief.preservedColors.filter(color => color.section === 'data-visualization'),
+      ...brief.sourceReferenceColors.filter(color => color.sourceSection === 'data-visualization'),
+    ].flatMap(color => Object.values(color.valuesByMode).map(value => value.hex.toUpperCase()))
+  );
 }
 
 function normalizeSequential(
   resolver: Resolver,
   input: ColorSystemSequentialContextV2
 ): ColorSystemSequentialSelectionV2 {
-  assertExactKeys(
+  assertKeys(
     input,
     [
       'selectionId',
@@ -1401,6 +2124,7 @@ function normalizeSequential(
       'endpointLabels',
       'nonColorCue',
     ],
+    ['orderSource'], // p3-I
     'visualization.sequential'
   );
   const selection: VisualizationSelectionInput = {
@@ -1427,7 +2151,8 @@ function normalizeSequential(
   }
   assertRefEligibleForJob(resolver, input.surface, 'sequential-data', `${selection.id}.surface`);
   const surface = resolveRef(resolver, input.surface, `${selection.id}.surface`);
-  const marks = visualizationMarks(resolver, selection, surface, 'sequential-data');
+  const orderSource = orderSourceOf(input.orderSource, selection.id);
+  const marks = visualizationMarks(resolver, selection, surface, 'sequential-data', orderSource);
   const direction =
     input.direction === 'light-to-dark' ? -1 : input.direction === 'dark-to-light' ? 1 : 0;
   if (
@@ -1446,11 +2171,7 @@ function normalizeSequential(
       `${selection.id} must be strictly monotonic in OKLab lightness and final sRGB luminance.`
     );
   }
-  const adjacent = marks.slice(0, -1).map((mark, index) => ({
-    fromOrder: mark.order,
-    toOrder: marks[index + 1].order,
-    deltaEOK: deltaEOK(mark.renderedRgb, marks[index + 1].renderedRgb),
-  }));
+  const adjacent = adjacentDeltas(marks);
   const surfaceRgb = colorRgb(surface.value);
   const surfaceVisibility = marks.map(mark => ({
     order: mark.order,
@@ -1476,6 +2197,9 @@ function normalizeSequential(
     surface: surfaceVisibility,
     observedMinimumAdjacentDeltaEOK,
     observedMinimumSurfaceDeltaEOK,
+    adjacentDeltaEOKCoefficientOfVariation: colorSystemCoefficientOfVariationV2(
+      adjacent.map(item => item.deltaEOK)
+    ),
     status: 'pass',
     limitation:
       'Delta E OK evidence describes this exact rendered sRGB ramp on its declared surface. It is a Teul chart-legibility policy, not WCAG contrast conformance or a guarantee across displays and viewers.',
@@ -1491,6 +2215,7 @@ function normalizeSequential(
     marks,
     surfaceResolved: surface,
     perceptualEvidence,
+    orderSource,
   };
 }
 
@@ -1510,7 +2235,7 @@ function normalizeDiverging(
   resolver: Resolver,
   input: ColorSystemDivergingContextV2
 ): ColorSystemDivergingSelectionV2 {
-  assertExactKeys(
+  assertKeys(
     input,
     [
       'selectionId',
@@ -1526,6 +2251,7 @@ function normalizeDiverging(
       'positiveLabel',
       'nonColorCue',
     ],
+    ['orderSource'], // p3-I
     'visualization.diverging'
   );
   const selection: VisualizationSelectionInput = {
@@ -1533,35 +2259,32 @@ function normalizeDiverging(
     kind: 'diverging',
     marks: input.marks,
   };
-  const usesGeneratedContributions = input.polarity.authority === 'owner-confirmed';
-  assertExactKeys(
+  const polarityAuthority = input.polarity.authority;
+  const polarityKeysByAuthority = {
+    'owner-confirmed': ['negativeContributionId', 'positiveContributionId'],
+    'governed-source': ['negativeSourceColorId', 'positiveSourceColorId'],
+    // p3-I
+    'recorded-order': ['negativeFamilyId', 'positiveFamilyId'],
+  } as const;
+  const polarityVersionByAuthority = {
+    'owner-confirmed': COLOR_SYSTEM_APPLICATION_GENERATED_DIVERGING_SEMANTICS_POLICY_VERSION,
+    'governed-source': COLOR_SYSTEM_APPLICATION_DIVERGING_SEMANTICS_POLICY_VERSION,
+    'recorded-order': COLOR_SYSTEM_APPLICATION_RECORDED_DIVERGING_SEMANTICS_POLICY_VERSION,
+  } as const;
+  if (!(polarityAuthority in polarityKeysByAuthority)) {
+    fail(
+      'INVALID_DATA_VISUALIZATION_POLICY',
+      `${selection.id} requires a supported hash-bound diverging-semantics policy.`
+    );
+  }
+  assertKeys(
     input.polarity,
-    usesGeneratedContributions
-      ? [
-          'policyVersion',
-          'negativeContributionId',
-          'positiveContributionId',
-          'authority',
-          'evidenceIds',
-        ]
-      : [
-          'policyVersion',
-          'negativeSourceColorId',
-          'positiveSourceColorId',
-          'authority',
-          'evidenceIds',
-        ],
+    ['policyVersion', ...polarityKeysByAuthority[polarityAuthority], 'authority', 'evidenceIds'],
+    // p4-B: a recorded arm whose color has no family names the preserved color as its endpoint.
+    polarityAuthority === 'recorded-order' ? ['negativeColorId', 'positiveColorId'] : [],
     `${selection.id}.polarity`
   );
-  if (
-    usesGeneratedContributions
-      ? input.polarity.policyVersion !==
-          COLOR_SYSTEM_APPLICATION_GENERATED_DIVERGING_SEMANTICS_POLICY_VERSION ||
-        input.polarity.authority !== 'owner-confirmed'
-      : input.polarity.policyVersion !==
-          COLOR_SYSTEM_APPLICATION_DIVERGING_SEMANTICS_POLICY_VERSION ||
-        input.polarity.authority !== 'governed-source'
-  ) {
+  if (input.polarity.policyVersion !== polarityVersionByAuthority[polarityAuthority]) {
     fail(
       'INVALID_DATA_VISUALIZATION_POLICY',
       `${selection.id} requires a supported hash-bound diverging-semantics policy.`
@@ -1574,6 +2297,9 @@ function normalizeDiverging(
   let negativeIdentity: string;
   let positiveIdentity: string;
   let normalizedPolarity: ColorSystemDivergingPolarityV2;
+  // p4-B: set only by a recorded-order polarity whose side ends on the preserved color.
+  let negativeColorId: string | undefined = undefined;
+  let positiveColorId: string | undefined = undefined;
   if (input.polarity.authority === 'owner-confirmed') {
     const generatedPolarity = input.polarity;
     const negativeContributionId = requireNonEmpty(
@@ -1609,6 +2335,77 @@ function normalizeDiverging(
       negativeContributionId,
       positiveContributionId,
       authority: 'owner-confirmed',
+      evidenceIds: polarityEvidenceIds,
+    };
+  } else if (input.polarity.authority === 'recorded-order') {
+    // p3-I: each arm is a family that reproduces one of the brief's recorded
+    // chart colors exactly; the composer chose them by polarity claim or hue.
+    const recordedPolarity = input.polarity;
+    const negativeFamilyId = requireNonEmpty(
+      recordedPolarity.negativeFamilyId,
+      `${selection.id}.polarity.negativeFamilyId`
+    );
+    const positiveFamilyId = requireNonEmpty(
+      recordedPolarity.positiveFamilyId,
+      `${selection.id}.polarity.positiveFamilyId`
+    );
+    const recordedHexes = recordedChartHexes(resolver.brief);
+    const reproducesRecorded = (familyId: string): boolean =>
+      resolver.candidate.families.some(
+        family =>
+          family.stableFamilyId === familyId &&
+          family.members.some(member =>
+            Object.values(member.valuesByMode).some(value =>
+              recordedHexes.has(value.hex.toUpperCase())
+            )
+          )
+      );
+    // p4-B: a side may instead name the recorded color itself as its endpoint when no
+    // family reproduces it; the family named for that side is then the nearest one and
+    // need not reproduce a recorded value. The endpoint mark is checked with the arms.
+    const endpointColorId = (value: unknown, label: string): string | undefined => {
+      if (value === undefined) return undefined;
+      const colorId = requireNonEmpty(typeof value === 'string' ? value : '', label);
+      const preserved = resolver.brief.preservedColors.find(
+        color => color.stableColorId === colorId
+      );
+      if (preserved?.section !== 'data-visualization') {
+        fail(
+          'INVALID_DATA_VISUALIZATION_POLICY',
+          `${label} must name a preserved data-visualization color.`
+        );
+      }
+      return colorId;
+    };
+    negativeColorId = endpointColorId(
+      recordedPolarity.negativeColorId,
+      `${selection.id}.polarity.negativeColorId`
+    );
+    positiveColorId = endpointColorId(
+      recordedPolarity.positiveColorId,
+      `${selection.id}.polarity.positiveColorId`
+    );
+    if (
+      negativeFamilyId === positiveFamilyId ||
+      polarityEvidenceIds.length === 0 ||
+      (negativeColorId === undefined && !reproducesRecorded(negativeFamilyId)) ||
+      (positiveColorId === undefined && !reproducesRecorded(positiveFamilyId)) ||
+      (negativeColorId !== undefined && negativeColorId === positiveColorId)
+    ) {
+      fail(
+        'INVALID_DATA_VISUALIZATION_POLICY',
+        `${selection.id} recorded polarity must name two distinct families that reproduce recorded chart colors, or the recorded colors themselves as endpoints.`
+      );
+    }
+    negativeIdentity = negativeFamilyId;
+    positiveIdentity = positiveFamilyId;
+    normalizedPolarity = {
+      policyVersion: COLOR_SYSTEM_APPLICATION_RECORDED_DIVERGING_SEMANTICS_POLICY_VERSION,
+      negativeFamilyId,
+      positiveFamilyId,
+      ...(negativeColorId === undefined ? {} : { negativeColorId }),
+      ...(positiveColorId === undefined ? {} : { positiveColorId }),
+      authority: 'recorded-order',
       evidenceIds: polarityEvidenceIds,
     };
   } else {
@@ -1684,7 +2481,8 @@ function normalizeDiverging(
   }
   assertRefEligibleForJob(resolver, input.surface, 'diverging-data', `${selection.id}.surface`);
   const surface = resolveRef(resolver, input.surface, `${selection.id}.surface`);
-  const marks = visualizationMarks(resolver, selection, surface, 'diverging-data');
+  const orderSource = orderSourceOf(input.orderSource, selection.id);
+  const marks = visualizationMarks(resolver, selection, surface, 'diverging-data', orderSource);
   const midpointIndex = input.midpointOrder - 1;
   const markPolarityIdentities = marks.map(mark => {
     if (mark.ref.kind !== 'approved-family-member') return [];
@@ -1693,18 +2491,44 @@ function normalizeDiverging(
       candidate => candidate.stableFamilyId === approvedRef.familyId
     );
     if (!family) return [];
-    return usesGeneratedContributions
-      ? [family.contributionId]
-      : (family.members.find(member => member.stableMemberId === approvedRef.memberId)?.provenance
-          .sourceColorIds ?? []);
+    if (polarityAuthority === 'owner-confirmed') return [family.contributionId];
+    if (polarityAuthority === 'recorded-order') return [family.stableFamilyId]; // p3-I
+    return (
+      family.members.find(member => member.stableMemberId === approvedRef.memberId)?.provenance
+        .sourceColorIds ?? []
+    );
   });
+  // p4-B: a recorded endpoint is the preserved color itself, carried as a recorded mark
+  // at the outermost position of its arm; the rest of the arm belongs to the named family.
+  const isRecordedEndpoint = (index: number, colorId: string | undefined): boolean => {
+    const mark = marks[index];
+    return (
+      colorId !== undefined &&
+      mark.ref.kind === 'preserved-source-color' &&
+      mark.ref.stableColorId === colorId &&
+      mark.origin === 'recorded'
+    );
+  };
+  const lastIndex = marks.length - 1;
+  const negativeArmOk = markPolarityIdentities
+    .slice(0, midpointIndex)
+    .every(
+      (identities, index) =>
+        identities.includes(negativeIdentity) ||
+        (index === 0 && isRecordedEndpoint(0, negativeColorId))
+    );
+  const positiveArmOk = markPolarityIdentities
+    .slice(midpointIndex + 1)
+    .every(
+      (identities, offset) =>
+        identities.includes(positiveIdentity) ||
+        (midpointIndex + 1 + offset === lastIndex && isRecordedEndpoint(lastIndex, positiveColorId))
+    );
   if (
-    markPolarityIdentities
-      .slice(0, midpointIndex)
-      .some(identities => !identities.includes(negativeIdentity)) ||
-    markPolarityIdentities
-      .slice(midpointIndex + 1)
-      .some(identities => !identities.includes(positiveIdentity)) ||
+    !negativeArmOk ||
+    !positiveArmOk ||
+    (negativeColorId !== undefined && !isRecordedEndpoint(0, negativeColorId)) ||
+    (positiveColorId !== undefined && !isRecordedEndpoint(lastIndex, positiveColorId)) ||
     markPolarityIdentities[midpointIndex].includes(negativeIdentity) ||
     markPolarityIdentities[midpointIndex].includes(positiveIdentity)
   ) {
@@ -1730,6 +2554,46 @@ function normalizeDiverging(
       `${selection.id} must contain two monotonic arms around the declared midpoint.`
     );
   }
+  const observedMidpointSurfaceDeltaEOK = deltaEOK(
+    marks[midpointIndex].renderedRgb,
+    colorRgb(surface.value)
+  );
+  if (
+    observedMidpointSurfaceDeltaEOK <
+    COLOR_SYSTEM_APPLICATION_DIVERGING_MINIMUM_MIDPOINT_SURFACE_DELTA_E_OK
+  ) {
+    fail(
+      'INVALID_DATA_VISUALIZATION_POLICY',
+      `${selection.id} midpoint falls below the ${COLOR_SYSTEM_APPLICATION_DIVERGING_MINIMUM_MIDPOINT_SURFACE_DELTA_E_OK} Delta E OK midpoint-visibility threshold against its declared surface.`
+    );
+  }
+  const armEvidence = (
+    armMarks: readonly ColorSystemVisualizationMarkEvidenceV2[]
+  ): ColorSystemDivergingArmEvidenceV2 => {
+    const adjacent = adjacentDeltas(armMarks);
+    return {
+      adjacent,
+      observedMinimumAdjacentDeltaEOK: Math.min(...adjacent.map(item => item.deltaEOK)),
+      adjacentDeltaEOKCoefficientOfVariation: colorSystemCoefficientOfVariationV2(
+        adjacent.map(item => item.deltaEOK)
+      ),
+    };
+  };
+  // Each arm includes its step into the midpoint so the zero mark is measured as
+  // part of the ramp rather than as a free-floating swatch.
+  const negativeArm = armEvidence(marks.slice(0, midpointIndex + 1));
+  const positiveArm = armEvidence(marks.slice(midpointIndex));
+  if (
+    negativeArm.observedMinimumAdjacentDeltaEOK <
+      COLOR_SYSTEM_APPLICATION_SEQUENTIAL_MINIMUM_ADJACENT_DELTA_E_OK ||
+    positiveArm.observedMinimumAdjacentDeltaEOK <
+      COLOR_SYSTEM_APPLICATION_SEQUENTIAL_MINIMUM_ADJACENT_DELTA_E_OK
+  ) {
+    fail(
+      'INVALID_DATA_VISUALIZATION_POLICY',
+      `${selection.id} arms fall below the ${COLOR_SYSTEM_APPLICATION_SEQUENTIAL_MINIMUM_ADJACENT_DELTA_E_OK} adjacent-step Delta E OK threshold.`
+    );
+  }
   return {
     ...input,
     selectionId: requireNonEmpty(input.selectionId, 'diverging selectionId'),
@@ -1742,11 +2606,277 @@ function normalizeDiverging(
     kind: 'diverging',
     marks,
     surfaceResolved: surface,
+    orderSource,
     cvdAdvisory: cvdAdvisory(
       marks.map(mark => mark.renderedRgb),
       'opposing-arms'
     ),
+    midpointVisibility: {
+      policyVersion: COLOR_SYSTEM_APPLICATION_DIVERGING_MIDPOINT_POLICY_VERSION,
+      minimumSurfaceDeltaEOK:
+        COLOR_SYSTEM_APPLICATION_DIVERGING_MINIMUM_MIDPOINT_SURFACE_DELTA_E_OK,
+      observedSurfaceDeltaEOK: observedMidpointSurfaceDeltaEOK,
+      status: 'pass',
+      limitation:
+        'Midpoint visibility is measured as Delta E OK against the exact declared surface; it is a Teul chart-legibility policy, not WCAG conformance.',
+    },
+    armUniformity: {
+      minimumAdjacentDeltaEOK: COLOR_SYSTEM_APPLICATION_SEQUENTIAL_MINIMUM_ADJACENT_DELTA_E_OK,
+      negative: negativeArm,
+      positive: positiveArm,
+      status: 'pass',
+    },
   };
+}
+
+function normalizeAdditionalCategorical(
+  resolver: Resolver,
+  inputs: readonly ColorSystemCategoricalContextV2[],
+  primary: ColorSystemCategoricalSelectionV2,
+  evidenceById: ReadonlyMap<string, ColorSystemRenderedPairEvidenceV2>
+): ColorSystemCategoricalSelectionV2[] {
+  if (!Array.isArray(inputs)) {
+    fail('INVALID_APPLICATION_INPUT', 'additionalCategorical must be an array.');
+  }
+  const normalized = inputs
+    .map(input => normalizeCategorical(resolver, input, evidenceById))
+    .sort((left, right) => compareText(refMode(left.surface), refMode(right.surface)));
+  const primaryMode = refMode(primary.surface);
+  const modes = normalized.map(selection => refMode(selection.surface));
+  if (
+    modes.includes(primaryMode) ||
+    new Set(modes).size !== modes.length ||
+    normalized.some(selection => selection.selectionId === primary.selectionId)
+  ) {
+    fail(
+      'INVALID_DATA_VISUALIZATION_POLICY',
+      'Additional categorical systems must cover distinct modes other than the primary visualization mode.'
+    );
+  }
+  return normalized;
+}
+
+function semanticMeaningRoleRank(role: ColorSystemSemanticMeaningRoleV2): number {
+  return COLOR_SYSTEM_SEMANTIC_MEANING_ROLES_V2.indexOf(role);
+}
+
+function normalizeSemanticMeaning(
+  inputs: readonly ColorSystemSemanticMeaningInputV2[],
+  productSemantics: readonly ColorSystemProductSemanticRoleV2[],
+  modes: readonly string[]
+): ColorSystemSemanticMeaningEvidenceV2[] {
+  if (!Array.isArray(inputs)) {
+    fail('INVALID_APPLICATION_INPUT', 'semanticMeaning must be an array.');
+  }
+  const normalized = inputs
+    .map((input, index) => {
+      assertExactKeys(
+        input,
+        [
+          'role',
+          'mode',
+          'targetHueRange',
+          'basis',
+          'meaningSource',
+          'familyId',
+          'memberId',
+          'measuredHueDegrees',
+          'measuredChroma',
+          'inRange',
+          'warning',
+          'sharedFill',
+          'collision',
+          'evidenceIds',
+        ],
+        `semanticMeaning[${index}]`
+      );
+      const label = `semanticMeaning[${index}]`;
+      if (
+        input.sharedFill !== null &&
+        (input.role !== 'destructive' || input.sharedFill !== 'error')
+      ) {
+        fail(
+          'INVALID_APPLICATION_INPUT',
+          `${label} may only declare destructive sharing the error fill.`
+        );
+      }
+      if (semanticMeaningRoleRank(input.role) < 0) {
+        fail('INVALID_APPLICATION_INPUT', `${label} names a role without hue meaning.`);
+      }
+      if (
+        ![
+          'hue-range',
+          'nearest-hue',
+          'brand-primary-hue',
+          'information-family',
+          'functional-fit',
+        ].includes(input.basis)
+      ) {
+        fail('INVALID_APPLICATION_INPUT', `${label} has an unsupported meaning basis.`);
+      }
+      if (
+        input.basis === 'functional-fit' &&
+        (!['selected', 'link', 'focus'].includes(input.role) || input.targetHueRange !== null)
+      ) {
+        fail(
+          'INVALID_APPLICATION_INPUT',
+          `${label} functional fit is limited to selected, link, or focus without a hue-range claim.`
+        );
+      }
+      // p3-B: the source is a closed vocabulary; its consistency with the range verdict is checked below.
+      if (
+        !(COLOR_SYSTEM_SEMANTIC_MEANING_SOURCES_V2 as readonly string[]).includes(
+          input.meaningSource
+        )
+      ) {
+        fail('INVALID_APPLICATION_INPUT', `${label} has an unsupported meaning source.`);
+      }
+      if (
+        input.meaningSource === 'reserve' &&
+        !(COLOR_SYSTEM_SEMANTIC_FILL_ROLES_V2 as readonly string[]).includes(input.role)
+      ) {
+        fail(
+          'INVALID_APPLICATION_INPUT',
+          `${label} may not draw ${input.role} from a status reserve; reserves serve status fills only.`
+        );
+      }
+      const mode = requireNonEmpty(input.mode, `${label}.mode`);
+      const role = productSemantics.find(item => item.mode === mode && item.role === input.role);
+      if (!role) {
+        fail('INVALID_APPLICATION_INPUT', `${label} does not match a composed product role.`);
+      }
+      if (
+        role.ref.kind !== 'approved-family-member' ||
+        role.ref.ref.familyId !== input.familyId ||
+        role.ref.ref.memberId !== input.memberId
+      ) {
+        fail(
+          'INVALID_APPLICATION_INPUT',
+          `${label} must cite the approved family member that the ${input.role} role resolves to.`
+        );
+      }
+      const measured =
+        role.resolved.value.representation?.kind === 'native-srgb'
+          ? colorSystemSrgbToOklchV1(role.resolved.value)
+          : hexToOklch(role.resolved.value.hex);
+      const measuredHueDegrees = measured.c < 1e-6 ? 0 : measured.h;
+      if (
+        Math.abs(
+          requireFinite(input.measuredHueDegrees, `${label}.measuredHueDegrees`) -
+            measuredHueDegrees
+        ) > 1e-9 ||
+        Math.abs(requireFinite(input.measuredChroma, `${label}.measuredChroma`) - measured.c) > 1e-9
+      ) {
+        fail(
+          'INVALID_APPLICATION_INPUT',
+          `${label} hue and chroma must match the resolved ${input.role} value in ${mode}.`
+        );
+      }
+      let targetHueRange: ColorSystemHueRangeV2 | null = null;
+      if (input.targetHueRange !== null) {
+        assertExactKeys(input.targetHueRange, ['minimum', 'maximum'], `${label}.targetHueRange`);
+        targetHueRange = {
+          minimum: requireFinite(input.targetHueRange.minimum, `${label}.targetHueRange.minimum`),
+          maximum: requireFinite(input.targetHueRange.maximum, `${label}.targetHueRange.maximum`),
+        };
+      }
+      const inRange =
+        targetHueRange === null
+          ? true
+          : colorSystemHueWithinRangeV2(measuredHueDegrees, targetHueRange);
+      if (input.inRange !== inRange) {
+        fail(
+          'INVALID_APPLICATION_INPUT',
+          `${label} inRange must be recomputed from the resolved hue and its target range.`
+        );
+      }
+      if ((input.warning === null) === !inRange) {
+        fail(
+          'INVALID_APPLICATION_INPUT',
+          `${label} must carry a warning exactly when the role leaves its hue range.`
+        );
+      }
+      if ((input.meaningSource === 'nearest') !== !inRange) {
+        fail(
+          'INVALID_APPLICATION_INPUT',
+          `${label} meaningSource must be nearest exactly when the role leaves its hue range.`
+        );
+      }
+      return {
+        role: input.role,
+        mode,
+        policyVersion: COLOR_SYSTEM_APPLICATION_SEMANTIC_HUE_POLICY_VERSION,
+        targetHueRange,
+        basis: input.basis,
+        meaningSource: input.meaningSource,
+        familyId: requireNonEmpty(input.familyId, `${label}.familyId`),
+        memberId: requireNonEmpty(input.memberId, `${label}.memberId`),
+        measuredHueDegrees,
+        measuredChroma: measured.c,
+        inRange,
+        warning: input.warning === null ? null : requireNonEmpty(input.warning, `${label}.warning`),
+        sharedFill: input.sharedFill,
+        collision:
+          input.collision === null ? null : requireNonEmpty(input.collision, `${label}.collision`),
+        evidenceIds: sortedUniqueStrings(input.evidenceIds, `${label}.evidenceIds`),
+      } satisfies ColorSystemSemanticMeaningEvidenceV2;
+    })
+    .sort(
+      (left, right) =>
+        compareText(left.mode, right.mode) ||
+        semanticMeaningRoleRank(left.role) - semanticMeaningRoleRank(right.role)
+    );
+  for (const mode of modes) {
+    const roles = normalized.filter(item => item.mode === mode).map(item => item.role);
+    if (canonicalJson(roles) !== canonicalJson(COLOR_SYSTEM_SEMANTIC_MEANING_ROLES_V2)) {
+      fail(
+        'INVALID_APPLICATION_INPUT',
+        `${mode} must record hue meaning for every meaning role exactly once.`
+      );
+    }
+    // Recompute fill distinctness from the resolved values: every pair inside the
+    // floor must be either the declared error/destructive share or a collision
+    // declared on both roles, and no role may claim a collision it does not have.
+    const fills = COLOR_SYSTEM_SEMANTIC_FILL_ROLES_V2.map(role => {
+      const entry = normalized.find(item => item.mode === mode && item.role === role)!;
+      const resolved = productSemantics.find(item => item.mode === mode && item.role === role)!;
+      return { role, entry, rgb: colorRgb(resolved.resolved.value) };
+    });
+    const undeclaredPartners = new Map<ColorSystemSemanticMeaningRoleV2, number>(
+      fills.map(fill => [fill.role, 0])
+    );
+    fills.forEach((left, position) => {
+      fills.slice(position + 1).forEach(right => {
+        const distance = deltaEOK(left.rgb, right.rgb);
+        const declaredShare =
+          left.role === 'error' &&
+          right.role === 'destructive' &&
+          right.entry.sharedFill === 'error';
+        if (declaredShare && distance >= COLOR_SYSTEM_APPLICATION_MEANING_FILL_MINIMUM_DELTA_E_OK) {
+          fail(
+            'INVALID_APPLICATION_INPUT',
+            `${mode}/destructive declares a shared error fill but the two fills are distinct.`
+          );
+        }
+        if (distance < COLOR_SYSTEM_APPLICATION_MEANING_FILL_MINIMUM_DELTA_E_OK && !declaredShare) {
+          undeclaredPartners.set(left.role, undeclaredPartners.get(left.role)! + 1);
+          undeclaredPartners.set(right.role, undeclaredPartners.get(right.role)! + 1);
+        }
+      });
+    });
+    fills.forEach(fill => {
+      if ((fill.entry.collision === null) !== (undeclaredPartners.get(fill.role) === 0)) {
+        fail(
+          'INVALID_APPLICATION_INPUT',
+          `${mode}/${fill.role} must declare a fill collision exactly when another meaning fill sits within ${COLOR_SYSTEM_APPLICATION_MEANING_FILL_MINIMUM_DELTA_E_OK} Delta E OK of it.`
+        );
+      }
+    });
+  }
+  if (normalized.length !== modes.length * COLOR_SYSTEM_SEMANTIC_MEANING_ROLES_V2.length) {
+    fail('INVALID_APPLICATION_INPUT', 'semanticMeaning must cover only the declared modes.');
+  }
+  return normalized;
 }
 
 function typographyCategoryRank(category: ColorSystemTypographyUseCategoryV2): number {
@@ -1853,7 +2983,8 @@ function normalizeTypography(
 function blockersFromEvidence(
   evidence: readonly ColorSystemRenderedPairEvidenceV2[],
   categorical: ColorSystemCategoricalSelectionV2,
-  diverging: ColorSystemDivergingSelectionV2
+  diverging: ColorSystemDivergingSelectionV2 | null,
+  additionalCategorical: readonly ColorSystemCategoricalSelectionV2[]
 ): ColorSystemApplicationBlockerV2[] {
   const blockers: ColorSystemApplicationBlockerV2[] = [];
   for (const pair of evidence) {
@@ -1872,7 +3003,14 @@ function blockersFromEvidence(
       });
     }
   }
-  for (const selection of [categorical, diverging]) {
+  for (const selection of [
+    categorical,
+    ...(diverging === null ? [] : [diverging]),
+    ...additionalCategorical,
+  ]) {
+    // p3-I: a recorded order is never re-ordered or replaced; its modeled-CVD
+    // finding is a warning on the selection, not a blocker.
+    if (selection.orderSource === 'recorded') continue;
     if (selection.cvdAdvisory.status === 'fail') {
       blockers.push({
         code: 'CVD_ADVISORY_SEPARATION_FAILED',
@@ -1892,12 +3030,19 @@ function applicationRatings(
   candidate: ColorSystemStrategyCandidateV2,
   productGraphics: readonly ColorSystemProductGraphicsSpecimenV2[],
   categorical: ColorSystemCategoricalSelectionV2,
-  sequential: ColorSystemSequentialSelectionV2,
-  diverging: ColorSystemDivergingSelectionV2,
+  sequential: ColorSystemSequentialSelectionV2 | null,
+  diverging: ColorSystemDivergingSelectionV2 | null,
+  additionalCategorical: readonly ColorSystemCategoricalSelectionV2[],
   typography: readonly ColorSystemTypographySpecimenV2[]
 ): ColorSystemSectionRatingV2[] {
   const fraction = (passing: number, total: number): number => (total === 0 ? 0 : passing / total);
   const eligibleJobs = new Set(candidate.jobEligibility.flatMap(entry => entry.jobs));
+  const cvdSelections = [
+    categorical,
+    ...(diverging === null ? [] : [diverging]),
+    ...additionalCategorical,
+  ];
+  const chartKindCount = 1 + Number(sequential !== null) + Number(diverging !== null);
   return [
     {
       section: 'primary',
@@ -1954,30 +3099,32 @@ function applicationRatings(
         {
           id: 'data-visualization-policy-coverage',
           label: 'Required chart policy coverage',
-          measuredValue: 3,
-          threshold: 3,
+          measuredValue: chartKindCount,
+          threshold: chartKindCount,
           unit: 'chart-kinds',
           evidenceIds: [
             ...categorical.evidenceIds,
-            ...sequential.evidenceIds,
-            ...diverging.evidenceIds,
+            ...(sequential?.evidenceIds ?? []),
+            ...(diverging?.evidenceIds ?? []),
           ],
         },
         {
           id: 'data-visualization-cvd-advisory',
           label: 'Advisory CVD separation checks',
           measuredValue: fraction(
-            [categorical.cvdAdvisory, diverging.cvdAdvisory].filter(
-              evidence => evidence.status === 'pass'
-            ).length,
-            2
+            cvdSelections.filter(selection => selection.cvdAdvisory.status === 'pass').length,
+            cvdSelections.length
           ),
           threshold: 1,
           unit: 'fraction',
-          evidenceIds: [categorical.selectionId, diverging.selectionId],
+          evidenceIds: cvdSelections.map(selection => selection.selectionId),
         },
       ],
-      limitation: 'CVD simulation is advisory evidence and is not a colorblind-safe claim.',
+      limitation: `CVD simulation is advisory evidence and is not a colorblind-safe claim.${
+        chartKindCount === 3
+          ? ''
+          : ' Only present chart kinds are assessed; absent charts are not generated under Keep.'
+      }`,
     },
     {
       section: 'typography',
@@ -1999,17 +3146,329 @@ function applicationRatings(
   ];
 }
 
+const INTERACTION_STATES = ['rest', 'hover', 'pressed'] as const;
+
+function normalizeInteraction(
+  resolver: Resolver,
+  input: ColorSystemInteractionApplicationInputV1,
+  roles: readonly ColorSystemProductSemanticRoleV2[],
+  evidenceById: ReadonlyMap<string, ColorSystemRenderedPairEvidenceV2>
+): ColorSystemInteractionApplicationV1 {
+  assertExactKeys(input, ['requirements', 'statePlans'], 'interaction');
+  let requirements: ColorSystemInteractionApplicationV1['requirements'];
+  try {
+    requirements = normalizeColorSystemInteractionRequirementsV1(input.requirements, [
+      ...resolver.modes,
+    ]);
+  } catch (error) {
+    fail(
+      'INVALID_APPLICATION_INPUT',
+      error instanceof Error ? error.message : 'Invalid interaction requirements.'
+    );
+  }
+  const limits = COLOR_SYSTEM_INTERACTION_PLAN_V1_LIMITS;
+  const boundedArray = (value: unknown, maximum: number, label: string): void => {
+    if (
+      !Array.isArray(value) ||
+      value.length > maximum ||
+      Array.from({ length: value.length }, (_, index) =>
+        Object.prototype.hasOwnProperty.call(value, index)
+      ).includes(false)
+    )
+      fail('INVALID_APPLICATION_INPUT', `${label} must be a bounded dense array.`);
+  };
+  boundedArray(input.statePlans, limits.maximumUses, 'Interaction state plans');
+  const useKey = (mode: string, role: string): string => canonicalJson([mode, role]);
+  const uses = requirements.uses.map(use => ({
+    ...use,
+    resolvedSurfaces: use.surfaces.map(ref => {
+      const resolved = resolveRef(resolver, ref, `${use.mode}/${use.role} required surface`);
+      if (resolved.value.alpha !== 1)
+        fail(
+          'INVALID_APPLICATION_INPUT',
+          'Required interaction surfaces must be opaque preserved colors.'
+        );
+      return resolved;
+    }),
+  }));
+  const usesByKey = new Map(uses.map(use => [useKey(use.mode, use.role), use]));
+  const roleFor = (mode: string, role: string): ColorSystemProductSemanticRoleV2 => {
+    const value = roles.find(entry => entry.mode === mode && entry.role === role);
+    if (!value) fail('INVALID_APPLICATION_INPUT', `${mode}/${role} has no semantic role.`);
+    return value;
+  };
+  const assertNotReserve = (ref: ColorSystemApplicationColorRefV2): void => {
+    if (ref.kind !== 'approved-family-member') return;
+    const family = resolver.candidate.families.find(
+      entry => entry.stableFamilyId === ref.ref.familyId
+    );
+    if (family?.contributionId.startsWith(COLOR_SYSTEM_STATUS_RESERVE_CONTRIBUTION_PREFIX_V2))
+      fail('INVALID_APPLICATION_INPUT', 'Status reserves cannot serve required interaction uses.');
+  };
+  const requirePair = (
+    id: string,
+    foreground: ColorSystemApplicationColorRefV2,
+    background: ColorSystemApplicationColorRefV2,
+    underlay: ColorSystemApplicationColorRefV2 | null,
+    category: ColorSystemRenderedPairCategoryV2
+  ): ColorSystemRenderedPairEvidenceV2 => {
+    if (typeof id !== 'string' || id.length > limits.maximumTextLength)
+      fail('INVALID_APPLICATION_INPUT', 'Interaction pair evidence ID must be bounded text.');
+    const evidence = requireEvidence(evidenceById, id, 'Interaction pair evidence');
+    const context = evidence.context;
+    if (
+      !sameRef(context.foreground, foreground) ||
+      !sameRef(context.background, background) ||
+      (underlay === null
+        ? context.underlay !== null
+        : context.underlay === null || !sameRef(context.underlay, underlay)) ||
+      context.category !== category ||
+      context.assessment !== 'required' ||
+      context.backdropKind !== 'solid' ||
+      evidence.status !== 'pass'
+    )
+      fail(
+        'INVALID_APPLICATION_INPUT',
+        `${id} must prove the exact required interaction pair and pass its unrounded threshold.`
+      );
+    return evidence;
+  };
+  for (const use of uses) {
+    const role = roleFor(use.mode, use.role);
+    assertNotReserve(role.ref);
+    if (use.role === 'selected' || use.role === 'link') continue;
+    for (const surface of use.surfaces) {
+      const id = role.pairEvidenceIds.find(id => {
+        const context = evidenceById.get(id)?.context;
+        return (
+          context && sameRef(context.foreground, role.ref) && sameRef(context.background, surface)
+        );
+      });
+      if (!id)
+        fail(
+          'INVALID_APPLICATION_INPUT',
+          `${use.mode}/${use.role} is missing a required source surface pair.`
+        );
+      requirePair(id, role.ref, surface, null, use.role === 'text' ? 'normal-text' : 'non-text');
+    }
+  }
+  const statePlans: ColorSystemInteractionStatePlanV1[] = input.statePlans
+    .map((plan, index) => {
+      const label = `interaction.statePlans[${index}]`;
+      assertExactKeys(plan, ['role', 'mode', 'states', 'onForeground', 'pairs'], label);
+      if (plan.role !== 'selected' && plan.role !== 'link')
+        fail('INVALID_APPLICATION_INPUT', `${label} has an unsupported state role.`);
+      const use = usesByKey.get(useKey(plan.mode, plan.role));
+      if (!use) fail('INVALID_APPLICATION_INPUT', `${label} has no declared requirement.`);
+      assertExactKeys(plan.states, INTERACTION_STATES, `${label}.states`);
+      const members = INTERACTION_STATES.map(state => {
+        const wrapped = normalizeRef(
+          { kind: 'approved-family-member', ref: plan.states[state] },
+          `${label}.${state}`
+        );
+        if (wrapped.kind !== 'approved-family-member' || wrapped.ref.mode !== plan.mode)
+          fail(
+            'INVALID_APPLICATION_INPUT',
+            `${label} state must use an approved member in the required mode.`
+          );
+        assertRefEligibleForJob(resolver, wrapped, 'product-semantics', `${label}.${state}`);
+        assertNotReserve(wrapped);
+        const family = resolver.candidate.families.find(
+          entry => entry.stableFamilyId === wrapped.ref.familyId
+        )!;
+        const member = family.members.find(entry => entry.stableMemberId === wrapped.ref.memberId)!;
+        if (family.shape.kind !== 'full-light-dark-scale')
+          fail('INVALID_APPLICATION_INPUT', `${label} requires a complete scale family.`);
+        return {
+          ref: wrapped.ref,
+          value: resolveRef(resolver, wrapped, `${label}.${state}`).value,
+          step: member.order,
+          eligibleJob: 'product-semantics' as const,
+        };
+      });
+      const family = resolver.candidate.families.find(
+        entry => entry.stableFamilyId === members[0].ref.familyId
+      )!;
+      const restRole = roleFor(plan.mode, plan.role);
+      if (!sameRef(restRole.ref, { kind: 'approved-family-member', ref: members[0].ref }))
+        fail('INVALID_APPLICATION_INPUT', `${label} rest must equal its semantic role reference.`);
+      const onForeground =
+        plan.onForeground === null
+          ? null
+          : normalizeRef(plan.onForeground, `${label}.onForeground`);
+      if (plan.role === 'selected') {
+        if (!onForeground || !sameRef(onForeground, roleFor(plan.mode, 'on-selected').ref))
+          fail('INVALID_APPLICATION_INPUT', `${label} must use the common on-selected foreground.`);
+        assertRefEligibleForAnyJob(
+          resolver,
+          onForeground,
+          STRUCTURAL_ROLE_JOBS,
+          `${label}.onForeground`
+        );
+        assertNotReserve(onForeground);
+      } else if (onForeground !== null) {
+        fail('INVALID_APPLICATION_INPUT', `${label} link states cannot declare an on-foreground.`);
+      }
+      const foreground =
+        onForeground === null ? null : resolveRef(resolver, onForeground, `${label}.onForeground`);
+      let selection: ReturnType<typeof selectColorSystemInteractionStatesV1>;
+      try {
+        selection = selectColorSystemInteractionStatesV1({
+          role: plan.role,
+          mode: plan.mode,
+          families: [
+            {
+              familyId: family.stableFamilyId,
+              contributionId: family.contributionId,
+              preference: 0,
+              members,
+            },
+          ],
+          surfaces: use.resolvedSurfaces.map((surface, surfaceIndex) => ({
+            ref: use.surfaces[surfaceIndex],
+            value: surface.value,
+          })),
+          onForegrounds:
+            foreground === null ? [] : [{ ref: foreground.ref, value: foreground.value }],
+        });
+      } catch (error) {
+        fail(
+          'INVALID_APPLICATION_INPUT',
+          error instanceof Error ? error.message : `${label} is invalid.`
+        );
+      }
+      if (selection.status !== 'ready')
+        fail(
+          'INVALID_APPLICATION_INPUT',
+          `${label} is infeasible: ${selection.diagnostics.failures[0]?.code ?? 'no complete states'}.`
+        );
+      for (let state = 0; state < INTERACTION_STATES.length; state++) {
+        if (
+          canonicalJson(selection.selection.states[INTERACTION_STATES[state]].ref) !==
+          canonicalJson(members[state].ref)
+        )
+          fail('INVALID_APPLICATION_INPUT', `${label} states must follow increasing scale steps.`);
+      }
+      boundedArray(plan.pairs, limits.maximumSurfacesPerUse * 3, `${label}.pairs`);
+      if (plan.pairs.length !== use.surfaces.length * 3)
+        fail('INVALID_APPLICATION_INPUT', `${label} must cover every state and required surface.`);
+      const pairs = plan.pairs
+        .map(binding => {
+          assertExactKeys(
+            binding,
+            ['state', 'surface', 'surfacePairEvidenceId', 'onForegroundPairEvidenceId'],
+            `${label}.pairs`
+          );
+          if (!(INTERACTION_STATES as readonly string[]).includes(binding.state))
+            fail('INVALID_APPLICATION_INPUT', `${label} has an unknown state pair.`);
+          const surface = normalizeRef(binding.surface, `${label}.surface`);
+          if (
+            surface.kind !== 'preserved-source-color' ||
+            !use.surfaces.some(ref => sameRef(ref, surface))
+          )
+            fail('INVALID_APPLICATION_INPUT', `${label} pair must use a required source surface.`);
+          const member = selection.selection.states[binding.state];
+          const stateRef: ColorSystemApplicationColorRefV2 = {
+            kind: 'approved-family-member',
+            ref: member.ref,
+          };
+          requirePair(
+            binding.surfacePairEvidenceId,
+            stateRef,
+            surface,
+            null,
+            plan.role === 'link' ? 'normal-text' : 'non-text'
+          );
+          if (onForeground !== null) {
+            if (binding.onForegroundPairEvidenceId === null)
+              fail('INVALID_APPLICATION_INPUT', `${label} is missing common foreground evidence.`);
+            requirePair(
+              binding.onForegroundPairEvidenceId,
+              onForeground,
+              stateRef,
+              member.value.alpha === 1 ? null : surface,
+              'normal-text'
+            );
+          } else if (binding.onForegroundPairEvidenceId !== null) {
+            fail(
+              'INVALID_APPLICATION_INPUT',
+              `${label} link evidence cannot include an on-foreground.`
+            );
+          }
+          return { ...binding, surface };
+        })
+        .sort(
+          (left, right) =>
+            INTERACTION_STATES.indexOf(left.state) - INTERACTION_STATES.indexOf(right.state) ||
+            compareText(canonicalJson(left.surface), canonicalJson(right.surface))
+        );
+      if (
+        new Set(pairs.map(pair => canonicalJson([pair.state, pair.surface]))).size !== pairs.length
+      )
+        fail('INVALID_APPLICATION_INPUT', `${label} repeats a state and surface pair.`);
+      return {
+        role: plan.role,
+        mode: plan.mode,
+        states: { rest: members[0].ref, hover: members[1].ref, pressed: members[2].ref },
+        onForeground,
+        pairs,
+        selectionPolicyVersion: selection.policyVersion,
+        resolvedStates: selection.selection.states,
+        resolvedOnForeground: selection.selection.onForeground,
+        measurements: selection.selection.pairs,
+        distinction: selection.selection.distinction,
+      };
+    })
+    .sort(
+      (left, right) => compareText(left.mode, right.mode) || compareText(left.role, right.role)
+    );
+  const expectedStateUses = uses.filter(use => use.role === 'selected' || use.role === 'link');
+  if (
+    statePlans.length !== expectedStateUses.length ||
+    new Set(statePlans.map(plan => useKey(plan.mode, plan.role))).size !== statePlans.length
+  )
+    fail(
+      'INVALID_APPLICATION_INPUT',
+      'Every required selected or link use needs exactly one complete state plan.'
+    );
+  return {
+    requirements,
+    requirementsHash: deterministicContentHash({
+      requirements,
+      sourceHash: resolver.brief.sourceHash,
+      briefHash: resolver.brief.briefHash,
+      candidateHash: resolver.candidate.candidateHash,
+      surfaces: uses.map(use => ({
+        mode: use.mode,
+        role: use.role,
+        surfaces: use.resolvedSurfaces,
+      })),
+    }),
+    statePlans,
+  };
+}
+
 function allReferencedEvidenceIds(
   productGraphics: readonly ColorSystemProductGraphicsSpecimenV2[],
   productSemantics: readonly ColorSystemProductSemanticRoleV2[],
   categorical: ColorSystemCategoricalSelectionV2,
-  typography: readonly ColorSystemTypographySpecimenV2[]
+  additionalCategorical: readonly ColorSystemCategoricalSelectionV2[],
+  typography: readonly ColorSystemTypographySpecimenV2[],
+  interaction?: ColorSystemInteractionApplicationV1
 ): Set<string> {
   return new Set([
     ...productGraphics.flatMap(specimen => specimen.pairEvidenceIds),
     ...productSemantics.flatMap(role => role.pairEvidenceIds),
     ...categorical.markPairEvidenceIds,
+    ...additionalCategorical.flatMap(selection => selection.markPairEvidenceIds),
     ...typography.map(specimen => specimen.pairEvidenceId),
+    ...(interaction?.statePlans.flatMap(plan =>
+      plan.pairs.flatMap(pair =>
+        pair.onForegroundPairEvidenceId === null
+          ? [pair.surfacePairEvidenceId]
+          : [pair.surfacePairEvidenceId, pair.onForegroundPairEvidenceId]
+      )
+    ) ?? []),
   ]);
 }
 
@@ -2026,18 +3485,21 @@ export function buildColorSystemApplicationBlueprintV2(
       'Only a complete v2 strategy candidate can produce an application blueprint.'
     );
   }
-  assertExactKeys(
+  assertKeys(
     input,
     [
       'compilerVersion',
       'modes',
       'productGraphics',
       'productSemantics',
+      'semanticMeaning',
       'visualization',
+      'additionalCategorical',
       'typography',
       'pairContexts',
       'limitations',
     ],
+    ['interaction', 'productGraphicsRequirements'],
     'application blueprint input'
   );
   assertExactKeys(
@@ -2062,22 +3524,83 @@ export function buildColorSystemApplicationBlueprintV2(
   const evidenceById = new Map(
     pairEvidence.map(evidence => [evidence.context.id, evidence] as const)
   );
-  const productGraphics = normalizeProductGraphics(resolver, input.productGraphics, evidenceById);
+  const productGraphicsRequirements =
+    input.productGraphicsRequirements === undefined
+      ? undefined
+      : normalizeColorSystemProductGraphicsRequirementsV1(
+          input.productGraphicsRequirements,
+          brief,
+          input.productGraphics[0]?.mode ?? ''
+        );
+  const productGraphics = normalizeProductGraphics(
+    resolver,
+    input.productGraphics,
+    evidenceById,
+    productGraphicsRequirements
+  );
   const productSemantics = normalizeProductSemantics(
     resolver,
     input.productSemantics,
     modes,
     evidenceById
   );
+  const semanticMeaning = normalizeSemanticMeaning(input.semanticMeaning, productSemantics, modes);
   const categorical = normalizeCategorical(resolver, input.visualization.categorical, evidenceById);
-  const sequential = normalizeSequential(resolver, input.visualization.sequential);
-  const diverging = normalizeDiverging(resolver, input.visualization.diverging);
+  const keepsCharts = brief.sections.some(
+    section => section.role === 'data-visualization' && section.disposition === 'preserve'
+  );
+  for (const [kind, job] of [
+    ['sequential', 'sequential-data'],
+    ['diverging', 'diverging-data'],
+  ] as const) {
+    if (
+      input.visualization[kind] === null &&
+      (!keepsCharts || brief.requiredSecondaryJobs.includes(job))
+    ) {
+      fail(
+        'INVALID_APPLICATION_INPUT',
+        `${kind} may be null only when Data Visualization is preserved and ${job} is not required.`
+      );
+    }
+  }
+  const sequential =
+    input.visualization.sequential === null
+      ? null
+      : normalizeSequential(resolver, input.visualization.sequential);
+  const diverging =
+    input.visualization.diverging === null
+      ? null
+      : normalizeDiverging(resolver, input.visualization.diverging);
+  const additionalCategorical = normalizeAdditionalCategorical(
+    resolver,
+    input.additionalCategorical,
+    categorical,
+    evidenceById
+  );
   const typography = normalizeTypography(resolver, input.typography, modes, evidenceById);
+  const interaction =
+    input.interaction === undefined
+      ? undefined
+      : normalizeInteraction(resolver, input.interaction, productSemantics, evidenceById);
+  for (const meaning of semanticMeaning) {
+    if (
+      meaning.basis === 'functional-fit' &&
+      !interaction?.requirements.uses.some(
+        use => use.mode === meaning.mode && use.role === meaning.role
+      )
+    )
+      fail(
+        'INVALID_APPLICATION_INPUT',
+        'Functional fit requires a declared and validated interaction use.'
+      );
+  }
   const referencedEvidenceIds = allReferencedEvidenceIds(
     productGraphics,
     productSemantics,
     categorical,
-    typography
+    additionalCategorical,
+    typography,
+    interaction
   );
   for (const evidence of pairEvidence) {
     if (!referencedEvidenceIds.has(evidence.context.id)) {
@@ -2094,12 +3617,21 @@ export function buildColorSystemApplicationBlueprintV2(
   const policyVersions: ColorSystemApplicationPolicyVersionsV2 = {
     compiler: COLOR_SYSTEM_APPLICATION_COMPILER_V2_POLICY_VERSION,
     wcag: COLOR_SYSTEM_APPLICATION_WCAG_POLICY_VERSION,
+    apcaSupplementary: COLOR_SYSTEM_APPLICATION_APCA_POLICY_VERSION,
     cvdAdvisory: COLOR_SYSTEM_APPLICATION_CVD_POLICY_VERSION,
     sequentialPerceptual: COLOR_SYSTEM_APPLICATION_SEQUENTIAL_POLICY_VERSION,
     divergingSemantics: COLOR_SYSTEM_APPLICATION_DIVERGING_SEMANTICS_POLICY_VERSION,
+    divergingMidpoint: COLOR_SYSTEM_APPLICATION_DIVERGING_MIDPOINT_POLICY_VERSION,
+    semanticHue: COLOR_SYSTEM_APPLICATION_SEMANTIC_HUE_POLICY_VERSION,
+    recordedOrder: COLOR_SYSTEM_APPLICATION_RECORDED_ORDER_POLICY_VERSION,
     sourcePolicy: candidate.policyVersion,
   };
-  const blockers = blockersFromEvidence(pairEvidence, categorical, diverging);
+  const blockers = blockersFromEvidence(
+    pairEvidence,
+    categorical,
+    diverging,
+    additionalCategorical
+  );
   const ratings = applicationRatings(
     brief,
     candidate,
@@ -2107,6 +3639,7 @@ export function buildColorSystemApplicationBlueprintV2(
     categorical,
     sequential,
     diverging,
+    additionalCategorical,
     typography
   );
   const applicationEvidenceHash = deterministicContentHash({
@@ -2116,17 +3649,21 @@ export function buildColorSystemApplicationBlueprintV2(
     candidateHash: candidate.candidateHash,
     productGraphics,
     productSemantics,
+    semanticMeaning,
     pairEvidence,
     visualization: {
       categorical,
       sequential,
       diverging,
     },
+    additionalCategorical,
     typography,
     limitations,
     policyVersions,
     ratings,
     blockers,
+    ...(interaction === undefined ? {} : { interaction }),
+    ...(productGraphicsRequirements === undefined ? {} : { productGraphicsRequirements }),
   });
   const content: BlueprintContent = {
     schemaVersion: COLOR_SYSTEM_APPLICATION_BLUEPRINT_V2_SCHEMA_VERSION,
@@ -2142,9 +3679,13 @@ export function buildColorSystemApplicationBlueprintV2(
     status: blockers.length === 0 ? 'ready' : 'blocked',
     productGraphics,
     productSemantics,
+    semanticMeaning,
     visualization: { categorical, sequential, diverging },
+    additionalCategorical,
     typography,
     pairEvidence,
+    ...(interaction === undefined ? {} : { interaction }),
+    ...(productGraphicsRequirements === undefined ? {} : { productGraphicsRequirements }),
     limitations,
     policyVersions,
     ratings,
@@ -2157,12 +3698,52 @@ export function buildColorSystemApplicationBlueprintV2(
   };
 }
 
-function inputFromBlueprint(
+/**
+ * p4-B: a mark as the composer submitted it, rebuilt from its evidence: the
+ * approved member's bare ref, or the preserved recorded color with its origin.
+ */
+function markInputFromEvidence(
+  mark: ColorSystemVisualizationMarkEvidenceV2
+): ColorSystemVisualizationMarkInputV2 {
+  return {
+    order: mark.order,
+    label: mark.label,
+    ref: mark.ref.kind === 'approved-family-member' ? mark.ref.ref : mark.ref,
+    ...(mark.origin === undefined ? {} : { origin: mark.origin }),
+  };
+}
+
+function categoricalContextFromSelection(
+  selection: ColorSystemCategoricalSelectionV2
+): ColorSystemCategoricalContextV2 {
+  return {
+    selectionId: selection.selectionId,
+    marks: selection.marks.map(markInputFromEvidence),
+    surface: selection.surface,
+    evidenceIds: selection.evidenceIds,
+    adjacency: selection.adjacency,
+    boundary: selection.boundary,
+    markPairEvidenceIds: selection.markPairEvidenceIds,
+    directLabels: selection.directLabels,
+    nonColorCue: selection.nonColorCue,
+    requestedMarkCount: selection.requestedMarkCount,
+    achievedMarkCount: selection.achievedMarkCount,
+    limitation: selection.limitation,
+    orderSource: selection.orderSource,
+    orderWarnings: selection.orderWarnings,
+  };
+}
+
+export function colorSystemApplicationInputFromBlueprintV2(
   blueprint: ColorSystemApplicationSystemBlueprintV2
 ): ColorSystemApplicationSystemBlueprintV2Input {
+  const { sequential, diverging } = blueprint.visualization;
   return {
     compilerVersion: blueprint.compilerVersion,
     modes: blueprint.modes,
+    ...(blueprint.productGraphicsRequirements === undefined
+      ? {}
+      : { productGraphicsRequirements: blueprint.productGraphicsRequirements }),
     productGraphics: blueprint.productGraphics.map(specimen => ({
       derivationId: specimen.derivationId,
       job: specimen.job,
@@ -2185,80 +3766,60 @@ function inputFromBlueprint(
       nonColorCue: role.nonColorCue,
       intendedUse: role.intendedUse,
       evidenceIds: role.evidenceIds,
+      ...(role.groundSource === undefined ? {} : { groundSource: role.groundSource }),
+    })),
+    semanticMeaning: blueprint.semanticMeaning.map(item => ({
+      role: item.role,
+      mode: item.mode,
+      targetHueRange: item.targetHueRange,
+      basis: item.basis,
+      meaningSource: item.meaningSource,
+      familyId: item.familyId,
+      memberId: item.memberId,
+      measuredHueDegrees: item.measuredHueDegrees,
+      measuredChroma: item.measuredChroma,
+      inRange: item.inRange,
+      warning: item.warning,
+      sharedFill: item.sharedFill,
+      collision: item.collision,
+      evidenceIds: item.evidenceIds,
     })),
     visualization: {
-      categorical: {
-        selectionId: blueprint.visualization.categorical.selectionId,
-        marks: blueprint.visualization.categorical.marks.map(mark => ({
-          order: mark.order,
-          label: mark.label,
-          ref:
-            mark.ref.kind === 'approved-family-member'
-              ? mark.ref.ref
-              : (() => {
-                  throw new ColorSystemApplicationBlueprintV2Error(
-                    'APPLICATION_BLUEPRINT_INTEGRITY',
-                    'Visualization marks must retain approved Secondary references.'
-                  );
-                })(),
-        })),
-        surface: blueprint.visualization.categorical.surface,
-        evidenceIds: blueprint.visualization.categorical.evidenceIds,
-        adjacency: blueprint.visualization.categorical.adjacency,
-        boundary: blueprint.visualization.categorical.boundary,
-        markPairEvidenceIds: blueprint.visualization.categorical.markPairEvidenceIds,
-        directLabels: blueprint.visualization.categorical.directLabels,
-        nonColorCue: blueprint.visualization.categorical.nonColorCue,
-      },
-      sequential: {
-        selectionId: blueprint.visualization.sequential.selectionId,
-        marks: blueprint.visualization.sequential.marks.map(mark => ({
-          order: mark.order,
-          label: mark.label,
-          ref:
-            mark.ref.kind === 'approved-family-member'
-              ? mark.ref.ref
-              : (() => {
-                  throw new ColorSystemApplicationBlueprintV2Error(
-                    'APPLICATION_BLUEPRINT_INTEGRITY',
-                    'Visualization marks must retain approved Secondary references.'
-                  );
-                })(),
-        })),
-        surface: blueprint.visualization.sequential.surface,
-        evidenceIds: blueprint.visualization.sequential.evidenceIds,
-        direction: blueprint.visualization.sequential.direction,
-        axisLabel: blueprint.visualization.sequential.axisLabel,
-        endpointLabels: blueprint.visualization.sequential.endpointLabels,
-        nonColorCue: blueprint.visualization.sequential.nonColorCue,
-      },
-      diverging: {
-        selectionId: blueprint.visualization.diverging.selectionId,
-        marks: blueprint.visualization.diverging.marks.map(mark => ({
-          order: mark.order,
-          label: mark.label,
-          ref:
-            mark.ref.kind === 'approved-family-member'
-              ? mark.ref.ref
-              : (() => {
-                  throw new ColorSystemApplicationBlueprintV2Error(
-                    'APPLICATION_BLUEPRINT_INTEGRITY',
-                    'Visualization marks must retain approved Secondary references.'
-                  );
-                })(),
-        })),
-        surface: blueprint.visualization.diverging.surface,
-        evidenceIds: blueprint.visualization.diverging.evidenceIds,
-        polarity: blueprint.visualization.diverging.polarity,
-        midpointOrder: blueprint.visualization.diverging.midpointOrder,
-        midpointMeaning: blueprint.visualization.diverging.midpointMeaning,
-        midpointPolarity: blueprint.visualization.diverging.midpointPolarity,
-        zeroReferenceLine: blueprint.visualization.diverging.zeroReferenceLine,
-        negativeLabel: blueprint.visualization.diverging.negativeLabel,
-        positiveLabel: blueprint.visualization.diverging.positiveLabel,
-        nonColorCue: blueprint.visualization.diverging.nonColorCue,
-      },
+      categorical: categoricalContextFromSelection(blueprint.visualization.categorical),
+      sequential:
+        sequential === null
+          ? null
+          : {
+              selectionId: sequential.selectionId,
+              marks: sequential.marks.map(markInputFromEvidence),
+              surface: sequential.surface,
+              evidenceIds: sequential.evidenceIds,
+              direction: sequential.direction,
+              axisLabel: sequential.axisLabel,
+              endpointLabels: sequential.endpointLabels,
+              nonColorCue: sequential.nonColorCue,
+              orderSource: sequential.orderSource,
+            },
+      diverging:
+        diverging === null
+          ? null
+          : {
+              selectionId: diverging.selectionId,
+              marks: diverging.marks.map(markInputFromEvidence),
+              surface: diverging.surface,
+              evidenceIds: diverging.evidenceIds,
+              polarity: diverging.polarity,
+              midpointOrder: diverging.midpointOrder,
+              midpointMeaning: diverging.midpointMeaning,
+              midpointPolarity: diverging.midpointPolarity,
+              zeroReferenceLine: diverging.zeroReferenceLine,
+              negativeLabel: diverging.negativeLabel,
+              positiveLabel: diverging.positiveLabel,
+              nonColorCue: diverging.nonColorCue,
+              orderSource: diverging.orderSource,
+            },
     },
+    additionalCategorical: blueprint.additionalCategorical.map(categoricalContextFromSelection),
     typography: blueprint.typography.map(specimen => ({
       specimenId: specimen.specimenId,
       useCategory: specimen.useCategory,
@@ -2270,7 +3831,197 @@ function inputFromBlueprint(
       evidenceIds: specimen.evidenceIds,
     })),
     pairContexts: blueprint.pairEvidence.map(evidence => evidence.context),
+    ...(blueprint.interaction === undefined
+      ? {}
+      : {
+          interaction: {
+            requirements: blueprint.interaction.requirements,
+            statePlans: blueprint.interaction.statePlans.map(plan => ({
+              role: plan.role,
+              mode: plan.mode,
+              states: plan.states,
+              onForeground: plan.onForeground,
+              pairs: plan.pairs,
+            })),
+          },
+        }),
     limitations: blueprint.limitations,
+  };
+}
+
+/**
+ * p3-I: the review's one-line fact about where the surfaces came from. `mixed`
+ * when the modes disagree. `groundNames` lists the recorded grounds that serve
+ * as page backgrounds, in mode order, without repeats.
+ */
+export interface ColorSystemReviewSurfacesFactV2 {
+  source: ColorSystemStructuralGroundSourceV2 | 'mixed';
+  groundNames: readonly string[];
+  statement: string;
+}
+
+/** p3-I: the review's one-line fact about whether the chart order is the brand's own. */
+export interface ColorSystemReviewChartOrderFactV2 {
+  source: ColorSystemChartOrderSourceV2;
+  /** Marks that reproduce recorded chart colors in the recorded order. */
+  recordedCount: number;
+  /** The recorded order's 3:1 and modeled-CVD findings, verbatim from the selection. */
+  warnings: readonly string[];
+  statement: string;
+}
+
+function joinNames(names: readonly string[]): string {
+  return names.join(', ');
+}
+
+function relativeLuminanceOf(role: ColorSystemProductSemanticRoleV2): number {
+  const rgb = colorRgb(role.resolved.value);
+  return getRelativeLuminance(rgb.r, rgb.g, rgb.b);
+}
+
+/**
+ * p3-I: reads the background roles' ground sources and, for recorded grounds,
+ * the recorded names from the brief. The statement is the sentence the review
+ * prints; both are derived, never stored.
+ */
+export function colorSystemReviewSurfacesFactV2(
+  brief: ColorSystemBuilderBriefV2,
+  application: ColorSystemApplicationSystemBlueprintV2
+): ColorSystemReviewSurfacesFactV2 {
+  // Light grounds first, then dark, so the sentence reads page-then-night whatever the
+  // modes are called; ties keep the declared mode order.
+  const backgrounds = application.modes
+    .flatMap(mode =>
+      application.productSemantics.filter(role => role.mode === mode && role.role === 'background')
+    )
+    .map((role, index) => ({ role, index, luminance: relativeLuminanceOf(role) }))
+    .sort(
+      (left, right) =>
+        Number(right.luminance >= 0.5) - Number(left.luminance >= 0.5) || left.index - right.index
+    )
+    .map(entry => entry.role);
+  const sourceOf = (role: ColorSystemProductSemanticRoleV2): ColorSystemStructuralGroundSourceV2 =>
+    role.groundSource ??
+    (role.ref.kind === 'preserved-source-color' ? 'observed-neutral' : 'generated-ramp');
+  // A recorded name is shown without its board or section prefix: “Primary / Surface
+  // Gray” prints as “Surface Gray”. The last path segment is the color's own name.
+  const shortName = (name: string): string =>
+    name
+      .split('/')
+      .map(segment => segment.trim())
+      .filter(segment => segment.length > 0)
+      .pop() ?? name;
+  const nameOf = (role: ColorSystemProductSemanticRoleV2): string | null => {
+    if (role.ref.kind !== 'preserved-source-color') return null;
+    const stableColorId = role.ref.stableColorId;
+    const source = brief.preservedColors.find(color => color.stableColorId === stableColorId);
+    return source ? shortName(source.displayName) : null;
+  };
+  const sources = new Set(backgrounds.map(sourceOf));
+  const groundNames = [
+    ...new Set(backgrounds.map(nameOf).filter((name): name is string => name !== null)),
+  ];
+  if (sources.size === 1) {
+    const [source] = [...sources];
+    return {
+      source,
+      groundNames,
+      statement:
+        source === 'generated-ramp'
+          ? 'Surfaces: generated neutral ramp'
+          : source === 'observed-claim'
+            ? `Surfaces: your recorded grounds (${joinNames(groundNames)})`
+            : `Surfaces: your recorded neutrals (${joinNames(groundNames)})`,
+    };
+  }
+  const perMode = backgrounds.map(role => {
+    const source = sourceOf(role);
+    const name = nameOf(role);
+    return source === 'generated-ramp'
+      ? `generated neutral ramp in ${role.mode}`
+      : `your recorded ${source === 'observed-claim' ? 'ground' : 'neutral'} in ${role.mode}${name ? ` (${name})` : ''}`;
+  });
+  return { source: 'mixed', groundNames, statement: `Surfaces: ${perMode.join('; ')}` };
+}
+
+/** p3-I: reads the primary categorical selection's order source, recorded count and warnings. */
+export function colorSystemReviewChartOrderFactV2(
+  application: ColorSystemApplicationSystemBlueprintV2
+): ColorSystemReviewChartOrderFactV2 {
+  const categorical = application.visualization.categorical;
+  // p4-B: recorded marks carry `origin: 'recorded'`; the blueprint holds them one for
+  // one with the selection's recorded-advisory pairs.
+  const recordedCount = categorical.marks.filter(mark => mark.origin === 'recorded').length;
+  return {
+    source: categorical.orderSource,
+    recordedCount,
+    warnings: categorical.orderWarnings,
+    statement:
+      categorical.orderSource === 'recorded'
+        ? `Chart order: your recorded order (${recordedCount} ${recordedCount === 1 ? 'color' : 'colors'})`
+        : 'Chart order: generated',
+  };
+}
+
+function applicationIntegrityComparison(blueprint: ColorSystemApplicationSystemBlueprintV2) {
+  const measurement = (value: number | null) => (value === null ? null : canonicalNumber(value));
+  const contrast = (ratio: number | null, threshold: 3 | 4.5) => ({
+    ratio: measurement(ratio),
+    // Rounding may preserve measurement identity, but cannot cross a pass/fail boundary.
+    meetsThreshold: ratio === null ? null : meetsApplicationContrastThreshold(ratio, threshold),
+  });
+  const chart = (
+    selection:
+      | ColorSystemCategoricalSelectionV2
+      | ColorSystemSequentialSelectionV2
+      | ColorSystemDivergingSelectionV2
+      | null
+  ) => {
+    if (selection === null) return null;
+    const monotonic = (metric: 'oklabLightness' | 'relativeLuminance') => {
+      const values = selection.marks.map(mark => mark[metric]);
+      if (selection.kind === 'sequential')
+        return strictlyMonotonic(values, selection.direction === 'light-to-dark' ? -1 : 1);
+      if (selection.kind === 'diverging')
+        return armIsMonotonic(values, selection.midpointOrder - 1, selection.midpointPolarity);
+      return null;
+    };
+    return {
+      selection: {
+        ...selection,
+        marks: selection.marks.map(mark => ({
+          ...mark,
+          oklabLightness: canonicalNumber(mark.oklabLightness),
+          relativeLuminance: canonicalNumber(mark.relativeLuminance),
+        })),
+      },
+      monotonic: {
+        oklabLightness: monotonic('oklabLightness'),
+        relativeLuminance: monotonic('relativeLuminance'),
+      },
+    };
+  };
+
+  // Only recomputed diagnostics use the shared numeric policy. Spreading the full
+  // records keeps exact paints, geometry, thresholds, decisions and authority in the comparison.
+  return {
+    ...blueprint,
+    pairEvidence: blueprint.pairEvidence.map(pair => ({
+      ...pair,
+      ratio: contrast(pair.ratio, pair.requiredRatio),
+      apcaLc: measurement(pair.apcaLc),
+    })),
+    typography: blueprint.typography.map(specimen => ({
+      ...specimen,
+      ratio: contrast(specimen.ratio, specimen.threshold),
+    })),
+    visualization: {
+      ...blueprint.visualization,
+      categorical: chart(blueprint.visualization.categorical),
+      sequential: chart(blueprint.visualization.sequential),
+      diverging: chart(blueprint.visualization.diverging),
+    },
+    additionalCategorical: blueprint.additionalCategorical.map(chart),
   };
 }
 
@@ -2299,9 +4050,12 @@ export function assertColorSystemApplicationBlueprintV2Integrity(
   const rebuilt = buildColorSystemApplicationBlueprintV2(
     brief,
     candidate,
-    inputFromBlueprint(blueprint)
+    colorSystemApplicationInputFromBlueprintV2(blueprint)
   );
-  if (canonicalJson(rebuilt) !== canonicalJson(blueprint)) {
+  if (
+    canonicalJson(applicationIntegrityComparison(rebuilt)) !==
+    canonicalJson(applicationIntegrityComparison(blueprint))
+  ) {
     fail(
       'APPLICATION_BLUEPRINT_INTEGRITY',
       'Application blueprint failed canonical hash and evidence integrity validation.'
@@ -2350,8 +4104,13 @@ const FRAME_ELIGIBILITY_JOBS: Readonly<
     readonly ColorSystemJobV2[]
   >
 > = {
-  secondary: ['marketing-accent'],
-  'product-graphics': ['product-graphics', 'functional-iconography', 'product-ui-surface'],
+  secondary: ['marketing-accent', 'product-semantics'],
+  'product-graphics': [
+    'product-graphics',
+    'functional-iconography',
+    'product-ui-surface',
+    'product-semantics',
+  ],
   'data-visualization': ['categorical-data', 'sequential-data', 'diverging-data'],
   typography: ['rendered-text-pair'],
 };

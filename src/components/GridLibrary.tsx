@@ -1,12 +1,8 @@
 import * as React from 'react';
 import { GridPresetCard } from './GridPresetCard';
 import { SaveGridModal } from './SaveGridModal';
-import {
-  GRID_PRESETS,
-  GRID_CATEGORIES,
-  getPresetsByCategory,
-  getPresetCountByCategory,
-} from '../lib/gridPresets';
+import { GRID_CATEGORIES } from '../lib/gridPresetCatalogMetadata';
+import { createGridPresetCatalogLoader } from '../lib/gridPresetCatalogBridge';
 import {
   buildCreateGridFrameMessage,
   getPresetApplicationMode,
@@ -20,6 +16,8 @@ import { createRequestId } from '../lib/requestId';
 import { GridApplyModeDialog } from './GridApplyModeDialog';
 import { ClearGridDialog } from './ClearGridDialog';
 import { useGridApplyController } from '../lib/useGridApplyController';
+
+const loadCatalog = createGridPresetCatalogLoader();
 
 // CSS keyframe animations injected once
 const injectStyles = (() => {
@@ -146,6 +144,22 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const { scrollDirection, isAtTop, updateScrollDirection } = useScrollDirection();
 
+  const [catalog, setCatalog] = React.useState<GridPreset[] | null>(null);
+  const [catalogError, setCatalogError] = React.useState<string | null>(null);
+  const [catalogAttempt, setCatalogAttempt] = React.useState(0);
+  React.useEffect(() => {
+    const controller = new AbortController();
+    void loadCatalog(controller.signal).then(
+      presets => {
+        if (!controller.signal.aborted) setCatalog(presets);
+      },
+      error => {
+        if (!controller.signal.aborted) setCatalogError(error.message);
+      }
+    );
+    return () => controller.abort();
+  }, [catalogAttempt]);
+
   const [selectedCategory, setSelectedCategory] = React.useState<GridCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = React.useState('');
   const [selectedPreset, setSelectedPreset] = React.useState<GridPreset | null>(null);
@@ -181,8 +195,9 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
   const showHeader = isAtTop || scrollDirection === 'up';
 
   const filteredPresets = React.useMemo(() => {
-    let presets =
-      selectedCategory === 'all' ? GRID_PRESETS : getPresetsByCategory(selectedCategory);
+    let presets = (catalog ?? []).filter(
+      preset => selectedCategory === 'all' || preset.category === selectedCategory
+    );
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
@@ -195,7 +210,7 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
     }
 
     return presets;
-  }, [selectedCategory, searchQuery]);
+  }, [catalog, selectedCategory, searchQuery]);
 
   const selectedTargets = React.useMemo<GridSelectionTarget[]>(() => {
     if (!selectionInfo?.hasSelection) return [];
@@ -317,13 +332,16 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
             }}
           >
             {GRID_CATEGORIES.map(cat => {
-              const count = getPresetCountByCategory(cat.id);
+              const count = catalog?.filter(
+                preset => cat.id === 'all' || preset.category === cat.id
+              ).length;
               const isActive = selectedCategory === cat.id;
 
               return (
                 <button
                   key={cat.id}
                   className="grid-category-btn"
+                  disabled={!catalog}
                   onClick={() => setSelectedCategory(cat.id)}
                   style={{
                     display: 'flex',
@@ -348,7 +366,7 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
                       opacity: 0.5,
                     }}
                   >
-                    {count}
+                    {count ?? '–'}
                   </span>
                 </button>
               );
@@ -433,7 +451,29 @@ export const GridLibrary: React.FC<GridLibraryProps> = ({ isDark }) => {
           paddingBottom: '40px',
         }}
       >
-        {filteredPresets.length > 0 ? (
+        {!catalog ? (
+          <div
+            role={catalogError ? 'alert' : 'status'}
+            aria-live="polite"
+            style={{ padding: '40px 20px', color: theme.textMuted, textAlign: 'center' }}
+          >
+            <p>{catalogError ? 'Grid presets could not load.' : 'Loading grid presets…'}</p>
+            {catalogError && (
+              <>
+                <p>{catalogError}</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCatalogError(null);
+                    setCatalogAttempt(attempt => attempt + 1);
+                  }}
+                >
+                  Retry loading grid presets
+                </button>
+              </>
+            )}
+          </div>
+        ) : filteredPresets.length > 0 ? (
           <div
             style={{
               display: 'grid',

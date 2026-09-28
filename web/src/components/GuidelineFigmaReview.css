@@ -1,0 +1,116 @@
+.guideline-native-review {
+  margin: 24px 0;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.guideline-native-refresh {
+  display: grid;
+  gap: 14px;
+  margin: 20px 0;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+.guideline-native-refresh h3 {
+  font-size: 16px;
+  font-weight: 600;
+}
+.guideline-native-refresh ul {
+  display: grid;
+  gap: 12px;
+}
+.guideline-native-refresh small {
+  display: block;
+  color: var(--muted-foreground);
+}
+.guideline-native-fields {
+  border: 0;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+}
+.guideline-native-fields > legend {
+  font-weight: 600;
+  padding-top: 18px;
+}
+.guideline-native-fields label:not(.guideline-figma-choice) {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0;
+  font-size: 13px;
+}
+.guideline-native-fields select {
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  background: var(--background);
+  color: var(--foreground);
+}
+.guideline-native-candidates {
+  max-height: 360px;
+  overflow: auto;
+  margin: 14px 0;
+}
+.guideline-native-candidates .guideline-figma-choice {
+  align-items: flex-start;
+  padding: 8px 0;
+  overflow-wrap: anywhere;
+}
+.guideline-native-candidates input {
+  margin-top: 4px;
+}
+.guideline-native-color-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+.guideline-native-color {
+  border: 1px solid var(--border);
+  padding: 14px;
+  border-radius: 8px;
+  min-width: 0;
+  margin-bottom: 12px;
+}
+.guideline-native-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+.guideline-native-value > span {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+.guideline-native-value code {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.guideline-native-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.guideline-native-fields details {
+  margin: 12px 0;
+  overflow-wrap: anywhere;
+}
+.guideline-native-fields summary {
+  cursor: pointer;
+  min-height: 32px;
+}
+@media (max-width: 700px) {
+  .guideline-native-review {
+    padding: 12px;
+  }
+  .guideline-native-row,
+  .guideline-native-color-grid {
+    grid-template-columns: 1fr;
+  }
+}

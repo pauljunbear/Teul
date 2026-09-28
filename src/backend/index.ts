@@ -44,6 +44,7 @@ export function sendDocumentColorProfile(): void {
 export { sendSelectionInfo } from './figmaHelpers';
 export { sendAccessibilitySelection } from './accessibilitySelection';
 export { getHistoricalColorData } from './historicalColorData';
+export { getGridPresetCatalog } from './gridPresetCatalog';
 
 // Color Operations
 export {

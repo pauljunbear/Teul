@@ -67,7 +67,8 @@ Correctness and source truth come before visual refactoring.
   Figma UI bundle budget.
 - Added compact runtime projections for the two large source datasets while
   preserving their reviewed JSON files and runtime object shapes unchanged.
-- Moved CI to supported Node versions.
+- Moved CI to supported Node versions. [2026-09-07: GitHub Actions was removed;
+  the gate is now `npm run release-gate`, run locally on Node 22 and Node 24.]
 - Replaced the Werner modern-recreation dependency with an independent
   public-domain transcription and reproducible scan-sampling workflow; removed
   unsupported aliases and inferred related-color relationships.
@@ -336,13 +337,16 @@ Goal: prove the complete product contract.
 
 Completed in this audit:
 
-- CI uses supported Node 22 and 24 with npm 10.9.8.
-- Lint warnings fail CI.
+- CI used supported Node 22 and 24 with npm 10.9.9. [2026-09-07: GitHub Actions
+  was removed; the gate is now `npm run release-gate`, run locally on Node 22
+  and Node 24 with committed receipts under `docs/evidence/gates/`.]
+- Lint warnings fail the gate.
 - Coverage includes library, backend, component, and UI surfaces with enforced
   aggregate thresholds.
 - Unused PostCSS/Tailwind tooling and the associated advisory surface were
   removed.
-- Development tooling was updated and `npm audit` is enforced in CI.
+- Development tooling was updated and `npm audit` is enforced in the release
+  gate.
 - Production artifacts enforce the Figma UI bundle budget and legal/provenance
   documents.
 

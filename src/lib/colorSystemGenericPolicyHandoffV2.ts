@@ -1,5 +1,7 @@
-import { canonicalJson, deterministicContentHash } from './colorSystemAudit';
+import { canonicalJson, deterministicContentHash } from './colorSystemHashing';
+import type { ColorSystemBrandConstraintsV1 } from './colorSystemBrandConstraintsV1';
 import type {
+  ColorSystemAgentAdoptionV1,
   ColorSystemJobV2,
   ColorSystemSectionDispositionV2,
   ColorSystemSectionRoleV2,
@@ -11,14 +13,16 @@ import {
   type GenericSourceGapV2,
 } from './colorSystemGenericSourceAdapterV2';
 import {
-  COLOR_SYSTEM_GENERIC_CONFIRMATION_POLICY_V2_VERSION,
-  COLOR_SYSTEM_GENERIC_INTENT_POLICY_V2_VERSION,
   assertColorSystemGenericIntentProposalV2Integrity,
-  assertColorSystemGenericOwnerConfirmationV2Integrity,
+  assertColorSystemGenericPolicyDecisionV2Integrity,
+  type GenericAgentAdoptionV1,
+  type GenericAgentAdoptedSectionDecisionV1,
   type GenericConfirmedSectionDecisionV2,
   type GenericGeneratedPolarityDecisionV2,
   type GenericIntakeProposalV2,
   type GenericOwnerConfirmationV2,
+  type GenericPolicyDecisionV2,
+  type GenericSectionDecisionsV2,
   type GenericRuleV2,
 } from './colorSystemGenericIntentPolicyV2';
 import { compareText } from './utils';
@@ -27,6 +31,14 @@ export const COLOR_SYSTEM_GENERIC_POLICY_HANDOFF_V2_VERSION =
   'teul-color-system-generic-policy-handoff/v2.0' as const;
 export const COLOR_SYSTEM_GENERIC_SOURCE_COMPILER_POLICY_V2_VERSION =
   'teul-color-system-generic-source-compiler-policy/v2.0' as const;
+export const COLOR_SYSTEM_GENERIC_CONSTRAINED_HANDOFF_V2_VERSION =
+  'teul-color-system-generic-policy-handoff/v2.1' as const;
+export const COLOR_SYSTEM_GENERIC_CONSTRAINED_COMPILER_POLICY_V2_VERSION =
+  'teul-color-system-generic-source-compiler-policy/v2.1' as const;
+export const COLOR_SYSTEM_GENERIC_AGENT_HANDOFF_V1_VERSION =
+  'teul-color-system-generic-agent-policy-handoff/v1' as const;
+export const COLOR_SYSTEM_GENERIC_AGENT_COMPILER_POLICY_V1_VERSION =
+  'teul-color-system-generic-agent-source-compiler-policy/v1' as const;
 
 const HASH = /^sha256:[0-9a-f]{64}$/;
 
@@ -37,7 +49,8 @@ export interface GenericSourceLockV2 {
   valueHash: string;
   authority: 'observed';
   observedRuleIds: readonly string[];
-  ownerDecisionRuleId: string;
+  ownerDecisionRuleId?: string;
+  policyDecisionRuleId?: string;
   evidenceIds: readonly string[];
 }
 
@@ -48,7 +61,8 @@ export interface GenericBrandConstraintV2 {
   disposition: ColorSystemSectionDispositionV2;
   sourceRefIds: readonly string[];
   jobs: readonly ColorSystemJobV2[];
-  authority: 'owner-confirmed';
+  authority: 'owner-confirmed' | 'agent-adopted';
+  adoption?: ColorSystemAgentAdoptionV1;
   evidenceIds: readonly string[];
 }
 
@@ -60,25 +74,27 @@ export interface GenericProfileSupportV2 {
 
 export interface ColorSystemGenericPolicyHandoffV2 {
   schemaVersion: 'teul.color-system.generic-policy-handoff.v2';
-  handoffPolicyVersion: typeof COLOR_SYSTEM_GENERIC_POLICY_HANDOFF_V2_VERSION;
-  sourceCompilerPolicyVersion: typeof COLOR_SYSTEM_GENERIC_SOURCE_COMPILER_POLICY_V2_VERSION;
+  handoffPolicyVersion:
+    | typeof COLOR_SYSTEM_GENERIC_POLICY_HANDOFF_V2_VERSION
+    | typeof COLOR_SYSTEM_GENERIC_CONSTRAINED_HANDOFF_V2_VERSION
+    | typeof COLOR_SYSTEM_GENERIC_AGENT_HANDOFF_V1_VERSION;
+  sourceCompilerPolicyVersion:
+    | typeof COLOR_SYSTEM_GENERIC_SOURCE_COMPILER_POLICY_V2_VERSION
+    | typeof COLOR_SYSTEM_GENERIC_CONSTRAINED_COMPILER_POLICY_V2_VERSION
+    | typeof COLOR_SYSTEM_GENERIC_AGENT_COMPILER_POLICY_V1_VERSION;
   adapterVersion: string;
-  inferencePolicyVersion: typeof COLOR_SYSTEM_GENERIC_INTENT_POLICY_V2_VERSION;
-  confirmationPolicyVersion: typeof COLOR_SYSTEM_GENERIC_CONFIRMATION_POLICY_V2_VERSION;
+  inferencePolicyVersion: GenericIntakeProposalV2['inferencePolicyVersion'];
+  confirmationPolicyVersion: GenericPolicyDecisionV2['confirmationPolicyVersion'];
+  adoption?: ColorSystemAgentAdoptionV1;
   sourceSnapshotHash: string;
   proposalHash: string;
   confirmationHash: string;
   readiness: 'ready' | 'blocked';
   sourceLocks: readonly GenericSourceLockV2[];
-  sectionIntents: readonly [
-    GenericConfirmedSectionDecisionV2,
-    GenericConfirmedSectionDecisionV2,
-    GenericConfirmedSectionDecisionV2,
-    GenericConfirmedSectionDecisionV2,
-    GenericConfirmedSectionDecisionV2,
-  ];
+  sectionIntents: GenericSectionDecisionsV2;
   generatedPolarity: GenericGeneratedPolarityDecisionV2 | null;
   brandConstraints: readonly GenericBrandConstraintV2[];
+  reviewedBrandConstraints?: ColorSystemBrandConstraintsV1;
   supportedModes: readonly GenericModeRefV2[];
   profileSupport: GenericProfileSupportV2;
   governingRules: readonly GenericRuleV2[];
@@ -144,9 +160,24 @@ function ownerPolarityRule(
   };
 }
 
-function activeConsumers(
-  decisions: GenericOwnerConfirmationV2['sectionDecisions']
-): ReadonlySet<string> {
+function agentDecisionRule(
+  decision: GenericAgentAdoptedSectionDecisionV1,
+  adoption: GenericAgentAdoptionV1
+): GenericRuleV2 {
+  return {
+    ruleId: `generic-rule:agent-adopted:${decision.role}:${adoption.confirmationHash}`,
+    statement: `The agent adopted the ${decision.role} disposition, source selection, and bounded jobs for generation, review, and export of this exact proposal. Owner acceptance and document creation remain separate.`,
+    status: 'agent-adopted',
+    adoption: adoption.adoption,
+    evidenceIds: uniqueSorted([...decision.evidenceIds, adoption.confirmationHash]),
+    counterevidenceIds: [],
+    consumerIds: uniqueSorted([decision.role, ...decision.jobs]),
+    confidence: 'not-applicable',
+    sourceRefIds: uniqueSorted(decision.sourceRefIds),
+  };
+}
+
+function activeConsumers(decisions: GenericSectionDecisionsV2): ReadonlySet<string> {
   return new Set(
     decisions
       .filter(decision => decision.disposition !== 'omit')
@@ -179,7 +210,7 @@ function dedupeGaps(gaps: readonly GenericSourceGapV2[]): GenericSourceGapV2[] {
 
 function sourceLocks(
   proposal: GenericIntakeProposalV2,
-  decisions: GenericOwnerConfirmationV2['sectionDecisions'],
+  decisions: GenericSectionDecisionsV2,
   ownerRules: readonly GenericRuleV2[]
 ): GenericSourceLockV2[] {
   const refs = new Map(proposal.observedSourceRefs.map(ref => [ref.sourceRefId, ref]));
@@ -197,10 +228,10 @@ function sourceLocks(
     .filter(decision => decision.disposition === 'preserve')
     .flatMap(decision => {
       const ownerRule = ownerRules.find(rule => rule.consumerIds.includes(decision.role));
-      if (!ownerRule || ownerRule.status !== 'owner-confirmed') {
+      if (!ownerRule || ownerRule.status !== decision.status) {
         fail(
           'UNAUTHORIZED_GENERIC_GOVERNANCE',
-          `${decision.role} has no exact owner-confirmed decision rule.`
+          `${decision.role} has no exact ${decision.status} decision rule.`
         );
       }
       return decision.sourceRefIds.map(sourceRefId => {
@@ -219,7 +250,9 @@ function sourceLocks(
           valueHash: ref.valueHash,
           authority: 'observed' as const,
           observedRuleIds,
-          ownerDecisionRuleId: ownerRule.ruleId,
+          ...(decision.status === 'owner-confirmed'
+            ? { ownerDecisionRuleId: ownerRule.ruleId }
+            : { policyDecisionRuleId: ownerRule.ruleId }),
           evidenceIds: uniqueSorted([...ref.evidenceIds, ...decision.evidenceIds]),
         };
       });
@@ -228,15 +261,15 @@ function sourceLocks(
 }
 
 function brandConstraints(
-  decisions: GenericOwnerConfirmationV2['sectionDecisions'],
+  decisions: GenericSectionDecisionsV2,
   ownerRules: readonly GenericRuleV2[]
 ): GenericBrandConstraintV2[] {
   return decisions.map(decision => {
     const ownerRule = ownerRules.find(rule => rule.consumerIds.includes(decision.role));
-    if (!ownerRule || ownerRule.status !== 'owner-confirmed') {
+    if (!ownerRule || ownerRule.status !== decision.status) {
       fail(
         'UNAUTHORIZED_GENERIC_GOVERNANCE',
-        `${decision.role} constraint has no owner-confirmed rule.`
+        `${decision.role} constraint has no ${decision.status} rule.`
       );
     }
     return {
@@ -251,7 +284,8 @@ function brandConstraints(
       disposition: decision.disposition,
       sourceRefIds: uniqueSorted(decision.sourceRefIds),
       jobs: uniqueSorted(decision.jobs) as ColorSystemJobV2[],
-      authority: 'owner-confirmed',
+      authority: decision.status,
+      ...(ownerRule.adoption ? { adoption: ownerRule.adoption } : {}),
       evidenceIds: [ownerRule.ruleId],
     };
   });
@@ -271,11 +305,23 @@ function supportedModes(snapshot: ColorSystemGenericSourceSnapshotV2): GenericMo
   );
 }
 
-function validateGoverningRules(rules: readonly GenericRuleV2[]): void {
-  if (rules.some(rule => rule.status !== 'observed' && rule.status !== 'owner-confirmed')) {
+function validateGoverningRules(
+  rules: readonly GenericRuleV2[],
+  adoption?: ColorSystemAgentAdoptionV1
+): void {
+  if (
+    rules.some(rule =>
+      rule.status === 'observed'
+        ? rule.adoption !== undefined
+        : adoption
+          ? rule.status !== 'agent-adopted' ||
+            canonicalJson(rule.adoption) !== canonicalJson(adoption)
+          : rule.status !== 'owner-confirmed' || rule.adoption !== undefined
+    )
+  ) {
     fail(
       'UNAUTHORIZED_GENERIC_GOVERNANCE',
-      'Only observed facts and owner-confirmed decisions may govern the generic handoff.'
+      'Governing rules must preserve observed facts and the exact decision authority; owner and agent decisions cannot be mixed.'
     );
   }
   if (new Set(rules.map(rule => rule.ruleId)).size !== rules.length) {
@@ -286,16 +332,16 @@ function validateGoverningRules(rules: readonly GenericRuleV2[]): void {
 /**
  * Pure policy handoff. This function has no Figma, network, storage, clock, or
  * company-specific branch and cannot create colors; it only carries observed
- * locks and exact owner-confirmed decisions forward.
+ * locks and exact decisions forward. Agent adoption grants no creation authority.
  */
 export function compileColorSystemGenericPolicyHandoffV2(
   snapshot: ColorSystemGenericSourceSnapshotV2,
   proposal: GenericIntakeProposalV2,
-  confirmation: GenericOwnerConfirmationV2
+  confirmation: GenericPolicyDecisionV2
 ): ColorSystemGenericPolicyHandoffV2 {
   assertColorSystemGenericSourceSnapshotV2Integrity(snapshot);
   assertColorSystemGenericIntentProposalV2Integrity(snapshot, proposal);
-  assertColorSystemGenericOwnerConfirmationV2Integrity(snapshot, proposal, confirmation);
+  assertColorSystemGenericPolicyDecisionV2Integrity(snapshot, proposal, confirmation);
   if (
     confirmation.sourceSnapshotHash !== snapshot.sourceSnapshotHash ||
     confirmation.proposalHash !== proposal.proposalHash
@@ -306,9 +352,14 @@ export function compileColorSystemGenericPolicyHandoffV2(
     );
   }
 
-  const ownerRules = confirmation.sectionDecisions.map(decision =>
-    ownerDecisionRule(decision, confirmation)
-  );
+  const adoption =
+    confirmation.schemaVersion === 'teul.color-system.generic-agent-adoption.v1'
+      ? confirmation.adoption
+      : undefined;
+  const ownerRules =
+    confirmation.schemaVersion === 'teul.color-system.generic-agent-adoption.v1'
+      ? confirmation.sectionDecisions.map(decision => agentDecisionRule(decision, confirmation))
+      : confirmation.sectionDecisions.map(decision => ownerDecisionRule(decision, confirmation));
   const generatedPolarityRule = confirmation.generatedPolarity
     ? ownerPolarityRule(confirmation.generatedPolarity, confirmation)
     : null;
@@ -325,7 +376,7 @@ export function compileColorSystemGenericPolicyHandoffV2(
     ...ownerRules,
     ...(generatedPolarityRule ? [generatedPolarityRule] : []),
   ].sort((left, right) => compareText(left.ruleId, right.ruleId));
-  validateGoverningRules(governingRules);
+  validateGoverningRules(governingRules, adoption);
 
   const active = activeConsumers(confirmation.sectionDecisions);
   const blockedConsumers = dedupeGaps([
@@ -344,11 +395,20 @@ export function compileColorSystemGenericPolicyHandoffV2(
   const sectionIntents = confirmation.sectionDecisions;
   const content = {
     schemaVersion: 'teul.color-system.generic-policy-handoff.v2' as const,
-    handoffPolicyVersion: COLOR_SYSTEM_GENERIC_POLICY_HANDOFF_V2_VERSION,
-    sourceCompilerPolicyVersion: COLOR_SYSTEM_GENERIC_SOURCE_COMPILER_POLICY_V2_VERSION,
+    handoffPolicyVersion: adoption
+      ? COLOR_SYSTEM_GENERIC_AGENT_HANDOFF_V1_VERSION
+      : confirmation.reviewedBrandConstraints
+        ? COLOR_SYSTEM_GENERIC_CONSTRAINED_HANDOFF_V2_VERSION
+        : COLOR_SYSTEM_GENERIC_POLICY_HANDOFF_V2_VERSION,
+    sourceCompilerPolicyVersion: adoption
+      ? COLOR_SYSTEM_GENERIC_AGENT_COMPILER_POLICY_V1_VERSION
+      : confirmation.reviewedBrandConstraints
+        ? COLOR_SYSTEM_GENERIC_CONSTRAINED_COMPILER_POLICY_V2_VERSION
+        : COLOR_SYSTEM_GENERIC_SOURCE_COMPILER_POLICY_V2_VERSION,
     adapterVersion: snapshot.adapterVersion,
-    inferencePolicyVersion: COLOR_SYSTEM_GENERIC_INTENT_POLICY_V2_VERSION,
-    confirmationPolicyVersion: COLOR_SYSTEM_GENERIC_CONFIRMATION_POLICY_V2_VERSION,
+    inferencePolicyVersion: confirmation.inferencePolicyVersion,
+    confirmationPolicyVersion: confirmation.confirmationPolicyVersion,
+    ...(adoption ? { adoption } : {}),
     sourceSnapshotHash: snapshot.sourceSnapshotHash,
     proposalHash: proposal.proposalHash,
     confirmationHash: confirmation.confirmationHash,
@@ -357,6 +417,9 @@ export function compileColorSystemGenericPolicyHandoffV2(
     sectionIntents,
     generatedPolarity: confirmation.generatedPolarity,
     brandConstraints: brandConstraints(sectionIntents, ownerRules),
+    ...(confirmation.reviewedBrandConstraints
+      ? { reviewedBrandConstraints: confirmation.reviewedBrandConstraints }
+      : {}),
     supportedModes: supportedModes(snapshot),
     profileSupport,
     governingRules,
@@ -369,13 +432,13 @@ export function compileColorSystemGenericPolicyHandoffV2(
 export function assertColorSystemGenericPolicyHandoffV2Integrity(
   snapshot: ColorSystemGenericSourceSnapshotV2,
   proposal: GenericIntakeProposalV2,
-  confirmation: GenericOwnerConfirmationV2,
+  confirmation: GenericPolicyDecisionV2,
   handoff: ColorSystemGenericPolicyHandoffV2
 ): void {
   if (!HASH.test(handoff.handoffHash)) {
     fail('GENERIC_POLICY_HANDOFF_HASH_MISMATCH', 'Generic handoff hash is invalid.');
   }
-  validateGoverningRules(handoff.governingRules);
+  validateGoverningRules(handoff.governingRules, handoff.adoption);
   const rebuilt = compileColorSystemGenericPolicyHandoffV2(snapshot, proposal, confirmation);
   if (canonicalJson(rebuilt) !== canonicalJson(handoff)) {
     fail(

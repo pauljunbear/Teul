@@ -1,5 +1,15 @@
 # Data Changelog
 
+## 2026-09-24 - Lossless Radix storage
+
+- Packed the 62 pinned Radix solid scales into concatenated six-digit sRGB
+  literals and shared family construction to make room for source review in the
+  offline candidate interface.
+- Preserved the complete runtime object byte for byte, including all 744 color
+  values, family order, step order, names, paired neutrals and hue metadata.
+- The existing direct comparison with `@radix-ui/colors@3.0.0` and pinned payload
+  SHA-256 remain the integrity gates. No source value or matching policy changed.
+
 ## 2026-06-07 - Werner Transcription Audit
 
 - Restored the omitted sentence in the `Lemon Yellow` component description.

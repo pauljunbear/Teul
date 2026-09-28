@@ -19,6 +19,26 @@ function hasLockedTarget(nodes: readonly SceneNode[], operation: string): boolea
   return true;
 }
 
+function hasUnsupportedDocumentColorProfile(operation: string): boolean {
+  let profile: unknown;
+
+  try {
+    profile = (figma.root as DocumentNode & { readonly documentColorProfile?: unknown })
+      .documentColorProfile;
+  } catch {
+    profile = undefined;
+  }
+
+  if (profile === 'SRGB') return false;
+
+  const label =
+    profile === 'DISPLAY_P3' ? 'Display P3' : profile === 'LEGACY' ? 'legacy' : 'unknown';
+  figma.notify(
+    `${operation} requires a live sRGB Figma document because bundled hex channels are sRGB; current profile is ${label}.`
+  );
+  return true;
+}
+
 // ============================================
 // Fill Operations
 // ============================================
@@ -31,6 +51,7 @@ export async function handleApplyFill(msg: { hex: string; name: string }): Promi
     return false;
   }
   if (hasLockedTarget(nodes, 'Fill apply')) return false;
+  if (hasUnsupportedDocumentColorProfile('Fill apply')) return false;
 
   const color = hexToFigmaRgb(msg.hex);
   const snapshots: FillSnapshot[] = [];
@@ -77,6 +98,7 @@ export async function handleApplyStroke(msg: { hex: string; name: string }): Pro
     return false;
   }
   if (hasLockedTarget(nodes, 'Stroke apply')) return false;
+  if (hasUnsupportedDocumentColorProfile('Stroke apply')) return false;
 
   const color = hexToFigmaRgb(msg.hex);
   const snapshots: StrokeSnapshot[] = [];
@@ -129,6 +151,8 @@ export async function handleCreateStyle(msg: { hex: string; name: string }): Pro
   let createdStyle: PaintStyle | undefined;
 
   try {
+    if (hasUnsupportedDocumentColorProfile('Style creation')) return false;
+
     const color = hexToFigmaRgb(msg.hex);
 
     // Check if style already exists
@@ -139,6 +163,7 @@ export async function handleCreateStyle(msg: { hex: string; name: string }): Pro
       figma.notify(`Style "Teul/${msg.name}" already exists`);
       return false;
     }
+    if (hasUnsupportedDocumentColorProfile('Style creation')) return false;
 
     createdStyle = figma.createPaintStyle();
     createdStyle.name = `Teul/${msg.name}`;
@@ -194,6 +219,7 @@ export async function handleApplyGradient(msg: {
     figma.notify('Gradient requires at least 2 colors');
     return false;
   }
+  if (hasUnsupportedDocumentColorProfile('Gradient apply')) return false;
 
   const gradientStops: ColorStop[] = colors.map((color: GradientColor, index: number) => {
     const rgb = hexToFigmaRgb(color.hex);

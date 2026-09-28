@@ -5,7 +5,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const LEDGER_URL = new URL('../docs/dependency-audit-exceptions.json', import.meta.url);
-const REVIEWED_ON = '2026-08-23';
+const LEDGER_SCHEMA_VERSION = 2;
 const SEVERITY_RANK = Object.freeze({
   info: 0,
   low: 1,
@@ -15,7 +15,13 @@ const SEVERITY_RANK = Object.freeze({
 });
 
 function isIsoDate(value) {
-  return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}
+
+function currentUtcDate(now) {
+  return now.toISOString().slice(0, 10);
 }
 
 function validateReport(report, label) {
@@ -33,24 +39,30 @@ function validateReport(report, label) {
       `${label} audit report version must be 2; received ${String(report.auditReportVersion)}.`
     );
   }
-  if (!report.vulnerabilities || typeof report.vulnerabilities !== 'object') {
+  if (
+    !report.vulnerabilities ||
+    typeof report.vulnerabilities !== 'object' ||
+    Array.isArray(report.vulnerabilities)
+  ) {
     errors.push(`${label} audit report is missing its vulnerabilities map.`);
   }
   return errors;
 }
 
-function validateLedger(ledger) {
+function validateLedger(ledger, now) {
   const errors = [];
   if (!ledger || typeof ledger !== 'object' || Array.isArray(ledger)) {
     return ['Dependency-audit exception ledger must be a JSON object.'];
   }
-  if (ledger.schemaVersion !== 1) {
+  if (ledger.schemaVersion !== LEDGER_SCHEMA_VERSION) {
     errors.push(
-      `Exception ledger schemaVersion must be 1; received ${String(ledger.schemaVersion)}.`
+      `Exception ledger schemaVersion must be ${LEDGER_SCHEMA_VERSION}; received ${String(ledger.schemaVersion)}.`
     );
   }
-  if (!isIsoDate(ledger.reviewedOn) || ledger.reviewedOn !== REVIEWED_ON) {
-    errors.push(`Exception ledger reviewedOn must remain ${REVIEWED_ON}.`);
+  if (!isIsoDate(ledger.reviewedOn)) {
+    errors.push('Exception ledger reviewedOn must use a real YYYY-MM-DD calendar date.');
+  } else if (ledger.reviewedOn > currentUtcDate(now)) {
+    errors.push(`Exception ledger review date ${ledger.reviewedOn} is in the future.`);
   }
   if (!Array.isArray(ledger.exceptions) || ledger.exceptions.length !== 0) {
     errors.push('Dependency audit is fail-closed: the exception ledger must remain empty.');
@@ -58,11 +70,11 @@ function validateLedger(ledger) {
   return errors;
 }
 
-export function evaluateAuditReports({ productionReport, allReport, ledger }) {
+export function evaluateAuditReports({ productionReport, allReport, ledger, now = new Date() }) {
   const errors = [
     ...validateReport(productionReport, 'Production'),
     ...validateReport(allReport, 'All-dependency'),
-    ...validateLedger(ledger),
+    ...validateLedger(ledger, now),
   ];
 
   if (errors.length > 0) {
@@ -88,7 +100,9 @@ export function evaluateAuditReports({ productionReport, allReport, ledger }) {
       errors.push(`All-dependency vulnerability ${name} has a malformed record.`);
       continue;
     }
-    errors.push(`Unexpected all-dependency vulnerability: ${name} (${String(vulnerability.severity)}).`);
+    errors.push(
+      `Unexpected all-dependency vulnerability: ${name} (${String(vulnerability.severity)}).`
+    );
   }
 
   return {
@@ -120,11 +134,11 @@ function runNpmAudit(args, label) {
   }
 }
 
-export function runAuditPolicy() {
+export function runAuditPolicy({ now = new Date() } = {}) {
   const ledger = JSON.parse(readFileSync(LEDGER_URL, 'utf8'));
   const productionReport = runNpmAudit(['--omit=dev', '--audit-level=moderate'], 'Production');
   const allReport = runNpmAudit(['--audit-level=moderate'], 'All-dependency');
-  return evaluateAuditReports({ productionReport, allReport, ledger });
+  return evaluateAuditReports({ productionReport, allReport, ledger, now });
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
@@ -135,7 +149,9 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       for (const error of result.errors) console.error(`- ${error}`);
       process.exitCode = 1;
     } else {
-      console.log('Dependency audit policy passed: production and development dependencies are clean; no exceptions are allowed.');
+      console.log(
+        'Dependency audit policy passed: production and development dependencies are clean; no exceptions are allowed.'
+      );
     }
   } catch (error) {
     console.error(

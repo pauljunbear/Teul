@@ -1,0 +1,2100 @@
+{
+  "capturedAt": "2026-09-08T09:00:00.000Z",
+  "scope": {
+    "kind": "current-file",
+    "usageScope": "whole-file",
+    "selectedNodeIds": [],
+    "loadedPageIds": ["page-color"],
+    "excludedPageIds": [],
+    "coverage": "complete-supported-scope"
+  },
+  "documentProfile": "srgb",
+  "collections": [
+    {
+      "collectionId": "collection-color",
+      "name": "Color",
+      "defaultModeId": "mode-light",
+      "modes": [
+        {
+          "collectionId": "collection-color",
+          "modeId": "mode-light",
+          "name": "Light",
+          "order": 1
+        },
+        {
+          "collectionId": "collection-color",
+          "modeId": "mode-dark",
+          "name": "Dark",
+          "order": 2
+        }
+      ]
+    }
+  ],
+  "variables": [
+    {
+      "variableId": "variable-primary-signal",
+      "name": "Primary / Signal",
+      "description": "Primary / Signal source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.788235294117647, 0.9686274509803922, 0.23137254901960785],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.788235294117647, 0.9686274509803922, 0.23137254901960785],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-primary-white",
+      "name": "Primary / White",
+      "description": "Primary / White source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [1, 1, 1],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [1, 1, 1],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-primary-black",
+      "name": "Primary / Black",
+      "description": "Primary / Black source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.043137254901960784, 0.043137254901960784, 0.0392156862745098],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.043137254901960784, 0.043137254901960784, 0.0392156862745098],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-gray-1",
+      "name": "Typography / Gray 1",
+      "description": "Typography / Gray 1 source.",
+      "collectionId": "collection-color",
+      "scopes": ["TEXT_FILL"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.9568627450980393, 0.9529411764705882, 0.9372549019607843],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.9568627450980393, 0.9529411764705882, 0.9372549019607843],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-gray-2",
+      "name": "Typography / Gray 2",
+      "description": "Typography / Gray 2 source.",
+      "collectionId": "collection-color",
+      "scopes": ["TEXT_FILL"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8941176470588236, 0.8862745098039215, 0.8627450980392157],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8941176470588236, 0.8862745098039215, 0.8627450980392157],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-gray-3",
+      "name": "Typography / Gray 3",
+      "description": "Typography / Gray 3 source.",
+      "collectionId": "collection-color",
+      "scopes": ["TEXT_FILL"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8117647058823529, 0.803921568627451, 0.7725490196078432],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8117647058823529, 0.803921568627451, 0.7725490196078432],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-gray-4",
+      "name": "Typography / Gray 4",
+      "description": "Typography / Gray 4 source.",
+      "collectionId": "collection-color",
+      "scopes": ["TEXT_FILL"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.7019607843137254, 0.6941176470588235, 0.6588235294117647],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.7019607843137254, 0.6941176470588235, 0.6588235294117647],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-gray-5",
+      "name": "Typography / Gray 5",
+      "description": "Typography / Gray 5 source.",
+      "collectionId": "collection-color",
+      "scopes": ["TEXT_FILL"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.5803921568627451, 0.5725490196078431, 0.5411764705882353],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.5803921568627451, 0.5725490196078431, 0.5411764705882353],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-gray-6",
+      "name": "Typography / Gray 6",
+      "description": "Typography / Gray 6 source.",
+      "collectionId": "collection-color",
+      "scopes": ["TEXT_FILL"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.4588235294117647, 0.4549019607843137, 0.4235294117647059],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.4588235294117647, 0.4549019607843137, 0.4235294117647059],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-gray-7",
+      "name": "Typography / Gray 7",
+      "description": "Typography / Gray 7 source.",
+      "collectionId": "collection-color",
+      "scopes": ["TEXT_FILL"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.3411764705882353, 0.33725490196078434, 0.30980392156862746],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.3411764705882353, 0.33725490196078434, 0.30980392156862746],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-gray-8",
+      "name": "Typography / Gray 8",
+      "description": "Typography / Gray 8 source.",
+      "collectionId": "collection-color",
+      "scopes": ["TEXT_FILL"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.22745098039215686, 0.2235294117647059, 0.20784313725490197],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.22745098039215686, 0.2235294117647059, 0.20784313725490197],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-secondary-coral",
+      "name": "Secondary / Coral",
+      "description": "Secondary / Coral source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.9490196078431372, 0.4196078431372549, 0.3568627450980392],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.9490196078431372, 0.4196078431372549, 0.3568627450980392],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-secondary-coral-light",
+      "name": "Secondary / Coral Light",
+      "description": "Secondary / Coral Light source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.9882352941176471, 0.8666666666666667, 0.8470588235294118],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.9882352941176471, 0.8666666666666667, 0.8470588235294118],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-secondary-marigold",
+      "name": "Secondary / Marigold",
+      "description": "Secondary / Marigold source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.9411764705882353, 0.6588235294117647, 0.22745098039215686],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.9411764705882353, 0.6588235294117647, 0.22745098039215686],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-secondary-marigold-light",
+      "name": "Secondary / Marigold Light",
+      "description": "Secondary / Marigold Light source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.984313725490196, 0.9137254901960784, 0.8117647058823529],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.984313725490196, 0.9137254901960784, 0.8117647058823529],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-secondary-mustard",
+      "name": "Secondary / Mustard",
+      "description": "Secondary / Mustard source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.5490196078431373, 0.4823529411764706, 0.11764705882352941],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.5490196078431373, 0.4823529411764706, 0.11764705882352941],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-secondary-mustard-light",
+      "name": "Secondary / Mustard Light",
+      "description": "Secondary / Mustard Light source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.9372549019607843, 0.9215686274509803, 0.8392156862745098],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.9372549019607843, 0.9215686274509803, 0.8392156862745098],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-secondary-fern",
+      "name": "Secondary / Fern",
+      "description": "Secondary / Fern source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.30980392156862746, 0.6039215686274509, 0.3607843137254902],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.30980392156862746, 0.6039215686274509, 0.3607843137254902],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-secondary-fern-light",
+      "name": "Secondary / Fern Light",
+      "description": "Secondary / Fern Light source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8627450980392157, 0.9333333333333333, 0.8745098039215686],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8627450980392157, 0.9333333333333333, 0.8745098039215686],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-secondary-teal",
+      "name": "Secondary / Teal",
+      "description": "Secondary / Teal source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.1803921568627451, 0.5450980392156862, 0.5450980392156862],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.1803921568627451, 0.5450980392156862, 0.5450980392156862],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-secondary-teal-light",
+      "name": "Secondary / Teal Light",
+      "description": "Secondary / Teal Light source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8392156862745098, 0.9254901960784314, 0.9254901960784314],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8392156862745098, 0.9254901960784314, 0.9254901960784314],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-secondary-lagoon",
+      "name": "Secondary / Lagoon",
+      "description": "Secondary / Lagoon source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.24705882352941178, 0.6627450980392157, 0.8392156862745098],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.24705882352941178, 0.6627450980392157, 0.8392156862745098],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-secondary-lagoon-light",
+      "name": "Secondary / Lagoon Light",
+      "description": "Secondary / Lagoon Light source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8509803921568627, 0.9333333333333333, 0.9725490196078431],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8509803921568627, 0.9333333333333333, 0.9725490196078431],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-secondary-indigo",
+      "name": "Secondary / Indigo",
+      "description": "Secondary / Indigo source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.24705882352941178, 0.3176470588235294, 0.7098039215686275],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.24705882352941178, 0.3176470588235294, 0.7098039215686275],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-secondary-indigo-light",
+      "name": "Secondary / Indigo Light",
+      "description": "Secondary / Indigo Light source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8666666666666667, 0.8784313725490196, 0.9529411764705882],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8666666666666667, 0.8784313725490196, 0.9529411764705882],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-secondary-violet",
+      "name": "Secondary / Violet",
+      "description": "Secondary / Violet source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.4823529411764706, 0.30980392156862746, 0.7490196078431373],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.4823529411764706, 0.30980392156862746, 0.7490196078431373],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-secondary-violet-light",
+      "name": "Secondary / Violet Light",
+      "description": "Secondary / Violet Light source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.9058823529411765, 0.8666666666666667, 0.9568627450980393],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.9058823529411765, 0.8666666666666667, 0.9568627450980393],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-secondary-magenta",
+      "name": "Secondary / Magenta",
+      "description": "Secondary / Magenta source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.7607843137254902, 0.29411764705882354, 0.611764705882353],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.7607843137254902, 0.29411764705882354, 0.611764705882353],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-secondary-magenta-light",
+      "name": "Secondary / Magenta Light",
+      "description": "Secondary / Magenta Light source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.9568627450980393, 0.8627450980392157, 0.9254901960784314],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.9568627450980393, 0.8627450980392157, 0.9254901960784314],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-secondary-brick",
+      "name": "Secondary / Brick",
+      "description": "Secondary / Brick source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.6274509803921569, 0.26666666666666666, 0.1843137254901961],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.6274509803921569, 0.26666666666666666, 0.1843137254901961],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-secondary-brick-light",
+      "name": "Secondary / Brick Light",
+      "description": "Secondary / Brick Light source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.9372549019607843, 0.8549019607843137, 0.8313725490196079],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.9372549019607843, 0.8549019607843137, 0.8313725490196079],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-secondary-slate",
+      "name": "Secondary / Slate",
+      "description": "Secondary / Slate source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.30980392156862746, 0.42745098039215684, 0.5607843137254902],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.30980392156862746, 0.42745098039215684, 0.5607843137254902],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-secondary-slate-light",
+      "name": "Secondary / Slate Light",
+      "description": "Secondary / Slate Light source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8823529411764706, 0.8980392156862745, 0.9176470588235294],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8823529411764706, 0.8980392156862745, 0.9176470588235294],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-data-viz-01-cerulean",
+      "name": "Data Viz / 01 Cerulean",
+      "description": "Data Viz / 01 Cerulean source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.16862745098039217, 0.4235294117647059, 0.6901960784313725],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.16862745098039217, 0.4235294117647059, 0.6901960784313725],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-data-viz-02-tangerine",
+      "name": "Data Viz / 02 Tangerine",
+      "description": "Data Viz / 02 Tangerine source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8901960784313725, 0.4196078431372549, 0.17254901960784313],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8901960784313725, 0.4196078431372549, 0.17254901960784313],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-data-viz-03-jade",
+      "name": "Data Viz / 03 Jade",
+      "description": "Data Viz / 03 Jade source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.1843137254901961, 0.6196078431372549, 0.43137254901960786],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.1843137254901961, 0.6196078431372549, 0.43137254901960786],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-data-viz-04-fuchsia",
+      "name": "Data Viz / 04 Fuchsia",
+      "description": "Data Viz / 04 Fuchsia source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.7215686274509804, 0.19607843137254902, 0.5019607843137255],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.7215686274509804, 0.19607843137254902, 0.5019607843137255],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-data-viz-05-ochre",
+      "name": "Data Viz / 05 Ochre",
+      "description": "Data Viz / 05 Ochre source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8509803921568627, 0.6352941176470588, 0.10588235294117647],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8509803921568627, 0.6352941176470588, 0.10588235294117647],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    },
+    {
+      "variableId": "variable-data-viz-06-iris",
+      "name": "Data Viz / 06 Iris",
+      "description": "Data Viz / 06 Iris source.",
+      "collectionId": "collection-color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.4196078431372549, 0.27450980392156865, 0.7568627450980392],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.4196078431372549, 0.27450980392156865, 0.7568627450980392],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8392156862745098, 0.9490196078431372, 0.058823529411764705],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-primary-beacon"]
+    }
+  ],
+  "paintStyles": [],
+  "paletteStructures": [],
+  "usageEvidence": [],
+  "unsupported": [],
+  "evidence": [
+    {
+      "evidenceId": "e-collection-color",
+      "kind": "figma-resource",
+      "locator": "figma://local-variables"
+    },
+    {
+      "evidenceId": "e-variable-primary-beacon",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-primary-beacon"
+    },
+    {
+      "evidenceId": "e-variable-primary-beacon-light",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-primary-beacon-light"
+    },
+    {
+      "evidenceId": "e-variable-primary-white",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-primary-white"
+    },
+    {
+      "evidenceId": "e-variable-primary-surface-gray",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-primary-surface-gray"
+    },
+    {
+      "evidenceId": "e-variable-primary-surface-black",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-primary-surface-black"
+    },
+    {
+      "evidenceId": "e-variable-primary-black",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-primary-black"
+    },
+    {
+      "evidenceId": "e-variable-gray-1",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-gray-1"
+    },
+    {
+      "evidenceId": "e-variable-gray-2",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-gray-2"
+    },
+    {
+      "evidenceId": "e-variable-gray-3",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-gray-3"
+    },
+    {
+      "evidenceId": "e-variable-gray-4",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-gray-4"
+    },
+    {
+      "evidenceId": "e-variable-gray-5",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-gray-5"
+    },
+    {
+      "evidenceId": "e-variable-gray-6",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-gray-6"
+    },
+    {
+      "evidenceId": "e-variable-gray-7",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-gray-7"
+    },
+    {
+      "evidenceId": "e-variable-gray-8",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-gray-8"
+    },
+    {
+      "evidenceId": "e-variable-secondary-harbor",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-secondary-harbor"
+    },
+    {
+      "evidenceId": "e-variable-secondary-harbor-light",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-secondary-harbor-light"
+    },
+    {
+      "evidenceId": "e-variable-secondary-cobalt",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-secondary-cobalt"
+    },
+    {
+      "evidenceId": "e-variable-secondary-cobalt-light",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-secondary-cobalt-light"
+    },
+    {
+      "evidenceId": "e-variable-secondary-petal",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-secondary-petal"
+    },
+    {
+      "evidenceId": "e-variable-secondary-petal-light",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-secondary-petal-light"
+    },
+    {
+      "evidenceId": "e-variable-secondary-plum",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-secondary-plum"
+    },
+    {
+      "evidenceId": "e-variable-secondary-plum-light",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-secondary-plum-light"
+    },
+    {
+      "evidenceId": "e-variable-secondary-meadow",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-secondary-meadow"
+    },
+    {
+      "evidenceId": "e-variable-secondary-meadow-light",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-secondary-meadow-light"
+    },
+    {
+      "evidenceId": "e-variable-secondary-pine",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-secondary-pine"
+    },
+    {
+      "evidenceId": "e-variable-secondary-pine-light",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-secondary-pine-light"
+    },
+    {
+      "evidenceId": "e-variable-secondary-sage",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-secondary-sage"
+    },
+    {
+      "evidenceId": "e-variable-secondary-sage-light",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-secondary-sage-light"
+    },
+    {
+      "evidenceId": "e-variable-secondary-olive",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-secondary-olive"
+    },
+    {
+      "evidenceId": "e-variable-secondary-olive-light",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-secondary-olive-light"
+    },
+    {
+      "evidenceId": "e-variable-secondary-saffron",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-secondary-saffron"
+    },
+    {
+      "evidenceId": "e-variable-secondary-saffron-light",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-secondary-saffron-light"
+    },
+    {
+      "evidenceId": "e-variable-secondary-ember",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-secondary-ember"
+    },
+    {
+      "evidenceId": "e-variable-secondary-ember-light",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-secondary-ember-light"
+    },
+    {
+      "evidenceId": "e-variable-secondary-clay",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-secondary-clay"
+    },
+    {
+      "evidenceId": "e-variable-secondary-clay-light",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-secondary-clay-light"
+    },
+    {
+      "evidenceId": "e-variable-data-viz-01-harbor",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-data-viz-01-harbor"
+    },
+    {
+      "evidenceId": "e-variable-data-viz-02-cobalt",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-data-viz-02-cobalt"
+    },
+    {
+      "evidenceId": "e-variable-data-viz-03-petal",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-data-viz-03-petal"
+    },
+    {
+      "evidenceId": "e-variable-data-viz-04-plum",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-data-viz-04-plum"
+    },
+    {
+      "evidenceId": "e-variable-data-viz-05-meadow",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-data-viz-05-meadow"
+    },
+    {
+      "evidenceId": "e-variable-data-viz-06-pine",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-data-viz-06-pine"
+    },
+    {
+      "evidenceId": "e-variable-data-viz-07-sage",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-data-viz-07-sage"
+    },
+    {
+      "evidenceId": "e-variable-data-viz-08-olive",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-data-viz-08-olive"
+    },
+    {
+      "evidenceId": "e-variable-data-viz-09-saffron",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-data-viz-09-saffron"
+    },
+    {
+      "evidenceId": "e-variable-data-viz-10-ember",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-data-viz-10-ember"
+    },
+    {
+      "evidenceId": "e-variable-data-viz-11-clay",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-data-viz-11-clay"
+    },
+    {
+      "evidenceId": "e-variable-typography-ink",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-typography-ink"
+    },
+    {
+      "evidenceId": "e-variable-typography-ink-hushed",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-typography-ink-hushed"
+    },
+    {
+      "evidenceId": "e-variable-typography-ink-reverse",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-typography-ink-reverse"
+    },
+    {
+      "evidenceId": "e-variable-typography-ink-hushed-reverse",
+      "kind": "figma-resource",
+      "locator": "figma://local-variable/variable-typography-ink-hushed-reverse"
+    }
+  ],
+  "enabledLibraryDescriptors": [],
+  "libraryBoundaryNote": "Synthetic eleven-hue brand for local engineering evidence (p3-H): one bright low-contrast primary with a recorded tint, eleven chromatic secondaries each with a recorded Light tint (one base at OKLCH chroma 0.036, two tints above 0.03), eight warm grays, black and white grounds, an ordered data-visualization list, and four typography roles. No hue lies in the 55–95° warning band. The values are invented; this is not a real brand.",
+  "scannedNodeCount": 1,
+  "cancelled": false,
+  "partial": false
+}

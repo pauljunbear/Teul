@@ -1,9 +1,13 @@
+import { createRequire } from 'node:module';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   buildColorSystemGenericBuilderOrchestratorV2,
   buildColorSystemGenericBuilderOrchestratorV2Input,
 } from '../colorSystemBuilderOrchestratorV2';
-import { canonicalJson, deterministicContentHash } from '../colorSystemAudit';
+import { canonicalJson, deterministicContentHash } from '../colorSystemHashing';
 import {
   buildColorSystemGenericSourceSnapshotV2,
   type ColorSystemGenericSourceSnapshotInputV2,
@@ -24,6 +28,9 @@ import {
   compileColorSystemGenericPolicyHandoffSourceV2,
   preflightColorSystemGenericSourceV2,
 } from '../colorSystemSourceCompilerV2';
+
+const require = createRequire(import.meta.url);
+const sanitizer = require('../../../scripts/verify-generic-candidate-sanitization.js');
 
 const channel = (value: number): number => value / 255;
 
@@ -310,23 +317,84 @@ function styleAndPaletteSourceInput(
 }
 
 describe('generic color-system source/compiler bridge v2', () => {
-  it('preserves exact Primary and neutrals while proposing six Secondary families from Primary', () => {
+  it('preserves exact Primary and neutrals while planning measured Secondary families from Primary', () => {
     const source = chain();
     const compilation = compileColorSystemGenericPolicyHandoffSourceV2(source);
 
     expect(compilation.groups).toEqual([]);
     expect(compilation.brief.sourceReferenceColors).toEqual([]);
+    // One Primary hue (blue, so it owns the information range), categorical data among
+    // the confirmed jobs, and polarity bound to policy slots 02 and 05: one derived hero
+    // scale, four accent slots (two in every direction, four in Complementary and
+    // Spectrum), three conventional status reserves, one neutral.
     expect(compilation.brief.secondaryTargetPolicy).toMatchObject({
       derivationRule: 'teul-generated-contribution-count',
       retainedSourceFamilyGroupIds: [],
-      assemblyContributionIds: COLOR_SYSTEM_GENERIC_SECONDARY_CONTRIBUTION_IDS_V2,
+      assemblyContributionIds: [
+        'generic-neutral-contribution-01',
+        ...COLOR_SYSTEM_GENERIC_SECONDARY_CONTRIBUTION_IDS_V2.slice(0, 5),
+        'generic-status-reserve-error',
+        'generic-status-reserve-success',
+        'generic-status-reserve-warning',
+      ],
     });
-    expect(compilation.seeds).toHaveLength(6);
-    expect(new Set(compilation.seeds.map(seed => seed.contributionId)).size).toBe(6);
+    expect(compilation.brief.secondaryTargetFamilyCount).toBe(9);
+    expect(compilation.brief.secondaryTargetFamilyCountByDirection).toEqual({
+      'close-harmony': 7,
+      'balanced-contrast': 9,
+      'wide-spectrum': 9,
+    });
+    expect(compilation.brief.secondaryTargetFamilyCountBand).toEqual({ minimum: 7, maximum: 9 });
+    expect(compilation.seeds).toHaveLength(9);
+    expect(new Set(compilation.seeds.map(seed => seed.contributionId)).size).toBe(9);
+    const reserve = compilation.seeds.find(
+      seed => seed.contributionId === 'generic-status-reserve-success'
+    );
+    expect(reserve).toMatchObject({
+      displayName: 'Status reserve — success',
+      prominence: 'supporting',
+      territoryId: 'generic-status-reserve-space',
+    });
+    expect(reserve?.eligibilityEvidence.flatMap(entry => entry.jobs)).toEqual([
+      'product-semantics',
+    ]);
     expect(compilation.seeds.every(seed => seed.authority === 'teul-proposal')).toBe(true);
     expect(
       compilation.seeds.every(seed => seed.sourceColorId.includes('variable:brand-primary'))
     ).toBe(true);
+    const hero = compilation.seeds.find(
+      seed => seed.contributionId === COLOR_SYSTEM_GENERIC_SECONDARY_CONTRIBUTION_IDS_V2[0]
+    );
+    expect(hero).toMatchObject({
+      displayName: 'Primary / Brand',
+      prominence: 'leading',
+      sourceMode: 'Light',
+      baseHueOffsetDegrees: 0,
+      baseChromaScale: 1,
+      baseLightnessShift: 0,
+    });
+    const neutral = compilation.seeds.find(seed =>
+      seed.contributionId.startsWith('generic-neutral')
+    );
+    expect(neutral).toMatchObject({ displayName: 'Neutral', prominence: 'supporting' });
+    expect(neutral?.baseChromaScale).toBeLessThan(0.1);
+    const accent = compilation.seeds.find(
+      seed => seed.contributionId === COLOR_SYSTEM_GENERIC_SECONDARY_CONTRIBUTION_IDS_V2[1]
+    );
+    expect(accent?.prominence).toBe('accent');
+    expect(accent?.directionRecipes.map(recipe => recipe.displayName)).toEqual([
+      'Analogous accent 1',
+      'Complementary accent 1',
+      'Spectrum accent 1',
+    ]);
+    expect(
+      compilation.brief.brandFitProfile.territories.map(territory => territory.territoryId)
+    ).toEqual([
+      'generic-accent-space',
+      'generic-derived-space',
+      'generic-neutral-space',
+      'generic-status-reserve-space',
+    ]);
     expect(compilation.brief.primaryLocks.map(lock => lock.expectedValue.hex)).toEqual([
       '#6699FF',
       '#3366CC',
@@ -336,7 +404,20 @@ describe('generic color-system source/compiler bridge v2', () => {
       positiveContributionId: COLOR_SYSTEM_GENERIC_SECONDARY_CONTRIBUTION_IDS_V2[4],
       authority: 'owner-confirmed',
     });
-    expect(JSON.stringify(compilation)).not.toMatch(/Paul|Ramp/i);
+    // Run the repository's own sanitizer over the compiled output so this test
+    // never has to spell out a rejected identifier itself.
+    const scanRoot = mkdtempSync(join(tmpdir(), 'teul-bridge-sanitize-'));
+    try {
+      writeFileSync(join(scanRoot, 'compilation.json'), JSON.stringify(compilation));
+      const scan = sanitizer.scanRepository({
+        root: scanRoot,
+        denyList: sanitizer.DENY_LIST,
+        allowList: [],
+      });
+      expect(scan.violations).toEqual([]);
+    } finally {
+      rmSync(scanRoot, { recursive: true, force: true });
+    }
     expect(() =>
       assertColorSystemGenericPolicyHandoffSourceV2Integrity(source, compilation)
     ).not.toThrow();
@@ -370,10 +451,7 @@ describe('generic color-system source/compiler bridge v2', () => {
     const typography = compilation.brief.preservedColors.filter(
       item => item.section === 'typography'
     );
-    expect(typography.map(item => Object.keys(item.valuesByMode))).toEqual([
-      ['Dark', 'Light'],
-      ['Dark', 'Light'],
-    ]);
+    expect(typography.map(item => Object.keys(item.valuesByMode))).toEqual([['Light'], ['Light']]);
     expect(typography.map(item => item.valuesByMode.Light.hex)).toEqual(['#000000', '#FFFFFF']);
     expect(typography[0]?.evidenceIds).toEqual(
       expect.arrayContaining(['evidence:typography-palette', 'evidence:typography-ink'])
@@ -386,9 +464,37 @@ describe('generic color-system source/compiler bridge v2', () => {
     );
     expect(literalPrimary?.valuesByMode).toMatchObject({
       Light: { hex: '#3366CC' },
-      Dark: { hex: '#3366CC' },
     });
+    expect(Object.keys(literalPrimary!.valuesByMode)).toEqual(['Light']);
+    expect(literalPrimary?.evidenceIds).toContain('teul-policy:mode-independent-source:Light');
     expect(literalCompilation.brief.primaryLocks.every(lock => !lock.aliasTargetId)).toBe(true);
+
+    const automatic = buildColorSystemGenericBuilderOrchestratorV2(
+      buildColorSystemGenericBuilderOrchestratorV2Input(
+        source.snapshot,
+        source.proposal,
+        source.confirmation,
+        source.handoff
+      )
+    );
+    expect(automatic.status).toBe('ready');
+    for (const direction of automatic.directions) {
+      if (direction.status === 'ready') {
+        expect(direction.application.modes).toEqual(['Light']);
+        expect(direction.resource.output.modes).toEqual(['Light']);
+      }
+    }
+    const missingDark = buildColorSystemGenericBuilderOrchestratorV2(
+      buildColorSystemGenericBuilderOrchestratorV2Input(
+        source.snapshot,
+        source.proposal,
+        source.confirmation,
+        source.handoff,
+        { application: { modes: ['Dark'], applicationMode: 'Dark' } }
+      )
+    );
+    expect(missingDark.status).toBe('blocked');
+    expect(missingDark.directions.every(direction => direction.status === 'blocked')).toBe(true);
   });
 
   it('fails preflight before confirmation for missing style aliases and impossible builder inputs', () => {
@@ -440,13 +546,65 @@ describe('generic color-system source/compiler bridge v2', () => {
         expect.objectContaining({ code: 'GENERIC_PRIMARY_CHROMATIC_ANCHOR_REQUIRED' }),
       ])
     );
-    expect(unquantized.status).toBe('blocked');
-    expect(unquantized.blockers).toEqual(
+    expect(unquantized).toEqual({ status: 'ready', blockers: [] });
+  });
+
+  it('preserves native channels in the compiled source and exact Primary lock', () => {
+    const source = chain({ unquantizedPrimary: true });
+    const compilation = compileColorSystemGenericPolicyHandoffSourceV2(source);
+    const primary = compilation.brief.preservedColors.find(item => item.section === 'primary');
+    const value = primary?.valuesByMode.Light;
+    expect(value).toMatchObject({
+      colorSpace: 'srgb',
+      hex: '#334DCC',
+      components: { r: 0.2, g: 0.3, b: 0.8 },
+      alpha: 1,
+      representation: { kind: 'native-srgb', exactValueHash: expect.stringMatching(/^sha256:/) },
+    });
+    const lock = compilation.brief.primaryLocks.find(item => item.mode === 'Light');
+    expect(lock?.expectedValue).toEqual(value);
+    expect(primary?.valuesByMode.Dark.representation).toBeUndefined();
+    expect(JSON.parse(JSON.stringify(compilation.brief)).preservedColors).toEqual(
+      compilation.brief.preservedColors
+    );
+    assertColorSystemGenericPolicyHandoffSourceV2Integrity(source, compilation);
+  });
+
+  it('uses native neutral luminance rather than the display approximation in preflight', () => {
+    const input = sourceInput();
+    const snapshot = buildColorSystemGenericSourceSnapshotV2({
+      ...input,
+      variables: input.variables.map(variable =>
+        variable.variableId === 'variable:text-surface'
+          ? {
+              ...variable,
+              valuesByMode: variable.valuesByMode.map(mode =>
+                mode.modeName === 'Light'
+                  ? {
+                      ...mode,
+                      rawValue: {
+                        kind: 'color',
+                        value: {
+                          colorSpace: 'srgb',
+                          components: [0.73532, 0.73532, 0.73532],
+                          alpha: 1,
+                        },
+                      },
+                    }
+                  : mode
+              ),
+            }
+          : variable
+      ),
+    });
+    const result = preflightColorSystemGenericSourceV2({
+      snapshot,
+      proposal: buildColorSystemGenericIntentProposalV2(snapshot),
+    });
+    // The native value is below luminance0.5; its #BCBCBC display hex is above it.
+    expect(result.blockers).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({
-          code: 'GENERIC_EXACT_SRGB_VALUE_UNSUPPORTED',
-          message: expect.stringContaining('must not silently quantize'),
-        }),
+        expect.objectContaining({ code: 'GENERIC_NEUTRAL_SURFACE_POLARITY_REQUIRED' }),
       ])
     );
   });
@@ -493,7 +651,7 @@ describe('generic color-system source/compiler bridge v2', () => {
     const result = buildColorSystemGenericBuilderOrchestratorV2(replayed);
 
     expect(result.status).toBe('ready');
-    expect(result.sourceCompilation?.seeds).toHaveLength(6);
+    expect(result.sourceCompilation?.seeds).toHaveLength(9);
     expect(result.directions).toHaveLength(1);
     expect(result.directions[0]?.status).toBe('ready');
     expect(result.presentationProfile?.sections).toHaveLength(5);
@@ -512,10 +670,6 @@ describe('generic color-system source/compiler bridge v2', () => {
       {
         source: chain({ includePolarity: false }),
         code: 'GENERIC_POLARITY_ANCHORS_REQUIRED',
-      },
-      {
-        source: chain({ unquantizedPrimary: true }),
-        code: 'GENERIC_EXACT_SRGB_VALUE_UNSUPPORTED',
       },
     ] as const;
 

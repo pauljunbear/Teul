@@ -1,6 +1,11 @@
-import { canonicalJson, deterministicContentHash } from '../lib/colorSystemAudit';
+import {
+  runColorSystemResourceTransactionV1,
+  ColorSystemResourceTransactionPreflightErrorV1,
+} from './colorSystemResourceTransactionV1';
+import { canonicalJson, deterministicContentHash } from '../lib/colorSystemHashing';
 import {
   COLOR_SYSTEM_RESOURCE_BLUEPRINT_V2_SCHEMA_VERSION,
+  estimateColorSystemResourceNodesV2,
   type ColorSystemComponentRecipeV2,
   type ColorSystemPrimitiveCollectionRecipeV2,
   type ColorSystemPrimitiveVariableRecipeV2,
@@ -11,6 +16,11 @@ import {
 } from '../lib/colorSystemResourceBlueprintV2';
 import { COLOR_SYSTEM_SECTION_ROLES_V2 } from '../lib/colorSystemBuilderV2Contracts';
 import { compareText } from '../lib/utils';
+import { readColorSystemProductGraphicsRenderingV1 } from '../lib/colorSystemProductGraphicsPlanV1';
+import {
+  colorSystemProductGraphicsComponentSizeV1,
+  layoutColorSystemProductGraphicsComponentsV1,
+} from '../lib/colorSystemProductGraphicsLayoutV1';
 import type {
   BeginColorSystemCreateJournalV2Input,
   ColorSystemCreateJournalReconciliationV2,
@@ -19,6 +29,12 @@ import type {
 } from './colorSystemCreateJournalV2';
 import { COLOR_SYSTEM_RESOURCE_OWNERSHIP_V2_VERSION } from './colorSystemResourceOwnershipV2';
 
+// p4-DE: owner-supplied spot colors ride into Variable descriptions.
+import {
+  COLOR_SYSTEM_OWNER_SPOT_COLOR_LIMITS_V2,
+  colorSystemOwnerSpotColorLabelV2,
+} from '../types/colorSystemBuilderV2Messages';
+
 export const COLOR_SYSTEM_RESOURCE_RENDERER_V2_RECEIPT_VERSION =
   'teul-color-resource-renderer-receipt/v2' as const;
 export { COLOR_SYSTEM_RESOURCE_OWNERSHIP_V2_VERSION } from './colorSystemResourceOwnershipV2';
@@ -26,12 +42,7 @@ export { COLOR_SYSTEM_RESOURCE_OWNERSHIP_V2_VERSION } from './colorSystemResourc
 const HASH_PATTERN = /^sha256:[0-9a-f]{64}$/;
 
 export type ColorSystemHostResourceKindV2 =
-  | 'collection'
-  | 'variable'
-  | 'style'
-  | 'component'
-  | 'frame'
-  | 'page';
+  'collection' | 'variable' | 'style' | 'component' | 'frame' | 'page';
 
 export interface ColorSystemHostResourceRefV2 {
   id: string;
@@ -56,6 +67,21 @@ export interface ColorSystemRendererHostContextV2 {
 export interface ColorSystemRendererFontV2 {
   family: string;
   style: string;
+}
+
+/** p4-DE: one spot reference the owner typed; written verbatim, never looked up. */
+export interface ColorSystemRendererOwnerSpotColorV2 {
+  system: 'pantone' | 'other';
+  name: string;
+  finish: 'coated' | 'uncoated' | 'none';
+}
+
+/** p4-DE: the owner's spot references for one Create, dated for the descriptions. */
+export interface ColorSystemRendererOwnerSpotColorsV2 {
+  /** UTC calendar date (YYYY-MM-DD) the owner supplied them; printed in each description. */
+  suppliedOn: string;
+  /** Keyed by the family's stable id, exactly as the review's brand surfaces list it. */
+  byFamilyId: Readonly<Record<string, ColorSystemRendererOwnerSpotColorV2>>;
 }
 
 export interface ColorSystemRendererOwnershipMetadataV2 {
@@ -196,10 +222,17 @@ export interface RenderColorSystemResourceBlueprintV2Options {
       'transactionId' | 'outputAction' | 'outputName' | 'outputPageName' | 'counts'
     >;
   };
+  /**
+   * p4-DE: appended to the description of each named family's anchor Variable
+   * and of every `source/…` Variable that anchor derives from. Checked in
+   * preflight; a malformed or unknown entry blocks before any mutation.
+   */
+  ownerSpotColors?: ColorSystemRendererOwnerSpotColorsV2;
 }
 
 export type ColorSystemRendererBlockedCodeV2 =
   | 'INVALID_BLUEPRINT'
+  | 'INVALID_SPOT_COLOR'
   | 'CURRENT_FILE_REQUIRED'
   | 'UNSUPPORTED_HOST'
   | 'READ_ONLY'
@@ -228,6 +261,8 @@ export type ColorSystemRendererReceiptV2 =
       createdRefs: readonly ColorSystemHostResourceRefV2[];
       undoBoundaryCount: 1;
       warnings: readonly string[];
+      /** p4-DE: present when the Create carried owner spot colors; descriptions written. */
+      spotDescriptionsWritten?: number;
       receiptHash: string;
     }
   | {
@@ -291,12 +326,12 @@ interface PreparedRenderPlan {
   fonts: readonly ColorSystemRendererFontV2[];
 }
 
-class RendererPreflightError extends Error {
+class RendererPreflightError extends ColorSystemResourceTransactionPreflightErrorV1 {
   constructor(
     readonly code: ColorSystemRendererBlockedCodeV2,
     message: string
   ) {
-    super(message);
+    super(code, message);
     this.name = 'RendererPreflightError';
   }
 }
@@ -543,6 +578,91 @@ export function assertColorSystemResourceBlueprintV2StandaloneIntegrity(
     );
   }
   const componentIds = new Set(blueprint.components.map(component => component.recipeId));
+  for (const component of blueprint.components.filter(
+    component => component.kind === 'product-graphics'
+  )) {
+    try {
+      const content = component.content as { mode?: unknown; rendering?: unknown };
+      const rendering = readColorSystemProductGraphicsRenderingV1(content.rendering);
+      const mode = content.mode;
+      if (
+        typeof mode !== 'string' ||
+        !outputModes.has(mode) ||
+        component.paintBindings.length !== rendering.uses.length ||
+        new Set(component.paintBindings.map(binding => binding.purpose)).size !==
+          rendering.uses.length
+      )
+        throw new Error('Graphic paint bindings are incomplete or duplicated.');
+      for (const use of rendering.uses) {
+        const binding = component.paintBindings.find(
+          binding => binding.purpose === `use:${use.id}`
+        );
+        if (!binding || binding.mode !== mode)
+          throw new Error('Graphic paint mode differs from its declared context.');
+        const alias = blueprint.collections[1].variables.find(
+          variable => variable.recipeId === binding.variableRecipeId
+        );
+        const primitiveId = alias
+          ? alias.aliasesByMode[mode]?.targetVariableRecipeId
+          : binding.variableRecipeId;
+        const primitive = blueprint.collections[0].variables.find(
+          variable => variable.recipeId === primitiveId
+        );
+        const origin = primitive?.origin;
+        if (
+          !primitive?.valuesByMode[mode] ||
+          (use.ref.kind === 'preserved-source-color'
+            ? use.ref.mode !== mode ||
+              origin?.kind !== 'preserved-source' ||
+              origin.stableColorId !== use.ref.stableColorId
+            : use.ref.ref.mode !== mode ||
+              origin?.kind !== 'approved-secondary' ||
+              origin.familyId !== use.ref.ref.familyId ||
+              origin.memberId !== use.ref.ref.memberId)
+        )
+          throw new Error('Graphic paint binding changes the declared exact reference.');
+      }
+    } catch (error) {
+      throw new RendererPreflightError(
+        'INVALID_BLUEPRINT',
+        error instanceof Error ? error.message : 'Invalid graphic rendering plan.'
+      );
+    }
+  }
+  for (const frame of blueprint.frames.filter(frame => frame.role === 'product-graphics')) {
+    try {
+      layoutColorSystemProductGraphicsComponentsV1({
+        components: [...frame.componentRecipeIds]
+          .sort((left, right) => {
+            const a = blueprint.components.find(component => component.recipeId === left)!;
+            const b = blueprint.components.find(component => component.recipeId === right)!;
+            const order = (component: ColorSystemComponentRecipeV2) => {
+              const value = (component.content as { order?: unknown }).order;
+              return typeof value === 'number' ? value : Number.MAX_SAFE_INTEGER;
+            };
+            return order(a) - order(b) || a.name.localeCompare(b.name);
+          })
+          .map(id => {
+            const component = blueprint.components.find(component => component.recipeId === id);
+            const rendering = readColorSystemProductGraphicsRenderingV1(
+              (component?.content as { rendering?: unknown })?.rendering
+            );
+            return { id, ...colorSystemProductGraphicsComponentSizeV1(rendering) };
+          }),
+        frame: frame.presentationContent.frame,
+        palette: frame.presentationContent.frame.palette,
+        rows: frame.presentationContent.section.rows,
+        systemVariableCount: frame.systemVariableRecipeIds.length,
+      });
+    } catch (error) {
+      throw new RendererPreflightError(
+        'INVALID_BLUEPRINT',
+        error instanceof Error
+          ? error.message
+          : 'Graphic board does not fit its declared presentation.'
+      );
+    }
+  }
   if (
     blueprint.frames.length !== 5 ||
     blueprint.frames.some(
@@ -577,7 +697,13 @@ export function assertColorSystemResourceBlueprintV2StandaloneIntegrity(
     blueprint.counts.styles > blueprint.limits.maximumStyles ||
     blueprint.counts.familyModeComponentVariants >
       blueprint.limits.maximumFamilyModeComponentVariants ||
-    blueprint.counts.estimatedNodes > blueprint.limits.maximumEstimatedNodes
+    blueprint.counts.estimatedNodes > blueprint.limits.maximumEstimatedNodes ||
+    estimateColorSystemResourceNodesV2(
+      expectedCounts.variables,
+      blueprint.styles,
+      blueprint.components,
+      blueprint.frames
+    ) > blueprint.limits.maximumEstimatedNodes
   ) {
     throw new RendererPreflightError(
       'INVALID_BLUEPRINT',
@@ -624,6 +750,114 @@ function allNames(plan: ReturnType<typeof destinationNames>): string[] {
   ];
 }
 
+// ============================================
+// p4-DE: owner-supplied spot colors → Variable descriptions
+// ============================================
+
+const SPOT_SUPPLIED_ON = /^\d{4}-\d{2}-\d{2}$/;
+/** True when any character is a C0 control (below 0x20) or DEL (0x7F). */
+function hasControlCharacter(value: string): boolean {
+  for (const character of value) {
+    const code = character.charCodeAt(0);
+    if (code < 0x20 || code === 0x7f) return true;
+  }
+  return false;
+}
+const SPOT_FINISHES = ['coated', 'uncoated', 'none'] as const;
+
+/**
+ * The sentence appended to a Variable description for an owner-supplied spot
+ * color, for example “Spot: Pantone 123 C, coated (owner-supplied, 2026-09-08)”.
+ * The reference text is the owner's; the date is when they supplied it.
+ */
+export function colorSystemSpotDescriptionV2(
+  spot: ColorSystemRendererOwnerSpotColorV2,
+  suppliedOn: string
+): string {
+  const finish = spot.finish === 'none' ? '' : `, ${spot.finish}`;
+  return `Spot: ${colorSystemOwnerSpotColorLabelV2(spot)}${finish} (owner-supplied, ${suppliedOn})`;
+}
+
+/** Fails closed before any host call: every entry must name a family in this system and be well formed. */
+function assertOwnerSpotColors(
+  blueprint: ColorSystemResourceBlueprintV2,
+  spots: ColorSystemRendererOwnerSpotColorsV2 | undefined
+): void {
+  if (spots === undefined) return;
+  if (typeof spots.suppliedOn !== 'string' || !SPOT_SUPPLIED_ON.test(spots.suppliedOn)) {
+    throw new RendererPreflightError(
+      'INVALID_SPOT_COLOR',
+      'Owner spot colors need the calendar date they were supplied on.'
+    );
+  }
+  const families = new Map(blueprint.tokenNaming.families.map(plan => [plan.familyId, plan]));
+  for (const [familyId, spot] of Object.entries(spots.byFamilyId)) {
+    const plan = families.get(familyId);
+    if (!plan || plan.anchorVariableRecipeId === null) {
+      throw new RendererPreflightError(
+        'INVALID_SPOT_COLOR',
+        `A spot color names a family that is not in this system: ${familyId.slice(0, 120)}.`
+      );
+    }
+    if (
+      (spot.system !== 'pantone' && spot.system !== 'other') ||
+      typeof spot.name !== 'string' ||
+      spot.name !== spot.name.trim() ||
+      spot.name.length === 0 ||
+      spot.name.length > COLOR_SYSTEM_OWNER_SPOT_COLOR_LIMITS_V2.maximumNameLength ||
+      hasControlCharacter(spot.name) ||
+      !SPOT_FINISHES.includes(spot.finish)
+    ) {
+      throw new RendererPreflightError(
+        'INVALID_SPOT_COLOR',
+        `The spot color for ${plan.sourceName} is malformed; Teul writes only what the owner typed.`
+      );
+    }
+  }
+}
+
+/**
+ * Which primitive Variables receive the spot sentence: the family's anchor step
+ * (step 9 or the named base, per the token naming) and every preserved
+ * `source/…` Variable the anchor member derives from. Preflight has already
+ * rejected unknown families; entries are visited in family-id order.
+ */
+function spotDescriptionsByRecipeId(
+  blueprint: ColorSystemResourceBlueprintV2,
+  spots: ColorSystemRendererOwnerSpotColorsV2 | undefined
+): ReadonlyMap<string, string> {
+  const sentences = new Map<string, string>();
+  if (spots === undefined) return sentences;
+  const primitives = blueprint.collections[0].variables;
+  const entries = Object.entries(spots.byFamilyId).sort(([left], [right]) =>
+    compareText(left, right)
+  );
+  for (const [familyId, spot] of entries) {
+    const plan = blueprint.tokenNaming.families.find(item => item.familyId === familyId);
+    if (!plan?.anchorVariableRecipeId) continue;
+    const sentence = colorSystemSpotDescriptionV2(spot, spots.suppliedOn);
+    sentences.set(plan.anchorVariableRecipeId, sentence);
+    const anchor = primitives.find(variable => variable.recipeId === plan.anchorVariableRecipeId);
+    const sourceIds = new Set(
+      anchor?.origin.kind === 'approved-secondary' ? anchor.origin.provenance.sourceColorIds : []
+    );
+    for (const variable of primitives) {
+      if (
+        variable.origin.kind === 'preserved-source' &&
+        sourceIds.has(variable.origin.stableColorId)
+      ) {
+        sentences.set(variable.recipeId, sentence);
+      }
+    }
+  }
+  return sentences;
+}
+
+function withSpotSentence(description: string, sentence: string | undefined): string {
+  if (sentence === undefined) return description;
+  return description.trim().length === 0 ? sentence : `${description}\n${sentence}`;
+}
+
 async function preflight(
   host: ColorSystemRendererHostV2,
   blueprint: ColorSystemResourceBlueprintV2,
@@ -631,6 +865,7 @@ async function preflight(
   deferCollisionFailure = false
 ): Promise<PreparedRenderPlan> {
   assertColorSystemResourceBlueprintV2StandaloneIntegrity(blueprint);
+  assertOwnerSpotColors(blueprint, options.ownerSpotColors); // p4-DE
   const transactionId = printable(options.transactionId, 'transactionId', 100);
   const expectedFile = printable(
     options.expectedCurrentFileIdentityHash,
@@ -842,402 +1077,221 @@ export async function renderColorSystemResourceBlueprintV2(
   blueprint: ColorSystemResourceBlueprintV2,
   options: RenderColorSystemResourceBlueprintV2Options
 ): Promise<ColorSystemRendererReceiptV2> {
-  const safeTransactionId =
-    typeof options.transactionId === 'string' && options.transactionId.trim().length > 0
-      ? options.transactionId.trim().slice(0, 100)
-      : 'invalid-transaction';
-  let journal: ColorSystemCreateJournalV2 | null = null;
-  let recoveryRan = false;
-  let completedRecovery: Extract<
-    ColorSystemCreateJournalReconciliationV2,
-    { status: 'cleaned-interrupted-output' }
-  > | null = null;
   const journalTarget = {
     systemId: blueprint.output.systemId,
     resourceBlueprintHash: blueprint.resourceBlueprintHash,
     sectionBlueprintHash: blueprint.sectionBlueprintHash,
   };
-
-  if (options.journal) {
-    if (!host.setCreatedResourceObserver) {
-      return blockedReceipt(
-        safeTransactionId,
-        'JOURNAL_UNAVAILABLE',
-        'The Figma host cannot persist exact v2 Create resource ownership.'
-      );
-    }
-    let persisted: ColorSystemCreateJournalV2 | null;
-    try {
-      persisted = options.journal.runtime.read();
-    } catch (error) {
-      return blockedReceipt(
-        safeTransactionId,
-        'RECOVERY_REQUIRED',
-        error instanceof Error ? error.message : 'The v2 Create journal could not be read safely.'
-      );
-    }
-    const exactPersistedTarget =
-      persisted?.state === 'verified' &&
-      persisted.systemId === journalTarget.systemId &&
-      persisted.resourceBlueprintHash === journalTarget.resourceBlueprintHash &&
-      persisted.sectionBlueprintHash === journalTarget.sectionBlueprintHash;
-    const needsRecoveryBeforeCollisionDecision =
-      persisted?.state === 'creating' || exactPersistedTarget;
-    if (needsRecoveryBeforeCollisionDecision) {
-      let recoveryPlan: PreparedRenderPlan;
-      try {
-        recoveryPlan = await preflight(host, blueprint, options, true);
-      } catch (error) {
-        if (error instanceof RendererPreflightError) {
-          return blockedReceipt(safeTransactionId, error.code, error.message);
-        }
-        return blockedReceipt(
-          safeTransactionId,
-          'PREFLIGHT_FAILED',
-          error instanceof Error ? error.message : 'Recovery preflight failed.'
-        );
-      }
-      try {
-        const recovery = await options.journal.runtime.reconcile(
-          options.expectedCurrentFileIdentityHash,
-          journalTarget,
-          () => assertFinalMutationFence(host, options)
-        );
-        recoveryRan = true;
-        const receipt = reconciliationReceipt(recoveryPlan.transactionId, blueprint, recovery);
-        if (receipt) return receipt;
-        if (recovery.status === 'cleaned-interrupted-output') completedRecovery = recovery;
-      } catch (error) {
-        if (error instanceof RendererPreflightError) {
-          return blockedReceipt(recoveryPlan.transactionId, error.code, error.message);
-        }
-        return blockedReceipt(
-          recoveryPlan.transactionId,
-          'RECOVERY_REQUIRED',
-          error instanceof Error
-            ? error.message
-            : 'V2 Create recovery could not be completed safely.'
-        );
-      }
-    }
-  }
-
-  let plan: PreparedRenderPlan;
-  try {
-    plan = await preflight(host, blueprint, options);
-  } catch (error) {
-    if (completedRecovery) {
-      return hashReceipt({
-        version: COLOR_SYSTEM_RESOURCE_RENDERER_V2_RECEIPT_VERSION,
-        status: 'rolled-back' as const,
-        transactionId: safeTransactionId,
-        failedPhase: 'reconciliation' as const,
-        message: `Teul safely removed ${completedRecovery.removedResourceCount} resource(s) from the earlier interrupted Create, but the new Create preflight is blocked: ${error instanceof Error ? error.message : 'preflight failed.'}`,
-        resourceBlueprintHash: blueprint.resourceBlueprintHash,
-        createdCount: 0,
-        removedCount: completedRecovery.removedResourceCount,
-        unresolvedRefs: [],
-      });
-    }
-    if (error instanceof RendererPreflightError) {
-      return blockedReceipt(safeTransactionId, error.code, error.message);
-    }
-    return blockedReceipt(
-      safeTransactionId,
-      'PREFLIGHT_FAILED',
-      error instanceof Error ? error.message : 'Preflight failed.'
-    );
-  }
-
-  if (options.journal) {
-    try {
-      if (!recoveryRan) {
-        const recovery = await options.journal.runtime.reconcile(
-          options.expectedCurrentFileIdentityHash,
-          journalTarget,
-          () => assertFinalMutationFence(host, options)
-        );
-        const receipt = reconciliationReceipt(plan.transactionId, blueprint, recovery);
-        if (receipt) return receipt;
-      }
-      await assertFinalMutationFence(host, options);
-      journal = options.journal.runtime.begin({
-        ...options.journal.input,
-        transactionId: plan.transactionId,
-        outputAction: plan.action,
-        outputName: plan.outputName,
-        outputPageName: `${plan.outputName} — Color System`,
-        counts: blueprint.counts,
-      });
-    } catch (error) {
-      if (error instanceof RendererPreflightError) {
-        return blockedReceipt(plan.transactionId, error.code, error.message);
-      }
-      return blockedReceipt(
-        plan.transactionId,
-        'RECOVERY_REQUIRED',
-        error instanceof Error ? error.message : 'V2 Create recovery could not be completed safely.'
-      );
-    }
-  } else {
-    try {
-      await assertFinalMutationFence(host, options);
-    } catch (error) {
-      if (error instanceof RendererPreflightError) {
-        return blockedReceipt(plan.transactionId, error.code, error.message);
-      }
-      return blockedReceipt(
-        plan.transactionId,
-        'FINAL_FENCE_FAILED',
-        error instanceof Error ? error.message : 'The final mutation fence failed.'
-      );
-    }
-  }
-
-  const created: ColorSystemHostResourceRefV2[] = [];
-  const refsByRecipe = new Map<string, ColorSystemHostResourceRefV2>();
-  let phase: ColorSystemRendererMutationPhaseV2 = 'collections';
-  const remember = (ref: ColorSystemHostResourceRefV2) => {
-    if (refsByRecipe.has(ref.recipeId)) {
-      throw new Error(`Host returned duplicate recipe ref ${ref.recipeId}.`);
-    }
-    created.push(ref);
-    refsByRecipe.set(ref.recipeId, ref);
-  };
-
-  if (journal && options.journal && host.setCreatedResourceObserver) {
-    host.setCreatedResourceObserver(ref => {
-      if (!journal || !options.journal) {
-        throw new Error('The v2 Create journal observer lost its transaction state.');
-      }
-      journal = options.journal.runtime.record(journal, {
-        kind: ref.kind,
-        id: ref.id,
-        recipeId: ref.recipeId,
-      });
-    });
-  }
-
-  try {
-    const primitiveCollection = await host.createCollection({
-      recipe: blueprint.collections[0],
-      name: plan.primitiveCollectionName,
-      metadata: ownership(blueprint, plan.transactionId, blueprint.collections[0].recipeId),
-    });
-    remember(primitiveCollection.ref);
-    const semanticCollection = await host.createCollection({
-      recipe: blueprint.collections[1],
-      name: plan.semanticCollectionName,
-      metadata: ownership(blueprint, plan.transactionId, blueprint.collections[1].recipeId),
-    });
-    remember(semanticCollection.ref);
-
-    phase = 'primitive-variables';
-    for (const variable of blueprint.collections[0].variables) {
-      const ref = await host.createPrimitiveVariable({
-        collectionId: primitiveCollection.ref.id,
-        recipeId: variable.recipeId,
-        name: variable.name,
-        description: variable.description,
-        scopes: variable.scopes,
-        values: Object.entries(variable.valuesByMode).map(([modeName, value]) => ({
-          modeName,
-          modeId: requireModeId(primitiveCollection, modeName, variable.recipeId),
-          rgba: {
-            r: value.components.r,
-            g: value.components.g,
-            b: value.components.b,
-            a: value.alpha,
+  const journalOptions = options.journal;
+  return runColorSystemResourceTransactionV1<
+    PreparedRenderPlan,
+    ColorSystemCreateJournalV2,
+    ColorSystemCreateJournalReconciliationV2,
+    ColorSystemRendererReceiptV2,
+    number
+  >(host, {
+    contractKind: 'legacy-v2',
+    transactionId: options.transactionId,
+    ...(journalOptions
+      ? {
+          journal: {
+            acquire() {
+              const lease = journalOptions.runtime.acquireTransaction();
+              if (!lease) return null;
+              const runtime = lease.legacy;
+              return {
+                release: lease.release,
+                read: runtime.read,
+                matchesTarget: (journal: ColorSystemCreateJournalV2) =>
+                  journal.systemId === journalTarget.systemId &&
+                  journal.resourceBlueprintHash === journalTarget.resourceBlueprintHash &&
+                  journal.sectionBlueprintHash === journalTarget.sectionBlueprintHash,
+                reconcile: (beforeMutation?: () => Promise<void>) =>
+                  runtime.reconcile(
+                    options.expectedCurrentFileIdentityHash,
+                    journalTarget,
+                    beforeMutation
+                  ),
+                begin: (plan: PreparedRenderPlan) =>
+                  runtime.begin({
+                    ...journalOptions.input,
+                    transactionId: plan.transactionId,
+                    outputAction: plan.action,
+                    outputName: plan.outputName,
+                    outputPageName: `${plan.outputName} — Color System`,
+                    counts: blueprint.counts,
+                  }),
+                record: runtime.record,
+                markVerified: runtime.markVerified,
+                acknowledgeCommitted: runtime.acknowledgeCommitted,
+              };
+            },
           },
-        })),
-        metadata: ownership(blueprint, plan.transactionId, variable.recipeId),
-      });
-      remember(ref);
-    }
-
-    phase = 'alias-variables';
-    for (const variable of blueprint.collections[1].variables) {
-      const ref = await host.createAliasVariable({
-        collectionId: semanticCollection.ref.id,
-        recipeId: variable.recipeId,
-        name: variable.name,
-        description: variable.description,
-        scopes: variable.scopes,
-        aliases: Object.entries(variable.aliasesByMode).map(([modeName, alias]) => ({
-          modeName,
-          modeId: requireModeId(semanticCollection, modeName, variable.recipeId),
-          targetVariableId: requireHostId(
-            refsByRecipe,
-            alias.targetVariableRecipeId,
-            variable.recipeId
-          ),
-        })),
-        metadata: ownership(blueprint, plan.transactionId, variable.recipeId),
-      });
-      remember(ref);
-    }
-
-    phase = 'styles';
-    for (const style of blueprint.styles) {
-      const ref = await host.createPaintStyle({
-        recipeId: style.recipeId,
-        name: plan.styleNames.get(style.recipeId) ?? style.name,
-        description: style.description,
-        variableId: requireHostId(refsByRecipe, style.binding.variableRecipeId, style.recipeId),
-        metadata: ownership(blueprint, plan.transactionId, style.recipeId),
-      });
-      remember(ref);
-    }
-
-    phase = 'components';
-    for (const component of blueprint.components) {
-      const ref = await host.createComponent({
-        recipe: component,
-        name: plan.componentNames.get(component.recipeId) ?? component.name,
-        paintBindings: component.paintBindings.map(binding => ({
-          purpose: binding.purpose,
-          mode: binding.mode,
-          variableId: requireHostId(refsByRecipe, binding.variableRecipeId, component.recipeId),
-        })),
-        metadata: ownership(blueprint, plan.transactionId, component.recipeId),
-      });
-      remember(ref);
-    }
-
-    phase = 'frames';
-    for (const frame of blueprint.frames) {
-      const ref = await host.createFrame({
-        recipe: frame,
-        name: plan.frameNames.get(frame.recipeId) ?? frame.sectionContent.title,
-        componentIds: frame.componentRecipeIds.map(id =>
-          requireHostId(refsByRecipe, id, frame.recipeId)
-        ),
-        systemVariableIds: frame.systemVariableRecipeIds.map(id =>
-          requireHostId(refsByRecipe, id, frame.recipeId)
-        ),
-        geometry: frame.presentationContent.frame,
-        metadata: ownership(blueprint, plan.transactionId, frame.recipeId),
-      });
-      remember(ref);
-    }
-
-    phase = 'verification';
-    const inventory = await host.inspectCreatedSystem({
-      transactionId: plan.transactionId,
-      refs: created,
-    });
-    assertHostInventory(blueprint, inventory);
-
-    const warnings: string[] = [];
-    try {
-      await host.revealCreatedSystem({
-        transactionId: plan.transactionId,
-        frameRefs: created.filter(ref => ref.kind === 'frame'),
-      });
-    } catch {
-      warnings.push(
-        `The system was created, but Figma could not show the new page automatically. Open "${plan.outputName} — Color System" from Pages.`
-      );
-    }
-    phase = 'undo-boundary';
-    if (journal && options.journal) {
-      journal = options.journal.runtime.markVerified(journal);
-    }
-    await host.commitUndo();
-    if (journal && options.journal) {
-      phase = 'completion-acknowledgement';
-      await options.journal.runtime.acknowledgeCommitted(journal);
-    }
-    host.setCreatedResourceObserver?.(null);
-    return hashReceipt({
-      version: COLOR_SYSTEM_RESOURCE_RENDERER_V2_RECEIPT_VERSION,
-      status: 'created' as const,
-      transactionId: plan.transactionId,
-      currentFileOnly: true as const,
-      action: plan.action,
-      outputName: plan.outputName,
-      resourceBlueprintHash: blueprint.resourceBlueprintHash,
-      sectionBlueprintHash: blueprint.sectionBlueprintHash,
-      counts: blueprint.counts,
-      createdRefs: created,
-      undoBoundaryCount: 1 as const,
-      warnings,
-    });
-  } catch (error) {
-    host.setCreatedResourceObserver?.(null);
-    if (journal?.state === 'verified' && options.journal) {
-      return hashReceipt({
-        version: COLOR_SYSTEM_RESOURCE_RENDERER_V2_RECEIPT_VERSION,
-        status: 'cleanup-incomplete' as const,
-        transactionId: plan.transactionId,
-        failedPhase: phase,
-        message:
-          phase === 'completion-acknowledgement'
-            ? 'The complete output and final undo boundary succeeded, but Teul could not durably acknowledge completion. The verified recovery marker was preserved and new Create mutations remain blocked until it is reconciled.'
-            : 'The complete output was verified, but Teul could not confirm its final undo boundary. The durable recovery marker was preserved and new Create mutations remain blocked until it is reconciled.',
-        resourceBlueprintHash: blueprint.resourceBlueprintHash,
-        createdCount: journal.resources.length,
-        removedCount: 0,
-        unresolvedRefs: journal.resources,
-      });
-    }
-    const unresolved: ColorSystemHostResourceRefV2[] = [];
-    let durableReconciliationBlocked = false;
-    let removedCount = 0;
-    for (const ref of [...created].reverse()) {
-      try {
-        await host.removeResource(ref);
-        removedCount += 1;
-      } catch {
-        unresolved.push(ref);
-      }
-    }
-    if (journal && options.journal) {
-      try {
-        const recovery = await options.journal.runtime.reconcile(
-          options.expectedCurrentFileIdentityHash,
-          {
-            systemId: blueprint.output.systemId,
-            resourceBlueprintHash: blueprint.resourceBlueprintHash,
-            sectionBlueprintHash: blueprint.sectionBlueprintHash,
-          }
-        );
-        if (recovery.status === 'cleaned-interrupted-output') {
-          removedCount = Math.max(removedCount, recovery.removedResourceCount);
         }
-        durableReconciliationBlocked = recovery.blocksNewMutation;
+      : {}),
+    preflight: deferCollisionFailure => preflight(host, blueprint, options, deferCollisionFailure),
+    finalMutationFence: () => assertFinalMutationFence(host, options),
+    async mutate(plan, { remember, refsByRecipe, setPhase }) {
+      const primitiveCollection = await host.createCollection({
+        recipe: blueprint.collections[0],
+        name: plan.primitiveCollectionName,
+        metadata: ownership(blueprint, plan.transactionId, blueprint.collections[0].recipeId),
+      });
+      remember(primitiveCollection.ref);
+      const semanticCollection = await host.createCollection({
+        recipe: blueprint.collections[1],
+        name: plan.semanticCollectionName,
+        metadata: ownership(blueprint, plan.transactionId, blueprint.collections[1].recipeId),
+      });
+      remember(semanticCollection.ref);
+
+      setPhase('primitive-variables');
+      // p4-DE: the owner's spot sentence rides the description through the host adapter.
+      const spotSentences = spotDescriptionsByRecipeId(blueprint, options.ownerSpotColors);
+      let spotDescriptionsWritten = 0;
+      for (const variable of blueprint.collections[0].variables) {
+        const spotSentence = spotSentences.get(variable.recipeId);
+        if (spotSentence !== undefined) spotDescriptionsWritten += 1;
+        const ref = await host.createPrimitiveVariable({
+          collectionId: primitiveCollection.ref.id,
+          recipeId: variable.recipeId,
+          name: variable.name,
+          description: withSpotSentence(variable.description, spotSentence),
+          scopes: variable.scopes,
+          values: Object.entries(variable.valuesByMode).map(([modeName, value]) => ({
+            modeName,
+            modeId: requireModeId(primitiveCollection, modeName, variable.recipeId),
+            rgba: {
+              r: value.components.r,
+              g: value.components.g,
+              b: value.components.b,
+              a: value.alpha,
+            },
+          })),
+          metadata: ownership(blueprint, plan.transactionId, variable.recipeId),
+        });
+        remember(ref);
+      }
+
+      setPhase('alias-variables');
+      for (const variable of blueprint.collections[1].variables) {
+        const ref = await host.createAliasVariable({
+          collectionId: semanticCollection.ref.id,
+          recipeId: variable.recipeId,
+          name: variable.name,
+          description: variable.description,
+          scopes: variable.scopes,
+          aliases: Object.entries(variable.aliasesByMode).map(([modeName, alias]) => ({
+            modeName,
+            modeId: requireModeId(semanticCollection, modeName, variable.recipeId),
+            targetVariableId: requireHostId(
+              refsByRecipe,
+              alias.targetVariableRecipeId,
+              variable.recipeId
+            ),
+          })),
+          metadata: ownership(blueprint, plan.transactionId, variable.recipeId),
+        });
+        remember(ref);
+      }
+
+      setPhase('styles');
+      for (const style of blueprint.styles) {
+        const ref = await host.createPaintStyle({
+          recipeId: style.recipeId,
+          name: plan.styleNames.get(style.recipeId) ?? style.name,
+          description: style.description,
+          variableId: requireHostId(refsByRecipe, style.binding.variableRecipeId, style.recipeId),
+          metadata: ownership(blueprint, plan.transactionId, style.recipeId),
+        });
+        remember(ref);
+      }
+
+      setPhase('components');
+      for (const component of blueprint.components) {
+        const ref = await host.createComponent({
+          recipe: component,
+          name: plan.componentNames.get(component.recipeId) ?? component.name,
+          paintBindings: component.paintBindings.map(binding => ({
+            purpose: binding.purpose,
+            mode: binding.mode,
+            variableId: requireHostId(refsByRecipe, binding.variableRecipeId, component.recipeId),
+          })),
+          metadata: ownership(blueprint, plan.transactionId, component.recipeId),
+        });
+        remember(ref);
+      }
+
+      setPhase('frames');
+      for (const frame of blueprint.frames) {
+        const ref = await host.createFrame({
+          recipe: frame,
+          name: plan.frameNames.get(frame.recipeId) ?? frame.sectionContent.title,
+          componentIds: frame.componentRecipeIds.map(id =>
+            requireHostId(refsByRecipe, id, frame.recipeId)
+          ),
+          systemVariableIds: frame.systemVariableRecipeIds.map(id =>
+            requireHostId(refsByRecipe, id, frame.recipeId)
+          ),
+          geometry: frame.presentationContent.frame,
+          metadata: ownership(blueprint, plan.transactionId, frame.recipeId),
+        });
+        remember(ref);
+      }
+
+      return spotDescriptionsWritten;
+    },
+    async verify(plan, refs) {
+      const inventory = await host.inspectCreatedSystem({
+        transactionId: plan.transactionId,
+        refs,
+      });
+      assertHostInventory(blueprint, inventory);
+    },
+    async reveal(plan, refs) {
+      const warnings: string[] = [];
+      try {
+        await host.revealCreatedSystem({
+          transactionId: plan.transactionId,
+          frameRefs: refs.filter(ref => ref.kind === 'frame'),
+        });
       } catch {
-        // The persistent journal intentionally remains as the restart blocker.
-        durableReconciliationBlocked = true;
+        warnings.push(
+          `The system was created, but Figma could not show the new page automatically. Open "${plan.outputName} — Color System" from Pages.`
+        );
       }
-    }
-    const durableRefs = durableReconciliationBlocked
-      ? (journal?.resources.map(ref => ({ ...ref })) ?? [])
-      : [];
-    const unresolvedReceipt = [...unresolved];
-    for (const ref of durableRefs) {
-      if (!unresolvedReceipt.some(item => item.kind === ref.kind && item.id === ref.id)) {
-        unresolvedReceipt.push(ref);
-      }
-    }
-    const status =
-      unresolvedReceipt.length === 0 && !durableReconciliationBlocked
-        ? 'rolled-back'
-        : 'cleanup-incomplete';
-    return hashReceipt({
-      version: COLOR_SYSTEM_RESOURCE_RENDERER_V2_RECEIPT_VERSION,
-      status,
-      transactionId: plan.transactionId,
-      failedPhase: phase,
-      message: `${error instanceof Error ? error.message : 'Resource rendering failed.'}${
-        durableReconciliationBlocked
-          ? ' Durable journal reconciliation remains blocked; cleanup is incomplete.'
-          : ''
-      }`,
-      resourceBlueprintHash: blueprint.resourceBlueprintHash,
-      createdCount: created.length,
-      removedCount,
-      unresolvedRefs: unresolvedReceipt,
-    });
-  }
+      return warnings;
+    },
+    blocked: blockedReceipt,
+    reconciliation: (plan, recovery) =>
+      reconciliationReceipt(plan.transactionId, blueprint, recovery),
+    failed: failure =>
+      hashReceipt({
+        version: COLOR_SYSTEM_RESOURCE_RENDERER_V2_RECEIPT_VERSION,
+        status: failure.status,
+        transactionId: failure.transactionId,
+        failedPhase: failure.failedPhase,
+        message: failure.message,
+        resourceBlueprintHash: blueprint.resourceBlueprintHash,
+        createdCount: failure.createdCount,
+        removedCount: failure.removedCount,
+        unresolvedRefs: failure.unresolvedRefs,
+      }),
+    created: (plan, created, warnings, spotDescriptionsWritten) =>
+      hashReceipt({
+        version: COLOR_SYSTEM_RESOURCE_RENDERER_V2_RECEIPT_VERSION,
+        status: 'created' as const,
+        transactionId: plan.transactionId,
+        currentFileOnly: true as const,
+        action: plan.action,
+        outputName: plan.outputName,
+        resourceBlueprintHash: blueprint.resourceBlueprintHash,
+        sectionBlueprintHash: blueprint.sectionBlueprintHash,
+        counts: blueprint.counts,
+        createdRefs: created,
+        undoBoundaryCount: 1 as const,
+        warnings,
+        ...(options.ownerSpotColors ? { spotDescriptionsWritten } : {}),
+      }),
+  });
 }

@@ -1,0 +1,277 @@
+{
+  "status": "locally-verified",
+  "baseCommit": "9d0254cef528187019bc110df4aa2417a75a6a77",
+  "scope": "Figma/website staged source comparison and safe editable decision proposals; TASK-009 partial, full AC-011 remains open",
+  "runtimeChecks": [
+    {
+      "node": "22.13.1",
+      "studioTests": 459,
+      "studioFiles": 39,
+      "nativeRefreshScenarios": 14,
+      "figmaCaptureScenarios": 14,
+      "figmaReviewScenarios": 9,
+      "websiteScenarios": 11,
+      "pdfRefreshScenarios": 10,
+      "storageScenarios": 25,
+      "paletteRegressionScenarios": 9,
+      "proofBuild": "passed"
+    },
+    {
+      "node": "24.19.0",
+      "studioTests": 459,
+      "studioFiles": 39,
+      "nativeRefreshScenarios": 14,
+      "figmaCaptureScenarios": 14,
+      "figmaReviewScenarios": 9,
+      "websiteScenarios": 11,
+      "pdfRefreshScenarios": 10,
+      "storageScenarios": 25,
+      "paletteRegressionScenarios": 9,
+      "proofBuild": "passed"
+    }
+  ],
+  "otherChecks": {
+    "studioLint": "passed",
+    "studioTypecheck": "passed through both builds",
+    "strictPrdReady": "passed",
+    "diffWhitespace": "passed",
+    "deadExports": 48,
+    "deadFiles": 1,
+    "changeInDeadExports": -2,
+    "mobileInspection": "390px comparison and save-failure states inspected; long values and paths wrap without page overflow"
+  },
+  "review": {
+    "reuse": "No actionable findings",
+    "quality": "Ancestor context and all-mode update identity fixed; final reported finding confirmed resolved",
+    "efficiency": "Context digests computed once; targeted resolution confirmed"
+  },
+  "limitations": [
+    "Editable interpretation only; no automatic applied-review or result carryover",
+    "Website positional matches require review, not persistent element identity",
+    "Persistent carryover lineage and multi-source reconciliation remain open",
+    "No live provider/connector, designer, screen-reader or integrated release qualification",
+    "Not integrated, pushed or deployed",
+    "Existing Studio chunk-size advisory remains"
+  ],
+  "sourceFiles": [
+    {
+      "path": "docs/prds/2026-09-25-brand-guideline-import.md",
+      "bytes": 115758,
+      "sha256": "7125b674aa6c656d2b1d5ca5e825455ae59962e0f55145d73fcaf89aab80ced1"
+    },
+    {
+      "path": "docs/plans/2026-09-25-brand-guideline-import-plan.md",
+      "bytes": 86774,
+      "sha256": "010fa3931d762df010cdd414f8221a274734c69d53667653eaafaba565b1c0bf"
+    },
+    {
+      "path": "docs/evidence/brand-guideline-import/native-refresh.md",
+      "bytes": 5888,
+      "sha256": "eff1da5e438f8bcc7881a867bba0623aa40c573bf8c39678e170b6186383a1a0"
+    },
+    {
+      "path": "web/package.json",
+      "bytes": 2851,
+      "sha256": "e374ce261ee42837af817372c4a77b98e3994bb6c8ce863f577f5060b052a938"
+    },
+    {
+      "path": "web/src/components/GuidelineFigmaPanel.tsx",
+      "bytes": 32284,
+      "sha256": "ac74c6ccd2f3522c7e132416101be2abb13c72ee7d46cd5d0168c94f4c6001a3"
+    },
+    {
+      "path": "web/src/components/GuidelineFigmaReview.tsx",
+      "bytes": 3699,
+      "sha256": "1bf7478ab45d43ff918cc33be4860cc49fc46f6fb0f866fea8b4c5568ef16a12"
+    },
+    {
+      "path": "web/src/components/GuidelineWebsitePanel.tsx",
+      "bytes": 25113,
+      "sha256": "6485782ba9a2a8f19fc94daee35317916dfeef723d6aa783a07c5861e3f23905"
+    },
+    {
+      "path": "web/src/components/GuidelineWebsiteReview.tsx",
+      "bytes": 3995,
+      "sha256": "77db82c615678a40a2151521fd88dc366388d2ff4c0b7a0d26c0e38ea5735b37"
+    },
+    {
+      "path": "web/src/components/GuidelineSourceReview.tsx",
+      "bytes": 32317,
+      "sha256": "461c7c82deafa42684a784b7a41823dbc1251f03617209201d4ac1a893700a4b"
+    },
+    {
+      "path": "web/src/components/GuidelineNativeRefresh.tsx",
+      "bytes": 5622,
+      "sha256": "f1dacea6f769b3bfad0065f09379ed885720d48291a8b769036b14f8dff1dfe6"
+    },
+    {
+      "path": "web/src/components/GuidelineFigmaReview.css",
+      "bytes": 2596,
+      "sha256": "f43c2b38cde36011c4e86972d2c0213f402e30ac6e03ab5de4f66e9619c3ea7e"
+    },
+    {
+      "path": "web/src/lib/guideline/nativeRefresh.ts",
+      "bytes": 8353,
+      "sha256": "d86bde47ba38242c3463fa7821561996f5d59e497e62c1b83d61cc594837be9c"
+    },
+    {
+      "path": "web/src/lib/guideline/nativeRefreshSources.ts",
+      "bytes": 15125,
+      "sha256": "3208c5c3520f334e9d9674eebbc816c6cbb6532f2733d9a5871fe8dc99944be0"
+    },
+    {
+      "path": "web/src/lib/guideline/nativeRefresh.test.ts",
+      "bytes": 13340,
+      "sha256": "c8b520bfd2f0e9f83432a19c01fc6b5d6c272f0702e8e995e0b41cb91fabe355"
+    },
+    {
+      "path": "web/scripts/guideline-native-refresh-smoke.mjs",
+      "bytes": 11885,
+      "sha256": "98455a111e5d77d71e353dc81f9e5ee7e0b913de9abb0d3cb195cbe595d899e0"
+    },
+    {
+      "path": "web/scripts/guideline-figma-smoke.mjs",
+      "bytes": 23166,
+      "sha256": "bd2dd42c80aac33f786a7102538eccf016b1455f960f87ef43b69a171e20136d"
+    },
+    {
+      "path": "web/scripts/guideline-figma-review-smoke.mjs",
+      "bytes": 19128,
+      "sha256": "e004f7687e87d3ed44210c8959d977e4170fd0c9758bf1a2405e88d83772d737"
+    },
+    {
+      "path": "web/scripts/guideline-website-smoke.mjs",
+      "bytes": 25174,
+      "sha256": "d748b57f34b0bce31bf5945047a644e3308fdbd2abea36b91f0d2ddf6249115b"
+    },
+    {
+      "path": "web/fixtures/guidelines/figma-project-v1.json",
+      "bytes": 22943,
+      "sha256": "698b20f9ba44c2613b09775a307dc98f482abadeedea1692de8cb494672573fa"
+    },
+    {
+      "path": "web/fixtures/guidelines/website-capture.json",
+      "bytes": 41535,
+      "sha256": "bd7433bd71b11e21ecd7466992b43da5bdcc9773167c3d70f8a57531c0886346"
+    },
+    {
+      "path": "web/src/lib/guideline/useLocalProject.ts",
+      "bytes": 7521,
+      "sha256": "1f4b7599c4577872f45d5a9afdb38818fa969d86ca1369d57d7da42a37f3fda5"
+    },
+    {
+      "path": "web/src/lib/guideline/projectStore.ts",
+      "bytes": 23823,
+      "sha256": "8682f376471ec041db836dc2c1942ddc1ca81e2a6f1310c3ea133e491b14e168"
+    },
+    {
+      "path": "web/src/lib/guideline/structureRules.ts",
+      "bytes": 1889,
+      "sha256": "2481aa8b1e5e58284f9d7b5c9f33bd202bf14a3764a1aa292168bd10ef32bd9a"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "release/guideline-native-refresh/receipt-node22.json",
+      "bytes": 1566,
+      "sha256": "f53199be20b918825304653e2ad4431e95c52073f659dee5caff0f812b91fc71"
+    },
+    {
+      "path": "release/guideline-native-refresh/node22-figma-mobile.png",
+      "bytes": 65227,
+      "sha256": "20daf1700c9580ccecd5f4e24f650e22b15b9f2c3e7e33024b03585c22cbc8b0"
+    },
+    {
+      "path": "release/guideline-native-refresh/node22-website-mobile.png",
+      "bytes": 169925,
+      "sha256": "df4c9295bc96acf1c58689c95f207ea37220412a2d59a15b60b1612853ed7c15"
+    },
+    {
+      "path": "release/guideline-native-refresh/build-node22.log",
+      "bytes": 3188,
+      "sha256": "dd57aa9963ac5fdfc2f880b2cbb34c88cb1996d250ca7f0bd8a52d38ac311b96"
+    },
+    {
+      "path": "release/guideline-figma/node22-receipt.json",
+      "bytes": 1951,
+      "sha256": "153be5d4b5015255504336b4d92090ba73a1610acd321fac6f8d6e7857a4d39a"
+    },
+    {
+      "path": "release/guideline-figma-review/browser-receipt-node22.json",
+      "bytes": 2640,
+      "sha256": "f189ef535b13940ef72c7f5a2d86d1679868417adfb971be4d1b6009c598e176"
+    },
+    {
+      "path": "release/guideline-website-review/node22-receipt.json",
+      "bytes": 5556,
+      "sha256": "702d8a8ccb510c8e3e9ce41361a841e11c2713332d4ddd8e0ad06d2873f49b1d"
+    },
+    {
+      "path": "release/guideline-refresh/node22-checks.json",
+      "bytes": 1295,
+      "sha256": "36b872bd525b0bf21cef3ef2658ac102625433f29b0b5bc86f3be3ea864317fa"
+    },
+    {
+      "path": "release/guideline-storage/node22-receipt.json",
+      "bytes": 3014,
+      "sha256": "fb5dfb2e24883180d525f522c46e171642c7ac85cda90207db41239645c933d0"
+    },
+    {
+      "path": "release/guideline-native-refresh/receipt-node24.json",
+      "bytes": 1566,
+      "sha256": "d4f97d14052247d0c9c7be3faeee18295d2fda703ced49fdadc40859cf4514ed"
+    },
+    {
+      "path": "release/guideline-native-refresh/node24-figma-mobile.png",
+      "bytes": 65227,
+      "sha256": "20daf1700c9580ccecd5f4e24f650e22b15b9f2c3e7e33024b03585c22cbc8b0"
+    },
+    {
+      "path": "release/guideline-native-refresh/node24-website-mobile.png",
+      "bytes": 169925,
+      "sha256": "df4c9295bc96acf1c58689c95f207ea37220412a2d59a15b60b1612853ed7c15"
+    },
+    {
+      "path": "release/guideline-native-refresh/build-node24.log",
+      "bytes": 3188,
+      "sha256": "a82a89a0dde8dc9078ddd8d6e5cdd1feeb08967806eab611ad8ff271aa6d110c"
+    },
+    {
+      "path": "release/guideline-figma/node24-receipt.json",
+      "bytes": 1951,
+      "sha256": "f88286d50843145e7daaeac18c776fef96c783051f24fccb08a5b76ea84e11c8"
+    },
+    {
+      "path": "release/guideline-figma-review/browser-receipt-node24.json",
+      "bytes": 2640,
+      "sha256": "c485857ae2df7bd35773e3d48f4e2feaeae2bcd27e06a6b18dfb80f53ac31093"
+    },
+    {
+      "path": "release/guideline-website-review/node24-receipt.json",
+      "bytes": 5672,
+      "sha256": "a6e25e853e5240cc98b207646874021a0eb54f6d6410b7d93cebb50a287abee8"
+    },
+    {
+      "path": "release/guideline-refresh/node24-checks.json",
+      "bytes": 1295,
+      "sha256": "d3997001a2038a03163d8b08f0b130383e9fce6b5d09caeac001dc774a06d0d8"
+    },
+    {
+      "path": "release/guideline-storage/node24-receipt.json",
+      "bytes": 3014,
+      "sha256": "3a970eb004d9abfe58d1bb6e26568d42b3b31122944cc6f757c416574deb3ff9"
+    }
+  ],
+  "productionAssets": [
+    {
+      "path": "web/dist/assets/GuidelineWorkspace-CY-n0-eU.js",
+      "bytes": 862502,
+      "sha256": "8d29db1e66146a89de0b66d0c24ce8696fb223a81b90b51d34384c8d62bb72d5"
+    },
+    {
+      "path": "web/dist/assets/GuidelineWorkspace-DZs_6HAU.css",
+      "bytes": 24103,
+      "sha256": "4b38118923568ed7fb4d6049aefcb1dba9a0a839fd3a724df77bbef95c48f48c"
+    }
+  ]
+}

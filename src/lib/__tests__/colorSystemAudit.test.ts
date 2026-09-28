@@ -1,19 +1,13 @@
-import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import {
   auditColorSystem,
-  canonicalHashJson,
-  canonicalJson,
   COLOR_SYSTEM_DIAGNOSTIC_POLICY,
   createSourceSystemSnapshot,
-  DETERMINISTIC_HASH_DECIMAL_PLACES,
-  deterministicContentHash,
-  deterministicTextHash,
   evaluateAccessibilityPair,
   observedLiteralCandidateIdentity,
 } from '../colorSystemAudit';
+import { deterministicContentHash } from '../colorSystemHashing';
 import { sourceSectionKindForHeading } from '../colorSystemSourceSectionPolicy';
-import { createColorSystemProposal } from '../colorSystemProposal';
 import { hexToRgb, rgbToOklab } from '../utils';
 import type {
   SourceColorToken,
@@ -104,23 +98,20 @@ function confirmedRole(role: string): SourceRoleEvidence {
 }
 
 function tokensWithPendingRoles(count: number): SourceColorToken[] {
-  return Array.from(
-    { length: count },
-    (_, index): SourceColorToken => ({
-      id: `token-${index}`,
-      name: `Token ${index}`,
-      path: ['token', String(index)],
-      valuesByMode: {},
+  return Array.from({ length: count }, (_, index): SourceColorToken => ({
+    id: `token-${index}`,
+    name: `Token ${index}`,
+    path: ['token', String(index)],
+    valuesByMode: {},
+    evidence: [],
+    roleEvidence: ['primary', 'secondary'].map(role => ({
+      role,
+      status: 'inferred' as const,
+      confidence: 0.5,
       evidence: [],
-      roleEvidence: ['primary', 'secondary'].map(role => ({
-        role,
-        status: 'inferred' as const,
-        confidence: 0.5,
-        evidence: [],
-        reviewerDisposition: 'pending' as const,
-      })),
-    })
-  );
+      reviewerDisposition: 'pending' as const,
+    })),
+  }));
 }
 
 function exactWcagRatio(
@@ -159,38 +150,6 @@ function compositeComponents(
 }
 
 describe('color-system snapshot and accessibility evidence', () => {
-  it('matches an independent SHA-256 oracle over canonical JSON', () => {
-    const value = { zebra: ['틀', 2], alpha: { enabled: true } };
-    const expected = createHash('sha256').update(canonicalJson(value)).digest('hex');
-
-    expect(deterministicContentHash(value)).toBe(`sha256:${expected}`);
-  });
-
-  it('stabilizes generated floating-point evidence without changing raw canonical JSON', () => {
-    const first = { l: 0.51234567890124, c: -0, h: 241.0000000000004 };
-    const equivalent = { l: 0.51234567890126, c: 0, h: 241.0000000000002 };
-
-    expect(DETERMINISTIC_HASH_DECIMAL_PLACES).toBe(9);
-    expect(canonicalJson(first)).not.toBe(canonicalJson(equivalent));
-    expect(canonicalHashJson(first)).toBe(canonicalHashJson(equivalent));
-    expect(deterministicContentHash(first)).toBe(deterministicContentHash(equivalent));
-    expect(deterministicContentHash({ l: 0.512345681 })).not.toBe(
-      deterministicContentHash({ l: 0.512345679 })
-    );
-  });
-
-  it.each(['\ud800', '\udc00', `left\ud800right`, `left\udc00right`])(
-    'matches the UTF-8 replacement behavior for unmatched surrogate %j',
-    value => {
-      const canonical = canonicalJson({ description: value });
-      const contentOracle = createHash('sha256').update(canonical, 'utf8').digest('hex');
-      const textOracle = createHash('sha256').update(value, 'utf8').digest('hex');
-
-      expect(deterministicContentHash({ description: value })).toBe(`sha256:${contentOracle}`);
-      expect(deterministicTextHash(value)).toBe(`sha256:${textOracle}`);
-    }
-  );
-
   it('hashes canonical source content independently of capture and authorization receipts', () => {
     const firstToken = token('brand.primary', '#3366cc', { dark: '#6699ff' });
     const secondToken = token('neutral.canvas', '#ffffff', { dark: '#000000' });
@@ -599,15 +558,6 @@ describe('color-system snapshot and accessibility evidence', () => {
         classification: 'unsupported',
       })
     );
-    expect(
-      createColorSystemProposal(snapshot, {
-        strategy: 'exact-radix',
-        anchors: [],
-      })
-    ).toMatchObject({
-      status: 'no-solution',
-      blockers: [{ code: 'AUDIT_EVIDENCE_TRUNCATED' }],
-    });
   });
 
   it('bounds per-diagnostic evidence and exposes the omission as a blocking diagnostic', () => {
@@ -662,15 +612,6 @@ describe('color-system snapshot and accessibility evidence', () => {
     expect(audit.diagnostics).toContainEqual(
       expect.objectContaining({ code: 'AUDIT_EVIDENCE_TRUNCATED', severity: 'blocking' })
     );
-    expect(
-      createColorSystemProposal(snapshot, {
-        strategy: 'exact-radix',
-        anchors: [],
-      })
-    ).toMatchObject({
-      status: 'no-solution',
-      blockers: [{ code: 'AUDIT_EVIDENCE_TRUNCATED' }],
-    });
   });
 
   it('treats a per-mode alias graph as authoritative while retaining legacy shorthand', () => {

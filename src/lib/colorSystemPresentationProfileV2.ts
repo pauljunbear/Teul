@@ -1,4 +1,4 @@
-import { canonicalJson, deterministicContentHash } from './colorSystemAudit';
+import { canonicalJson, deterministicContentHash } from './colorSystemHashing';
 import {
   COLOR_SYSTEM_SECTION_ROLES_V2,
   type ColorSystemSectionRoleV2,

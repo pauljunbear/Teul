@@ -1,5 +1,4 @@
 import {
-  calculateContrastRatio,
   getLuminance,
   hexToOklch,
   hexToRgb,
@@ -9,12 +8,22 @@ import {
   rgbToOklab,
   type OKLCH,
 } from './utils';
+import type { ColorSystemColorValueV2 } from './colorSystemBuilderV2Contracts';
+import {
+  colorSystemSrgbToOklchV1,
+  colorSystemSrgbToRgbV1,
+  normalizeColorSystemSrgbValueV1,
+} from './colorSystemSrgbValueV1';
 
 export type ColorScaleMode = 'light' | 'dark';
 
 interface ColorStep {
   step: number;
   hex: string;
+  /** Present only when the display hex is an approximation of exact native channels. */
+  value?: ColorSystemColorValueV2;
+  /** Fixed step endpoints used to derive this generated step. */
+  sourceAnchorSteps?: readonly [number, number];
   /** Exact coordinates requested before gamut mapping for this finalized step. */
   requestedOklch: OKLCH;
   /** Exact coordinates returned by Local MINDE before hex quantization. */
@@ -65,10 +74,12 @@ export interface ColorScaleValidation {
 export interface ColorScale {
   name: string;
   baseHex: string;
+  baseValue?: ColorSystemColorValueV2;
   steps: ColorStep[];
   mode: ColorScaleMode;
   profile: 'sRGB';
   method: 'Teul OKLCH v3';
+  sourcePinPolicy?: 'source-anchored-oklch-v1';
   anchorStep: 9;
   validation: ColorScaleValidation;
 }
@@ -100,6 +111,7 @@ interface RawRgb {
 }
 
 interface ClippedSrgb {
+  rgb: RawRgb;
   hex: string;
   oklch: OKLCH;
   oklab: ReturnType<typeof rgbToOklab>;
@@ -153,7 +165,9 @@ export function isOklchInSrgbGamut(color: OKLCH): boolean {
 }
 
 function normalizeHue(hue: number): number {
-  return ((hue % 360) + 360) % 360;
+  const wrapped = hue % 360;
+  if (Object.is(wrapped, -0)) return 0;
+  return wrapped < 0 ? wrapped + 360 : wrapped;
 }
 
 function clampChannel(channel: number): number {
@@ -170,6 +184,7 @@ function clipOklchToSrgb(color: OKLCH): ClippedSrgb {
   const oklab = rgbToOklab(clipped.r, clipped.g, clipped.b);
 
   return {
+    rgb: clipped,
     hex: rgbToHex(
       Math.round(clipped.r),
       Math.round(clipped.g),
@@ -202,7 +217,12 @@ function deltaFromClippedSrgb(color: OKLCH, clipped: ClippedSrgb): number {
  * colors reduce chroma at constant lightness and hue until an sRGB clip is less
  * than one deltaEOK JND away (0.02), using the specified 0.0001 epsilon.
  */
-export function mapOklchToSrgb(color: OKLCH): { oklch: OKLCH; hex: string; mapped: boolean } {
+function mapOklchToSrgbChannels(color: OKLCH): {
+  oklch: OKLCH;
+  hex: string;
+  mapped: boolean;
+  rgb: RawRgb;
+} {
   if (!isFiniteOklch(color)) {
     throw new Error('OKLCH values must be finite.');
   }
@@ -213,6 +233,7 @@ export function mapOklchToSrgb(color: OKLCH): { oklch: OKLCH; hex: string; mappe
       oklch: { l: 1, c: 0, h: hue },
       hex: '#ffffff',
       mapped: color.l !== 1 || color.c !== 0 || color.h !== hue,
+      rgb: { r: 255, g: 255, b: 255 },
     };
   }
   if (color.l <= 0) {
@@ -220,6 +241,7 @@ export function mapOklchToSrgb(color: OKLCH): { oklch: OKLCH; hex: string; mappe
       oklch: { l: 0, c: 0, h: hue },
       hex: '#000000',
       mapped: color.l !== 0 || color.c !== 0 || color.h !== hue,
+      rgb: { r: 0, g: 0, b: 0 },
     };
   }
 
@@ -240,13 +262,14 @@ export function mapOklchToSrgb(color: OKLCH): { oklch: OKLCH; hex: string; mappe
         Math.round(clampChannel(raw.b))
       ).toLowerCase(),
       mapped: normalized,
+      rgb: { r: clampChannel(raw.r), g: clampChannel(raw.g), b: clampChannel(raw.b) },
     };
   }
 
   let current = safe;
   let clipped = clipOklchToSrgb(current);
   if (deltaFromClippedSrgb(current, clipped) < LOCAL_MINDE_JND) {
-    return { oklch: clipped.oklch, hex: clipped.hex, mapped: true };
+    return { oklch: clipped.oklch, hex: clipped.hex, mapped: true, rgb: clipped.rgb };
   }
 
   let min = 0;
@@ -270,7 +293,7 @@ export function mapOklchToSrgb(color: OKLCH): { oklch: OKLCH; hex: string; mappe
     const difference = deltaFromClippedSrgb(current, clipped);
     if (difference < LOCAL_MINDE_JND) {
       if (LOCAL_MINDE_JND - difference < LOCAL_MINDE_EPSILON) {
-        return { oklch: clipped.oklch, hex: clipped.hex, mapped: true };
+        return { oklch: clipped.oklch, hex: clipped.hex, mapped: true, rgb: clipped.rgb };
       }
       minInGamut = false;
       min = chroma;
@@ -279,7 +302,22 @@ export function mapOklchToSrgb(color: OKLCH): { oklch: OKLCH; hex: string; mappe
     }
   }
 
-  return { oklch: clipped.oklch, hex: clipped.hex, mapped: true };
+  return { oklch: clipped.oklch, hex: clipped.hex, mapped: true, rgb: clipped.rgb };
+}
+
+/** Existing byte-based contract remains exact; native construction uses the same mapping below. */
+export function mapOklchToSrgb(color: OKLCH): { oklch: OKLCH; hex: string; mapped: boolean } {
+  const { oklch, hex, mapped } = mapOklchToSrgbChannels(color);
+  return { oklch, hex, mapped };
+}
+
+/** Preserve mapped channels before display-hex rounding, so close native anchors remain usable. */
+export function mapOklchToNativeSrgbV1(color: OKLCH): {
+  components: ColorSystemColorValueV2['components'];
+  mapped: boolean;
+} {
+  const { rgb, mapped } = mapOklchToSrgbChannels(color);
+  return { components: { r: rgb.r / 255, g: rgb.g / 255, b: rgb.b / 255 }, mapped };
 }
 
 function interpolate(start: number, end: number, index: number, count: number): number {
@@ -321,6 +359,9 @@ function relativeLuminance(hex: string): number {
   return getLuminance(r, g, b);
 }
 
+const stepHex = (step: ColorStep): string => step.hex;
+const stepLuminance = (step: ColorStep): number => relativeLuminance(step.hex);
+
 function createGeneratedStep(step: number, lightness: number, baseOklch: OKLCH): ColorStep {
   const requestedOklch = {
     l: lightness,
@@ -342,15 +383,17 @@ function createGeneratedStep(step: number, lightness: number, baseOklch: OKLCH):
 function refineStructuralOrder(
   initialSteps: ColorStep[],
   baseOklch: OKLCH,
-  mode: ColorScaleMode
+  mode: ColorScaleMode,
+  luminance = stepLuminance,
+  identity = stepHex
 ): ColorStep[] {
   const steps = [...initialSteps];
   const preDirection = mode === 'light' ? 1 : -1;
   const postDirection = -preDirection;
   const ordered = (first: ColorStep, second: ColorStep, direction: number) =>
     (first.oklch.l - second.oklch.l) * direction > EPSILON &&
-    (relativeLuminance(first.hex) - relativeLuminance(second.hex)) * direction > EPSILON &&
-    first.hex !== second.hex;
+    (luminance(first) - luminance(second)) * direction > EPSILON &&
+    identity(first) !== identity(second);
 
   // Work outward from the preserved anchor so every adjusted step remains on
   // the correct side of its nearest already-validated neighbor.
@@ -388,19 +431,20 @@ function refineStructuralOrder(
 function validateScale(
   baseHex: string,
   steps: ColorStep[],
-  mode: ColorScaleMode
+  mode: ColorScaleMode,
+  luminance = stepLuminance,
+  identity = stepHex
 ): ColorScaleValidation {
   const issues: ScaleValidationIssue[] = [];
-  const anchorPreserved = steps[8]?.hex.toLowerCase() === baseHex.toLowerCase();
+  const anchorPreserved = !!steps[8] && identity(steps[8]).toLowerCase() === baseHex.toLowerCase();
   const finite = steps.every(step => isFiniteOklch(step.oklch));
-  // The serialized hex value is the final output users receive. Valid six-digit
-  // hex values are necessarily in sRGB, while OKLCH round trips can introduce
-  // tiny matrix-floating-point excursions at the gamut boundary.
+  // Generated values are six-digit sRGB; native sources are channel-validated
+  // before entering the scale. OKLCH round trips may have tiny boundary errors.
   const inSrgbGamut = steps.every(step => /^#[0-9a-f]{6}$/.test(step.hex));
   const duplicatePairs: number[][] = [];
 
   for (let index = 1; index < steps.length; index++) {
-    if (steps[index - 1].hex === steps[index].hex) {
+    if (identity(steps[index - 1]) === identity(steps[index])) {
       duplicatePairs.push([steps[index - 1].step, steps[index].step]);
     }
   }
@@ -413,8 +457,7 @@ function validateScale(
     if (change * expectedDirection <= EPSILON) {
       monotonicFailures.push([steps[index - 1].step, steps[index].step]);
     }
-    const luminanceChange =
-      relativeLuminance(steps[index].hex) - relativeLuminance(steps[index - 1].hex);
+    const luminanceChange = luminance(steps[index]) - luminance(steps[index - 1]);
     if (luminanceChange * expectedDirection <= EPSILON) {
       relativeLuminanceFailures.push([steps[index - 1].step, steps[index].step]);
     }
@@ -476,10 +519,10 @@ function validateScale(
     },
   ];
   const contrast = contrastTargets.map(target => {
-    const ratio = calculateContrastRatio(
-      steps[target.foregroundStep - 1].hex,
-      steps[target.backgroundStep - 1].hex
-    );
+    const foreground = luminance(steps[target.foregroundStep - 1]);
+    const background = luminance(steps[target.backgroundStep - 1]);
+    const ratio =
+      (Math.max(foreground, background) + 0.05) / (Math.min(foreground, background) + 0.05);
     return { ...target, ratio, pass: ratio >= target.minimumRatio };
   });
   const requiredContrastPass = contrast.filter(check => check.required).every(check => check.pass);
@@ -552,6 +595,202 @@ export function generateColorScale(
     method: 'Teul OKLCH v3',
     anchorStep: 9,
     validation: validateScale(normalizedBase, steps, mode),
+  };
+}
+
+/**
+ * Returns a copy of `scale` with one generated step replaced by an exact hex
+ * and the validation recomputed by the same validator `generateColorScale`
+ * uses (strictly monotonic lightness and relative luminance, no duplicate
+ * adjacent steps, the required WCAG text pairs). Step 9 is the anchor and is
+ * refused. Callers keep the original scale when the result's
+ * `validation.valid` is false; the pinned step reports `gamutMapped: false`
+ * because it was never mapped.
+ */
+export function pinColorScaleStep(scale: ColorScale, step: number, hex: string): ColorScale {
+  if (!Number.isInteger(step) || step < 1 || step > 12 || step === scale.anchorStep) {
+    throw new RangeError(
+      `Cannot pin step ${step}: pinnable steps are 1 through 12 except the anchor.`
+    );
+  }
+  const normalized = normalizeHex(hex);
+  const oklch = finalOklch(normalized);
+  const steps = scale.steps.map(existing =>
+    existing.step === step
+      ? {
+          step,
+          hex: normalized,
+          requestedOklch: oklch,
+          mappedOklch: oklch,
+          oklch,
+          usage: STEP_USAGE[step],
+          gamutMapped: false,
+        }
+      : existing
+  );
+  return { ...scale, steps, validation: validateScale(scale.baseHex, steps, scale.mode) };
+}
+
+function nativeStepIdentity(step: ColorStep): string {
+  return step.value?.representation?.exactValueHash ?? step.hex;
+}
+
+function nativeStepLuminance(step: ColorStep): number {
+  if (!step.value) return stepLuminance(step);
+  const { r, g, b } = colorSystemSrgbToRgbV1(step.value);
+  return getLuminance(r, g, b);
+}
+
+function nativeSourceStep(step: number, input: ColorSystemColorValueV2): ColorStep {
+  const value = normalizeColorSystemSrgbValueV1(input);
+  if (value.alpha !== 1) throw new Error('Scale sources must be opaque sRGB colors.');
+  const hex = value.hex.toLowerCase();
+  const oklch = value.representation ? colorSystemSrgbToOklchV1(value) : finalOklch(hex);
+  return {
+    step,
+    hex,
+    ...(value.representation ? { value } : {}),
+    requestedOklch: oklch,
+    mappedOklch: oklch,
+    oklch,
+    usage: STEP_USAGE[step],
+    gamutMapped: false,
+  };
+}
+
+/** Backend native path; legacy hex callers retain their exact serialized scale. */
+export function generateColorScaleFromSrgbV1(
+  value: ColorSystemColorValueV2,
+  mode: ColorScaleMode = 'light',
+  name = 'Custom'
+): ColorScale {
+  const anchor = nativeSourceStep(9, value);
+  if (!anchor.value) return generateColorScale(anchor.hex, mode, name);
+  const baseOklch = anchor.oklch;
+  const initial = getLightnessTargets(baseOklch.l, mode).map((lightness, index) =>
+    index === 8 ? anchor : createGeneratedStep(index + 1, lightness, baseOklch)
+  );
+  const steps = refineStructuralOrder(
+    initial,
+    baseOklch,
+    mode,
+    nativeStepLuminance,
+    nativeStepIdentity
+  );
+  return {
+    name,
+    baseHex: anchor.hex,
+    baseValue: anchor.value,
+    steps,
+    mode,
+    profile: 'sRGB',
+    method: 'Teul OKLCH v3',
+    anchorStep: 9,
+    validation: validateScale(
+      nativeStepIdentity(anchor),
+      steps,
+      mode,
+      nativeStepLuminance,
+      nativeStepIdentity
+    ),
+  };
+}
+
+/** Pin actual source channels and rerun the same scale policy against those channels. */
+export function pinColorScaleStepFromSrgbV1(
+  scale: ColorScale,
+  step: number,
+  value: ColorSystemColorValueV2
+): ColorScale {
+  if (!Number.isInteger(step) || step < 1 || step > 12 || step === scale.anchorStep) {
+    throw new RangeError(
+      `Cannot pin step ${step}: pinnable steps are 1 through 12 except the anchor.`
+    );
+  }
+  const pinned = nativeSourceStep(step, value);
+  if (!pinned.value && !scale.baseValue && !scale.steps.some(item => item.value)) {
+    return pinColorScaleStep(scale, step, pinned.hex);
+  }
+  const steps = scale.steps.map(existing => (existing.step === step ? pinned : existing));
+  return {
+    ...scale,
+    steps,
+    validation: validateScale(
+      scale.baseValue?.representation?.exactValueHash ?? scale.baseHex,
+      steps,
+      scale.mode,
+      nativeStepLuminance,
+      nativeStepIdentity
+    ),
+  };
+}
+
+/**
+ * Native candidate policy: exact source pins bound the chroma/hue interpolation
+ * of their generated neighbors. Callers pass prior pins, including byte pins,
+ * so inserting another source can never regenerate an earlier source value.
+ */
+export function pinColorScaleStepWithSourceAnchorsV1(
+  scale: ColorScale,
+  step: number,
+  value: ColorSystemColorValueV2,
+  preservedSteps: readonly number[]
+): ColorScale {
+  const pinned = pinColorScaleStepFromSrgbV1(scale, step, value);
+  if (!pinned.baseValue && !pinned.steps.some(item => item.value)) return pinned;
+  if (
+    preservedSteps.some(
+      fixed => !Number.isInteger(fixed) || fixed < 1 || fixed > 12 || fixed === step
+    )
+  ) {
+    throw new RangeError('Preserved source steps must be distinct from the new pin.');
+  }
+  const fixedSteps = [...new Set([1, scale.anchorStep, 12, step, ...preservedSteps])].sort(
+    (a, b) => a - b
+  );
+  const pinIndex = fixedSteps.indexOf(step);
+  const steps = [...pinned.steps];
+  for (let segment = Math.max(0, pinIndex - 1); segment <= pinIndex; segment++) {
+    const left = steps[fixedSteps[segment] - 1];
+    const right = steps[fixedSteps[segment + 1] - 1];
+    if (!right) break;
+    if (left.oklch.l === right.oklch.l) continue;
+    const hueDelta = ((right.oklch.h - left.oklch.h + 540) % 360) - 180;
+    for (let index = left.step; index < right.step - 1; index++) {
+      const lightness = steps[index].requestedOklch.l;
+      const fraction = Math.max(
+        0,
+        Math.min(1, (lightness - left.oklch.l) / (right.oklch.l - left.oklch.l))
+      );
+      const requestedOklch = {
+        l: lightness,
+        c: left.oklch.c + (right.oklch.c - left.oklch.c) * fraction,
+        h: normalizeHue(left.oklch.h + hueDelta * fraction),
+      };
+      const mapped = mapOklchToSrgb(requestedOklch);
+      steps[index] = {
+        step: index + 1,
+        hex: mapped.hex,
+        sourceAnchorSteps: [left.step, right.step],
+        requestedOklch,
+        mappedOklch: mapped.oklch,
+        oklch: finalOklch(mapped.hex),
+        usage: STEP_USAGE[index + 1],
+        gamutMapped: mapped.mapped,
+      };
+    }
+  }
+  return {
+    ...pinned,
+    sourcePinPolicy: 'source-anchored-oklch-v1',
+    steps,
+    validation: validateScale(
+      scale.baseValue?.representation?.exactValueHash ?? scale.baseHex,
+      steps,
+      scale.mode,
+      nativeStepLuminance,
+      nativeStepIdentity
+    ),
   };
 }
 

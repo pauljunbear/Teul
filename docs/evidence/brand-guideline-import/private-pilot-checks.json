@@ -1,0 +1,329 @@
+{
+  "recordedAt": "2026-09-27T10:27:11.553857+00:00",
+  "scope": "Private static pilot preparation only; no application source change or deployment",
+  "package": {
+    "schemaVersion": 1,
+    "preparedAt": "2026-09-27T10:25:24.153635+00:00",
+    "sourceCommit": "b681f6c3b4224d29f7bd8077cf50d3c2fba98e21",
+    "sourceChanges": "documentation only; application unchanged",
+    "node": "22.13.1",
+    "build": "VITE_GUIDELINE_IMPORT=true npm --prefix web run build",
+    "archive": "release/private-pilot-2026-09-27/teul-studio-pilot.zip",
+    "archiveBytes": 1652325,
+    "archiveSha256": "5d530e0daceba7635a667e12d2c9619ef84e9c56bf5095d31df3c52e1f7dfaf9",
+    "files": [
+      {
+        "path": "APCA_LICENSE.md",
+        "bytes": 9808,
+        "sha256": "45822a7b8120d9792a1233b602839b66184beca222d0771672d773eafe26a438"
+      },
+      {
+        "path": "LICENSE",
+        "bytes": 1065,
+        "sha256": "6a6cd7dbd93f5795289a29771445d25bd12115530d5b9fb4175abf3c7b01e6a0"
+      },
+      {
+        "path": "THIRD_PARTY_LICENSES.txt",
+        "bytes": 142313,
+        "sha256": "95497389b7c8c8f87ccac227d97bb47549f6c5da77a25a878cfd602624f3ae59"
+      },
+      {
+        "path": "THIRD_PARTY_NOTICES.md",
+        "bytes": 5685,
+        "sha256": "0ff6af03ae96b7c3b5433f8317040d1d0e3b68d92e565af929e8063f29639275"
+      },
+      {
+        "path": "assets/GuidelineWorkspace-BRPGctDe.js",
+        "bytes": 1213664,
+        "sha256": "276895ad3547fcdc8e3c93578022c0025ca40f848b1f732501a5aa1217ff8965"
+      },
+      {
+        "path": "assets/GuidelineWorkspace-CBX9n09I.css",
+        "bytes": 30245,
+        "sha256": "6d01ca68b30d16036f6a41a451f66119198fafd28ab2d5db701f7af5a6d46f2a"
+      },
+      {
+        "path": "assets/ProductSystemView-DJMb3_3z.css",
+        "bytes": 5952,
+        "sha256": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764"
+      },
+      {
+        "path": "assets/ProductSystemView-LCQcGO0M.js",
+        "bytes": 10027,
+        "sha256": "9dde8acb9be5918ecf1cce87b4bf91c729d5a7d492dd1c798e272b1450428c60"
+      },
+      {
+        "path": "assets/authoring-D0a7zd1W.js",
+        "bytes": 23528,
+        "sha256": "685681f86e9679d12677f3d3f5ef8a3ad64b2748b02e9d8e848d7325590ee807"
+      },
+      {
+        "path": "assets/colorSystemRecipeV1-CrhhV28k.js",
+        "bytes": 104319,
+        "sha256": "43576a33dd5a7cea53535261f4522141dd06fb22dd9b90590f7ccbfd1d49c633"
+      },
+      {
+        "path": "assets/download-Bic2EQq1.js",
+        "bytes": 45624,
+        "sha256": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6"
+      },
+      {
+        "path": "assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2",
+        "bytes": 7420,
+        "sha256": "2317fa4bb293c9c0b110e18315d529235c47a0ddd3338cea3d8c7955e927899e"
+      },
+      {
+        "path": "assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2",
+        "bytes": 15084,
+        "sha256": "6894439694946a589d157ece003086960a6a4013d74a813dab7602efdb3d8c09"
+      },
+      {
+        "path": "assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2",
+        "bytes": 16512,
+        "sha256": "824f485b5d26e2f2da3c2b236132ece1bc8e4e43373452950bb0e40548b4313f"
+      },
+      {
+        "path": "assets/geist-latin-wght-normal-BgDaEnEv.woff2",
+        "bytes": 29400,
+        "sha256": "19f9c92546aa300c312235e3125af1b81394d8db9a4bc4a425cd5b641d2d54e1"
+      },
+      {
+        "path": "assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2",
+        "bytes": 8004,
+        "sha256": "8fa40e5d248247735eb97a0bd593b8852440430600d6ba01364c31fe0abc1fe1"
+      },
+      {
+        "path": "assets/index-D-7NSIAl.js",
+        "bytes": 359522,
+        "sha256": "eb403540f5ad98a328c1463049167a875a68a7e2167fc19b56a1ef39584c68d5"
+      },
+      {
+        "path": "assets/index-k7qUNtEA.css",
+        "bytes": 57604,
+        "sha256": "c6a9c1c3d28d901d3d3c8b3ce7f514a8cff466d531752d1aedae65b2e0c53e0d"
+      },
+      {
+        "path": "assets/pdf.worker.min-BmVo14Nb.mjs",
+        "bytes": 1317034,
+        "sha256": "a33cfe728c584fdba4fcc1fd54bcdc2f9f2f13889ddbb5b2bd1d0f8cbe49b84e"
+      },
+      {
+        "path": "assets/sourceProvenanceDisclosureData-CxLfFIWs.js",
+        "bytes": 166308,
+        "sha256": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361"
+      },
+      {
+        "path": "assets/sourceScalePlacement-Df-DJV7x.js",
+        "bytes": 44963,
+        "sha256": "189522fd6874049175127d54343ab1d1e7aadd5a9d6ed76f76c7ff89a7e244ac"
+      },
+      {
+        "path": "healthcheck",
+        "bytes": 36,
+        "sha256": "43a2a50c8f51e8b1118184d9ce279895c7cdbc66a0f04b9f153f66415fa3dcb7"
+      },
+      {
+        "path": "index.html",
+        "bytes": 810,
+        "sha256": "b5dde9b09c44ba952660e40c728d2bc669ecc87ecb7fd0b2e4626954b1e9479e"
+      },
+      {
+        "path": "mark.svg",
+        "bytes": 186,
+        "sha256": "b97988e0bfce860215e7b03be59c3ba5586efb8e640ba0bd22088b6a9eb37881"
+      },
+      {
+        "path": "pdf-fonts/FoxitDingbats.pfb",
+        "bytes": 29513,
+        "sha256": "845c752392b6c914fb989c75a08b7792b88f542d2499042ef2889f8c814a16ed"
+      },
+      {
+        "path": "pdf-fonts/FoxitFixed.pfb",
+        "bytes": 17597,
+        "sha256": "b6c8fe53f134b8b6d4578cd2d544df4cee9624c4efa8d51a560fb40ea296101b"
+      },
+      {
+        "path": "pdf-fonts/FoxitFixedBold.pfb",
+        "bytes": 18055,
+        "sha256": "f1b7159702973f54fc86254ea38bcf3712b2a736eb3a0995751e9f4bb45ad603"
+      },
+      {
+        "path": "pdf-fonts/FoxitFixedBoldItalic.pfb",
+        "bytes": 19151,
+        "sha256": "8a000945843bd31add06aee63bf9fd41b7578b4f3242a4b7cd46349ad9d24d4d"
+      },
+      {
+        "path": "pdf-fonts/FoxitFixedItalic.pfb",
+        "bytes": 18746,
+        "sha256": "5007faf8320fa1fcc08b8894b356ad976f60b992ba29ee5272578bbdebaf3876"
+      },
+      {
+        "path": "pdf-fonts/FoxitSerif.pfb",
+        "bytes": 19469,
+        "sha256": "4f57d2b9d884af8f907bf22df6019b52d86cbf6214fdbd02b1ae05472a543f35"
+      },
+      {
+        "path": "pdf-fonts/FoxitSerifBold.pfb",
+        "bytes": 19395,
+        "sha256": "0bdf4b04e964139818d51eda03d566ba999fc3ba2421b1c6c51f9dc969022e80"
+      },
+      {
+        "path": "pdf-fonts/FoxitSerifBoldItalic.pfb",
+        "bytes": 20733,
+        "sha256": "a406cac82583bf98175cb62c87ed5e95c45fbb34eece63a10b0a13e793cb2e10"
+      },
+      {
+        "path": "pdf-fonts/FoxitSerifItalic.pfb",
+        "bytes": 21227,
+        "sha256": "610ae0687198045c4db5d1a6650fd5e92536631706382eb8b72e38df578d0ae9"
+      },
+      {
+        "path": "pdf-fonts/FoxitSymbol.pfb",
+        "bytes": 16729,
+        "sha256": "47967d055530e7357088a08403115425643ec2cdfd6201ba8af0fbd7116c1539"
+      },
+      {
+        "path": "pdf-fonts/LiberationSans-Bold.ttf",
+        "bytes": 137052,
+        "sha256": "361c61b82d575c5c35fd9157fda8b0194bcfcd0d88ea8521a4fb5dd53d33dddc"
+      },
+      {
+        "path": "pdf-fonts/LiberationSans-BoldItalic.ttf",
+        "bytes": 135124,
+        "sha256": "a224075ac17495ad0a3af3bc0a419ac0704a8b3fd1095456201fb9b095fc281d"
+      },
+      {
+        "path": "pdf-fonts/LiberationSans-Italic.ttf",
+        "bytes": 162036,
+        "sha256": "832b4406dbef23628800d3aaad21048534ac84d7e3ad955be83b8172ed8ef512"
+      },
+      {
+        "path": "pdf-fonts/LiberationSans-Regular.ttf",
+        "bytes": 139512,
+        "sha256": "f8ace1f892b2bd9dc1792ba7f097fa7588f84fed48321480e04de5390828221f"
+      }
+    ],
+    "remoteIntakeConfigured": false,
+    "deploymentStatus": "not deployed",
+    "checks": {
+      "rootIndex": true,
+      "healthcheck": true,
+      "noSymlinksDotfilesSourceDocumentsOrMaps": true,
+      "archiveReadbackMatchesBuild": true
+    }
+  },
+  "browserChecks": {
+    "pdf": {
+      "path": "release/private-pilot-2026-09-27/pdf/browser-receipt.json",
+      "sha256": "8acc3c7474d5a8cc07469f382c44a599fb7bee86fca2dff22775f88bc7ff51a6",
+      "receipt": {
+        "status": "passed",
+        "url": "http://127.0.0.1:51103/",
+        "checks": [
+          "Selected native PDF -> source-linked colors -> reviewed model -> gradient, without plugin",
+          "SVG/CSS/JSON downloads preserve authored anchors; render images captured for independent pixel comparison",
+          "Clipboard denial offers identical download; tab navigation retains work and hides inactive workspace",
+          "Downloaded project reopens after reload with no PDF, offline; source/model/design and exports remain identical",
+          "Malformed and future files cannot replace current work; future original bytes remain downloadable",
+          "Earlier review downloads and unfinished drafts reopen without implying a newly approved review",
+          "Reattaching the matching source restores page previews without changing the selected design",
+          "Cancel keeps a live PDF preview; delayed project completion cannot overwrite a newer review edit",
+          "An invalid import interrupting capture detaches the closed PDF and retains the prior design for recovery",
+          "New source scope invalidates prior design; unresolved source ban blocks generation",
+          "390px flow has no horizontal document overflow and key actions receive keyboard focus",
+          "Cancel and reopen retain prior source edits and the downloadable review",
+          "Oversized recapture fails atomically and preserves previous reviewed evidence",
+          "Scanned source remains an explicit gap and cannot be adopted as exact values",
+          "A scanned-source gap survives project download and reopening without invented source values",
+          "Source scale names, irregular positions and an unfinished relationship survive review/project recovery",
+          "Generic Studio extension preserves source anchors, paints native generated values and requires explicit affected-rule renewal",
+          "PDF project restores the reviewed extension decisions and checked component with exact selected output",
+          "Original colors produce five separately checked product states and replayed SVG/CSS/token/application exports",
+          "Bad hover contrast remains visible and blocks export; saved applications replay exactly and a wrong-source file preserves existing work",
+          "Reviewed new shades enter an actual brand layout through original construction replay; removing the required partner blocks delivery",
+          "Application roles, source failures and measured layouts remain usable at 390px with keyboard focus",
+          "Relationship-constrained gradients fail closed in the affected scope; unrelated scope remains available",
+          "Changing requested positions clears old proposals; replacing a source slot or excluding a rule anchor cannot apply silently",
+          "Richer projects replay exactly; source anchor lookup, keyboard focus and 390px layout remain usable"
+        ],
+        "failures": [],
+        "remoteRequests": 0,
+        "localFeedbackRequests": 0
+      }
+    },
+    "sourceScale": {
+      "path": "release/guideline-source-scale/node22-checks.json",
+      "sha256": "e545d1a26b7bbb04929d76afa72fe26a0a31e96f803044719cefc3cb8b63b430",
+      "receipt": {
+        "status": "passed",
+        "node": "v22.13.1",
+        "checks": [
+          "Four imported PDF swatches create a proposed 12-position scale with one exact original anchor, no invented source scale or mode, and eleven new shades.",
+          "The derived scale reaches five assessed product-state samples, SVG/CSS/application JSON export, actual IndexedDB save/reload and file reopen with identical output bytes.",
+          "Editing a reopened scale invalidates the old generated and applied output; the new controls have no desktop/mobile automated accessibility violations."
+        ],
+        "scans": [
+          {
+            "name": "derived-scale",
+            "file": "node22-derived-scale.json",
+            "sha256": "56f8cc80b6eacc46e8bfb164dc8f0ae205e07209f2db9d03f8e8f227d730d458",
+            "violations": [],
+            "incomplete": []
+          },
+          {
+            "name": "derived-application",
+            "file": "node22-derived-application.json",
+            "sha256": "f2a528783abdc14e7f3e13803f806c910e4d4a192014fd7fd38ce928bde72047",
+            "violations": [],
+            "incomplete": []
+          },
+          {
+            "name": "derived-scale-mobile",
+            "file": "node22-derived-scale-mobile.json",
+            "sha256": "ec39b7388ef5e530a770aebab7a1627d54f47746138b6fe8a73ac1065d04982f",
+            "violations": [],
+            "incomplete": []
+          }
+        ],
+        "errors": [],
+        "scriptSha256": "008ef3e7d99f2c23c4dab5a571ace0b18c7fa8808b1804f44799e889b3f33b4a",
+        "buildHashes": {
+          "index.html": "b5dde9b09c44ba952660e40c728d2bc669ecc87ecb7fd0b2e4626954b1e9479e",
+          "assets/GuidelineWorkspace-BRPGctDe.js": "276895ad3547fcdc8e3c93578022c0025ca40f848b1f732501a5aa1217ff8965",
+          "assets/GuidelineWorkspace-CBX9n09I.css": "6d01ca68b30d16036f6a41a451f66119198fafd28ab2d5db701f7af5a6d46f2a",
+          "assets/ProductSystemView-DJMb3_3z.css": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764",
+          "assets/ProductSystemView-LCQcGO0M.js": "9dde8acb9be5918ecf1cce87b4bf91c729d5a7d492dd1c798e272b1450428c60",
+          "assets/authoring-D0a7zd1W.js": "685681f86e9679d12677f3d3f5ef8a3ad64b2748b02e9d8e848d7325590ee807",
+          "assets/colorSystemRecipeV1-CrhhV28k.js": "43576a33dd5a7cea53535261f4522141dd06fb22dd9b90590f7ccbfd1d49c633",
+          "assets/download-Bic2EQq1.js": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6",
+          "assets/index-D-7NSIAl.js": "eb403540f5ad98a328c1463049167a875a68a7e2167fc19b56a1ef39584c68d5",
+          "assets/index-k7qUNtEA.css": "c6a9c1c3d28d901d3d3c8b3ce7f514a8cff466d531752d1aedae65b2e0c53e0d",
+          "assets/sourceProvenanceDisclosureData-CxLfFIWs.js": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361",
+          "assets/sourceScalePlacement-Df-DJV7x.js": "189522fd6874049175127d54343ab1d1e7aadd5a9d6ed76f76c7ff89a7e244ac"
+        },
+        "browser": "153.0.8010.12",
+        "cleanupErrors": []
+      }
+    },
+    "studio": {
+      "path": "release/private-pilot-2026-09-27/studio/browser.json",
+      "sha256": "62a51da30d0433a3b94a3cd9b64c9a2b4f52626ce2062723a0ea211d111458c0",
+      "receipt": {
+        "url": "http://127.0.0.1:51941",
+        "checkedAt": "2026-09-27T10:26:13.066Z",
+        "checks": [
+          "Initial authored system preserves source step 9 in both modes",
+          "Invalid inputs preserve prior result; valid brand seed regenerates exactly",
+          "CSS, JSON and Tailwind downloads include source metadata",
+          "Saved recipe survives reload and regenerates",
+          "Named Radix neutral loads exactly and retains identity through saved recipe",
+          "Werner search and Wada palette selection work",
+          "Contrast passes white/black and fails identical colors",
+          "390px views have no overflow; tabs support keyboard navigation",
+          "Corrupt saved data does not crash startup"
+        ],
+        "pageErrors": []
+      }
+    }
+  }
+}

@@ -1,0 +1,353 @@
+{
+  "schemaVersion": "teul.local-slice-checks.v1",
+  "verifiedAt": "2026-09-26T02:29:43.275430+00:00",
+  "baselineCommit": "afbd77aad01a00ff27beec2da8c359a891cfd17f",
+  "branch": "codex/brand-guideline-import",
+  "lifecycle": "locally-verified-slice",
+  "fullPrdComplete": false,
+  "pushed": false,
+  "deployed": false,
+  "sourceTreeHash": "20ad51a29f5e624750428df968ad8a08b6bddc2f0fa02aa80c02453b9fb2faaf",
+  "sourceFiles": [
+    {
+      "path": "docs/evidence/brand-guideline-import/local-project-storage.md",
+      "bytes": 6553,
+      "sha256": "b1427aeda1d6f4e97ab8b1608252b64eb4965b1575e4db8713f37d6e57472818"
+    },
+    {
+      "path": "docs/plans/2026-09-25-brand-guideline-import-plan.md",
+      "bytes": 67561,
+      "sha256": "cf048b65661d46e9cb5344cbf7158a5018e31cc284661958b75e29bdf9384e9e"
+    },
+    {
+      "path": "docs/prds/2026-09-25-brand-guideline-import.md",
+      "bytes": 110866,
+      "sha256": "646f880c3b5f75dabe910af2ea36c5e7dcd06e115f78901de11766973211fa83"
+    },
+    {
+      "path": "web/README.md",
+      "bytes": 21654,
+      "sha256": "2bbcf964da45d60de1d945b7653cb2865aeade4e96447d27146743670d922cbe"
+    },
+    {
+      "path": "web/package.json",
+      "bytes": 2507,
+      "sha256": "0a850cdadadabb2798b26fb74983d55006a2619770a446a8fb5d8eee823f8d41"
+    },
+    {
+      "path": "web/scripts/guideline-storage-smoke.mjs",
+      "bytes": 24691,
+      "sha256": "faf84d290b05f464f792e350c8dc32fc4da6698fbb408d05e76f7a79cc1bd081"
+    },
+    {
+      "path": "web/src/components/GuidelineFigmaPanel.tsx",
+      "bytes": 27479,
+      "sha256": "7faf3b82fb7a47648ca472c9ba208745c1fed5676e7854493ade3dec62bcf95e"
+    },
+    {
+      "path": "web/src/components/GuidelineFigmaReview.tsx",
+      "bytes": 2570,
+      "sha256": "be41309239cfbf1d82dd31896f4f2b12e758d4c5277e4488eeba5c04ba70a2d6"
+    },
+    {
+      "path": "web/src/components/GuidelineLocalProjects.css",
+      "bytes": 967,
+      "sha256": "aaf0398472bb046417d09ca17d64b214323fe4c1fc0834e8388e9b6ed7486fa4"
+    },
+    {
+      "path": "web/src/components/GuidelineLocalProjects.tsx",
+      "bytes": 8122,
+      "sha256": "737146758fafdd4f1b13671ef09cdb95e235e7b7774c9980bec3c80dda48ce55"
+    },
+    {
+      "path": "web/src/components/GuidelineSourceReview.tsx",
+      "bytes": 29111,
+      "sha256": "a903132b67f1583b7c0077b5615dfec9ecedf7b3e2c5fb3fe19e210710ac5063"
+    },
+    {
+      "path": "web/src/components/GuidelineWebsitePanel.tsx",
+      "bytes": 20349,
+      "sha256": "bde14f1ca875227a1c620d2aad6c7fcc57cc44d6c4533e0e49a89afcebc03892"
+    },
+    {
+      "path": "web/src/components/GuidelineWebsiteReview.tsx",
+      "bytes": 2866,
+      "sha256": "dcafdcaf029dde71fcbb35790fb9d820c447f6c963482d47a6bfc9d1f6caa5b5"
+    },
+    {
+      "path": "web/src/components/GuidelineWorkspace.tsx",
+      "bytes": 53231,
+      "sha256": "9dc5c37f8f8a38e9be55cd7e4f17574b3a56662158aefbace38499e3ad598d5e"
+    },
+    {
+      "path": "web/src/lib/guideline/projectCodec.test.ts",
+      "bytes": 2675,
+      "sha256": "a8990c551b76b5e4039b538ba23d52bbc71f87d655efdea5f0251fee4774b99a"
+    },
+    {
+      "path": "web/src/lib/guideline/projectCodec.ts",
+      "bytes": 2864,
+      "sha256": "be034f98d6a5cae77ec5487403519fa23a14c7dd1e6f6de2a6a75601eef9b68e"
+    },
+    {
+      "path": "web/src/lib/guideline/projectStore.ts",
+      "bytes": 21860,
+      "sha256": "8639e5c637a382e4a80a648fb424cbbca7fe3a4e6a7db5349bd2f477f01ac609"
+    },
+    {
+      "path": "web/src/lib/guideline/useLocalProject.ts",
+      "bytes": 5117,
+      "sha256": "79055f36a9dd416caa53c386882f2826cfccd05baa7e787a3a268c55c00587bb"
+    },
+    {
+      "path": "web/src/lib/indexedDbTransaction.ts",
+      "bytes": 760,
+      "sha256": "7d2be8e2e60f7af0269737fd3d63332322fd16808eadc534385feebb94328f1a"
+    },
+    {
+      "path": "web/src/lib/savedStore.ts",
+      "bytes": 17171,
+      "sha256": "a8184c000e31541364729dd45e9c536512543f71d23aeeb8efe480e817c9358d"
+    }
+  ],
+  "localArtifacts": [
+    {
+      "path": "release/guideline-storage/dead-code.log",
+      "bytes": 4018,
+      "sha256": "993f4b36ffe407bbe291089c98a5fbea6cc7385bea07e0639469a2c6bcd17f05"
+    },
+    {
+      "path": "release/guideline-storage/node22-build.log",
+      "bytes": 3188,
+      "sha256": "f2dfc90b2fc868c7fb5f5517dd94578e36e4e2001e90ff3c8ac9abaf6acbe367"
+    },
+    {
+      "path": "release/guideline-storage/node22-desktop-top.png",
+      "bytes": 176033,
+      "sha256": "3fe27ee4aaa55276b11d8431e57d03d1835a5fcadb5d69bdbfbc10ebd150a7e7"
+    },
+    {
+      "path": "release/guideline-storage/node22-desktop.png",
+      "bytes": 473745,
+      "sha256": "acf99315636c1223739921fc79488cb86c781c26e29dda90f8d0969adb8002ca"
+    },
+    {
+      "path": "release/guideline-storage/node22-figma-regression.log",
+      "bytes": 359,
+      "sha256": "3a7226d36fca5af1e68e0631d0b116f6d46b20697d27c01be550bbab4f4d4305"
+    },
+    {
+      "path": "release/guideline-storage/node22-mobile-top.png",
+      "bytes": 108748,
+      "sha256": "1d1ba128ce6678678d0c8ddca8d5212f31fdb3d9c8196bbef1b503a23a280a0f"
+    },
+    {
+      "path": "release/guideline-storage/node22-mobile.png",
+      "bytes": 434759,
+      "sha256": "c580caec7e3218ab5424fc5b28c92897022bc9f55dc692ddbb74c140c11585e2"
+    },
+    {
+      "path": "release/guideline-storage/node22-palette-regression/storage-browser.json",
+      "bytes": 1142,
+      "sha256": "bfc11101aa1a765d657928fea117eb15248ada267a4ecd83caba836a87246652"
+    },
+    {
+      "path": "release/guideline-storage/node22-pdf-regression.log",
+      "bytes": 2678,
+      "sha256": "2433dfcef373e0032bb9aa604ad28ca443e8a5d155c1a23867cad51373f738bb"
+    },
+    {
+      "path": "release/guideline-storage/node22-receipt.json",
+      "bytes": 1793,
+      "sha256": "7df09164c37be296b0c262eb8fa3859a2c272e0ca10f29194b33c7c24c77ae6b"
+    },
+    {
+      "path": "release/guideline-storage/node22-run.log",
+      "bytes": 2761,
+      "sha256": "3299540c31f91ed16815c260ca3555cf5ac9119a25cceb4fb7b5f4ff8680acc9"
+    },
+    {
+      "path": "release/guideline-storage/node22-unit.log",
+      "bytes": 608,
+      "sha256": "612ff6b81d7c42126e23155d6d45d5b00fffc7a3c6edd76c2009cf121e1c8cb3"
+    },
+    {
+      "path": "release/guideline-storage/node24-build.log",
+      "bytes": 3188,
+      "sha256": "51cf36b940a56393c823ab4c74b6b9308b13bbfcb3980f2dfeb7cc061f91125f"
+    },
+    {
+      "path": "release/guideline-storage/node24-desktop.png",
+      "bytes": 473670,
+      "sha256": "ccc46d741e9941f22e752fe82c0d6d1aecdd4ea95b2e5809c376c3875da25619"
+    },
+    {
+      "path": "release/guideline-storage/node24-mobile.png",
+      "bytes": 434634,
+      "sha256": "4ca0847b96f1458e6431546aba51a5e58d3186b9f0278589de320df882bfeef3"
+    },
+    {
+      "path": "release/guideline-storage/node24-palette-regression/storage-browser.json",
+      "bytes": 1142,
+      "sha256": "100eeaf705ce28228d1de6c5a62bc61945ac64de742af3febd01611a2b0dd65c"
+    },
+    {
+      "path": "release/guideline-storage/node24-receipt.json",
+      "bytes": 1793,
+      "sha256": "994a2008364de1204fcf03950b86189d207f893c123f547a794d903b063e92ec"
+    },
+    {
+      "path": "release/guideline-storage/node24-run.log",
+      "bytes": 2848,
+      "sha256": "7bbc1806e36885273a0facfd522ead173b8358f4d873636b4fb62d03927dafda"
+    },
+    {
+      "path": "release/guideline-storage/node24-unit.log",
+      "bytes": 439,
+      "sha256": "34c3f6a34ddb57d0a216f2e7ed9339ad5a9c49f60e20b2b83e2f251bc3e80f57"
+    },
+    {
+      "path": "release/guideline-storage/node24-website-regression.log",
+      "bytes": 198,
+      "sha256": "86a63b2d4c3421c9f2a7672ebbfca107f55586fea1758edad66034aee1f867fe"
+    },
+    {
+      "path": "release/guideline-storage/prd-validation.log",
+      "bytes": 106,
+      "sha256": "8a1e214697235e7758f15146578aca9dc13ba368166b19cd9d3e8f6e493157ea"
+    },
+    {
+      "path": "release/guideline-storage/root-lint.log",
+      "bytes": 65,
+      "sha256": "b17e4e0c51efc5d7733805e3b558caefdade5b77678b764b3de9bfbb4af1c89c"
+    },
+    {
+      "path": "release/guideline-storage/root-typecheck.log",
+      "bytes": 40,
+      "sha256": "fc23fa52fef205aafdaa0f6aa82e092c6125d2b95ec6cf466fdcf27885f9d7dd"
+    },
+    {
+      "path": "release/guideline-storage/web-lint.log",
+      "bytes": 56,
+      "sha256": "a08f059342d318275b9a38c2435399fa289a5f083ea5e1e8ed765022b7132c56"
+    }
+  ],
+  "checks": [
+    {
+      "command": "npm --prefix web run test:guideline-storage",
+      "runtime": "22.13.1",
+      "status": "passed",
+      "result": "17 project-storage scenarios plus 9 existing palette-storage scenarios",
+      "artifact": "release/guideline-storage/node22-receipt.json"
+    },
+    {
+      "command": "npm --prefix web test",
+      "runtime": "22.13.1",
+      "status": "passed",
+      "result": "33 files / 407 tests",
+      "artifact": "release/guideline-storage/node22-unit.log"
+    },
+    {
+      "command": "VITE_GUIDELINE_IMPORT=true npm --prefix web run build",
+      "runtime": "22.13.1",
+      "status": "passed",
+      "result": "TypeScript project build, Studio proof bundle and notices",
+      "artifact": "release/guideline-storage/node22-build.log"
+    },
+    {
+      "command": "npm --prefix web run test:guideline-storage",
+      "runtime": "24.19.0",
+      "status": "passed",
+      "result": "17 project-storage scenarios plus 9 existing palette-storage scenarios",
+      "artifact": "release/guideline-storage/node24-receipt.json"
+    },
+    {
+      "command": "npm --prefix web test",
+      "runtime": "24.19.0",
+      "status": "passed",
+      "result": "33 files / 407 tests",
+      "artifact": "release/guideline-storage/node24-unit.log"
+    },
+    {
+      "command": "VITE_GUIDELINE_IMPORT=true npm --prefix web run build",
+      "runtime": "24.19.0",
+      "status": "passed",
+      "result": "TypeScript project build, Studio proof bundle and notices",
+      "artifact": "release/guideline-storage/node24-build.log"
+    },
+    {
+      "command": "npm --prefix web run test:guidelines",
+      "runtime": "22.13.1",
+      "status": "passed",
+      "result": "Existing native PDF, review, extension/gradient, export and replay controls",
+      "artifact": "release/guideline-storage/node22-pdf-regression.log"
+    },
+    {
+      "command": "npm --prefix web run test:guideline-figma",
+      "runtime": "22.13.1",
+      "status": "passed",
+      "result": "11 Figma capture/service/browser scenarios",
+      "artifact": "release/guideline-storage/node22-figma-regression.log"
+    },
+    {
+      "command": "npm --prefix web run test:guideline-website",
+      "runtime": "24.19.0",
+      "status": "passed",
+      "result": "8 website capture/review/browser scenarios and existing cross-engine gradient portability matrix",
+      "artifact": "release/guideline-storage/node24-website-regression.log"
+    },
+    {
+      "command": "npm run lint",
+      "runtime": "22.13.1",
+      "status": "passed",
+      "result": "Root ESLint zero warnings",
+      "artifact": "release/guideline-storage/root-lint.log"
+    },
+    {
+      "command": "npm run typecheck",
+      "runtime": "22.13.1",
+      "status": "passed",
+      "result": "Root TypeScript check",
+      "artifact": "release/guideline-storage/root-typecheck.log"
+    },
+    {
+      "command": "npm --prefix web run lint",
+      "runtime": "22.13.1",
+      "status": "passed",
+      "result": "Studio oxlint zero warnings",
+      "artifact": "release/guideline-storage/web-lint.log"
+    },
+    {
+      "command": "npm run report:dead-code",
+      "runtime": "22.13.1",
+      "status": "passed",
+      "result": "50 export candidates and one file require consumer review; no new storage-path candidate",
+      "artifact": "release/guideline-storage/dead-code.log"
+    },
+    {
+      "command": "validate_prd.py --profile full --extension ai --extension refactor --stage ready --strict",
+      "runtime": "python3",
+      "status": "passed",
+      "result": "Ready-stage structural/traceability validation; not completion",
+      "artifact": "release/guideline-storage/prd-validation.log"
+    }
+  ],
+  "reviews": {
+    "reuse": "No actionable duplication",
+    "quality": "Four fixes applied and rechecked; no remaining blocker",
+    "efficiency": "Coalesced scans and linear deletion comparisons"
+  },
+  "visualReview": {
+    "desktop": true,
+    "mobile390": true,
+    "humanBrandAcceptance": false
+  },
+  "remaining": [
+    "Selected extension/application and assistance receipts",
+    "Source history and explicit refresh",
+    "Persistent remote-job recovery",
+    "Remaining generation and held-out evaluations",
+    "Integrated release gates",
+    "Qualified hosting/account/provider/live access and human visual acceptance"
+  ]
+}

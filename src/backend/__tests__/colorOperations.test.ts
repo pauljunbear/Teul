@@ -23,7 +23,7 @@ function fillNode(id: string, initial: Paint[], failOnWrite = 0) {
       fills = next;
     },
   });
-  return node;
+  return Object.assign(node, { getFillWriteCount: () => writes });
 }
 
 function strokeNode(id: string, initial: Paint[], weight: number, failOnWrite = 0) {
@@ -42,7 +42,7 @@ function strokeNode(id: string, initial: Paint[], weight: number, failOnWrite = 
       strokes = next;
     },
   });
-  return node;
+  return Object.assign(node, { getStrokeWriteCount: () => writes });
 }
 
 describe('transactional color operations', () => {
@@ -55,6 +55,7 @@ describe('transactional color operations', () => {
     Object.defineProperty(globalThis, 'figma', {
       configurable: true,
       value: {
+        root: { documentColorProfile: 'SRGB' },
         currentPage: {
           get selection() {
             return selection;
@@ -145,6 +146,46 @@ describe('transactional color operations', () => {
     expect(second.fills).toEqual(first.fills);
   });
 
+  it('allows every direct color mutation in a confirmed sRGB document', async () => {
+    const fill = fillNode('fill', [RED]);
+    const stroke = strokeNode('stroke', [BLUE], 0);
+    const style = { name: '', paints: [] } as unknown as PaintStyle;
+    vi.mocked(figma.createPaintStyle).mockReturnValue(style);
+
+    selection = [fill];
+    await expect(handleApplyFill({ hex: '#00ff00', name: 'Green' })).resolves.toBe(true);
+    expect(fill.fills).toEqual([{ type: 'SOLID', color: { r: 0, g: 1, b: 0 } }]);
+
+    selection = [stroke];
+    await expect(handleApplyStroke({ hex: '#00ff00', name: 'Green' })).resolves.toBe(true);
+    expect(stroke.strokes).toEqual([{ type: 'SOLID', color: { r: 0, g: 1, b: 0 } }]);
+    expect(stroke.strokeWeight).toBe(2);
+
+    await expect(handleCreateStyle({ hex: '#00ff00', name: 'Green' })).resolves.toBe(true);
+    expect(style.name).toBe('Teul/Green');
+    expect(style.paints).toEqual([{ type: 'SOLID', color: { r: 0, g: 1, b: 0 } }]);
+
+    selection = [fill];
+    await expect(
+      handleApplyGradient({
+        colors: [
+          { hex: '#ff0000', name: 'Red' },
+          { hex: '#0000ff', name: 'Blue' },
+        ],
+        gradientType: 'LINEAR',
+      })
+    ).resolves.toBe(true);
+    expect(fill.fills).toEqual([
+      expect.objectContaining({
+        type: 'GRADIENT_LINEAR',
+        gradientStops: [
+          { position: 0, color: { r: 1, g: 0, b: 0, a: 1 } },
+          { position: 1, color: { r: 0, g: 0, b: 1, a: 1 } },
+        ],
+      }),
+    ]);
+  });
+
   it('rejects the whole fill transaction when a selected instance is locked', async () => {
     const component = Object.assign(fillNode('component', [RED]), {
       type: 'COMPONENT' as const,
@@ -211,5 +252,81 @@ describe('transactional color operations', () => {
 
     await expect(handleApplyStroke({ hex: '#00ff00', name: 'Green' })).resolves.toBe(false);
     expect(notify).toHaveBeenCalledWith('Select an editable shape or frame with strokes');
+  });
+
+  it.each([
+    ['Display P3', 'DISPLAY_P3', 'Display P3'],
+    ['Legacy', 'LEGACY', 'legacy'],
+    ['unrecognized', 'FUTURE_PROFILE', 'unknown'],
+    ['missing', null, 'unknown'],
+    ['unreadable', 'PROFILE_READ_THROWS', 'unknown'],
+  ] as const)(
+    'rejects every direct color mutation without writes for a %s profile',
+    async (_caseName, profile, label) => {
+      if (profile === 'PROFILE_READ_THROWS') {
+        const root = {};
+        Object.defineProperty(root, 'documentColorProfile', {
+          get: () => {
+            throw new Error('profile unavailable');
+          },
+        });
+        Object.defineProperty(figma, 'root', { configurable: true, value: root });
+      } else if (profile === null) {
+        Object.defineProperty(figma, 'root', { configurable: true, value: {} });
+      } else {
+        (figma.root as unknown as { documentColorProfile: string }).documentColorProfile = profile;
+      }
+      const fill = fillNode('fill', [RED], 1);
+      const stroke = strokeNode('stroke', [BLUE], 3, 1);
+      const createPaintStyle = vi.mocked(figma.createPaintStyle);
+
+      selection = [fill];
+      await expect(handleApplyFill({ hex: '#00ff00', name: 'Green' })).resolves.toBe(false);
+      expect(fill.fills).toEqual([RED]);
+      expect(fill.getFillWriteCount()).toBe(0);
+
+      selection = [stroke];
+      await expect(handleApplyStroke({ hex: '#00ff00', name: 'Green' })).resolves.toBe(false);
+      expect(stroke.strokes).toEqual([BLUE]);
+      expect(stroke.strokeWeight).toBe(3);
+      expect(stroke.getStrokeWriteCount()).toBe(0);
+
+      await expect(handleCreateStyle({ hex: '#00ff00', name: 'Green' })).resolves.toBe(false);
+      expect(createPaintStyle).not.toHaveBeenCalled();
+
+      selection = [fill];
+      await expect(
+        handleApplyGradient({
+          colors: [
+            { hex: '#ff0000', name: 'Red' },
+            { hex: '#0000ff', name: 'Blue' },
+          ],
+          gradientType: 'LINEAR',
+        })
+      ).resolves.toBe(false);
+      expect(fill.fills).toEqual([RED]);
+      expect(fill.getFillWriteCount()).toBe(0);
+
+      expect(notify.mock.calls.map(([message]) => message)).toEqual([
+        `Fill apply requires a live sRGB Figma document because bundled hex channels are sRGB; current profile is ${label}.`,
+        `Stroke apply requires a live sRGB Figma document because bundled hex channels are sRGB; current profile is ${label}.`,
+        `Style creation requires a live sRGB Figma document because bundled hex channels are sRGB; current profile is ${label}.`,
+        `Gradient apply requires a live sRGB Figma document because bundled hex channels are sRGB; current profile is ${label}.`,
+      ]);
+    }
+  );
+
+  it('rechecks the live profile after the asynchronous style lookup', async () => {
+    vi.mocked(figma.getLocalPaintStylesAsync).mockImplementation(async () => {
+      (figma.root as unknown as { documentColorProfile: string }).documentColorProfile =
+        'DISPLAY_P3';
+      return [];
+    });
+
+    await expect(handleCreateStyle({ hex: '#00ff00', name: 'Green' })).resolves.toBe(false);
+    expect(figma.createPaintStyle).not.toHaveBeenCalled();
+    expect(notify).toHaveBeenCalledWith(
+      'Style creation requires a live sRGB Figma document because bundled hex channels are sRGB; current profile is Display P3.'
+    );
   });
 });

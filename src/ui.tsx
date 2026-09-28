@@ -18,6 +18,7 @@ import { WadaColorsTab } from './components/WadaColorsTab';
 import { AccessibilityTab } from './components/AccessibilityTab';
 import { ColorSystemReleaseTab } from './components/ColorSystemReleaseTab';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { COLOR_SYSTEM_GENERIC_BUILDER_V2_ENABLED } from './lib/colorSystemGenericReleaseChannelV2';
 import {
   isNormalizedDocumentColorProfile,
   type DocumentColorProfileMessage,
@@ -46,7 +47,7 @@ const profileLabels: Record<NormalizedDocumentColorProfile, string> = {
   unknown: 'Not reported',
 };
 
-const sections: Array<{
+const allSections: Array<{
   id: WorkspaceMainTab;
   label: string;
   title: string;
@@ -88,13 +89,22 @@ const sections: Array<{
   },
   {
     id: 'system',
-    label: 'System',
-    title: 'Build a color system',
+    label: 'Color system',
+    title: 'Color system',
     eyebrow: 'Analyze and extend',
     meta: 'Source colors first, reviewed copy',
     icon: ScanSearch,
   },
 ];
+
+/**
+ * The color-system builder exists only in the explicit candidate bundle. A
+ * disabled release renders neither its rail item nor its panel, so the rail
+ * never advertises a feature this build cannot run.
+ */
+const sections = allSections.filter(
+  section => section.id !== 'system' || COLOR_SYSTEM_GENERIC_BUILDER_V2_ENABLED
+);
 
 type HistoricalDataState<T> =
   | { status: 'idle' | 'loading' }
@@ -144,7 +154,7 @@ const HistoricalDataStatus: React.FC<{
                 display: 'block',
                 marginTop: '6px',
                 color: theme.textMuted,
-                fontSize: '9px',
+                fontSize: '11px',
                 lineHeight: 1.5,
               }}
             >
@@ -162,7 +172,7 @@ const HistoricalDataStatus: React.FC<{
                 backgroundColor: theme.btnBg,
                 color: theme.text,
                 cursor: 'pointer',
-                fontSize: '9px',
+                fontSize: '11px',
                 fontWeight: 650,
               }}
             >
@@ -183,7 +193,10 @@ const AppContent: React.FC = () => {
       : true
   );
   const [showSettings, setShowSettings] = useState(false);
-  const mainTab = workspace.activeTab;
+  // A persisted tab that this build does not render falls back to the first section.
+  const mainTab: WorkspaceMainTab = sections.some(section => section.id === workspace.activeTab)
+    ? workspace.activeTab
+    : sections[0].id;
   const setMainTab = useCallback(
     (activeTab: WorkspaceMainTab) => {
       setShowSettings(false);
@@ -369,7 +382,7 @@ const AppContent: React.FC = () => {
 
   const railButton = (active: boolean): React.CSSProperties => ({
     width: '48px',
-    minHeight: '52px',
+    minHeight: '60px',
     padding: '6px 3px',
     border: `1px solid ${active ? theme.border : 'transparent'}`,
     borderRadius: '8px',
@@ -381,7 +394,9 @@ const AppContent: React.FC = () => {
     backgroundColor: active ? theme.btnBg : 'transparent',
     color: active ? theme.text : theme.textMuted,
     cursor: 'pointer',
-    fontSize: '9px',
+    fontSize: '11px',
+    lineHeight: 1.2,
+    textAlign: 'center',
     fontWeight: active ? 650 : 500,
   });
 
@@ -462,7 +477,7 @@ const AppContent: React.FC = () => {
                 display: 'block',
                 marginBottom: '3px',
                 color: theme.textMuted,
-                fontSize: '8px',
+                fontSize: '11px',
                 fontWeight: 650,
                 letterSpacing: '0.08em',
                 textTransform: 'uppercase',
@@ -473,7 +488,7 @@ const AppContent: React.FC = () => {
             <strong style={{ display: 'block', fontSize: '16px', letterSpacing: '-0.02em' }}>
               {showSettings ? 'Settings' : activeSection.title}
             </strong>
-            <span style={{ color: theme.textMuted, fontSize: '8px' }}>
+            <span style={{ color: theme.textMuted, fontSize: '11px' }}>
               {showSettings ? 'Appearance, profile, and provenance' : activeSection.meta}
             </span>
           </div>
@@ -486,7 +501,7 @@ const AppContent: React.FC = () => {
               border: `1px solid ${theme.border}`,
               borderRadius: '7px',
               color: theme.textMuted,
-              fontSize: '8px',
+              fontSize: '11px',
             }}
           >
             Profile <strong style={{ color: theme.text }}>{profileLabel}</strong>
@@ -506,7 +521,7 @@ const AppContent: React.FC = () => {
               <strong style={{ display: 'block', marginBottom: '4px', fontSize: '11px' }}>
                 Appearance
               </strong>
-              <span style={{ color: theme.textMuted, fontSize: '9px' }}>
+              <span style={{ color: theme.textMuted, fontSize: '11px' }}>
                 Match Figma or choose a fixed theme.
               </span>
               <div
@@ -529,7 +544,7 @@ const AppContent: React.FC = () => {
                       backgroundColor: workspace.themeMode === mode ? theme.btnActive : theme.btnBg,
                       color: workspace.themeMode === mode ? theme.btnActiveText : theme.text,
                       cursor: 'pointer',
-                      fontSize: '9px',
+                      fontSize: '11px',
                       fontWeight: 600,
                       textTransform: 'capitalize',
                     }}
@@ -552,7 +567,7 @@ const AppContent: React.FC = () => {
               <strong style={{ display: 'block', marginBottom: '4px', fontSize: '11px' }}>
                 Document color profile
               </strong>
-              <span style={{ color: theme.textMuted, fontSize: '9px', lineHeight: 1.5 }}>
+              <span style={{ color: theme.textMuted, fontSize: '11px', lineHeight: 1.5 }}>
                 Figma reports {profileLabel}. Historical and generated hex/RGB values remain labeled
                 sRGB; Teul does not silently remap numeric channels.
               </span>
@@ -565,7 +580,7 @@ const AppContent: React.FC = () => {
                     borderRadius: '7px',
                     backgroundColor: isDark ? '#422006' : '#fffbeb',
                     color: isDark ? '#fcd34d' : '#92400e',
-                    fontSize: '9px',
+                    fontSize: '11px',
                     lineHeight: 1.4,
                   }}
                 >
@@ -584,7 +599,7 @@ const AppContent: React.FC = () => {
                 borderRadius: '10px',
                 backgroundColor: theme.cardBg,
                 color: theme.textMuted,
-                fontSize: '9px',
+                fontSize: '11px',
                 lineHeight: 1.55,
               }}
             >
@@ -676,7 +691,7 @@ const AppContent: React.FC = () => {
             backgroundColor: mutationStatus.success ? '#f3f3f3' : '#991b1b',
             color: mutationStatus.success ? '#171717' : '#ffffff',
             boxShadow: '0 8px 24px rgba(0,0,0,0.32)',
-            fontSize: '10px',
+            fontSize: '11px',
             fontWeight: 600,
           }}
         >

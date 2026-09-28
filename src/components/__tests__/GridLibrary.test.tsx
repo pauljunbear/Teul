@@ -3,6 +3,8 @@ import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { GridLibrary } from '../GridLibrary';
+import { getGridPresetCatalog } from '../../backend/gridPresetCatalog';
+import type { GetGridPresetCatalogMessage } from '../../types/gridPresetCatalog';
 
 vi.mock('../GridPresetCard', () => ({
   GridPresetCard: ({
@@ -71,7 +73,16 @@ describe('GridLibrary live fit validation', () => {
 
   beforeEach(() => {
     (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
-    postMessage = vi.spyOn(window.parent, 'postMessage').mockImplementation(() => {});
+    postMessage = vi.spyOn(window.parent, 'postMessage').mockImplementation(payload => {
+      const request = payload.pluginMessage as GetGridPresetCatalogMessage;
+      if (request.type === 'get-grid-preset-catalog')
+        window.dispatchEvent(
+          new MessageEvent('message', {
+            source: window.parent,
+            data: { pluginMessage: getGridPresetCatalog(request) },
+          })
+        );
+    });
     container = document.createElement('div');
     document.body.appendChild(container);
     root = createRoot(container);
@@ -84,8 +95,8 @@ describe('GridLibrary live fit validation', () => {
     (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = false;
   });
 
-  it('requests fresh geometry and blocks apply when the resized target no longer fits', () => {
-    act(() => {
+  it('requests fresh geometry and blocks apply when the resized target no longer fits', async () => {
+    await act(async () => {
       root.render(<GridLibrary isDark={false} />);
     });
 
@@ -121,8 +132,8 @@ describe('GridLibrary live fit validation', () => {
     expect(container.querySelector('[role="alert"]')?.textContent).toBeTruthy();
   });
 
-  it('builds the apply message from the fresh snapshot rather than cached geometry', () => {
-    act(() => {
+  it('builds the apply message from the fresh snapshot rather than cached geometry', async () => {
+    await act(async () => {
       root.render(<GridLibrary isDark={false} />);
     });
 
@@ -149,8 +160,8 @@ describe('GridLibrary live fit validation', () => {
     );
   });
 
-  it('requires an explicit replace choice when the target already has grids', () => {
-    act(() => root.render(<GridLibrary isDark={false} />));
+  it('requires an explicit replace choice when the target already has grids', async () => {
+    await act(async () => root.render(<GridLibrary isDark={false} />));
     act(() => sendSelectionInfo(1200, 800));
     postMessage.mockClear();
 
@@ -181,8 +192,8 @@ describe('GridLibrary live fit validation', () => {
     expect(applyCall?.[0].pluginMessage?.replaceExisting).toBe(true);
   });
 
-  it('preflights and confirms Clear for the current selection', () => {
-    act(() => root.render(<GridLibrary isDark={false} />));
+  it('preflights and confirms Clear for the current selection', async () => {
+    await act(async () => root.render(<GridLibrary isDark={false} />));
     act(() => sendSelectionInfo(1200, 800, undefined, 1));
     postMessage.mockClear();
 

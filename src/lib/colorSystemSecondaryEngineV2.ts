@@ -1,9 +1,12 @@
-import { canonicalJson, deterministicContentHash } from './colorSystemAudit';
+import { canonicalJson, canonicalNumber, deterministicContentHash } from './colorSystemHashing';
 import {
   COLOR_SYSTEM_BUILDER_V2_POLICY_VERSION,
   COLOR_SYSTEM_STRATEGY_CANDIDATE_V2_SCHEMA_VERSION,
   type ColorSystemBuilderBriefV2,
   type ColorSystemColorValueV2,
+  type ColorSystemFamilyMemberV2,
+  type ColorSystemFamilyPinSkipV2,
+  type ColorSystemFamilyPinnedMemberV2,
   type ColorSystemFamilyProminenceV2,
   type ColorSystemJobV2,
   type ColorSystemMemberModeJobEligibilityV2,
@@ -15,17 +18,39 @@ import {
   assertColorSystemBuilderBriefV2Integrity,
   buildColorSystemStrategyCandidateV2,
   buildColorSystemStrategySetV2,
+  colorSystemBriefTargetFamilyCountV2,
 } from './colorSystemBuilderV2Integrity';
-import { generateColorScale, mapOklchToSrgb } from './colorScale';
-import { compareText, hexToOklch, hexToRgb, rgbToHex, rgbToOklab } from './utils';
+import {
+  generateColorScaleFromSrgbV1,
+  pinColorScaleStepWithSourceAnchorsV1,
+  type ColorScale,
+} from './colorScale';
+import {
+  COLOR_SYSTEM_SECONDARY_DIRECTIONS_V3,
+  COLOR_SYSTEM_SECONDARY_FAMILY_SEPARATION_DELTA_E_OK_V3,
+  COLOR_SYSTEM_SECONDARY_NEUTRAL_SEPARATION_DELTA_E_OK_V3,
+  COLOR_SYSTEM_SECONDARY_STRATEGY_KIND_BY_DIRECTION_V3,
+  canonicalizeColorSystemSecondaryOklchV3,
+  classifyColorSystemSecondaryLightnessV3,
+  colorSystemSecondaryDeltaEOKV3,
+  colorSystemSecondaryColorIdentityV3,
+  colorSystemSecondaryOklchFromValueV3,
+  colorSystemSecondaryStatusReserveRoleV3,
+  describeColorSystemSecondaryDirectionV3,
+  COLOR_SYSTEM_SECONDARY_NEUTRAL_MAXIMUM_CHROMA_V3,
+  normalizeColorSystemSecondaryHueV3,
+  pickColorSystemSecondaryHeroV3,
+  readColorSystemSecondaryFamilyV3,
+  realizeColorSystemSecondaryAnchorV3,
+  type ColorSystemSecondaryOklchV3,
+  type ColorSystemSecondaryColorInputV3,
+} from './colorSystemSecondaryStrategyV3';
+import { compareText, hexToOklch, hexToRgb, rgbToHex } from './utils';
+import { colorSystemTerritoryContainsOklchV1 } from './colorSystemPerceptualBoundsV1';
 
 export const COLOR_SYSTEM_SECONDARY_ENGINE_V2_POLICY_VERSION = 'teul-secondary-engine/v2' as const;
 
-export const COLOR_SYSTEM_SECONDARY_ENGINE_V2_DIRECTIONS = [
-  'close-harmony',
-  'balanced-contrast',
-  'wide-spectrum',
-] as const;
+export const COLOR_SYSTEM_SECONDARY_ENGINE_V2_DIRECTIONS = COLOR_SYSTEM_SECONDARY_DIRECTIONS_V3;
 
 export type ColorSystemSecondaryDirectionV2 =
   (typeof COLOR_SYSTEM_SECONDARY_ENGINE_V2_DIRECTIONS)[number];
@@ -39,11 +64,23 @@ export type ColorSystemSecondaryScaleModeV2 = 'Light' | 'Dark';
  */
 export const COLOR_SYSTEM_SECONDARY_STRATEGY_MINIMUM_MEAN_DELTA_E_OK = 0.02;
 
+/**
+ * Enforced within one direction: a generated family whose Light step-9 anchor
+ * sits closer than this to an already accepted family's anchor is skipped and
+ * the skip is measured. Neutral anchors are compared at the lower threshold.
+ */
+export const COLOR_SYSTEM_SECONDARY_FAMILY_ANCHOR_SEPARATION_DELTA_E_OK =
+  COLOR_SYSTEM_SECONDARY_FAMILY_SEPARATION_DELTA_E_OK_V3;
+export const COLOR_SYSTEM_SECONDARY_NEUTRAL_ANCHOR_SEPARATION_DELTA_E_OK =
+  COLOR_SYSTEM_SECONDARY_NEUTRAL_SEPARATION_DELTA_E_OK_V3;
+
 export interface ColorSystemSecondaryDirectionRecipeV2 {
   direction: ColorSystemSecondaryDirectionV2;
   hueOffsetDegrees: number;
   chromaScale: number;
   lightnessShift: number;
+  /** Optional per-direction family name; the seed displayName is the default. */
+  displayName?: string;
   authority: 'teul-proposal';
   evidenceIds: readonly string[];
 }
@@ -81,6 +118,19 @@ export interface ColorSystemSecondaryFamilySeedV2 {
   directionRecipes: readonly ColorSystemSecondaryDirectionRecipeV2[];
   eligibilityEvidence: readonly ColorSystemSecondaryEligibilityEvidenceV2[];
   evidenceIds: readonly string[];
+  /**
+   * p3-H: preserved tints of this family's source color. Each pins into the Light
+   * scale at the step whose lightness is nearest, only for a direction whose
+   * anchor is the exact source and only when the pinned scale still validates;
+   * every outcome is recorded on the family.
+   */
+  pinnedSources?: readonly ColorSystemSecondaryPinnedSourceV2[];
+}
+
+/** p3-H: a preserved color and mode a seed asks the engine to pin into its scale. */
+export interface ColorSystemSecondaryPinnedSourceV2 {
+  sourceColorId: string;
+  sourceMode: string;
 }
 
 export class ColorSystemSecondaryEngineV2Error extends Error {
@@ -102,12 +152,29 @@ interface GeneratedFamily {
   mappedStepCount: number;
   sourceAdjustmentDeltaEOK: number;
   anchorHex: string;
+  anchorValue: ColorSystemColorValueV2;
+  sourceHex: string;
+  sourceValue: ColorSystemColorValueV2;
+  sourceDisplayName: string;
+  displayName: string;
+  /** Measured neutral rule: Light step-9 chroma below the shared threshold. */
+  neutral: boolean;
 }
 
 const HASH_PREFIX = 'sha256:';
 const MODES: readonly ColorSystemSecondaryScaleModeV2[] = ['Light', 'Dark'];
 const MAXIMUM_RAW_FAMILY_EVALUATIONS = 648;
 const MAXIMUM_PREQUALIFIED_FAMILIES = 64;
+/**
+ * Seed chroma scale bounds. Neutral ramps request step-9 chroma 0.012 from
+ * anchors that may reach the sRGB chroma ceiling (about 0.37), which needs a
+ * scale as low as 0.032; the earlier 0.05 floor could not express that. A
+ * low-chroma hero (chroma at or below the 0.08 accent floor) needs accents up
+ * to chroma 0.12, which is 2.4× a chroma-0.05 hero; the earlier ceiling of 2
+ * could not express that either.
+ */
+const MINIMUM_SEED_CHROMA_SCALE = 0.02;
+const MAXIMUM_SEED_CHROMA_SCALE = 3;
 
 const KNOWN_SEED_KEYS = [
   'version',
@@ -125,6 +192,7 @@ const KNOWN_SEED_KEYS = [
   'directionRecipes',
   'eligibilityEvidence',
   'evidenceIds',
+  'pinnedSources', // p3-H
 ] as const;
 
 const KNOWN_RECIPE_KEYS = [
@@ -132,6 +200,7 @@ const KNOWN_RECIPE_KEYS = [
   'hueOffsetDegrees',
   'chromaScale',
   'lightnessShift',
+  'displayName',
   'authority',
   'evidenceIds',
 ] as const;
@@ -189,8 +258,15 @@ function sortedUniqueJobs(
   return normalized;
 }
 
-function normalizeHue(value: number): number {
-  return ((value % 360) + 360) % 360;
+/**
+ * CSS uses a missing hue at the powerless-hue boundary; Teul's numeric receipt
+ * schema stores the equivalent deterministic placeholder instead. The formula
+ * is shared with the strategy planner so both sides canonicalize identically.
+ */
+export function canonicalizeColorSystemSecondaryOklchV2(
+  value: ReturnType<typeof hexToOklch>
+): ReturnType<typeof hexToOklch> {
+  return canonicalizeColorSystemSecondaryOklchV3(value);
 }
 
 function normalizeHex(value: string): string {
@@ -209,37 +285,11 @@ function colorValue(hex: string): ColorSystemColorValueV2 {
   };
 }
 
-function deltaEOK(firstHex: string, secondHex: string): number {
-  const first = hexToRgb(firstHex);
-  const second = hexToRgb(secondHex);
-  const firstLab = rgbToOklab(first.r, first.g, first.b);
-  const secondLab = rgbToOklab(second.r, second.g, second.b);
-  return Math.sqrt(
-    Math.pow(firstLab.L - secondLab.L, 2) +
-      Math.pow(firstLab.a - secondLab.a, 2) +
-      Math.pow(firstLab.b - secondLab.b, 2)
-  );
-}
-
-function hueInRanges(
-  hue: number,
-  ranges: readonly Readonly<{ minimum: number; maximum: number }>[]
-): boolean {
-  return ranges.some(range => hue >= range.minimum && hue <= range.maximum);
-}
-
-function territoryContainsHex(
-  territory: ColorSystemBuilderBriefV2['brandFitProfile']['territories'][number],
-  hex: string
-): boolean {
-  const color = hexToOklch(hex);
-  return (
-    hueInRanges(color.h, territory.perceptualBounds.hueRanges) &&
-    color.c >= territory.perceptualBounds.chroma.minimum &&
-    color.c <= territory.perceptualBounds.chroma.maximum &&
-    color.l >= territory.perceptualBounds.lightness.minimum &&
-    color.l <= territory.perceptualBounds.lightness.maximum
-  );
+function deltaEOK(
+  firstHex: ColorSystemSecondaryColorInputV3,
+  secondHex: ColorSystemSecondaryColorInputV3
+): number {
+  return colorSystemSecondaryDeltaEOKV3(firstHex, secondHex);
 }
 
 function normalizeSeed(
@@ -306,6 +356,10 @@ function normalizeSeed(
       if (recipeEvidence.length === 0) {
         fail(`${seedId}/${recipe.direction} requires source evidence.`);
       }
+      const recipeDisplayName =
+        recipe.displayName === undefined
+          ? undefined
+          : requireNonEmpty(recipe.displayName, `${seedId}/${recipe.direction} displayName`);
       return {
         direction: recipe.direction,
         hueOffsetDegrees: requireFiniteRange(
@@ -316,8 +370,8 @@ function normalizeSeed(
         ),
         chromaScale: requireFiniteRange(
           recipe.chromaScale,
-          0.05,
-          2,
+          MINIMUM_SEED_CHROMA_SCALE,
+          MAXIMUM_SEED_CHROMA_SCALE,
           `${seedId}/${recipe.direction} chromaScale`
         ),
         lightnessShift: requireFiniteRange(
@@ -326,6 +380,7 @@ function normalizeSeed(
           0.25,
           `${seedId}/${recipe.direction} lightnessShift`
         ),
+        ...(recipeDisplayName === undefined ? {} : { displayName: recipeDisplayName }),
         authority: 'teul-proposal' as const,
         evidenceIds: recipeEvidence,
       };
@@ -385,6 +440,56 @@ function normalizeSeed(
   if (eligibilityEvidence.length === 0) {
     fail(`${seedId} requires explicit member/mode job eligibility evidence.`);
   }
+  // p3-H: pins resolve only to preserved (never evidence-only) opaque colors other
+  // than the seed's own anchor, one pin per color, in stable order.
+  const pinnedSources =
+    seed.pinnedSources === undefined
+      ? undefined
+      : [...seed.pinnedSources]
+          .map((pin, index) => {
+            requireKnownKeys(
+              pin,
+              ['sourceColorId', 'sourceMode'],
+              `${seedId} pinnedSources[${index}]`
+            );
+            const pinSourceId = requireNonEmpty(
+              pin.sourceColorId,
+              `${seedId} pinnedSources[${index}].sourceColorId`
+            );
+            const pinMode = requireNonEmpty(
+              pin.sourceMode,
+              `${seedId} pinnedSources[${index}].sourceMode`
+            );
+            const preserved = brief.preservedColors.find(
+              color => color.stableColorId === pinSourceId
+            );
+            const pinValue = preserved?.valuesByMode[pinMode];
+            if (!preserved || !pinValue) {
+              fail(
+                `${seedId} pinnedSources[${index}] does not resolve to a preserved color and mode.`
+              );
+            }
+            if (pinValue.alpha !== 1) {
+              fail(`${seedId} pinnedSources[${index}] must be an opaque preserved color.`);
+            }
+            if (pinSourceId === sourceColorId) {
+              fail(`${seedId} cannot pin its own anchor color.`);
+            }
+            return { sourceColorId: pinSourceId, sourceMode: pinMode };
+          })
+          .sort(
+            (left, right) =>
+              compareText(left.sourceColorId, right.sourceColorId) ||
+              compareText(left.sourceMode, right.sourceMode)
+          );
+  if (pinnedSources && pinnedSources.length === 0)
+    fail(`${seedId} pinnedSources must not be empty when present.`);
+  if (
+    pinnedSources &&
+    new Set(pinnedSources.map(pin => pin.sourceColorId)).size !== pinnedSources.length
+  ) {
+    fail(`${seedId} pinnedSources must name each preserved color once.`);
+  }
   return {
     version: 'teul-secondary-family-seed/v2',
     authority: 'teul-proposal',
@@ -399,7 +504,12 @@ function normalizeSeed(
       360,
       `${seedId} baseHueOffsetDegrees`
     ),
-    baseChromaScale: requireFiniteRange(seed.baseChromaScale, 0.05, 2, `${seedId} baseChromaScale`),
+    baseChromaScale: requireFiniteRange(
+      seed.baseChromaScale,
+      MINIMUM_SEED_CHROMA_SCALE,
+      MAXIMUM_SEED_CHROMA_SCALE,
+      `${seedId} baseChromaScale`
+    ),
     baseLightnessShift: requireFiniteRange(
       seed.baseLightnessShift,
       -0.25,
@@ -411,31 +521,57 @@ function normalizeSeed(
     directionRecipes,
     eligibilityEvidence,
     evidenceIds,
+    ...(pinnedSources ? { pinnedSources } : {}),
   };
 }
 
-function exactSourceAnchor(brief: ColorSystemBuilderBriefV2, seed: NormalizedSeed): string {
+function exactSource(
+  brief: ColorSystemBuilderBriefV2,
+  seed: NormalizedSeed
+): { hex: string; value: ColorSystemColorValueV2; displayName: string } {
   const source = [...brief.preservedColors, ...brief.sourceReferenceColors].find(
     color => color.stableColorId === seed.sourceColorId
   );
   const value = source?.valuesByMode[seed.sourceMode];
-  if (!value) fail(`${seed.seedId} source anchor disappeared after validation.`);
-  return value.hex;
+  if (!source || !value) fail(`${seed.seedId} source anchor disappeared after validation.`);
+  return { hex: normalizeHex(value.hex), value, displayName: source.displayName };
 }
 
+function exactSourceAnchor(
+  brief: ColorSystemBuilderBriefV2,
+  seed: NormalizedSeed
+): ColorSystemColorValueV2 {
+  return exactSource(brief, seed).value;
+}
+
+/**
+ * One clamp per channel on the exact source anchor, then Local MINDE gamut
+ * mapping. The arithmetic lives in the strategy module so a planned recipe and
+ * the generated family agree on the same six-digit anchor.
+ */
 function generatedAnchor(
   brief: ColorSystemBuilderBriefV2,
   seed: NormalizedSeed,
   recipe: ColorSystemSecondaryDirectionRecipeV2
-): { requested: ReturnType<typeof hexToOklch>; hex: string } {
-  const source = hexToOklch(exactSourceAnchor(brief, seed));
-  const requested = {
-    l: Math.max(0.05, Math.min(0.95, source.l + seed.baseLightnessShift + recipe.lightnessShift)),
-    c: Math.max(0, Math.min(0.5, source.c * seed.baseChromaScale * recipe.chromaScale)),
-    h: normalizeHue(source.h + seed.baseHueOffsetDegrees + recipe.hueOffsetDegrees),
+): { requested: ColorSystemSecondaryOklchV3; hex: string; value: ColorSystemColorValueV2 } {
+  const realized = realizeColorSystemSecondaryAnchorV3(
+    exactSourceAnchor(brief, seed),
+    {
+      hueOffsetDegrees: seed.baseHueOffsetDegrees,
+      chromaScale: seed.baseChromaScale,
+      lightnessShift: seed.baseLightnessShift,
+    },
+    {
+      hueOffsetDegrees: recipe.hueOffsetDegrees,
+      chromaScale: recipe.chromaScale,
+      lightnessShift: recipe.lightnessShift,
+    }
+  );
+  return {
+    requested: realized.requested,
+    hex: realized.hex,
+    value: realized.value ?? colorValue(realized.hex),
   };
-  const mapped = mapOklchToSrgb(requested);
-  return { requested, hex: normalizeHex(mapped.hex) };
 }
 
 function mergeEvidence(...sets: readonly (readonly string[])[]): string[] {
@@ -452,28 +588,41 @@ function familyValueHash(family: ColorSystemSecondaryFamilyV2): string {
           hex: value.hex,
           components: value.components,
           alpha: value.alpha,
+          ...(value.representation ? { representation: value.representation } : {}),
         }))
     )
   );
 }
 
+/**
+ * The claimed territory bounds the family's anchor (its exact step 9, the same
+ * representative the brief integrity check uses), because a 12-step scale by
+ * construction spans lightness from near-white to near-black. Excluded
+ * territories are checked against every member in every mode, so no step of a
+ * generated family may enter a zone the owner or the planner reserved.
+ */
 function passesBrandFit(
   brief: ColorSystemBuilderBriefV2,
   seed: NormalizedSeed,
-  family: ColorSystemSecondaryFamilyV2
+  family: ColorSystemSecondaryFamilyV2,
+  anchorValue: ColorSystemColorValueV2
 ): boolean {
   const claimed = brief.brandFitProfile.territories.find(
     territory => territory.territoryId === seed.territoryId
   );
   if (!claimed || claimed.status === 'excluded') return false;
+  if (
+    !colorSystemTerritoryContainsOklchV1(claimed, colorSystemSecondaryOklchFromValueV3(anchorValue))
+  )
+    return false;
   for (const member of family.members) {
     for (const value of Object.values(member.valuesByMode)) {
-      if (!territoryContainsHex(claimed, value.hex)) return false;
+      const actual = colorSystemSecondaryOklchFromValueV3(value);
       const excluded = brief.brandFitProfile.territories.some(
         territory =>
           territory.status === 'excluded' &&
           territory.appliesToProminence.includes(seed.prominence) &&
-          territoryContainsHex(territory, value.hex)
+          colorSystemTerritoryContainsOklchV1(territory, actual)
       );
       if (excluded) return false;
     }
@@ -529,6 +678,120 @@ function buildEligibility(
     );
 }
 
+/** The mode a recorded tint pins into: the Light scale, whose steps 1–8 are lighter than the anchor. */
+const PIN_TARGET_MODE: ColorSystemSecondaryScaleModeV2 = 'Light';
+
+interface PinnedStep {
+  sourceColorId: string;
+  sourceDisplayName: string;
+  hex: string;
+}
+
+/**
+ * p3-H. Pins each recorded tint into the Light scale at the step whose lightness
+ * is nearest (steps 1 through 8, strictly lighter than the anchor), keeping the
+ * pin only when the pinned scale still passes the generator's own validator.
+ * Every tint that cannot be pinned is recorded with the step it was nearest to
+ * and the reason; the generated step stands and the tint remains a source token.
+ * Pins apply only where the direction's anchor is the exact source color.
+ */
+function applyPinnedSources(
+  brief: ColorSystemBuilderBriefV2,
+  seed: NormalizedSeed,
+  direction: ColorSystemSecondaryDirectionV2,
+  source: ColorSystemColorValueV2,
+  anchor: ColorSystemColorValueV2,
+  light: ColorScale
+): {
+  light: ColorScale;
+  pinnedSteps: Map<number, PinnedStep>;
+  pinSkips: ColorSystemFamilyPinSkipV2[];
+} {
+  const pinnedSteps = new Map<number, PinnedStep>();
+  const pinSkips: ColorSystemFamilyPinSkipV2[] = [];
+  const sourceHex = source.hex;
+  const anchorHex = anchor.hex;
+  let scale = light;
+  for (const pin of seed.pinnedSources ?? []) {
+    const preserved = brief.preservedColors.find(
+      color => color.stableColorId === pin.sourceColorId
+    );
+    const value = preserved?.valuesByMode[pin.sourceMode];
+    if (!preserved || !value) fail(`${seed.seedId} pinned source disappeared after validation.`);
+    const hex = normalizeHex(value.hex);
+    const skip = (nearestStep: number | null, reason: string) => {
+      pinSkips.push({
+        sourceColorId: pin.sourceColorId,
+        sourceDisplayName: preserved.displayName,
+        hex,
+        mode: PIN_TARGET_MODE,
+        nearestStep,
+        reason,
+      });
+    };
+    if (
+      colorSystemSecondaryColorIdentityV3(anchor) !== colorSystemSecondaryColorIdentityV3(source)
+    ) {
+      skip(
+        null,
+        `The ${direction} anchor (${anchorHex}) is not the exact source color (${sourceHex}), so the recorded tint is not pinned into this scale.`
+      );
+      continue;
+    }
+    const tintLightness = value.representation
+      ? colorSystemSecondaryOklchFromValueV3(value).l
+      : hexToOklch(hex).l;
+    const anchorLightness = anchor.representation
+      ? colorSystemSecondaryOklchFromValueV3(anchor).l
+      : hexToOklch(anchorHex).l;
+    if (tintLightness <= anchorLightness) {
+      skip(
+        null,
+        `${preserved.displayName} (L ${tintLightness.toFixed(2)}) is not lighter than its base (L ${anchorLightness.toFixed(2)}), so it cannot take a tint step.`
+      );
+      continue;
+    }
+    let nearestStep = 1;
+    let nearestDistance = Number.POSITIVE_INFINITY;
+    for (const step of scale.steps) {
+      if (step.step >= scale.anchorStep) continue;
+      const distance = Math.abs(step.oklch.l - tintLightness);
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nearestStep = step.step;
+      }
+    }
+    const holder = pinnedSteps.get(nearestStep);
+    if (holder) {
+      skip(
+        nearestStep,
+        `Step ${nearestStep} already holds ${holder.sourceDisplayName} (${holder.hex}); ${preserved.displayName} is nearest the same step.`
+      );
+      continue;
+    }
+    const pinned = pinColorScaleStepWithSourceAnchorsV1(scale, nearestStep, value, [
+      ...pinnedSteps.keys(),
+    ]);
+    if (!pinned.validation.valid) {
+      const codes = [...new Set(pinned.validation.issues.map(issue => issue.code))].sort(
+        compareText
+      );
+      skip(
+        nearestStep,
+        `Pinning ${preserved.displayName} (${hex}) at step ${nearestStep} fails the scale validator (${codes.join(', ')}); the generated step stands.`
+      );
+      continue;
+    }
+    scale = pinned;
+    pinnedSteps.set(nearestStep, {
+      sourceColorId: pin.sourceColorId,
+      sourceDisplayName: preserved.displayName,
+      hex,
+    });
+  }
+  return { light: scale, pinnedSteps, pinSkips };
+}
+
 function generateFamily(
   brief: ColorSystemBuilderBriefV2,
   seed: NormalizedSeed,
@@ -537,64 +800,99 @@ function generateFamily(
 ): GeneratedFamily | null {
   const recipe = seed.directionRecipes.find(candidate => candidate.direction === direction);
   if (!recipe) return null;
+  const familyName = recipe.displayName ?? seed.displayName;
+  const source = exactSource(brief, seed);
   const anchor = generatedAnchor(brief, seed, recipe);
-  const light = generateColorScale(anchor.hex, 'light', seed.displayName);
-  const dark = generateColorScale(anchor.hex, 'dark', seed.displayName);
-  if (!light.validation.valid || !dark.validation.valid) return null;
+  const generatedLight = generateColorScaleFromSrgbV1(anchor.value, 'light', familyName);
+  const dark = generateColorScaleFromSrgbV1(anchor.value, 'dark', familyName);
+  if (!generatedLight.validation.valid || !dark.validation.valid) return null;
+  const { light, pinnedSteps, pinSkips } = applyPinnedSources(
+    brief,
+    seed,
+    direction,
+    source.value,
+    anchor.value,
+    generatedLight
+  );
   const identity = deterministicContentHash({
     seedId: seed.seedId,
     contributionId: seed.contributionId,
     direction,
     anchorHex: anchor.hex,
+    ...(anchor.value.representation
+      ? { anchorValueHash: anchor.value.representation.exactValueHash }
+      : {}),
   }).slice(HASH_PREFIX.length, HASH_PREFIX.length + 12);
   const familyId = `secondary-${direction}-${identity}`;
-  const sourceColorIds = [seed.sourceColorId];
   const provenanceEvidence = mergeEvidence(
     seed.evidenceIds,
     recipe.evidenceIds,
     brief.brandFitProfile.evidenceIds,
     brief.primaryLocks.flatMap(lock => lock.evidenceIds)
   );
-  const members = light.steps.map((lightStep, index) => {
+  const pinnedMembers: ColorSystemFamilyPinnedMemberV2[] = [];
+  const members: ColorSystemFamilyMemberV2[] = light.steps.map((lightStep, index) => {
     const darkStep = dark.steps[index];
     const memberId = `${familyId}-step-${String(index + 1).padStart(2, '0')}`;
+    const pinned = pinnedSteps.get(index + 1);
+    const sourceColorIds = [seed.sourceColorId];
+    if (pinned) sourceColorIds.push(pinned.sourceColorId);
+    else {
+      for (const step of lightStep.sourceAnchorSteps ?? []) {
+        const boundaryPin = pinnedSteps.get(step);
+        if (boundaryPin) sourceColorIds.push(boundaryPin.sourceColorId);
+      }
+    }
+    if (pinned) {
+      pinnedMembers.push({
+        stableMemberId: memberId,
+        step: index + 1,
+        mode: PIN_TARGET_MODE,
+        sourceColorId: pinned.sourceColorId,
+        sourceDisplayName: pinned.sourceDisplayName,
+        hex: pinned.hex,
+      });
+    }
     return {
       stableMemberId: memberId,
-      displayName: `${seed.displayName} ${index + 1}`,
+      displayName: `${familyName} ${index + 1}`,
       role: `step-${index + 1}`,
       order: index + 1,
       valuesByMode: {
-        Light: colorValue(lightStep.hex),
-        Dark: colorValue(darkStep.hex),
+        Light: lightStep.value ?? colorValue(lightStep.hex),
+        Dark: darkStep.value ?? colorValue(darkStep.hex),
       },
       provenance: {
         kind: 'teul-generated' as const,
         authority: 'teul-proposal' as const,
-        algorithmVersion: 'Teul OKLCH v3',
+        algorithmVersion: light.sourcePinPolicy
+          ? `${light.method}; ${light.sourcePinPolicy}`
+          : light.method,
         seedId: seed.seedId,
         directionId: direction,
         hueOffsetDegrees:
-          normalizeHue(seed.baseHueOffsetDegrees + recipe.hueOffsetDegrees + 180) - 180,
+          normalizeColorSystemSecondaryHueV3(
+            seed.baseHueOffsetDegrees + recipe.hueOffsetDegrees + 180
+          ) - 180,
         requestedOklchByMode: {
-          Light: lightStep.requestedOklch,
-          Dark: darkStep.requestedOklch,
+          Light: canonicalizeColorSystemSecondaryOklchV2(lightStep.requestedOklch),
+          Dark: canonicalizeColorSystemSecondaryOklchV2(darkStep.requestedOklch),
         },
         mappedOklchByMode: {
-          // The final serialized sRGB value is authoritative after Local
-          // MINDE plus channel quantization, so retain its exact round-trip
-          // coordinate rather than the pre-quantization search coordinate.
-          Light: hexToOklch(lightStep.hex),
-          Dark: hexToOklch(darkStep.hex),
+          // Measure the emitted channels: exact native sources or generated
+          // byte values, rather than the pre-quantization search coordinate.
+          Light: colorSystemSecondaryOklchFromValueV3(lightStep.value ?? lightStep.hex),
+          Dark: colorSystemSecondaryOklchFromValueV3(darkStep.value ?? darkStep.hex),
         },
         gamutMapping: 'local-minde-v1' as const,
-        sourceColorIds,
+        sourceColorIds: sourceColorIds.sort(compareText),
         evidenceIds: provenanceEvidence,
       },
     };
   });
   const family: ColorSystemSecondaryFamilyV2 = {
     stableFamilyId: familyId,
-    displayName: `${seed.displayName} — ${direction}`,
+    displayName: `${familyName} — ${direction}`,
     order,
     contributionId: seed.contributionId,
     shape: { kind: 'full-light-dark-scale', stepCount: 12 },
@@ -608,16 +906,26 @@ function generateFamily(
       ),
     },
     members,
+    ...(pinnedMembers.length > 0 ? { pinnedMembers } : {}),
+    ...(pinSkips.length > 0 ? { pinSkips } : {}),
   };
-  if (!passesBrandFit(brief, seed, family)) return null;
+  if (!passesBrandFit(brief, seed, family, anchor.value)) return null;
   return {
     family,
     jobEligibility: buildEligibility(seed, family),
     mappedStepCount:
       light.steps.filter(step => step.gamutMapped).length +
       dark.steps.filter(step => step.gamutMapped).length,
-    sourceAdjustmentDeltaEOK: deltaEOK(exactSourceAnchor(brief, seed), anchor.hex),
+    sourceAdjustmentDeltaEOK: deltaEOK(source.value, anchor.value),
     anchorHex: anchor.hex,
+    anchorValue: anchor.value,
+    sourceHex: source.hex,
+    sourceValue: source.value,
+    sourceDisplayName: source.displayName,
+    displayName: familyName,
+    neutral:
+      colorSystemSecondaryOklchFromValueV3(anchor.value).c <
+      COLOR_SYSTEM_SECONDARY_NEUTRAL_MAXIMUM_CHROMA_V3,
   };
 }
 
@@ -626,37 +934,152 @@ function minimumFamilyAnchorSeparation(families: readonly GeneratedFamily[]): nu
   let minimum = Number.POSITIVE_INFINITY;
   for (let left = 0; left < families.length; left++) {
     for (let right = left + 1; right < families.length; right++) {
-      minimum = Math.min(minimum, deltaEOK(families[left].anchorHex, families[right].anchorHex));
+      minimum = Math.min(
+        minimum,
+        deltaEOK(families[left].anchorValue, families[right].anchorValue)
+      );
     }
   }
   return minimum;
 }
 
-function candidateAnchorMap(candidate: ColorSystemStrategyCandidateV2): Map<string, string> {
+interface CandidateAnchor {
+  hex: string;
+  value: ColorSystemColorValueV2;
+  /** Exact source-derived or neutral: identical in every direction by construction. */
+  structural: boolean;
+}
+
+function candidateAnchorMap(
+  brief: ColorSystemBuilderBriefV2,
+  candidate: ColorSystemStrategyCandidateV2
+): Map<string, CandidateAnchor> {
+  const sourceById = new Map(
+    [...brief.preservedColors, ...brief.sourceReferenceColors].map(color => [
+      color.stableColorId,
+      color,
+    ])
+  );
   return new Map(
     candidate.families.map(family => {
       const anchor = family.members.find(member => member.role === 'step-9');
       const value = anchor?.valuesByMode.Light;
       if (!value) fail(`${family.stableFamilyId} lacks its generated Light step-9 anchor.`);
-      return [family.contributionId, value.hex];
+      const hex = normalizeHex(value.hex);
+      const sourceColorIds = family.members[0]?.provenance.sourceColorIds ?? [];
+      const derived = sourceColorIds.some(sourceColorId =>
+        Object.values(sourceById.get(sourceColorId)?.valuesByMode ?? {}).some(
+          sourceValue =>
+            colorSystemSecondaryColorIdentityV3(sourceValue) ===
+            colorSystemSecondaryColorIdentityV3(value)
+        )
+      );
+      return [
+        family.contributionId,
+        {
+          hex,
+          value,
+          structural:
+            derived ||
+            colorSystemSecondaryOklchFromValueV3(value).c <
+              COLOR_SYSTEM_SECONDARY_NEUTRAL_MAXIMUM_CHROMA_V3 ||
+            colorSystemSecondaryStatusReserveRoleV3({ contributionId: family.contributionId }) !==
+              null,
+        },
+      ];
     })
   );
 }
 
+/**
+ * Mean anchor distance over the contributions two directions were free to
+ * decide differently. Families that reproduce a source color exactly, neutral
+ * ramps, and status reserves are identical in every direction by construction,
+ * so they are excluded: a palette with many existing hues must not dilute a
+ * real accent difference, and directions that differ in nothing else still collapse.
+ */
 function strategyMeanDeltaEOK(
+  brief: ColorSystemBuilderBriefV2,
   first: ColorSystemStrategyCandidateV2,
   second: ColorSystemStrategyCandidateV2
 ): number {
-  const firstAnchors = candidateAnchorMap(first);
-  const secondAnchors = candidateAnchorMap(second);
-  const common = [...firstAnchors.keys()].filter(key => secondAnchors.has(key)).sort(compareText);
-  if (common.length === 0) return 0;
-  return (
-    common.reduce(
-      (total, key) => total + deltaEOK(firstAnchors.get(key)!, secondAnchors.get(key)!),
+  const firstAnchors = candidateAnchorMap(brief, first);
+  const secondAnchors = candidateAnchorMap(brief, second);
+  const openKeys = (anchors: Map<string, CandidateAnchor>) =>
+    [...anchors.entries()]
+      .filter(([, anchor]) => !anchor.structural)
+      .map(([key]) => key)
+      .sort(compareText);
+  const firstOpen = openKeys(firstAnchors);
+  const secondOpen = openKeys(secondAnchors);
+  // Directions that realize different sets of open contributions (one adds an accent the
+  // other does not) differ by construction; the threshold only guards against two
+  // directions that decided the same slots almost identically.
+  if (canonicalJson(firstOpen) !== canonicalJson(secondOpen)) return Number.POSITIVE_INFINITY;
+  if (firstOpen.length === 0) return 0;
+  return canonicalNumber(
+    firstOpen.reduce(
+      (total, key) => total + deltaEOK(firstAnchors.get(key)!.value, secondAnchors.get(key)!.value),
       0
-    ) / common.length
+    ) / firstOpen.length
   );
+}
+
+/**
+ * Acceptance order inside one direction. Exact brand colors are accepted first
+ * so a generated accent can never displace them under the separation gate;
+ * generated accents follow, then status reserves (planned as fixed anchors the
+ * accents already kept clear of); neutral ramps are accepted last because they
+ * are compared at the lower neutral threshold.
+ */
+function acceptanceRank(entry: GeneratedFamily): number {
+  if (entry.sourceAdjustmentDeltaEOK === 0) return 0;
+  if (entry.neutral) return 3;
+  return colorSystemSecondaryStatusReserveRoleV3({
+    contributionId: entry.family.contributionId,
+  }) !== null
+    ? 2
+    : 1;
+}
+
+function separationThreshold(left: GeneratedFamily, right: GeneratedFamily): number {
+  return left.neutral || right.neutral
+    ? COLOR_SYSTEM_SECONDARY_NEUTRAL_ANCHOR_SEPARATION_DELTA_E_OK
+    : COLOR_SYSTEM_SECONDARY_FAMILY_ANCHOR_SEPARATION_DELTA_E_OK;
+}
+
+function minimumNeutralAnchorSeparation(families: readonly GeneratedFamily[]): number | null {
+  let minimum = Number.POSITIVE_INFINITY;
+  for (let left = 0; left < families.length; left++) {
+    for (let right = left + 1; right < families.length; right++) {
+      if (!families[left].neutral && !families[right].neutral) continue;
+      minimum = Math.min(
+        minimum,
+        deltaEOK(families[left].anchorValue, families[right].anchorValue)
+      );
+    }
+  }
+  return Number.isFinite(minimum) ? minimum : null;
+}
+
+/** The hero rule shared with the compiler and the review model: the most saturated preserved Primary. */
+function heroOklchForExplanation(
+  brief: ColorSystemBuilderBriefV2,
+  seeds: readonly NormalizedSeed[]
+): ColorSystemSecondaryOklchV3 | null {
+  const hero = pickColorSystemSecondaryHeroV3(
+    brief.preservedColors.map(color => ({
+      stableColorId: color.stableColorId,
+      displayName: color.displayName,
+      section: color.section,
+      valuesByMode: color.valuesByMode,
+      retention: 'preserved' as const,
+      evidenceIds: color.evidenceIds,
+    }))
+  );
+  if (hero) return hero.oklch;
+  const leading = seeds.find(seed => seed.prominence === 'leading');
+  return leading ? colorSystemSecondaryOklchFromValueV3(exactSourceAnchor(brief, leading)) : null;
 }
 
 function buildDirectionCandidate(
@@ -664,40 +1087,84 @@ function buildDirectionCandidate(
   seeds: readonly NormalizedSeed[],
   direction: ColorSystemSecondaryDirectionV2
 ): ColorSystemStrategyCandidateV2 | null {
-  const generated: GeneratedFamily[] = [];
-  const familyHashes = new Set<string>();
-  let hasLeadingFamily = false;
+  // The reviewed target for this direction: per direction when the brief carries
+  // one, otherwise the single reviewed count.
+  const directionTarget = colorSystemBriefTargetFamilyCountV2(brief, direction);
+  const countReason = brief.secondaryTargetFamilyCountReasonByDirection?.[direction] ?? null;
+  const evaluated: GeneratedFamily[] = [];
   let rawEvaluations = 0;
   for (const seed of seeds) {
     if (rawEvaluations >= MAXIMUM_RAW_FAMILY_EVALUATIONS) break;
     rawEvaluations += 1;
-    const result = generateFamily(brief, seed, direction, generated.length + 1);
-    if (!result) continue;
-    if (result.family.brandFit.prominence === 'leading') {
-      if (hasLeadingFamily) continue;
-      hasLeadingFamily = true;
-    }
+    const result = generateFamily(brief, seed, direction, 0);
+    if (result) evaluated.push(result);
+  }
+  const ordered = evaluated
+    .map((entry, index) => ({ entry, index }))
+    .sort(
+      (left, right) =>
+        acceptanceRank(left.entry) - acceptanceRank(right.entry) || left.index - right.index
+    )
+    .map(item => item.entry);
+  const generated: GeneratedFamily[] = [];
+  const familyHashes = new Set<string>();
+  let hasLeadingFamily = false;
+  let separationSkips = 0;
+  for (const result of ordered) {
+    if (result.family.brandFit.prominence === 'leading' && hasLeadingFamily) continue;
     const actualFamilyHash = familyValueHash(result.family);
     if (familyHashes.has(actualFamilyHash)) continue;
+    if (
+      generated.some(
+        accepted =>
+          deltaEOK(accepted.anchorValue, result.anchorValue) < separationThreshold(accepted, result)
+      )
+    ) {
+      separationSkips += 1;
+      continue;
+    }
+    if (result.family.brandFit.prominence === 'leading') hasLeadingFamily = true;
     familyHashes.add(actualFamilyHash);
     generated.push(result);
-    if (
-      generated.length >= brief.secondaryTargetFamilyCount ||
-      generated.length >= MAXIMUM_PREQUALIFIED_FAMILIES
-    ) {
+    if (generated.length >= directionTarget || generated.length >= MAXIMUM_PREQUALIFIED_FAMILIES) {
       break;
     }
   }
   if (generated.length === 0) return null;
   const families = generated.map((entry, index) => ({ ...entry.family, order: index + 1 }));
+  const chromaticFamilies = generated.filter(entry => !entry.neutral);
+  const neutralSeparation = minimumNeutralAnchorSeparation(generated);
+  const heroOklch = heroOklchForExplanation(brief, seeds);
+  const heroLightnessClass = heroOklch
+    ? classifyColorSystemSecondaryLightnessV3(heroOklch.l)
+    : null;
+  const readings = generated.map(entry =>
+    readColorSystemSecondaryFamilyV3({
+      displayName: entry.displayName,
+      anchorHex: entry.anchorHex,
+      anchorValue: entry.anchorValue,
+      sourceHex: entry.sourceHex,
+      sourceValue: entry.sourceValue,
+      sourceDisplayName: entry.sourceDisplayName,
+      heroOklch,
+      otherAnchorHexes: generated.filter(other => other !== entry).map(other => other.anchorHex),
+      otherAnchorValues: generated.filter(other => other !== entry).map(other => other.anchorValue),
+      contributionId: entry.family.contributionId,
+    })
+  );
+  const chromaticSeparation =
+    chromaticFamilies.length >= 2
+      ? canonicalNumber(minimumFamilyAnchorSeparation(chromaticFamilies))
+      : null;
+  const mappedSteps = generated.reduce((sum, entry) => sum + entry.mappedStepCount, 0);
   const jobEligibility = generated.flatMap(entry => entry.jobEligibility);
   const coveredJobs = new Set(jobEligibility.flatMap(entry => entry.jobs));
   const missingJobs = brief.requiredSecondaryJobs.filter(job => !coveredJobs.has(job));
   const blockers: ColorSystemStrategyCandidateV2['blockers'][number][] = [];
-  if (families.length < brief.secondaryTargetFamilyCount) {
+  if (families.length < directionTarget) {
     blockers.push({
       code: 'FAMILY_TARGET_UNDERFILLED',
-      message: `${direction} produced ${families.length} of ${brief.secondaryTargetFamilyCount} reviewed Secondary families.`,
+      message: `${direction} produced ${families.length} of ${directionTarget} reviewed Secondary families.`,
     });
   }
   missingJobs.forEach(job =>
@@ -721,7 +1188,8 @@ function buildDirectionCandidate(
       .map(word => `${word[0].toUpperCase()}${word.slice(1)}`)
       .join(' '),
     status,
-    targetFamilyCount: brief.secondaryTargetFamilyCount,
+    direction,
+    targetFamilyCount: directionTarget,
     actualFamilyCount: families.length,
     systemShape: 'full-light-dark-scales',
     requiredJobs: brief.requiredSecondaryJobs,
@@ -733,7 +1201,7 @@ function buildDirectionCandidate(
         id: 'family-target-coverage',
         label: 'Secondary family target coverage',
         measuredValue: families.length,
-        threshold: brief.secondaryTargetFamilyCount,
+        threshold: directionTarget,
         unit: 'families',
         evidenceIds,
       },
@@ -745,32 +1213,63 @@ function buildDirectionCandidate(
         unit: 'jobs',
         evidenceIds,
       },
+      ...(chromaticSeparation === null
+        ? []
+        : [
+            {
+              id: 'minimum-family-anchor-separation',
+              label: 'Minimum exact chromatic family anchor separation',
+              measuredValue: chromaticSeparation,
+              threshold: COLOR_SYSTEM_SECONDARY_FAMILY_ANCHOR_SEPARATION_DELTA_E_OK,
+              unit: 'deltaEOK',
+              evidenceIds,
+            },
+          ]),
+      ...(neutralSeparation === null
+        ? []
+        : [
+            {
+              id: 'minimum-neutral-anchor-separation',
+              label: 'Minimum neutral-to-family anchor separation',
+              measuredValue: canonicalNumber(neutralSeparation),
+              threshold: COLOR_SYSTEM_SECONDARY_NEUTRAL_ANCHOR_SEPARATION_DELTA_E_OK,
+              unit: 'deltaEOK',
+              evidenceIds,
+            },
+          ]),
       {
-        id: 'minimum-family-anchor-separation',
-        label: 'Minimum exact family anchor separation',
-        measuredValue: minimumFamilyAnchorSeparation(generated),
-        unit: 'deltaEOK',
+        id: 'family-anchor-separation-skips',
+        label: 'Generated families skipped for anchor separation below threshold',
+        measuredValue: separationSkips,
+        unit: 'families',
         evidenceIds,
       },
       {
         id: 'mean-source-adjustment',
         label: 'Mean exact source-to-generated anchor adjustment',
-        measuredValue:
+        measuredValue: canonicalNumber(
           generated.reduce((sum, entry) => sum + entry.sourceAdjustmentDeltaEOK, 0) /
-          generated.length,
+            generated.length
+        ),
         unit: 'deltaEOK',
         evidenceIds,
       },
       {
         id: 'gamut-mapped-mode-steps',
         label: 'Light and Dark steps mapped through Local MINDE',
-        measuredValue: generated.reduce((sum, entry) => sum + entry.mappedStepCount, 0),
+        measuredValue: mappedSteps,
         unit: 'mode-steps',
         evidenceIds,
       },
     ],
     explanation: {
-      summary: `${direction} is a candidate under Teul policy, derived locally from reviewed source anchors and explicit job evidence.`,
+      summary: describeColorSystemSecondaryDirectionV3({
+        strategyKind: COLOR_SYSTEM_SECONDARY_STRATEGY_KIND_BY_DIRECTION_V3[direction],
+        readings,
+        heroLightnessClass,
+        minimumSeparationDeltaEOK: chromaticSeparation,
+        countReason,
+      }),
       intendedUses: [
         'Secondary-family review',
         'Eligibility handoff to downstream application-system evaluation',
@@ -780,10 +1279,19 @@ function buildDirectionCandidate(
         'A universal accessibility, harmony, or physical-screen-equivalence claim',
       ],
       tradeoffs: [
-        `${families.length} of ${brief.secondaryTargetFamilyCount} family contributions survived exact scale, brand-territory, composition, and duplicate gates.`,
+        `${families.length} of ${directionTarget} family contributions survived exact scale, brand-territory, anchor-separation, composition, and duplicate gates.`,
+        ...(separationSkips > 0
+          ? [
+              `${separationSkips} generated ${separationSkips === 1 ? 'family was' : 'families were'} skipped because the anchor sat closer than ΔEOK ${COLOR_SYSTEM_SECONDARY_FAMILY_ANCHOR_SEPARATION_DELTA_E_OK} (neutral ${COLOR_SYSTEM_SECONDARY_NEUTRAL_ANCHOR_SEPARATION_DELTA_E_OK}) to an accepted family.`,
+            ]
+          : []),
+        `${mappedSteps} of ${families.length * 24} Light and Dark steps were gamut-mapped through Local MINDE.`,
       ],
     },
     blockers,
+    // p3-H: the brief's skipped status reserves ride on every candidate so the review
+    // and the composer can say why a status role has no reserve.
+    ...(brief.skippedStatusReserves ? { skippedStatusReserves: brief.skippedStatusReserves } : {}),
   });
 }
 
@@ -827,9 +1335,16 @@ export function buildColorSystemSecondaryStrategySetV2(
       contributionOrder.get(left.contributionId)! - contributionOrder.get(right.contributionId)! ||
       compareText(left.seedId, right.seedId)
   );
-  const candidates = COLOR_SYSTEM_SECONDARY_ENGINE_V2_DIRECTIONS.map(direction =>
-    buildDirectionCandidate(brief, normalizedSeeds, direction)
+  // p4-A: a direction the brief omits (it would repeat Derived's family set) gets no
+  // candidate at all, so it raises no underfilled blocker and cannot collapse into
+  // another direction; the brief carries its stated reason.
+  const omittedDirections = new Set(
+    (brief.secondaryOmittedDirections ?? []).map(entry => entry.direction)
+  );
+  const candidates = COLOR_SYSTEM_SECONDARY_ENGINE_V2_DIRECTIONS.filter(
+    direction => !omittedDirections.has(direction)
   )
+    .map(direction => buildDirectionCandidate(brief, normalizedSeeds, direction))
     .filter((candidate): candidate is ColorSystemStrategyCandidateV2 => candidate !== null)
     .sort(
       (left, right) =>
@@ -849,7 +1364,7 @@ export function buildColorSystemSecondaryStrategySetV2(
     if (
       distinct.some(
         retained =>
-          strategyMeanDeltaEOK(retained, candidate) <
+          strategyMeanDeltaEOK(brief, retained, candidate) <
           COLOR_SYSTEM_SECONDARY_STRATEGY_MINIMUM_MEAN_DELTA_E_OK
       )
     ) {

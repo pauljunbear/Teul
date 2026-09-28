@@ -1,5 +1,5 @@
 import {
-  captureFigmaColorInventoryScope,
+  resolveFigmaColorInventoryScope,
   inventoryFigmaColorSystem,
   type FigmaColorInventoryHost,
   type FigmaColorInventoryFrozenScope,
@@ -11,7 +11,7 @@ import type {
   SourceColorValue,
   SourceEvidenceLocator,
 } from '../types/colorSystemAudit';
-import { deterministicContentHash } from '../lib/colorSystemAudit';
+import { deterministicContentHash } from '../lib/colorSystemHashing';
 import {
   buildColorSystemGenericSourceSnapshotV2,
   type ColorSystemGenericSourceSnapshotInputV2,
@@ -38,13 +38,7 @@ import {
 const MAX_ALIAS_DEPTH = 64;
 
 export type ColorSystemGenericSourceInventoryV2Status =
-  | 'ready'
-  | 'partial'
-  | 'empty'
-  | 'unsupported-profile'
-  | 'cancelled'
-  | 'capacity'
-  | 'host-error';
+  'ready' | 'partial' | 'empty' | 'unsupported-profile' | 'cancelled' | 'capacity' | 'host-error';
 
 export interface ColorSystemGenericSourceInventoryV2Result {
   status: ColorSystemGenericSourceInventoryV2Status;
@@ -787,7 +781,7 @@ export async function inventoryColorSystemGenericSourceV2(
 ): Promise<ColorSystemGenericSourceInventoryV2Result> {
   try {
     // Capture once, synchronously, before resources/libraries yield back to Figma.
-    const frozenScope = captureFigmaColorInventoryScope(host, options.usageScope);
+    const frozenScope = resolveFigmaColorInventoryScope(host, options);
     const frozenOptions = { ...options, frozenScope };
     const loadedPageIds = new Set<string>([frozenScope.currentPageId]);
     const auditInventory = await inventoryFigmaColorSystem(

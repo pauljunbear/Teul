@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "teul.guideline-source-scale-verification.v1",
+  "status": "passed-local-verification",
+  "candidateBase": "c08fb81b4c41b49518cda4fa76c363d4d1cd721a",
+  "requirements": [
+    "DEC-027",
+    "TASK-007",
+    "REQ-007",
+    "REQ-010",
+    "REQ-011",
+    "REQ-012",
+    "AC-006",
+    "AC-009",
+    "AC-010",
+    "AC-011"
+  ],
+  "sources": {
+    "docs/evidence/brand-guideline-import/source-scale-cross-runtime.mjs": "73183261199774c40d654492c6524b2ba0967128e46ef4e24d7d9a5382b5f88c",
+    "docs/evidence/brand-guideline-import/source-scale-profile.mjs": "97d292e70b14141e11de75f7a387a750d59756da9384e2432cc37438e8536404",
+    "scripts/verify-local.mjs": "e2c5e33126ba078e6528f67030af0db690eb986aabad893f0ddf00324f3ca558",
+    "web/fixtures/guidelines/figma-project-v1.json": "698b20f9ba44c2613b09775a307dc98f482abadeedea1692de8cb494672573fa",
+    "web/fixtures/guidelines/harbor-native.pdf": "4a6b3f600697dbd46bed4988a07224fc8ed894da2429a0b57294712745dfec35",
+    "web/package-lock.json": "58c454e0cd0ba63690761367bcbab479d4f1551c1f0793f6a5eb3545a0a584a9",
+    "web/package.json": "d447c190bac591943d742de60b2a2681b18faa4020c6363aa37c48481cf0e380",
+    "web/scripts/guideline-accessibility.mjs": "c282d73fbdaf4f75b746f11ac60ffa1fd552dd85ea86e0e5e270e9ff5e94eabf",
+    "web/scripts/guideline-source-scale-smoke.mjs": "008ef3e7d99f2c23c4dab5a571ace0b18c7fa8808b1804f44799e889b3f33b4a",
+    "web/scripts/guideline-task-flow.mjs": "c2fc140dad242af1001781deea0198ad06d4c66d2e20191672f18d926fcfee5a",
+    "web/scripts/guideline-task-navigation.mjs": "5cddb113b1debfe3d32628d1e4d7b36abf2622a24bbd3830e1e98aa666d1e3e4",
+    "web/src/components/GuidelineApplicationStudio.tsx": "c91cb3d2a0f34ee954c1afbcd9c871685f3b7cc414499743ce7d67859263a3bc",
+    "web/src/components/GuidelineDesignWorkspace.tsx": "2c364159dd11a6507190fdd065c8c86f7a8355b0b099350e40cb2ae5b24d86e0",
+    "web/src/components/GuidelineExtensionPreview.tsx": "584c826b609eba477390556e1a950605469eaab80e0a6dd3ed84fb41d6970c02",
+    "web/src/lib/authoring.ts": "6ca9617e192b36b5f6ef1d5e7ab96faef2ac57ab259c395412b2ca0c501546fe",
+    "web/src/lib/guideline/application.ts": "3b60f5bf6d7ba0f04f6943a841438955e417c53e32a0717aa45adfa8dafcc825",
+    "web/src/lib/guideline/extension.test.ts": "4181bbab67537864fa781f4e789531ee50d3443ca1b8fe8fad4fb5b639a23aed",
+    "web/src/lib/guideline/extension.ts": "52133bd5b2c996cd26ac57cf8f9af9069d7856f53b55d2f0b2f9533b59334dd8",
+    "web/src/lib/guideline/projectCodec.ts": "cb215a3c23673eba199bbab2adb618a27f71d1c253d05427360c75e051e6d3ba",
+    "web/src/lib/guideline/refreshLineage.ts": "df27a92f8439153b29c828292c9dc88bce591f7069a198ef7b91fe204ef6ad05",
+    "web/src/lib/guideline/refreshReplay.test.ts": "10d535122a61fad946e793e89a4fe14a9151d7a89e6139a32f6fc152ccced41a",
+    "web/src/lib/guideline/refreshReplay.ts": "0f70a72101fd946c3a598f5be47e815399914d31b185e3cd2a919422de85883d",
+    "web/src/lib/guideline/selectedOutputs.test.ts": "8e55b566fe3e899bbf0cffedcc2b139aa746930eda93503cb0643b43642f771a",
+    "web/src/lib/guideline/selectedOutputs.ts": "77fd69eb0f1f40faf4d088ed61a66872cee79cc8c2182d4e602ce7e1aa29fbe6",
+    "web/src/lib/guideline/sourceSetProject.ts": "bb06090c6f966aa42e89ffaa4c50070ed13ffe8f264a036e567a0edbdb3e4a7c",
+    "web/src/lib/guideline/sourceSetRefresh.test.ts": "7d4155d7b6bccc22dd50b643cb4896824f73706f61267aa2e06aec432a5093c9",
+    "web/src/lib/guideline/sourceSetRefresh.ts": "a459958045de8aca6aaf3a5b8e5a19b6b08075e6da40be3ed0c82bf4f51f8148",
+    "web/src/lib/sourceScalePlacement.ts": "5f1ecc1893a6ca8d3d82b892f128c98448625485490ac718b5d8b7f69361aa79"
+  },
+  "runs": [
+    {
+      "path": "docs/evidence/brand-guideline-import/source-scale-node22.json",
+      "bytes": 13946,
+      "sha256": "94199558567c44f95283de55762cf00a8d4a1f915361ca05b51068343e66f027"
+    },
+    {
+      "path": "docs/evidence/brand-guideline-import/source-scale-node24.json",
+      "bytes": 12798,
+      "sha256": "483386a5fde999cb637a3eae2e79dd1a3c669566d7cccb032b5c024bf15119c1"
+    }
+  ],
+  "crossRuntime": [
+    {
+      "path": "release/guideline-source-scale/node22-to-node24.json",
+      "bytes": 261,
+      "sha256": "2cb36a36e3dfba25427148d2fb49cbc351b5ee62cd2f40168cd7a2a882010928"
+    },
+    {
+      "path": "release/guideline-source-scale/node24-to-node22.json",
+      "bytes": 261,
+      "sha256": "4c548d445a2feedf019ace78e836dfbf698089146adc7cc503f110260357448e"
+    }
+  ],
+  "limits": [
+    "Synthetic source and product-paint verification is not designer acceptance.",
+    "No full WCAG, screen-reader, host, OAuth or provider qualification.",
+    "No push, merge or deployment."
+  ]
+}

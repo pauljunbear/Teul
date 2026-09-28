@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { deterministicContentHash } from '../../lib/colorSystemAudit';
+import { hostComponentRecipeFixtureV2 } from './helpers/colorSystemResourceBlueprintFixtureV2';
+import { deterministicContentHash } from '../../lib/colorSystemHashing';
 import {
   COLOR_SYSTEM_BUILDER_V2_POLICY_VERSION,
   COLOR_SYSTEM_SECTION_ROLES_V2,
@@ -8,6 +9,7 @@ import {
 import {
   COLOR_SYSTEM_RESOURCE_BLUEPRINT_V2_SCHEMA_VERSION,
   COLOR_SYSTEM_RESOURCE_COMPILER_V2_POLICY_VERSION,
+  estimateColorSystemResourceNodesV2,
   type ColorSystemComponentRecipeV2,
   type ColorSystemPrimitiveVariableRecipeV2,
   type ColorSystemResourceBlueprintV2,
@@ -62,6 +64,9 @@ function component(
   role: ColorSystemComponentRecipeV2['role'],
   variableRecipeId: string
 ): ColorSystemComponentRecipeV2 {
+  if (kind === 'product-graphics') {
+    return hostComponentRecipeFixtureV2(recipeId, kind, role, variableRecipeId);
+  }
   return {
     recipeId,
     kind,
@@ -109,8 +114,8 @@ function frame(
     },
     presentationContent: {
       frame: {
-        width: 1600,
-        height: 900,
+        width: role === 'product-graphics' ? 9540 : 1600,
+        height: role === 'product-graphics' ? 5391 : 900,
         backgroundHex: '#FFFFFF',
         siblingGap: 80,
         padding: 64,
@@ -303,7 +308,7 @@ function blueprint(): ColorSystemResourceBlueprintV2 {
       'component/product-graphics/surface',
       'product-graphics',
       'product-graphics',
-      alphaId
+      secondaryId
     ),
     component(
       'component/data-visualization/chart',
@@ -346,20 +351,20 @@ function blueprint(): ColorSystemResourceBlueprintV2 {
     sectionBlueprintHash: SECTION_HASH,
     presentationProfileHash: PROFILE_HASH,
     compilerVersion: 'renderer-fixture-v2',
-    output: { systemId: 'ramp-color-system', name: 'Ramp Color System', modes: ['Light', 'Dark'] },
+    output: { systemId: 'example-color-system', name: 'Example Color System', modes: ['Light', 'Dark'] },
     sectionBlueprint,
     collections: [
       {
         recipeId: 'collection/primitives',
         role: 'primitives',
-        name: 'Ramp Color System / Primitives and derivations',
+        name: 'Example Color System / Primitives and derivations',
         modes: ['Light', 'Dark'],
         variables: primitiveVariables,
       },
       {
         recipeId: 'collection/semantics',
         role: 'semantics',
-        name: 'Ramp Color System / Semantic applications',
+        name: 'Example Color System / Semantic applications',
         modes: ['Light', 'Dark'],
         variables: aliases,
       },
@@ -381,8 +386,37 @@ function blueprint(): ColorSystemResourceBlueprintV2 {
       maximumVariables: 512,
       maximumAliases: 128,
       maximumStyles: 1024,
-      maximumFamilyModeComponentVariants: 24,
+      maximumFamilyModeComponentVariants: 48,
       maximumEstimatedNodes: 5000,
+    },
+    // The renderer treats naming evidence as opaque content; the fixture keeps it minimal.
+    tokenNaming: {
+      version: 'teul-token-naming/v2',
+      scheme: {
+        source: 'source/<group>/<name>',
+        family: 'color/<family>/<step>',
+        derivation: '<source path>-a<alpha percent>',
+        semantic: 'semantic/<role>',
+        state: 'semantic/<role>-hover | semantic/<role>-pressed',
+        graphics: 'semantic/graphics/<job>/<n>',
+        chart: 'semantic/chart/<kind>/<n | surface | boundary>',
+        typography: 'semantic/typography/<use>/<mode>/<purpose>',
+      },
+      directionCarrier: 'collection-and-page-name',
+      families: [],
+      sources: [],
+      stateTokens: [],
+      stateTokenSkips: [],
+      stylePolicy: {
+        kind: 'semantic-aliases-and-anchors',
+        statement: 'Renderer fixture: one style per fixture variable.',
+        emittedStyles: styles.length,
+        suppressedPrimitiveStyles: 0,
+        suppressedAliasStyles: 0,
+        anchorVariableRecipeIds: [],
+        includedAliasKinds: ['data-visualization', 'product-graphics', 'product-semantic'],
+        excludedAliasKinds: ['typography'],
+      },
     },
   };
   return { ...content, resourceBlueprintHash: deterministicContentHash(content) };
@@ -693,6 +727,52 @@ function journalHarness(
 }
 
 describe('colorSystemResourceRendererV2', () => {
+  it.each([
+    'missing-plan',
+    'missing-use',
+    'extra-use',
+    'wrong-mode',
+    'wrong-origin',
+    'oversize-width',
+    'oversize-height',
+  ])('rejects graphic %s before any document mutation', async invalid => {
+    const host = new FakeRendererHost();
+    const resource = blueprint();
+    const graphic = resource.components.find(component => component.kind === 'product-graphics')!;
+    if (invalid === 'missing-plan')
+      graphic.content = { ...(graphic.content as object), rendering: null };
+    if (invalid === 'missing-use') graphic.paintBindings = graphic.paintBindings.slice(0, -1);
+    if (invalid === 'extra-use')
+      graphic.paintBindings = [
+        ...graphic.paintBindings,
+        { ...graphic.paintBindings[0], purpose: 'use:undeclared' },
+      ];
+    if (invalid === 'wrong-mode') graphic.paintBindings[0].mode = 'Dark';
+    if (invalid === 'wrong-origin')
+      graphic.paintBindings.find(
+        binding => binding.purpose === 'use:foreground'
+      )!.variableRecipeId = 'variable/primitive/preserved/primary-solar';
+    const frame = resource.frames.find(frame => frame.role === 'product-graphics')!;
+    if (invalid === 'oversize-width') frame.presentationContent.frame.width = 600;
+    if (invalid === 'oversize-height') frame.presentationContent.frame.height = 1800;
+    resource.counts.estimatedNodes = estimateColorSystemResourceNodesV2(
+      resource.counts.variables,
+      resource.styles,
+      resource.components,
+      resource.frames
+    );
+    const { resourceBlueprintHash: _hash, ...content } = resource;
+    resource.resourceBlueprintHash = deterministicContentHash(content);
+    const receipt = await renderColorSystemResourceBlueprintV2(host, resource, options());
+    expect(receipt).toMatchObject({
+      status: 'blocked',
+      code: 'INVALID_BLUEPRINT',
+      mutationCount: 0,
+    });
+    expect(host.mutationCount).toBe(0);
+    expect(host.resources.size).toBe(0);
+  });
+
   it('materializes exact RGBA, closed aliases, bound resources, and five ordered frames', async () => {
     const host = new FakeRendererHost();
     const resourceBlueprint = blueprint();
@@ -742,7 +822,7 @@ describe('colorSystemResourceRendererV2', () => {
 
   it('cancels collisions without mutation and creates a separately named copy without updating anything', async () => {
     const cancelHost = new FakeRendererHost();
-    cancelHost.existingNames.add('Ramp Color System');
+    cancelHost.existingNames.add('Example Color System');
     const cancelled = await renderColorSystemResourceBlueprintV2(
       cancelHost,
       blueprint(),
@@ -753,16 +833,16 @@ describe('colorSystemResourceRendererV2', () => {
     expect(cancelHost.resources.size).toBe(0);
 
     const copyHost = new FakeRendererHost();
-    copyHost.existingNames.add('Ramp Color System');
+    copyHost.existingNames.add('Example Color System');
     const copied = await renderColorSystemResourceBlueprintV2(
       copyHost,
       blueprint(),
-      options({ collisionPolicy: 'create-copy', copyName: 'Ramp Color System 2' })
+      options({ collisionPolicy: 'create-copy', copyName: 'Example Color System 2' })
     );
     expect(copied).toMatchObject({
       status: 'created',
       action: 'create-copy',
-      outputName: 'Ramp Color System 2',
+      outputName: 'Example Color System 2',
     });
     expect(copyHost.resources.size).toBeGreaterThan(0);
   });
@@ -786,7 +866,7 @@ describe('colorSystemResourceRendererV2', () => {
     );
     if (receipt.status === 'created') {
       expect(receipt.warnings).toEqual([
-        'The system was created, but Figma could not show the new page automatically. Open "Ramp Color System — Color System" from Pages.',
+        'The system was created, but Figma could not show the new page automatically. Open "Example Color System — Color System" from Pages.',
       ]);
     }
   });
@@ -819,7 +899,7 @@ describe('colorSystemResourceRendererV2', () => {
       status: 'verified-no-op',
       action: 'verified-no-op',
       undoBoundaryCount: 0,
-      outputName: 'Ramp Color System',
+      outputName: 'Example Color System',
     });
     expect(journal.runtime.read()?.state).toBe('verified');
     expect(host.resources.size).toBe(resourceCount);
@@ -831,7 +911,7 @@ describe('colorSystemResourceRendererV2', () => {
     const host = new FakeRendererHost();
     const resourceBlueprint = blueprint();
     const journal = journalHarness(host, resourceBlueprint);
-    const copyName = 'Ramp Color System — Reviewed Copy';
+    const copyName = 'Example Color System — Reviewed Copy';
     host.existingNames.add(resourceBlueprint.output.name);
     const renderOptions = options({
       transactionId: journal.transactionId,
@@ -906,7 +986,7 @@ describe('colorSystemResourceRendererV2', () => {
     const host = new FakeRendererHost();
     const resourceBlueprint = blueprint();
     const journal = journalHarness(host, resourceBlueprint);
-    const copyName = 'Ramp Color System — Interrupted Copy';
+    const copyName = 'Example Color System — Interrupted Copy';
     host.existingNames.add(resourceBlueprint.output.name);
     host.existingNames.add(copyName);
     let persisted = journal.runtime.begin({
@@ -1126,6 +1206,59 @@ describe('colorSystemResourceRendererV2', () => {
     }
   );
 
+  it.each([1, 280])(
+    'checks current legend node cost for a saved graph with %i charts without replacing its historical estimate',
+    async copies => {
+      const host = new FakeRendererHost();
+      const resource = blueprint();
+      const chart = resource.components.find(component => component.kind === 'data-visualization')!;
+      const charts = Array.from({ length: copies }, (_, index) => ({
+        ...chart,
+        recipeId: index === 0 ? chart.recipeId : `component/extra-chart-${index}`,
+        content: {
+          kind: 'categorical',
+          marks: [1, 2, 3].map(order => ({ order, label: `Recorded ${order}` })),
+        },
+        paintBindings: [1, 2, 3].map(order => ({
+          ...chart.paintBindings[0],
+          purpose: `mark-${order}`,
+        })),
+      }));
+      resource.components = [
+        ...resource.components.filter(component => component !== chart),
+        ...charts,
+      ];
+      resource.frames.find(frame => frame.role === 'data-visualization')!.componentRecipeIds =
+        charts.map(component => component.recipeId);
+      resource.counts.components = resource.components.length;
+      const currentEstimate = estimateColorSystemResourceNodesV2(
+        resource.counts.variables,
+        resource.styles,
+        resource.components,
+        resource.frames
+      );
+      resource.counts.estimatedNodes = currentEstimate - copies * 7;
+      const { resourceBlueprintHash: _hash, ...content } = resource;
+      resource.resourceBlueprintHash = deterministicContentHash(content);
+      const before = structuredClone(resource);
+      expect(resource.counts.estimatedNodes).toBeLessThan(resource.limits.maximumEstimatedNodes);
+      const receipt = await renderColorSystemResourceBlueprintV2(host, resource, options());
+      if (copies === 1) {
+        expect(currentEstimate).toBeLessThan(resource.limits.maximumEstimatedNodes);
+        expect(receipt.status).toBe('created');
+      } else {
+        expect(currentEstimate).toBeGreaterThan(resource.limits.maximumEstimatedNodes);
+        expect(receipt).toMatchObject({
+          status: 'blocked',
+          code: 'INVALID_BLUEPRINT',
+          mutationCount: 0,
+        });
+        expect(host.mutationCount).toBe(0);
+      }
+      expect(resource).toEqual(before);
+    }
+  );
+
   it('performs zero document mutation for current-file, font, capability, collision, and cap failures', async () => {
     const cases: Array<{
       host: FakeRendererHost;
@@ -1159,12 +1292,12 @@ describe('colorSystemResourceRendererV2', () => {
       code: 'CAPABILITY_MISSING',
     });
     const copyCollisionHost = new FakeRendererHost();
-    copyCollisionHost.existingNames.add('Ramp Color System');
-    copyCollisionHost.existingNames.add('Ramp Color System 2');
+    copyCollisionHost.existingNames.add('Example Color System');
+    copyCollisionHost.existingNames.add('Example Color System 2');
     cases.push({
       host: copyCollisionHost,
       resourceBlueprint: blueprint(),
-      renderOptions: options({ collisionPolicy: 'create-copy', copyName: 'Ramp Color System 2' }),
+      renderOptions: options({ collisionPolicy: 'create-copy', copyName: 'Example Color System 2' }),
       code: 'COPY_NAME_COLLISION',
     });
     const overCap = structuredClone(blueprint());

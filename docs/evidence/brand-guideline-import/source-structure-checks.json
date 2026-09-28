@@ -1,0 +1,101 @@
+{
+  "schemaVersion": "teul.guideline-source-structure-checks.v1",
+  "status": "passed",
+  "checkedAt": "2026-09-25T21:09:52.971863+00:00",
+  "baseCommit": "6406669fb5c5d3e391230c751d7107e309e0f267",
+  "scope": "Local V2 source review, portable replay and intermediate scale preview; full PRD acceptance remains open",
+  "sourceHashes": {
+    "web/fixtures/guidelines/generate.py": "sha256:7cd3d26543d7f30ac645015dc920df46cf8600dcb2680e6e5ae5a0984b345a9e",
+    "web/fixtures/guidelines/harbor-scale.pdf": "sha256:0a88ecc879b30c20f823a29580a2d331a4969331e76d293c4dc757badbad6824",
+    "web/package.json": "sha256:5d55cbea0f933f9b3c17bfc9b480a74a86f338e4efdc0285c5aee1408dd0c6f6",
+    "web/scripts/guideline-capacity.mjs": "sha256:fa8965a4e81eaa5c82244d7f81b9a0076acbe5881a5c5b17222f53bb4a6da4f4",
+    "web/scripts/guideline-smoke.mjs": "sha256:e94cb5e10734029ce64cb761eb45cdb4e74dbe85c960ef89201e22e9f70708cf",
+    "web/src/components/GuidelineExtensionPreview.tsx": "sha256:6fa4f7f80935989270457e873c491665363352f3f86a8eafb5c1af2dc71181c1",
+    "web/src/components/GuidelineStructureEditor.css": "sha256:5d5740a2a219abda94e4007904334d79f5e6cb5741f2e972c75cbeac77fef2a5",
+    "web/src/components/GuidelineStructureEditor.tsx": "sha256:36f52e9e8f80ce50910408f8b02eb2ca9e864f325f9dc15fe2e232a9b9a31cd6",
+    "web/src/components/GuidelineWorkspace.css": "sha256:7892a87b5fadf1ee683499452e569c390b6e14b31e1f3dd87e95a6a07904ef2e",
+    "web/src/components/GuidelineWorkspace.tsx": "sha256:9924a61290a133ad178b8790885e6bae833ad922382b3898802b6aa216a860aa",
+    "web/src/lib/guideline/extension.test.ts": "sha256:1ee72ec401f01ae8d673bdcccfe3a059443bde8df4d87812cc433b801be78ad1",
+    "web/src/lib/guideline/extension.ts": "sha256:9998cd8ba44047700033ea8485430a595aa1bd81329480801bab7e41887ee23c",
+    "web/src/lib/guideline/project.ts": "sha256:1116e3a22fdf04dfda24572f2726bd4047dc2e673c75a218707bada2fafaff0b",
+    "web/src/lib/guideline/projectV2.test.ts": "sha256:8020db7348464eea0c5f76ff75566e768e6134784b23309f2a16fb79cefe39d5",
+    "web/src/lib/guideline/projectV2.ts": "sha256:26c070c83bf4c6146e67f7f623316cc3b1dcb801a43aef0e7e4faec220a9d7e4",
+    "web/src/lib/guideline/review.ts": "sha256:ffbd4f3a9220d0bf2a244ec18275f4d0148e677b61f4331421aa2519a8c6ddb8",
+    "web/src/lib/guideline/reviewV2.test.ts": "sha256:bdc3c89e42ac94dee97a4525d456119611df22c6ff616fe3b7427170ae6f804b",
+    "web/src/lib/guideline/reviewV2.ts": "sha256:6909e231a5b92851f7d9b6bff8dd3290dcaf67d39bcc085b61bbeeb5757e073e"
+  },
+  "checks": [
+    {
+      "command": "npm --prefix web test",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "11 files; 85 tests passed"
+    },
+    {
+      "command": "npm --prefix web run test:guidelines",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "20 browser scenarios passed; zero page errors and remote requests",
+      "note": "Final hidden-ID grammar refinement followed by targeted V2 negative tests; valid browser inputs unchanged"
+    },
+    {
+      "command": "npm --prefix web run build",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "passed; 572.95 kB lazy guideline chunk warning remains"
+    },
+    {
+      "command": "npm --prefix web run test:guideline-capacity",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "bounded editor mounting passed; 14 selects, 558 options, 75350 HTML bytes",
+      "note": "Last parser identity refinement does not change rendering; valid capacity fixture remains unchanged"
+    },
+    {
+      "command": "npm --prefix web run test:browser",
+      "runtimes": ["22.13.1"],
+      "result": "9 existing Studio scenarios passed"
+    },
+    {
+      "command": "npm --prefix web run lint; npm run lint; npm run typecheck",
+      "runtimes": ["22.13.1"],
+      "result": "passed"
+    },
+    {
+      "command": "validate_prd.py --profile full --extension ai --extension refactor --stage ready --strict",
+      "result": "passed"
+    }
+  ],
+  "browserScenarios": [
+    "Selected native PDF -> source-linked colors -> reviewed model -> gradient, without plugin",
+    "SVG/CSS/JSON downloads preserve authored anchors; render images captured for independent pixel comparison",
+    "Clipboard denial offers identical download; tab navigation retains work and hides inactive workspace",
+    "Downloaded project reopens after reload with no PDF, offline; source/model/design and exports remain identical",
+    "Malformed and future files cannot replace current work; future original bytes remain downloadable",
+    "Earlier review downloads and unfinished drafts reopen without implying a newly approved review",
+    "Reattaching the matching source restores page previews without changing the selected design",
+    "Cancel keeps a live PDF preview; delayed project completion cannot overwrite a newer review edit",
+    "An invalid import interrupting capture detaches the closed PDF and retains the prior design for recovery",
+    "New source scope invalidates prior design; unresolved source ban blocks generation",
+    "390px flow has no horizontal document overflow and key actions receive keyboard focus",
+    "Cancel and reopen retain prior source edits and the downloadable review",
+    "Oversized recapture fails atomically and preserves previous reviewed evidence",
+    "Scanned source remains an explicit gap and cannot be adopted as exact values",
+    "A scanned-source gap survives project download and reopening without invented source values",
+    "Source scale names, irregular positions and an unfinished relationship survive review/project recovery",
+    "Generic Studio extension preserves source anchors, paints native generated values and requires explicit affected-rule renewal",
+    "Relationship-constrained gradients fail closed in the affected scope; unrelated scope remains available",
+    "Changing requested positions clears old proposals; replacing a source slot or excluding a rule anchor cannot apply silently",
+    "Richer projects replay exactly; source anchor lookup, keyboard focus and 390px layout remain usable"
+  ],
+  "reviews": {
+    "reuse": "Shared gradient selection replay and core limits",
+    "quality": "Bound review identity before async work; no unusable reject action or unsaveable 129th rule; hidden scale IDs match core grammar",
+    "efficiency": "One draft hash; selected scale, progressive slot/selector/group mounting, one relationship editor"
+  },
+  "limits": [
+    "No complete release gate for this later web slice",
+    "Experimental view disabled by default in production",
+    "Extension is a proposal, not an assessed application or aesthetic approval",
+    "Extension proposal is not yet a selected design in project replay",
+    "No provider calls or private-source uploads",
+    "No Figma destination verification",
+    "No deployment or push"
+  ]
+}

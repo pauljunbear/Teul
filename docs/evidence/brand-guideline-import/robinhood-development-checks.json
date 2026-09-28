@@ -1,0 +1,159 @@
+{
+  "schemaVersion": "teul.robinhood-development.v1",
+  "candidate": "a8a3b6e09f3338e9367fd42db1fd31750304ccef",
+  "status": "development-omission-recorded",
+  "productChanged": false,
+  "caseId": "pdf-dev-robinhood-color",
+  "split": "development",
+  "originalSourceDocuments": 1,
+  "heldOut": false,
+  "original": {
+    "sha256": "6b41fd012002e0695357e28e35c007c779493b4bc6f09482317dac6fb67b03aa",
+    "bytes": 91200912,
+    "pages": 216
+  },
+  "derivative": {
+    "sha256": "4f7b51b432a37f32119d4df40a3b5f08908cdffb7729573210a057566365df20",
+    "bytes": 3043076,
+    "pages": 20,
+    "method": "pypdf selected-page copy; source content retained without rasterization or text normalization"
+  },
+  "originalPages": [34, 35, 36, 37, 38, 42, 43, 44, 45, 46, 47, 48, 49, 51, 52, 53, 54, 55, 57, 59],
+  "selectedPages": 20,
+  "unselectedOriginalPages": 196,
+  "sourceFidelity": {
+    "text": "Exact Poppler -layout output on all selected pages",
+    "render": "pdftoppm version 26.01.0",
+    "dpi": 96,
+    "pixelIdenticalPages": 20
+  },
+  "annotationStatus": "agent-draft-not-reconciled",
+  "counts": {
+    "expectedStatements": 100,
+    "capturedStatements": 50,
+    "expectedRgb": 50,
+    "capturedRgb": 0,
+    "expectedHex": 50,
+    "capturedHex": 50,
+    "expectedDistinctNumericValues": 24,
+    "capturedDistinctNumericValues": 22,
+    "matched": 50,
+    "missing": 50,
+    "unexpected": 0
+  },
+  "conflictingOccurrences": 3,
+  "conflictingNamedColors": ["Ion", "Joule"],
+  "omissionGapReported": false,
+  "captureHash": "sha256:d00607d4473f7ba9b28eeece2f3029941f519ab7b92eec2f9fdaca425a4bbcdf",
+  "extractionVersion": "teul.pdf-evidence.v2-table-1/pdfjs-6.3.289",
+  "checks": {
+    "node22": "Strict capture replay and comparison complete",
+    "node24": "Strict capture replay and comparison complete",
+    "productionStudio": "Actual PDF import, source highlight, 390px width and byte-exact offline project reopening passed",
+    "all27RuleProposals": "needs-interpretation",
+    "appliedReview": null,
+    "selection": null
+  },
+  "humanReaders": [],
+  "designerRatings": [],
+  "metrics": null,
+  "qualified": false,
+  "privateRoot": "/Users/paul.jun/Documents/private-jobs/teul-guideline-evaluation-2026-09-26/robinhood-development",
+  "privateArtifacts": [
+    {
+      "path": "lineage.json",
+      "bytes": 9905,
+      "sha256": "e848b5f7045a1d8f9fb76261b7eec6f6ea14058e15b394ffb3ba64c4fbbcbff4"
+    },
+    {
+      "path": "robinhood-color-selected.pdf",
+      "bytes": 3043076,
+      "sha256": "4f7b51b432a37f32119d4df40a3b5f08908cdffb7729573210a057566365df20"
+    },
+    {
+      "path": "source-annotation.before-jazzy-label-note.json",
+      "bytes": 24688,
+      "sha256": "004d614d72e8d2449738730827ce6ec383c69dac9a74ad8a3890561c0800fd06"
+    },
+    {
+      "path": "source-annotation.draft.json",
+      "bytes": 24784,
+      "sha256": "0abb09fbd5f9f29ee430a9f645dd8e612236c8f79d249a71129dc971b1cb01c2"
+    },
+    {
+      "path": "comparison-node22.json",
+      "bytes": 7165,
+      "sha256": "f0d368fcd45a7b12a403a3b4c629c9a39b29cce80372bddc86ec15420925b6bf"
+    },
+    {
+      "path": "comparison-node24.json",
+      "bytes": 7165,
+      "sha256": "9b15642b01e0b7700d75667fb227ff40e4cc1c8b1e1d8ebd3c59f98e3988a1d0"
+    },
+    {
+      "path": "capture-node22.json",
+      "bytes": 597622,
+      "sha256": "4700389518c3f19a44a9ff899926b4935ec36f8e43ce9ead5710e751d01e08ac"
+    },
+    {
+      "path": "capture-node24.json",
+      "bytes": 597622,
+      "sha256": "c0559422b6873a04bc06bde1fb58edd6a0b73cc89864d81c5518e14769a54f78"
+    },
+    {
+      "path": "studio-receipt.json",
+      "bytes": 2601,
+      "sha256": "1bf5b4831f1885eed54a36b3fae278e4fa235093453ada662505d6fd0972d4db"
+    },
+    {
+      "path": "robinhood-color.studio.json",
+      "bytes": 350393,
+      "sha256": "fadd34b3cdec48cdd18fe60a529cd82f1ff9e4ac0b5f400e1031aac657dcbc3a"
+    },
+    {
+      "path": "README.md",
+      "bytes": 3551,
+      "sha256": "8afaac0b0958f7d9c0c3ce6d8ccb1e6fe1c5799ac116f6b5d2e7403a24e70470"
+    },
+    {
+      "path": "independent-reader-A.json",
+      "bytes": 389,
+      "sha256": "b80a21eeb8461c4d78d346332ba6d9a2f2743530aa10a40d28ecb93fbcbb9e3d"
+    },
+    {
+      "path": "independent-reader-B.json",
+      "bytes": 389,
+      "sha256": "b80a21eeb8461c4d78d346332ba6d9a2f2743530aa10a40d28ecb93fbcbb9e3d"
+    },
+    {
+      "path": "capture-development.mjs",
+      "bytes": 4158,
+      "sha256": "b7821583d7a28e155e815bd2b5b452881d392a7f955c4536bfcd2149acd629fb"
+    },
+    {
+      "path": "prepare-studio.mjs",
+      "bytes": 5394,
+      "sha256": "601d76fdc6f375fbaab3dd28fa87b1297d96d21faa4c46051bb1e4ee4e0329cb"
+    },
+    {
+      "path": "verify-renders.py",
+      "bytes": 1949,
+      "sha256": "af4feccf5c06f26bd2fc1edda4f7aafcd158f3da97b18bc5967ab94389643959"
+    },
+    {
+      "path": "annotate-source.py",
+      "bytes": 7931,
+      "sha256": "1ddcc35e32890216fd5acb7f25150756c4b411d0b3b52ae53e757b9451d998f8"
+    }
+  ],
+  "notes": [
+    "The source annotation used by both comparisons is preserved under source-annotation.before-jazzy-label-note.json. The later draft adds only the observed duplicate Jazzy-label review item.",
+    "The original PDF still exceeds the importer limit; only the explicitly traced selected-page derivative was imported.",
+    "No source original, complete screenshot or generated brand output is published in the repository."
+  ],
+  "independentTechnicalReview": {
+    "status": "resolved-no-material-findings",
+    "scope": "Raw source/derivative identities, all 17 artifact hashes, independent source counts and conflicts, runtime captures, production build/replay and claim boundaries.",
+    "humanAnnotationOrDesignAcceptance": false
+  }
+}

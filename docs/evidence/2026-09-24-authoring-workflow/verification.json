@@ -1,0 +1,520 @@
+{
+  "schemaVersion": "teul.task006-verification.v1",
+  "recordedAt": "2026-09-25T01:42:10.578219+00:00",
+  "baselineCommit": "6dcbc3fc6af37ff1f923fce927b3a047f67eaea0",
+  "branch": "codex/brand-color-system-authoring",
+  "state": "locally-verified-candidate",
+  "qualified": false,
+  "runtimes": {
+    "node22": "v22.13.1",
+    "node24": "v24.19.0"
+  },
+  "sourceManifestHash": "b26d557800be2cc814ef3148202538f7ae030a2ed57b600a20a04720e2175eec",
+  "sourceFiles": [
+    {
+      "path": "scripts/smoke-production-ui.js",
+      "bytes": 80944,
+      "sha256": "a44bb829a9898094a0ac5c47b82fbbd132d7cdde4ddee460a0a86d9cb3a9e2e8"
+    },
+    {
+      "path": "src/backend/__tests__/colorSystemAuthoringControllerV1.test.ts",
+      "bytes": 30448,
+      "sha256": "94176bb75996bbb1887657f371e3cac50ee7a5f30fab496958d449cf1effe52c"
+    },
+    {
+      "path": "src/backend/__tests__/colorSystemAuthoringRefinementControllerV1.test.ts",
+      "bytes": 16588,
+      "sha256": "c9ef06af004d2f0cabeff7986fe054d05a1a211f281ff97320e3a86f690fa358"
+    },
+    {
+      "path": "src/backend/__tests__/colorSystemAuthoringReviewV1.test.ts",
+      "bytes": 27547,
+      "sha256": "81ead0a4131b20a915989e7e6ea82995d9005d4a8e1db185a0d1f5187366f008"
+    },
+    {
+      "path": "src/backend/__tests__/colorSystemAuthoringSessionV1.test.ts",
+      "bytes": 25048,
+      "sha256": "8a044acff4edd27f24b413213c5b921134e3163782f7ca6c8077f443098fd73b"
+    },
+    {
+      "path": "src/backend/__tests__/colorSystemGenericSourceInventoryV2.test.ts",
+      "bytes": 34435,
+      "sha256": "1f6659faaffaf932950a2f585705b358cdbaa828fa2a9dbab2eaa962a99acbf3"
+    },
+    {
+      "path": "src/backend/__tests__/colorSystemModelControllerV1.test.ts",
+      "bytes": 19409,
+      "sha256": "10dfad82ffcd69bfb9d131df0f4183c1b88a6992db2769f7461bdff6926bf90d"
+    },
+    {
+      "path": "src/backend/__tests__/colorSystemModelReadScopeV1.test.ts",
+      "bytes": 12015,
+      "sha256": "7e945ed55917af2ed7445e5d44e0de3685bc5300ae32dbdeb8645a8a62d76525"
+    },
+    {
+      "path": "src/backend/__tests__/colorSystemRecipeStorageV1.test.ts",
+      "bytes": 23886,
+      "sha256": "3a97ecbf27e1fea567c7cc9710d9f13b02e57a314dd7639a4d284d23be59acd9"
+    },
+    {
+      "path": "src/backend/colorSystemAuditInventory.ts",
+      "bytes": 81265,
+      "sha256": "c55ba70ea53644a125f13dd5807cae5d9b30ca9613f115b180d1be512afcc969"
+    },
+    {
+      "path": "src/backend/colorSystemAuthoringControllerV1.ts",
+      "bytes": 29683,
+      "sha256": "dc752d97e8511fd91a24e9ed29ca55dffd8ec27fc6e3c7643a3d72b78eca9b94"
+    },
+    {
+      "path": "src/backend/colorSystemAuthoringSessionV1.ts",
+      "bytes": 21927,
+      "sha256": "0dbc22baecd2b9aacd286cd4a015416f3dc0ec8be867e4ab1e8a0b7e890a6c64"
+    },
+    {
+      "path": "src/backend/colorSystemBuilderCandidateRuntime.ts",
+      "bytes": 6777,
+      "sha256": "d268c1ccff7ed8e32a9d4bdc81d8ffde293006575c5150384b23b2394c1a1681"
+    },
+    {
+      "path": "src/backend/colorSystemBuilderDisabledRuntime.ts",
+      "bytes": 684,
+      "sha256": "b59ac83b6045b9b67c4ed3ef66e9343e515d35430768e369665de2827b408813"
+    },
+    {
+      "path": "src/backend/colorSystemGenericSourceInventoryV2.ts",
+      "bytes": 28381,
+      "sha256": "e1473d4b5b8261147a5585b764dcceee1f96694163f96fa38142fd38dec5af4c"
+    },
+    {
+      "path": "src/backend/colorSystemModelControllerV1.ts",
+      "bytes": 13236,
+      "sha256": "21083a05cc0f508b1c823c5d9ec496fe9acd9add32568fd21357d5dea68319b0"
+    },
+    {
+      "path": "src/backend/colorSystemModelReadScopeV1.ts",
+      "bytes": 11460,
+      "sha256": "14a2fb6b47b9104fb8688d5563cb29085012997e6b2eeef85990888e4c475bbc"
+    },
+    {
+      "path": "src/backend/colorSystemRecipeStorageV1.ts",
+      "bytes": 26504,
+      "sha256": "a401145dc9e397e9215a3581fcd124833a98469f78a2c1f4f58c40a8a57fb34a"
+    },
+    {
+      "path": "src/backend/gridPresetCatalog.ts",
+      "bytes": 1180,
+      "sha256": "21a11ee07f89b8060e4405b9d211dbd3448746bc52678ae0e257033e15f0bfe0"
+    },
+    {
+      "path": "src/backend/index.ts",
+      "bytes": 1785,
+      "sha256": "635acf2325e2135f6c786f57f671e0da7994f3daf5b9fb3a7467c510e3b054e1"
+    },
+    {
+      "path": "src/code.ts",
+      "bytes": 21536,
+      "sha256": "3afbad963de76fd7ead8c5b9ca32d9968cc9ee83f9733e782771205b539e5e11"
+    },
+    {
+      "path": "src/components/ColorSystemAuthoringControlsV1.tsx",
+      "bytes": 1646,
+      "sha256": "8ca1e7b3db9fdfa2f2ba28c7028433eeb60f8f237a89ac63524b392af0ff4ffb"
+    },
+    {
+      "path": "src/components/ColorSystemAuthoringRefinementV1.tsx",
+      "bytes": 10468,
+      "sha256": "85a5df38331e33e97ba0e292e0a2ee843651ca0f61eeb596400ecaa89321a8f7"
+    },
+    {
+      "path": "src/components/ColorSystemAuthoringV1.tsx",
+      "bytes": 28538,
+      "sha256": "8acc36912d0338844fe24ed5ce9b2b0a93a456bda335368354cd292a67b6bf96"
+    },
+    {
+      "path": "src/components/ColorSystemModelIntakeV1.tsx",
+      "bytes": 8372,
+      "sha256": "3536733b4f80e3059266e3a074f46068e08a5bb539e9b8e06cd4f3105ec31e9d"
+    },
+    {
+      "path": "src/components/ColorSystemReleaseTab.tsx",
+      "bytes": 1177,
+      "sha256": "1f017b59e8ba30ba46fa297342a722da77216d2c91d5b58a470cc12573c66492"
+    },
+    {
+      "path": "src/components/GridLibrary.tsx",
+      "bytes": 26734,
+      "sha256": "65b47a3e9bacefd9740d7c104dfb00608c9e6c339a536f0d511a8d5022ee2f91"
+    },
+    {
+      "path": "src/components/__tests__/GridLibrary.test.tsx",
+      "bytes": 7790,
+      "sha256": "35153e013bf00857dd8ac979e04cb937cbbc0629e7b86f15ace455c07d94d005"
+    },
+    {
+      "path": "src/components/__tests__/GridPresetCatalogLoading.test.tsx",
+      "bytes": 5351,
+      "sha256": "c32422da6fa28b472b826f4e42a9b619e7ec2b485e5d1f1357fb35d4b9873ce0"
+    },
+    {
+      "path": "src/lib/__tests__/colorSystemAuthoringBridgeV1.test.ts",
+      "bytes": 12301,
+      "sha256": "928f06814d193d64f8c6ff3ee31079ee64e340ce4eee20bc468753c21eda0b16"
+    },
+    {
+      "path": "src/lib/__tests__/colorSystemAuthoringExecutionV1.test.ts",
+      "bytes": 47397,
+      "sha256": "a68caed66dca755ad7e29a9d3014bda57dc57146683d90131b604582431f661f"
+    },
+    {
+      "path": "src/lib/__tests__/colorSystemAuthoringRefinementV1.test.ts",
+      "bytes": 31235,
+      "sha256": "27c34471967b43c7cd38ed7f93b84e1507bd7cbe554d2556f2703b0dc8807e5d"
+    },
+    {
+      "path": "src/lib/__tests__/colorSystemBuilderV2MessageValidation.test.ts",
+      "bytes": 71923,
+      "sha256": "f44b9e3ac631b729ae7683cf900d5a65df9125a2c69fb20248793e354764e5b3"
+    },
+    {
+      "path": "src/lib/__tests__/colorSystemDesignContentV1.test.ts",
+      "bytes": 20074,
+      "sha256": "e67dc9b94d3ea7370ef208366380bc3250979a4402aa0ec9397d189fddb5fff3"
+    },
+    {
+      "path": "src/lib/__tests__/colorSystemDesignerScaleV1.test.ts",
+      "bytes": 18516,
+      "sha256": "594530462aca38a4a1c4166b297f1b48e5246a367592cc91c794ea3d66a8b1e8"
+    },
+    {
+      "path": "src/lib/__tests__/colorSystemInertJsonV1.test.ts",
+      "bytes": 4358,
+      "sha256": "0ac94c5ce6adb958b1ba382a533eef3e387618d93c9e63cdf1138c4ae8278480"
+    },
+    {
+      "path": "src/lib/__tests__/colorSystemOverlayProposalV1.test.ts",
+      "bytes": 15840,
+      "sha256": "7158bf17b5cd4464caf5bf0129494de14c1ae8859991caf1688bc52275888b98"
+    },
+    {
+      "path": "src/lib/__tests__/colorSystemProposalV1.test.ts",
+      "bytes": 50762,
+      "sha256": "4bd71de8c4d2db71253fa2784b76bfb895fd9ea5684f3218f4869945dda90765"
+    },
+    {
+      "path": "src/lib/__tests__/colorSystemRecipeV1.test.ts",
+      "bytes": 18132,
+      "sha256": "49496bbaa64a2b1d0dbef01cfb7c7721cf2773a5d25b9659ac40f17822861d90"
+    },
+    {
+      "path": "src/lib/__tests__/fixtures/colorSystemAuthoringRefinementV1Fixture.ts",
+      "bytes": 12828,
+      "sha256": "a4eba77eb9a7def9d79d42d4080808be9608a733780e8e8b1725a7e8f5e786a4"
+    },
+    {
+      "path": "src/lib/__tests__/gridPresetCatalogBridge.test.ts",
+      "bytes": 10544,
+      "sha256": "97064ba1abbbd7b57945ed0908d86f5c4bf8e7524216cd977491365380f50c7c"
+    },
+    {
+      "path": "src/lib/colorSystemAuthoringBridgeV1.ts",
+      "bytes": 3370,
+      "sha256": "306ea75870d99a608d92ed9111de1f0a3dcffa38bc47ef40bb181825c7bf3454"
+    },
+    {
+      "path": "src/lib/colorSystemAuthoringExecutionV1.ts",
+      "bytes": 26106,
+      "sha256": "5f327382f319dec509ab09695d721d79d0074690e727ed5f90b57ddb91e45e28"
+    },
+    {
+      "path": "src/lib/colorSystemAuthoringRefinementV1.ts",
+      "bytes": 30068,
+      "sha256": "97d96c55cddd00605654ec413f1f1f4b0c6936d4f9657bc65aef690105948aa4"
+    },
+    {
+      "path": "src/lib/colorSystemAuthoringRunV1.ts",
+      "bytes": 10177,
+      "sha256": "5807f1ad0a7ee16b639c2c55d797fcfee5dd773a95e7ea307f32d45353de624b"
+    },
+    {
+      "path": "src/lib/colorSystemAuthoringViewV1.ts",
+      "bytes": 6901,
+      "sha256": "958381b3a080b1ea3d0d4940ce5ba31a99c3c76f414b0903e718e01286bf7db7"
+    },
+    {
+      "path": "src/lib/colorSystemBuilderV2MessageValidation.ts",
+      "bytes": 58013,
+      "sha256": "b7159c69e3ebc6fa7732c4449e876e8d370a4fd6e4ee1e99d3c5dcba82b03b78"
+    },
+    {
+      "path": "src/lib/colorSystemDesignContentV1.ts",
+      "bytes": 21404,
+      "sha256": "87de596beca065ba14b46e8a3d328e0b4d44c14398cf6a461182e5f961b94f08"
+    },
+    {
+      "path": "src/lib/colorSystemDesignerScaleV1.ts",
+      "bytes": 17846,
+      "sha256": "f6e2f4e13eada8f3ceb1affe9f18392e0cad80928f8abece8e2223147d452de7"
+    },
+    {
+      "path": "src/lib/colorSystemInertJsonV1.ts",
+      "bytes": 4565,
+      "sha256": "1f68649b6a124e12415b40c15ad9d390a3c579901b44490654de236d587aec8e"
+    },
+    {
+      "path": "src/lib/colorSystemOverlayProposalV1.ts",
+      "bytes": 20105,
+      "sha256": "ea72a3f1c386fb0a6a5851e578df4beb29f3e0254ed13e8714ee03b6eb9f2d95"
+    },
+    {
+      "path": "src/lib/colorSystemProposalV1.ts",
+      "bytes": 37890,
+      "sha256": "ddefd3ba1a7e95ab1a7528bf8c6c3cdd7689c3612841b865613c7dee26e14adc"
+    },
+    {
+      "path": "src/lib/colorSystemRecipeV1.ts",
+      "bytes": 11798,
+      "sha256": "ffeb7251ca48a5543b3c7010ce2c06d3e8b9dff5a8748c029a65020f5a0f43a6"
+    },
+    {
+      "path": "src/lib/gridPresetCatalogBridge.ts",
+      "bytes": 5785,
+      "sha256": "7afe1ac13cb0cb10a00d803541e2d67686844013ef620a06ae20b91cffbe5b4f"
+    },
+    {
+      "path": "src/lib/gridPresetCatalogMetadata.ts",
+      "bytes": 1071,
+      "sha256": "4a55ff7332deaf4ccbbb069e3c756e9293d151fac226810cf80c935f747739b9"
+    },
+    {
+      "path": "src/lib/gridPresets.ts",
+      "bytes": 29150,
+      "sha256": "8dac00ba2937381429271364f7bca419abc7e230cc20d66e482a05cbd23a30b0"
+    },
+    {
+      "path": "src/lib/messageValidation.ts",
+      "bytes": 40951,
+      "sha256": "812956d3ab439d1f00216e31834e6caa5965005614bce1d9bcebc3a69a0a0260"
+    },
+    {
+      "path": "src/lib/requestId.ts",
+      "bytes": 562,
+      "sha256": "b5d520b00a8212f9172382ae3220944ef59cb6e87597a3e2f72165e0c77ddabe"
+    },
+    {
+      "path": "src/lib/sourceProvenance.ts",
+      "bytes": 7936,
+      "sha256": "dfd0066bfb9de2a36043e47f90a0c466c37eb9c5b972a99f939945683630db37"
+    },
+    {
+      "path": "src/types/colorSystemAuthoringMessagesV1.ts",
+      "bytes": 1461,
+      "sha256": "ed41df4cd83e567e5ca9145a81b7eb2388b7551608f5d1486b713f9e9b7b0bc4"
+    },
+    {
+      "path": "src/types/colorSystemAuthoringViewV1.ts",
+      "bytes": 3829,
+      "sha256": "542ce2dcd204210752e41fdfbeb62be5d596b07b9cd2430f433f2d963092d888"
+    },
+    {
+      "path": "src/types/gridPresetCatalog.ts",
+      "bytes": 890,
+      "sha256": "05751d15b2a57ca329570bbf1a742ea18fd54303b8c8ddefd01f19d1b6f60317"
+    },
+    {
+      "path": "src/types/messages.ts",
+      "bytes": 8557,
+      "sha256": "258ec9f7234069ac97de2fa56752674a445841d8304cb1a85d886c48d3f8cc78"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "dist/code.js",
+      "bytes": 235347,
+      "sha256": "3d14fa250487670aed22d5b3735d987081b4fd46fb1ff9c94cc3c21253d5f6c1"
+    },
+    {
+      "path": "dist/ui.html",
+      "bytes": 305208,
+      "sha256": "4084a347859819839b33fcfa146538db758ed9340e87382ce457836199d9a5a3"
+    },
+    {
+      "path": "figma-candidate/dist/code.js",
+      "bytes": 1049464,
+      "sha256": "6404a527559a8076d442ae200d00e343d45e7e798c69723ffa47b1f2c5caf1cb"
+    },
+    {
+      "path": "figma-candidate/dist/ui.html",
+      "bytes": 418189,
+      "sha256": "4f1dadc671f90b8b73e8e8bc2471ee3063e0e1737a2f5e742ac2e4c89645e874"
+    }
+  ],
+  "checks": [
+    {
+      "check": "node22-full",
+      "status": "passed",
+      "rawLog": "node22-full.log",
+      "bytes": 295,
+      "sha256": "0f3424794b8510fbe3f7d6b4e5c3b6aa52e7c9d665d691606f42fde41eff7cf6",
+      "testsPassed": 2567,
+      "testFilesPassed": 143,
+      "scopeNote": "Before the final CSS reuse and mechanical Overlay hash-parameter edits; final affected Node22 checks cover those changes."
+    },
+    {
+      "check": "node22-final-affected",
+      "status": "passed",
+      "rawLog": "node22-final-affected.log",
+      "bytes": 229,
+      "sha256": "f9a8b6cf2bf110e2df92be6421c8ecdebe28880770284a2a2cb1bf4d87ad0438",
+      "testsPassed": 64,
+      "testFilesPassed": 4
+    },
+    {
+      "check": "node24-full-final",
+      "status": "passed",
+      "rawLog": "node24-full-final.log",
+      "bytes": 295,
+      "sha256": "3c2f417bf47b86b19588f87ef58426582d8c03a009f4e03854b4769c5344c33a",
+      "testsPassed": 2570,
+      "testFilesPassed": 143
+    },
+    {
+      "check": "node22-lint",
+      "status": "passed",
+      "rawLog": "node22-lint.log",
+      "bytes": 65,
+      "sha256": "b17e4e0c51efc5d7733805e3b558caefdade5b77678b764b3de9bfbb4af1c89c"
+    },
+    {
+      "check": "node22-typecheck",
+      "status": "passed",
+      "rawLog": "node22-typecheck.log",
+      "bytes": 40,
+      "sha256": "fc23fa52fef205aafdaa0f6aa82e092c6125d2b95ec6cf466fdcf27885f9d7dd"
+    },
+    {
+      "check": "node22-script-tests",
+      "status": "passed",
+      "rawLog": "node22-script-tests.log",
+      "bytes": 9090,
+      "sha256": "f196982b8f6ff4b9221523195b1033c896592e9d4b4241481e89de1544f39a1f",
+      "testsPassed": 48
+    },
+    {
+      "check": "production-build",
+      "status": "passed",
+      "rawLog": "production-build.log",
+      "bytes": 764,
+      "sha256": "a8a78fb9456abc9eba6ca4f7a3138679ce6e55689da30c952a48d1c0432b8291"
+    },
+    {
+      "check": "production-smoke",
+      "status": "passed",
+      "rawLog": "production-smoke.log",
+      "bytes": 190,
+      "sha256": "4cf31a4775cd4a85ff1eb0eb747f88f6ceae682eac55e6bdfa111053d63751cb"
+    },
+    {
+      "check": "production-budget",
+      "status": "passed",
+      "rawLog": "production-budget.log",
+      "bytes": 143,
+      "sha256": "2b3fc4fc18eb187a29963b40e137b3ccae00f87dd67b6a464fff5bdc077879ac"
+    },
+    {
+      "check": "production-artifacts",
+      "status": "passed",
+      "rawLog": "production-artifacts.log",
+      "bytes": 220,
+      "sha256": "6f5f8bbfbe94c016258c725bf9e80deb968459822c87126bf2aafb4bbfb170e7"
+    },
+    {
+      "check": "candidate-build",
+      "status": "passed",
+      "rawLog": "candidate-build.log",
+      "bytes": 1524,
+      "sha256": "5ebaf15617afb51187f143e9ac3ba88b0c63c4aafdf3a3037c1b7dcccff10070"
+    },
+    {
+      "check": "candidate-smoke",
+      "status": "passed",
+      "rawLog": "candidate-smoke.log",
+      "bytes": 513,
+      "sha256": "5462fbdcaebae9941abdd1ceda21eb5f19795b2e37e34c086ca89de9027d1f28"
+    },
+    {
+      "check": "candidate-budget",
+      "status": "passed",
+      "rawLog": "candidate-budget.log",
+      "bytes": 210,
+      "sha256": "05e1f48e61eee5c948619b1040b84234d77d66bd45bb582f88f9923b589b1cb1"
+    },
+    {
+      "check": "candidate-artifacts",
+      "status": "passed",
+      "rawLog": "candidate-artifacts.log",
+      "bytes": 301,
+      "sha256": "9eba229f1b945c2bce25dce7fb2f43de2a249f3dcb00282904e116d02faefdae"
+    },
+    {
+      "check": "sanitization",
+      "status": "passed",
+      "rawLog": "sanitization.log",
+      "bytes": 2258,
+      "sha256": "584a05d2711ef48db71c519e86626654ea4951e7ebc5908fc4d68fca1684b968"
+    },
+    {
+      "check": "production-post-format-build",
+      "status": "passed",
+      "rawLog": "production-format-build.log",
+      "bytes": 764,
+      "sha256": "cecfe2a91d8d449ce9b5ada433005f51aebeab401aa066ac58117ded88f5da56",
+      "artifactParity": "Exact match to already smoke-tested artifact bytes."
+    },
+    {
+      "check": "candidate-post-format-build",
+      "status": "passed",
+      "rawLog": "candidate-format-build.log",
+      "bytes": 1482,
+      "sha256": "f9bdfb03fd812eb3993ac6cc6cd228b668cefb724229a4e4fb7d852884eec938",
+      "artifactParity": "Exact match to already smoke-tested artifact bytes."
+    }
+  ],
+  "reviews": {
+    "quality": "Independent full-scope review plus source/transport/controller/refinement reviews and repaired-scope/final-CSS deltas. No unresolved material finding.",
+    "reuse": "Two shared formatting/limit findings fixed; full scope closed and changed bytes independently reviewed.",
+    "efficiency": "Repeated snapshots/request IDs/hash work and storage grouping repaired; exact before/after parity across Node22/24 for nine bounded execution/storage cases.",
+    "frozenReviewSnapshotSha256": "eda9effac76517455036d68ae15f0d12d1f98da2cd502c0a46d426141619611a",
+    "finalDeltaFiles": [
+      "src/backend/colorSystemAuthoringControllerV1.ts",
+      "src/lib/colorSystemAuthoringViewV1.ts",
+      "src/backend/__tests__/colorSystemAuthoringControllerV1.test.ts",
+      "src/backend/colorSystemRecipeStorageV1.ts",
+      "src/lib/colorSystemAuthoringExecutionV1.ts",
+      "src/lib/colorSystemOverlayProposalV1.ts"
+    ]
+  },
+  "limits": {
+    "productionUiBytes": 392000,
+    "candidateUiBytes": 430080,
+    "activeRecipes": 8,
+    "dataRevisions": 64,
+    "storageBytes": 4194304,
+    "rawRecipeBytes": 8388608,
+    "overlayFragments": 8
+  },
+  "acceptance": {
+    "AC-009": "passed-locally",
+    "AC-010": "passed-locally",
+    "AC-015": "partial: JSDOM interaction/focus/semantics only; real-browser/create and host/AT remain"
+  },
+  "notRun": [
+    "Final dual-runtime release gates (TASK008)",
+    "New authored native creation/Undo (TASK007)",
+    "Exact candidate Figma or assistive-technology observations",
+    "Frozen eight-brief evaluation",
+    "Owner aesthetic acceptance"
+  ],
+  "rawEvidenceDirectory": "implementation-baseline/task006 within the private task evidence directory",
+  "formatVerification": "Two mechanical Prettier changes followed verification: sourceProvenance import spacing and InertJson test wrapping. Rebuilt both bundles; all four artifact hashes remain byte-identical to the tested artifacts."
+}

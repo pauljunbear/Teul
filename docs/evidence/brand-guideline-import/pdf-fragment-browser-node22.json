@@ -1,0 +1,113 @@
+{
+  "startedAt": "2026-09-26T13:06:28.812Z",
+  "node": "v22.13.1",
+  "fixtureHashes": {
+    "harbor-numeric.pdf": "b583664ade57f7a03a825a97f0d68e148eba2d5b25cb7c2aebcee6e925465925",
+    "harbor-encrypted.pdf": "45f96f8c2eea91adc51f2bcf6ecdfb086025b1942f541d4a20fec464466da828",
+    "harbor-table.pdf": "7bccbd9fb0e504944f33ec54528e1a45463c6cb030726b66c412657b6f96fcf8",
+    "harbor-fragments.pdf": "9a952fbaa0dee28d4cab31efc28791f45eade0bc71926d9dda02d640b7754e41"
+  },
+  "buildHashes": {
+    "assets/GuidelineWorkspace-BQYYCRG-.css": "d1cf4cfcf62a767dbcea2bdb53827f531fe151868f6d4ea98e857c613506439c",
+    "assets/GuidelineWorkspace-BRHy0ARb.js": "c759dba0ccdbeb54d96e245d117032d9aa019bdc0a7da3c520374e1808ea92e5",
+    "assets/ProductSystemView-DJMb3_3z.css": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764",
+    "assets/ProductSystemView-DK6MNPuE.js": "59c86ef5866e55556abdb44f81651a2f1f14a740e5ab4629f5a79dc23fe4b374",
+    "assets/authoring-JNbWgsfu.js": "ca614a8cb9a46e49eea510505526f0ce01f100eff5d1ac7de83228707c7cba2e",
+    "assets/authoringControlOutlinesV1-DO9NCdDR.js": "aca1074bb504ac1402abe713d9738cb905e7cfd24c2cbb1c9c5b68511fc78bb5",
+    "assets/colorSystemRecipeV1-DdfcwyX0.js": "0ccaeb16a5381d2500239f99bc281545caa7bcdd43ebd79cb91d2c4d4398d5b7",
+    "assets/download-Bic2EQq1.js": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6",
+    "assets/index-CmWmBKFd.css": "e7cc8392595df99b39d33040f9348105d04d68b80d01d83e7bf4e0e7115df33f",
+    "assets/index-RHSJ8VzC.js": "dbcd89621c51f6a4b97d7f0200d4070e43a78c47a59ee40e78f476346dd1b9f1",
+    "assets/sourceProvenanceDisclosureData-CxLfFIWs.js": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361",
+    "index.html": "fbde7b01fb5380244a206a86236b169123a564e1c6f0335ad55ae963e02fcb14"
+  },
+  "surface": "enabled production Studio",
+  "status": "passed",
+  "finishedAt": "2026-09-26T13:06:37.892Z",
+  "url": "http://127.0.0.1:64113/",
+  "checks": [
+    "Nine native observations and reviewed model colors preserve exact components, alpha, literals and separate identities despite equal rounded HEX previews.",
+    "CMYK, Pantone and Display-P3 specifications remain source text without invented sRGB tokens; differing stated HEX/RGB values both survive with page-three provenance.",
+    "Four adjacent native PDF text items form one color with all four citations and a union highlight; unrelated multiline numbers produce no extra color. Keyboard activation reveals page two.",
+    "Source text and location controls remain keyboard-operable at 390px, with no horizontal document overflow.",
+    "V3 project and source review reopen byte-for-byte after browser reload while offline, without the PDF; native precision and alpha survive.",
+    "Encrypted PDF requests an unlocked copy, exposes no password field, and preserves the existing reviewed project exactly.",
+    "All ten invalid or ambiguous page-four declarations remain text, yield zero exact colors, and cannot be reviewed as a palette; page five is never captured.",
+    "Opaque HEX source generation, continuous V2 route fidelity, SVG/CSS/JSON exports and offline selected-design replay remain compatible through the new capture/project versions.",
+    "Nonconsecutive table RGB cells retain both source references and conflicting channel values; ambiguous/nonhorizontal rows show gaps. Keyboard source highlighting, 390px layout and exact offline project replay pass without granting review approval.",
+    "Fragmented RGB expressions preserve all six source references and conflicting values, reject incomplete/alpha/fractional rows with coverage gaps, highlight the complete expression and reopen byte-exactly offline at 390px."
+  ],
+  "failures": [],
+  "diagnostics": [],
+  "externalRequests": [],
+  "artifacts": [
+    {
+      "file": "node22-numeric-source-desktop.png",
+      "sha256": "aefbe98cf2b9f95021d5bc070f8c4553200a225c45cd0765e87f363c0f53dee6"
+    },
+    {
+      "file": "node22-numeric-mobile-keyboard.png",
+      "sha256": "ea89cb2fad2fb9017fc2d6bcdbedc6f36307b302ab49ac85f9dbfc231798a72c"
+    },
+    {
+      "file": "node22-numeric-mobile-source.png",
+      "sha256": "309b3d660cd8bfb15d9c43bd2c78dd09d2222f4f7c06615a980cc63e4bd2fd8c"
+    },
+    {
+      "file": "node22-numeric-mobile-highlight.png",
+      "sha256": "053d3a5c6e91bcd4737e042505d9d45c7cc68728ceee0791daee7f14bd39c886"
+    },
+    {
+      "file": "node22-source-review.json",
+      "sha256": "6f3f91070b67a957f2743a7acc7c9f71f4c421bcfd415172fccdcfe1f5f4587e"
+    },
+    {
+      "file": "node22-project.json",
+      "sha256": "114913c4d2526a8a6706ef6745bf7f5db6bfaaa7389b75c7487c79128d5ab5e3"
+    },
+    {
+      "file": "node22-encrypted-preserves-work.png",
+      "sha256": "1d23a73312c02d0092e132dfe6b9ab0e5c3696a17106642c92234984a3caa6df"
+    },
+    {
+      "file": "node22-invalid-source-project.json",
+      "sha256": "aa13adfa8b93ddb2c4b667c72333dfb3e58218dfe1f6708716528c17fa5b1d2b"
+    },
+    {
+      "file": "node22-opaque-gradient.css",
+      "sha256": "860d9fb4682f139c3df93c1dac0e9f3a365c3a431528f851bbad4ff5784904b7"
+    },
+    {
+      "file": "node22-opaque-gradient.svg",
+      "sha256": "cf659e37f78336b3487f5500f554411bb5a01cdd27342a41ddff278ee9ccfbb6"
+    },
+    {
+      "file": "node22-opaque-gradient.json",
+      "sha256": "78b9b105ce59b55e69b9d5def320fd4bfc8e388712af4cdab26de232cf3f019d"
+    },
+    {
+      "file": "node22-table-source-desktop.png",
+      "sha256": "45eeae905540c8f38dad4f3aae00da61f046d25b5dc3d254d4d8b082ba9a69a8"
+    },
+    {
+      "file": "node22-table-source-mobile.png",
+      "sha256": "958adf905eaa7c14bbcc9e8f2d5d70d82ce0eb8f8f07151dccdbd5d692df0e93"
+    },
+    {
+      "file": "node22-table-source-project.json",
+      "sha256": "85b539f8e0bd400b37e38b08c2fd0c5261d52e94d77feb30154b7067f916d7fa"
+    },
+    {
+      "file": "node22-fragment-source-desktop.png",
+      "sha256": "56b61824cf484ee6b4e090e066452b8612adaa659bd044d5f09c8f92f234d28a"
+    },
+    {
+      "file": "node22-fragment-source-mobile.png",
+      "sha256": "6ab44a35c464cd2e7fa5f6df58dca6366ecd439b470a6437c8e675b92845e717"
+    },
+    {
+      "file": "node22-fragment-source-project.json",
+      "sha256": "621e37ccc5ffa96814458350c7eaf1c14c1858196ee86049e50c85047867e2c7"
+    }
+  ]
+}

@@ -420,8 +420,9 @@ Preview and result views must show:
 - Every grid application reports actual target dimensions and result counts.
 - Grid property tests cover all bundled presets across the required frame matrix.
 - No active product claim contradicts its implementation or source evidence.
-- CI has zero lint warnings, supported Node versions, passing integrity/property/
-  integration tests, and a successful production build.
+- The local release gate (`npm run release-gate` on Node 22 and Node 24) has
+  zero lint warnings, passing integrity/property/integration tests, and a
+  successful production build; its receipts are committed.
 
 ## 13. Release Acceptance
 

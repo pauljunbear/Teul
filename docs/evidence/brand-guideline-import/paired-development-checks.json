@@ -1,0 +1,126 @@
+{
+  "schemaVersion": "teul.paired-development-checks.v1",
+  "checkedAt": "2026-09-26T14:29:26.321797+00:00",
+  "productCommit": "5f3a40fdaa32589916a6ab6b43df64aba7de1a94",
+  "productChanged": false,
+  "historicalOutputBaseline": "c49a8de",
+  "state": "prepared-not-human-reviewed",
+  "verification": {
+    "status": "passed",
+    "browser": "153.0.8010.12",
+    "paintedChecks": 68,
+    "contrastChecks": 42,
+    "viewports": [
+      {
+        "width": 1440,
+        "overflow": false
+      },
+      {
+        "width": 390,
+        "overflow": false
+      }
+    ],
+    "errors": [],
+    "limits": "One private development comparison. No Studio generation, complete accessibility or human judgment claim."
+  },
+  "requiredContrastPairs": 38,
+  "sourceColorRecords": 29,
+  "generatedColorRecords": 4,
+  "humanRatings": 0,
+  "independentReview": {
+    "kind": "agent-read-only",
+    "task": "evaluation_exposure_audit",
+    "result": "No actionable source-fidelity or evaluation-claim defects. Not human design acceptance."
+  },
+  "artifacts": [
+    {
+      "path": "/Users/paul.jun/Documents/private-jobs/teul-guideline-evaluation-2026-09-26/katalon-paired-development/build.py",
+      "sha256": "714ff0a6037939a7576915755298dc06fcee3f292168863df6c8190e17e224ac",
+      "bytes": 15684
+    },
+    {
+      "path": "/Users/paul.jun/Documents/private-jobs/teul-guideline-evaluation-2026-09-26/katalon-paired-development/verify.mjs",
+      "sha256": "d97f11e3bc8ee3022e33e839817ff4d14d9340b93f736f4ff1094ba0c7d25cd5",
+      "bytes": 5434
+    },
+    {
+      "path": "/Users/paul.jun/Documents/private-jobs/teul-guideline-evaluation-2026-09-26/katalon-paired-development/index.html",
+      "sha256": "a9f1025f20a64ff12dd4f93ef30108f5e6d9fa4c6dbd1e82ab040f7316a4d5b6",
+      "bytes": 16803
+    },
+    {
+      "path": "/Users/paul.jun/Documents/private-jobs/teul-guideline-evaluation-2026-09-26/katalon-paired-development/comparison.json",
+      "sha256": "e35caf7e3301cb3afe959ab36bdbbf3f485818db31e2fc8ae2e8dcdb0fd4337e",
+      "bytes": 30526
+    },
+    {
+      "path": "/Users/paul.jun/Documents/private-jobs/teul-guideline-evaluation-2026-09-26/katalon-paired-development/review-sheet.json",
+      "sha256": "b8f1d65d505423446fb291060b0cca0fea80ad02ecdb104322d4de5ad919ba98",
+      "bytes": 1080
+    },
+    {
+      "path": "/Users/paul.jun/Documents/private-jobs/teul-guideline-evaluation-2026-09-26/katalon-paired-development/manifest.json",
+      "sha256": "9c556a684075f009f94dc45de0eab8a0baef3f5bcba7be279e3c8133201e88dd",
+      "bytes": 3014
+    },
+    {
+      "path": "/Users/paul.jun/Documents/private-jobs/teul-guideline-evaluation-2026-09-26/katalon-paired-development/browser.json",
+      "sha256": "9f808ef9240df4e918d4443f71b81f9d95042a6efe45a7454ad9f0cf87930fbb",
+      "bytes": 375
+    },
+    {
+      "path": "/Users/paul.jun/Documents/private-jobs/teul-guideline-evaluation-2026-09-26/katalon-paired-development/desktop.png",
+      "sha256": "37ae0fd0e00d49a61986b9a42847c598fde76dd05d887515bf056fd3d30a4d54",
+      "bytes": 267798
+    },
+    {
+      "path": "/Users/paul.jun/Documents/private-jobs/teul-guideline-evaluation-2026-09-26/katalon-paired-development/mobile.png",
+      "sha256": "f20736c3e3f8bf9696316fd5068a14021edbed9c42f8f3eb84d2a349c9601de6",
+      "bytes": 333661
+    },
+    {
+      "path": "/Users/paul.jun/Downloads/Projects/Teul/release/guideline-proof/katalon-application/source.json",
+      "sha256": "c4a602ef51edfa1127b0b21721e5373a56a14541fb71a5e434f14c6ace756fcc",
+      "bytes": 74392
+    },
+    {
+      "path": "/Users/paul.jun/Downloads/Projects/Teul/release/guideline-proof/katalon-application/product.json",
+      "sha256": "2d387ceb52569f04e8c1dd4b01a803fb1bdbb84d74d73ff9503a7a83085265e3",
+      "bytes": 1421958
+    },
+    {
+      "path": "/Users/paul.jun/Downloads/Projects/Teul/release/guideline-proof/katalon-application/brand.json",
+      "sha256": "f823e501aa955c512de5fbad0972119e9547c3b7fdeb3f309a4f3da96508db68",
+      "bytes": 1199689
+    },
+    {
+      "path": "/Users/paul.jun/Downloads/Projects/Teul/release/guideline-proof/katalon-application/capture.json",
+      "sha256": "265166c7ad4e933702d07646c7fc0b6129566639dfc3ff7897dc300c3e5e6cfb",
+      "bytes": 203441
+    },
+    {
+      "path": "/Users/paul.jun/Downloads/Projects/Teul/release/guideline-proof/katalon-application/receipt.json",
+      "sha256": "dd2a55dbcd87b16bc6f5d73a1f0590312f122262706eaed8bb57f8d27c0e27b1",
+      "bytes": 1924
+    },
+    {
+      "path": "/Users/paul.jun/Downloads/Projects/Teul/release/guideline-proof/katalon.pdf",
+      "sha256": "b2643fb178108c0dde036c851cc9bcd6a6c1c3e62e4d851d4d01099a292a085d",
+      "bytes": 8571452
+    }
+  ],
+  "qualification": {
+    "qualified": false,
+    "frozenManualBaseline": false,
+    "heldOutEvaluation": false,
+    "currentStudioJourney": false,
+    "completeAccessibility": false,
+    "liveServiceQualification": false,
+    "limitations": [
+      "One exposed development system; no held-out execution or frozen manual baseline.",
+      "Manual agent interpretation and provisional interpolation permission carried from historical proof.",
+      "Static product states plus illustrative brand geometry; not end-to-end Studio UI proof.",
+      "No automatic interpretation, designer acceptance or current brand authorization claim."
+    ]
+  }
+}

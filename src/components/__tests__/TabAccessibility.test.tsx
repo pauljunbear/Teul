@@ -5,6 +5,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { GridSystemTab } from '../GridSystemTab';
 import { App } from '../../ui';
 
+// The rail offers the color-system builder only when the candidate channel is
+// compiled in. These relationship tests exercise that channel; the disabled
+// default (four rail items, no builder) is covered by ReleaseChannelRail.test.tsx.
+vi.mock('../../lib/colorSystemGenericReleaseChannelV2', () => ({
+  COLOR_SYSTEM_GENERIC_RELEASE_CHANNEL_V2: 'candidate',
+  COLOR_SYSTEM_GENERIC_BUILDER_V2_ENABLED: true,
+}));
+
 class ResizeObserverMock {
   observe = vi.fn();
   disconnect = vi.fn();
@@ -81,8 +89,16 @@ describe('tab accessibility relationships', () => {
     });
 
     const systemTab = container.querySelector<HTMLButtonElement>('#main-system-tab')!;
+    expect(systemTab.textContent?.trim()).toBe('Color system');
+    expect(systemTab.style.fontSize).toBe('11px');
     act(() => systemTab.click());
     expect(container.textContent).toContain('Qualification build — testing only; not released.');
+    expect(container.querySelector('main header')?.textContent).toContain('Color system');
+    const scroller = container.querySelector<HTMLElement>(
+      '#main-system-panel [data-teul-builder-scroll]'
+    );
+    expect(scroller?.style.overflowY).toBe('auto');
+    expect(scroller?.style.height).toBe('100%');
 
     const advanced = Array.from(container.querySelectorAll<HTMLElement>('summary')).find(
       summary => summary.textContent?.trim() === 'Advanced'

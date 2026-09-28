@@ -1,0 +1,127 @@
+{
+  "schemaVersion": "teul.guideline-assisted-review-checks.v1",
+  "status": "passed",
+  "checkedAt": "2026-09-25T22:11:53.230393+00:00",
+  "baseCommit": "a57d025678528e7a03617c61e4681fc6ec42cfb8",
+  "scope": "Local TASK-003/TASK-004 assisted PDF review; standalone Studio, synthetic provider transport, no live qualification",
+  "sourceHashes": {
+    "services/guideline-intake/src/interpretation.ts": "sha256:4a3cbd62ac4db8e60448559db7a9a712cad423749c0f6a620a3611c0c69877a8",
+    "services/guideline-intake/src/interpretation.test.ts": "sha256:6dc252ded0c8bc139296f75537511702154f25d1dcd275d856a22ffa0b56c8c2",
+    "services/guideline-intake/src/openaiInterpretation.ts": "sha256:6c43ab9e5daed1b0a7856d55f4e63dac7ea2f02a974f932c57a98a21771b380a",
+    "services/guideline-intake/src/openaiInterpretation.test.ts": "sha256:cfd25e804e411286236689902d3bbf68bf97b67f8bee4719022f91f0e5958be2",
+    "services/guideline-intake/src/service.ts": "sha256:83f8f08ac75bd2b9cb6ea0e6427ab3a14fbea59c489d88d2f6dde488dbfe57e4",
+    "services/guideline-intake/src/service.test.ts": "sha256:04396f3f98f9bbc34af2bc0168dec36002a00fe7903072de717c0f9e9451c01f",
+    "services/guideline-intake/README.md": "sha256:d58c4d788e9ec8d63b0813af93eb62debc52472f0d29081073c35d18223883ba",
+    "web/src/lib/guideline/assistance.ts": "sha256:db1b5dba13bf233a3e9992fc8fb6278502f08e9cca42c2fbf758dcf95505c204",
+    "web/src/lib/guideline/assistance.test.ts": "sha256:0cfd904413bd5bb33bf349155176b9ffed2436dd81f746492e11d3e7e72c980d",
+    "web/src/components/GuidelineAssistancePanel.tsx": "sha256:791dd3640e6f86863fbf5a335341b5adcd3363a15a5bdd2002d1c031978e7b75",
+    "web/src/components/GuidelineAssistancePanel.css": "sha256:ff8b4369e1650c1e1acee7abdd36d01a3ae347ec5151f90ace04b469b532acda",
+    "web/src/components/GuidelineWorkspace.tsx": "sha256:c69b453021e23680072697b6920b588bb7960b2a770020b3cc2078f3ff2c9027",
+    "web/scripts/guideline-assistance-smoke.mjs": "sha256:4ab7f93cdcdfe472a4579e9358a3455385cd46e4ceabc18d78bb251756ced7e9",
+    "web/package.json": "sha256:581b794a1606fd78211a3632c827dd32dc93b5f4824a78a369e1906dfecd0cda",
+    "docs/evidence/brand-guideline-import/assisted-review-desktop.png": "sha256:1822b80f6018e3585cb25fba385ebe1dd8de37b5c28a9b303cb834a2343dd048",
+    "docs/evidence/brand-guideline-import/assisted-review-mobile.png": "sha256:4b5099e195a454c09e9fc993dd5a868e444fe225ddc0d0d4966d341ba6447e2f"
+  },
+  "checks": [
+    {
+      "command": "npm run test:intake",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "80 tests passed on each"
+    },
+    {
+      "command": "npm --prefix web test",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "15 files / 140 tests passed on each; 19 bridge cases"
+    },
+    {
+      "command": "npm --prefix web run test:guideline-assistance",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "11 actual browser/service scenarios pass on each; synthetic provider transport"
+    },
+    {
+      "command": "npm --prefix web run test:guidelines",
+      "runtimes": ["22.13.1"],
+      "result": "24 existing browser scenarios pass; zero remote requests"
+    },
+    {
+      "command": "npm --prefix web run build",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "passed; lazy guideline chunk 643.79 kB; size advisory retained"
+    },
+    {
+      "command": "npm run lint:intake; npm --prefix web run lint",
+      "runtimes": ["22.13.1"],
+      "result": "passed"
+    },
+    {
+      "command": "validate_prd.py --profile full --extension ai --extension refactor --stage ready --strict",
+      "result": "passed; completion not claimed"
+    }
+  ],
+  "browser": [
+    {
+      "node": "v22.13.1",
+      "status": "passed",
+      "checks": [
+        "No service request before explicit discovery; local preparation previews selected evidence; consent required before POST",
+        "Actual HTTP service and provider adapter return source-linked suggestions; only selected PNG and text are dispatched",
+        "Explicit suggestion adoption changes editable labels only; final manual review still required; generated gradient and downloadable provenance follow",
+        "Fabricated model observation IDs fail closed without changing the manual draft",
+        "Editing source review during a provider call cancels its owned job; late output cannot overwrite the new draft",
+        "Lost POST response recovers the identical persisted job without a second provider invocation",
+        "390px view has no horizontal overflow; keyboard activation applies suggestions",
+        "Unavailable authentication leaves the complete local review and deterministic generation path usable",
+        "Uncertain request survives draft replacement; explicit recovery reuses the old job and cannot adopt stale suggestions",
+        "Uncertain request survives source replacement; explicit recovery reuses the old job and cannot adopt stale suggestions",
+        "Completion winning the cancellation race is reported accurately and does not apply suggestions"
+      ],
+      "provider": "synthetic transport only; no real model calls or auth qualification",
+      "providerCalls": 7,
+      "abortedCalls": 1
+    },
+    {
+      "node": "v24.19.0",
+      "status": "passed",
+      "checks": [
+        "No service request before explicit discovery; local preparation previews selected evidence; consent required before POST",
+        "Actual HTTP service and provider adapter return source-linked suggestions; only selected PNG and text are dispatched",
+        "Explicit suggestion adoption changes editable labels only; final manual review still required; generated gradient and downloadable provenance follow",
+        "Fabricated model observation IDs fail closed without changing the manual draft",
+        "Editing source review during a provider call cancels its owned job; late output cannot overwrite the new draft",
+        "Lost POST response recovers the identical persisted job without a second provider invocation",
+        "390px view has no horizontal overflow; keyboard activation applies suggestions",
+        "Unavailable authentication leaves the complete local review and deterministic generation path usable",
+        "Uncertain request survives draft replacement; explicit recovery reuses the old job and cannot adopt stale suggestions",
+        "Uncertain request survives source replacement; explicit recovery reuses the old job and cannot adopt stale suggestions",
+        "Completion winning the cancellation race is reported accurately and does not apply suggestions"
+      ],
+      "provider": "synthetic transport only; no real model calls or auth qualification",
+      "providerCalls": 7,
+      "abortedCalls": 1
+    }
+  ],
+  "review": {
+    "reuse": "Existing V2 draft/compiler and owner/job/client reused; no new agent runtime or export engine",
+    "quality": "Parent-owned recovery across source/draft changes, accurate cancellation, model mismatch reservation and quarantine",
+    "efficiency": "Preallocated PNG buffer and cancellation before late PDF render; bounded local benchmark recorded in narrative",
+    "followup": "Independent follow-up checked new recovery, pricing/ceiling ordering and provider/service state compatibility"
+  },
+  "state": {
+    "implemented": true,
+    "locallyVerified": true,
+    "integrated": false,
+    "pushed": false,
+    "deployed": false,
+    "liveObserved": false,
+    "fullPrdAccepted": false
+  },
+  "remaining": [
+    "Real provider/authentication qualification and authorized trial",
+    "Full PDF value methods and scanned-value confirmation",
+    "Held-out interpretation and human visual evaluation",
+    "Figma and website inputs",
+    "Complete supporting directions and gradients",
+    "Durable project/refresh/provenance and reload recovery",
+    "Assistive technology and full release gates"
+  ]
+}

@@ -1,0 +1,249 @@
+{
+  "status": "locally-verified",
+  "baseCommit": "91c6144308d6aca29e259ef26442aea623361657",
+  "scope": "Portable source-refresh lineage and selected design replay; TASK-009 / AC-011 partial",
+  "runtimeChecks": [
+    {
+      "node": "22.13.1",
+      "studioTests": 467,
+      "studioFiles": 40,
+      "nativeRefreshScenarios": 16,
+      "pdfRefreshScenarios": 12,
+      "storageScenarios": 25,
+      "paletteRegressionScenarios": 9,
+      "outputRecoveryScenarios": 7,
+      "proofBuild": "passed"
+    },
+    {
+      "node": "24.19.0",
+      "studioTests": 467,
+      "studioFiles": 40,
+      "nativeRefreshScenarios": 16,
+      "pdfRefreshScenarios": 12,
+      "storageScenarios": 25,
+      "paletteRegressionScenarios": 9,
+      "outputRecoveryScenarios": 7,
+      "proofBuild": "passed"
+    }
+  ],
+  "otherChecks": {
+    "studioLint": "passed",
+    "studioTypecheck": "passed through both proof builds",
+    "strictPrdReady": "passed",
+    "diffWhitespace": "passed",
+    "deadExports": 48,
+    "deadFiles": 1,
+    "newDeadExports": 0,
+    "mobileInspection": "390px PDF and native restore controls inspected; no horizontal overflow"
+  },
+  "review": {
+    "reuse": "Optional editor guard and assignment checking fixed; model-rule walker retained for its broader validated input union",
+    "quality": "Acceptance preflight shares local save cancellation ownership; targeted final review confirmed resolution",
+    "efficiency": "Previous source validation and comparison reused during lineage creation; stale acceptance work cancelled"
+  },
+  "limitations": [
+    "Synthetic local sources; no live connector/provider qualification",
+    "Compositions with pending embedded extension approvals require reconstruction",
+    "Manual PDF witnesses require renewed source confirmation",
+    "Two-stop gradients only; failed extension proposals retained in history",
+    "Full AC-011, multi-source refresh, broader generation and human visual acceptance remain open",
+    "Not integrated, pushed or deployed; full release gate not claimed",
+    "Existing Studio chunk-size advisory remains"
+  ],
+  "sourceFiles": [
+    {
+      "path": "docs/evidence/brand-guideline-import/refresh-replay.md",
+      "bytes": 4245,
+      "sha256": "35d88739ccd8c02a1de34801b6275f0d31829425c8d45fce4d104bb36a0da66f"
+    },
+    {
+      "path": "docs/plans/2026-09-25-brand-guideline-import-plan.md",
+      "bytes": 90413,
+      "sha256": "61c99ef2f7ae0adb64e8528fb2b9411484457080dab6e22b2500526b3c61658f"
+    },
+    {
+      "path": "docs/prds/2026-09-25-brand-guideline-import.md",
+      "bytes": 116005,
+      "sha256": "5488d49f66dc6ad17880a7ee823943ab0cad6a14efd38f95d63e0e337a71e20e"
+    },
+    {
+      "path": "web/README.md",
+      "bytes": 25774,
+      "sha256": "98ad19620148461079b7faba766de3d09ceaf455ddc86fccb4c550640c558b03"
+    },
+    {
+      "path": "web/scripts/guideline-native-refresh-smoke.mjs",
+      "bytes": 15740,
+      "sha256": "15e12a9669d5d0e09b1d664d21633496a900778bab04f5a8bbfccaa831cd3a26"
+    },
+    {
+      "path": "web/scripts/guideline-refresh-smoke.mjs",
+      "bytes": 14628,
+      "sha256": "5cdadbc7b5ca35f339743598e635dbd7d7bb58e95b47ab321587cf9b0a14c3a7"
+    },
+    {
+      "path": "web/src/components/GuidelineFigmaPanel.tsx",
+      "bytes": 32867,
+      "sha256": "c0188d307499eb9b7a9deff0b2f16f0d413340eaae785bf2cba3960f310a5f94"
+    },
+    {
+      "path": "web/src/components/GuidelineFigmaReview.tsx",
+      "bytes": 4468,
+      "sha256": "91660fc03bbeb7542bfe4be994970b1304548895f5976386c9d3f50d9f7a79da"
+    },
+    {
+      "path": "web/src/components/GuidelineNativeRefresh.tsx",
+      "bytes": 6111,
+      "sha256": "f00c15a815fefd0dc7891742b21fce9ba702b7269177843c761923d46bed12c5"
+    },
+    {
+      "path": "web/src/components/GuidelinePdfRefresh.tsx",
+      "bytes": 8982,
+      "sha256": "07dfbfe6fb5e6598b4578b7dda3d6982d45381c1917cbf526683a7cd47c87368"
+    },
+    {
+      "path": "web/src/components/GuidelineRefreshRestore.tsx",
+      "bytes": 3938,
+      "sha256": "141a2559e4094a83ef6deebced67aeab0ce2cef22191722c741410ffe3f5e9c8"
+    },
+    {
+      "path": "web/src/components/GuidelineSourceReview.tsx",
+      "bytes": 34791,
+      "sha256": "21e980d3d17920bc25228413731ccc40bd89c42a8f09d8a5a8906833ed579b35"
+    },
+    {
+      "path": "web/src/components/GuidelineWebsitePanel.tsx",
+      "bytes": 25696,
+      "sha256": "9d64665382d86bea6c9bd42c64bbf77c13676140a739c84f3340757d7d982713"
+    },
+    {
+      "path": "web/src/components/GuidelineWebsiteReview.tsx",
+      "bytes": 4770,
+      "sha256": "ffd0070d6e04b2be44b16ac8048365e60e4e8702d3326701dafccb51ab009155"
+    },
+    {
+      "path": "web/src/components/GuidelineWorkspace.tsx",
+      "bytes": 61047,
+      "sha256": "d95c44f63943e0049df22372c7e564d74345c9ed335267891d3fa95c7172fade"
+    },
+    {
+      "path": "web/src/lib/guideline/projectCodec.ts",
+      "bytes": 6013,
+      "sha256": "e13e7c5b566b84c3a945a22e3dd8312fcb8a1c0545fa7474e22042925e13c3c6"
+    },
+    {
+      "path": "web/src/lib/guideline/refreshLineage.ts",
+      "bytes": 8837,
+      "sha256": "5d8888251a97684cbb5278c9b8fab1f20fece8caedfc8984cb9fb616af451980"
+    },
+    {
+      "path": "web/src/lib/guideline/refreshReplay.test.ts",
+      "bytes": 14940,
+      "sha256": "636af2dc69a1fb7d5819edfdc15ab7a8cf0131c072239ad83dd946a57fe8f280"
+    },
+    {
+      "path": "web/src/lib/guideline/refreshReplay.ts",
+      "bytes": 14139,
+      "sha256": "06c2df069e589a773f9a89ed79df8711d9eb1e66268da7813ea6624aa69fae50"
+    },
+    {
+      "path": "web/src/lib/guideline/sourceProjectCodec.ts",
+      "bytes": 2285,
+      "sha256": "05837e1ca8c916787076c424509ba1304eafca4486611e6fdeb5f28837e240bd"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "release/guideline-native-refresh/receipt-node22.json",
+      "bytes": 1880,
+      "sha256": "afc50389cc0a40a23dc8c854daad45e46437bf833c3351a69e6c3e0e8352cb19"
+    },
+    {
+      "path": "release/guideline-refresh/node22-checks.json",
+      "bytes": 1573,
+      "sha256": "46983c5fa92d2eca2ae31625e851f384f03d6f1a8726acbc05ebfdba55b196c9"
+    },
+    {
+      "path": "release/guideline-storage/node22-receipt.json",
+      "bytes": 3014,
+      "sha256": "fb5dfb2e24883180d525f522c46e171642c7ac85cda90207db41239645c933d0"
+    },
+    {
+      "path": "release/guideline-storage/node22-palette-regression/storage-browser.json",
+      "bytes": 1129,
+      "sha256": "f3b0fc019ea431c8be061b909588ca68e75978fd8cf095d817cbfb12dfb5a80a"
+    },
+    {
+      "path": "release/guideline-output-recovery/node22-checks.json",
+      "bytes": 680,
+      "sha256": "a98f6c7bcb56e889a76dcf45a5436023ad9afdaaf7f8e7fd0c8419f2a7109f8c"
+    },
+    {
+      "path": "release/guideline-native-refresh/node22-figma-restore-mobile.png",
+      "bytes": 44403,
+      "sha256": "96123e551873db38a995b959cce1f865f8c978b042429fd0ef0ba95f22bbb00a"
+    },
+    {
+      "path": "release/guideline-native-refresh/node22-website-restore-mobile.png",
+      "bytes": 44738,
+      "sha256": "f86098bd99adddd53c06cd1f7fa6d35be26c2483453717c0259a228b26d37049"
+    },
+    {
+      "path": "release/guideline-refresh/node22-restore-mobile.png",
+      "bytes": 44520,
+      "sha256": "1333fbc91750ca3da36675f441f41342dbbab52bbf5d8a5660258e39eda7b9b9"
+    },
+    {
+      "path": "release/guideline-native-refresh/receipt-node24.json",
+      "bytes": 1880,
+      "sha256": "c06480e3bcf43031b637bdffd8830cc0eee894f08543e5e3f3a693978f32e8e8"
+    },
+    {
+      "path": "release/guideline-refresh/node24-checks.json",
+      "bytes": 1573,
+      "sha256": "66efc3cb7ec7b19b37d70a3fd6dd07a433c5ea82d6df4ff270c31259dcd91e42"
+    },
+    {
+      "path": "release/guideline-storage/node24-receipt.json",
+      "bytes": 3014,
+      "sha256": "3a970eb004d9abfe58d1bb6e26568d42b3b31122944cc6f757c416574deb3ff9"
+    },
+    {
+      "path": "release/guideline-storage/node24-palette-regression/storage-browser.json",
+      "bytes": 1142,
+      "sha256": "3aa29ce272e1b9a43880bba89ec078f733d0f982271a13d7da89262ee6fd4586"
+    },
+    {
+      "path": "release/guideline-output-recovery/node24-checks.json",
+      "bytes": 680,
+      "sha256": "dc7df88667383143677d4a60bfc09bdb2c3807b73b015d0694e059a5217bb8cd"
+    },
+    {
+      "path": "release/guideline-native-refresh/node24-figma-restore-mobile.png",
+      "bytes": 44403,
+      "sha256": "96123e551873db38a995b959cce1f865f8c978b042429fd0ef0ba95f22bbb00a"
+    },
+    {
+      "path": "release/guideline-native-refresh/node24-website-restore-mobile.png",
+      "bytes": 44738,
+      "sha256": "f86098bd99adddd53c06cd1f7fa6d35be26c2483453717c0259a228b26d37049"
+    },
+    {
+      "path": "release/guideline-refresh/node24-restore-mobile.png",
+      "bytes": 44520,
+      "sha256": "1333fbc91750ca3da36675f441f41342dbbab52bbf5d8a5660258e39eda7b9b9"
+    }
+  ],
+  "productionAssets": [
+    {
+      "path": "web/dist/assets/GuidelineWorkspace-6KETYUVy.js",
+      "bytes": 877816,
+      "sha256": "fce77f7b9fde3ac7f328126cc3adf99f963771c55682217a9920ecaba1b37c46"
+    },
+    {
+      "path": "web/dist/assets/GuidelineWorkspace-DZs_6HAU.css",
+      "bytes": 24103,
+      "sha256": "4b38118923568ed7fb4d6049aefcb1dba9a0a839fd3a724df77bbef95c48f48c"
+    }
+  ]
+}

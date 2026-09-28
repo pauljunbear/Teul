@@ -1,4 +1,4 @@
-import { canonicalJson, deterministicContentHash } from './colorSystemAudit';
+import { canonicalJson, deterministicContentHash } from './colorSystemHashing';
 import type {
   ColorSystemBuilderBriefV2,
   ColorSystemStrategyCandidateV2,
@@ -457,6 +457,35 @@ function assertUpstreamChain(input: {
     input.candidate.blockers.length > 0
   ) {
     fail('INCOMPLETE_CANDIDATE', 'Only a complete, fully filled, unblocked candidate can create.');
+  }
+  // The candidate's target is its own direction's reviewed target when the brief
+  // carries one per direction, and the filled count lies inside the reviewed band.
+  const targetsByDirection = input.brief.secondaryTargetFamilyCountByDirection;
+  if (targetsByDirection) {
+    const direction = input.candidate.direction;
+    const reviewedTarget = direction === undefined ? undefined : targetsByDirection[direction];
+    if (reviewedTarget === undefined || input.candidate.targetFamilyCount !== reviewedTarget) {
+      fail(
+        'AUTHORITY_MISMATCH',
+        'Selected candidate target family count does not match the reviewed brief for its direction.'
+      );
+    }
+    const band = input.brief.secondaryTargetFamilyCountBand;
+    if (
+      !band ||
+      input.candidate.actualFamilyCount < band.minimum ||
+      input.candidate.actualFamilyCount > band.maximum
+    ) {
+      fail(
+        'AUTHORITY_MISMATCH',
+        'Selected candidate family count lies outside the reviewed per-direction band.'
+      );
+    }
+  } else if (input.candidate.targetFamilyCount !== input.brief.secondaryTargetFamilyCount) {
+    fail(
+      'AUTHORITY_MISMATCH',
+      'Selected candidate target family count does not match the reviewed brief.'
+    );
   }
   if (
     input.applicationBlueprint.status !== 'ready' ||

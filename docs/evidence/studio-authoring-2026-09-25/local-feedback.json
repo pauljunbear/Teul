@@ -1,0 +1,12 @@
+{
+  "recordedAt": "2026-09-25T19:03:53.958636+00:00",
+  "url": "http://127.0.0.1:5179/",
+  "productReady": true,
+  "agentationToolbarCount": 1,
+  "pageErrors": [],
+  "receiverHealth": {
+    "status": "ok",
+    "mode": "local"
+  },
+  "observation": "Fresh Chromium context after Node 24 dependency installation; product rendered and Generate enabled."
+}

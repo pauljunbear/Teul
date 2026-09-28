@@ -6,6 +6,7 @@ import {
   sendAccessibilitySelection,
   sendDocumentColorProfile,
   getHistoricalColorData,
+  getGridPresetCatalog,
   handleApplyFill,
   handleApplyStroke,
   handleCreateStyle,
@@ -16,7 +17,7 @@ import {
   handleCaptureSelectedGrid,
   handleGenerateColorSystem,
 } from './backend';
-import { validateUIToPluginMessage } from './lib/messageValidation';
+import { readPluginMessageType, validateUIToPluginMessage } from './lib/messageValidation';
 import { COLOR_SYSTEM_GENERIC_BUILDER_V2_ENABLED } from './lib/colorSystemGenericReleaseChannelV2';
 import {
   ensureColorSystemBuilderV2Initialized,
@@ -24,36 +25,11 @@ import {
   handleCancelGenericColorSystemV2,
   handleConfirmGenericColorSystemPlanV2,
   handleCreateIntelligentColorSystemV2,
+  handleColorSystemModelV1,
+  handleColorSystemAuthoringV1,
 } from './backend/colorSystemBuilderReleaseRuntime';
-import {
-  cancelColorSystemAnalysis,
-  clearColorSystemAuditSession,
-  handleAnalyzeColorSystem,
-  handleApplyColorSystemProposal,
-  handleApproveColorSystemProposal,
-  handleConfirmColorSystemProposal,
-  handleExportColorSystemArtifact,
-  handleGenerateColorSystemStrategies,
-  handleImportColorSystemBuilderPackage,
-  handleImportStructuredColorSystem,
-  handleRebuildColorSystemBuilderPackage,
-  handleSelectColorSystemStrategy,
-  handleUpdateColorSystemDeclaredPairs,
-} from './backend/colorSystemAuditReleaseRuntime';
-import {
-  COLOR_SYSTEM_APPLY_CLEANUP_RECEIPT_VERSION,
-  COLOR_SYSTEM_APPLY_FAILURE_RECEIPT_VERSION,
-} from './types/messages';
 import type {
   ColorSystemOperationResultMessage,
-  ColorSystemAuditResultMessage,
-  ColorSystemDeclaredPairsUpdateResultMessage,
-  ColorSystemExportResultMessage,
-  ColorSystemProposalApprovalResultMessage,
-  ColorSystemProposalConfirmationResultMessage,
-  ColorSystemProposalApplyResultMessage,
-  ColorSystemBuilderPackageImportResultMessage,
-  ColorSystemStrategySetResultMessage,
   GridAppliedMessage,
   GridStorageResultMessage,
   GridCaptureResultMessage,
@@ -116,22 +92,6 @@ function postDisabledBuilderCreate(requestId: string): void {
     error: GENERIC_BUILDER_QUALIFICATION_MESSAGE,
   };
   figma.ui.postMessage(response);
-}
-
-function invalidColorSystemApplyFailureReceipt() {
-  return {
-    failureReceiptVersion: COLOR_SYSTEM_APPLY_FAILURE_RECEIPT_VERSION,
-    failureStage: 'preflight' as const,
-    cleanupReceipt: {
-      version: COLOR_SYSTEM_APPLY_CLEANUP_RECEIPT_VERSION,
-      attempted: false,
-      removedResourceCount: 0,
-      complete: true,
-      failureCount: 0,
-      failureMessages: [] as readonly string[],
-    },
-    rollbackFailures: [] as readonly string[],
-  };
 }
 
 function commitUndoBoundary(): void {
@@ -214,6 +174,10 @@ figma.ui.onmessage = async (msg: unknown) => {
   const validation = validateUIToPluginMessage(msg);
   if (!validation.valid) {
     console.error('Rejected invalid UI message:', validation.error);
+    if (readPluginMessageType(msg) === null) {
+      figma.notify('Invalid plugin message');
+      return;
+    }
     if (
       typeof msg === 'object' &&
       msg !== null &&
@@ -346,116 +310,6 @@ figma.ui.onmessage = async (msg: unknown) => {
       typeof msg === 'object' &&
       msg !== null &&
       'type' in msg &&
-      (msg.type === 'analyze-color-system' ||
-        msg.type === 'import-structured-color-system' ||
-        msg.type === 'import-color-system-builder-package' ||
-        msg.type === 'rebuild-color-system-builder-package' ||
-        msg.type === 'generate-color-system-strategies' ||
-        msg.type === 'select-color-system-strategy' ||
-        msg.type === 'update-color-system-declared-pairs' ||
-        msg.type === 'approve-color-system-proposal' ||
-        msg.type === 'confirm-color-system-proposal' ||
-        msg.type === 'apply-color-system-proposal' ||
-        msg.type === 'export-color-system-artifact') &&
-      'requestId' in msg &&
-      typeof msg.requestId === 'string' &&
-      msg.requestId.trim().length > 0 &&
-      msg.requestId.length <= 128
-    ) {
-      if (msg.type === 'import-color-system-builder-package') {
-        const result: ColorSystemBuilderPackageImportResultMessage = {
-          type: 'color-system-builder-package-import-result',
-          requestId: msg.requestId,
-          success: false,
-          error: 'Invalid builder package import request.',
-        };
-        figma.ui.postMessage(result);
-      } else if (msg.type === 'rebuild-color-system-builder-package') {
-        const result: ColorSystemProposalApplyResultMessage = {
-          type: 'color-system-proposal-apply-result',
-          requestId: msg.requestId,
-          success: false,
-          error: 'Invalid builder package rebuild request.',
-          ...invalidColorSystemApplyFailureReceipt(),
-        };
-        figma.ui.postMessage(result);
-      } else if (
-        msg.type === 'analyze-color-system' ||
-        msg.type === 'import-structured-color-system'
-      ) {
-        const result: ColorSystemAuditResultMessage = {
-          type: 'color-system-audit-result',
-          requestId: msg.requestId,
-          success: false,
-          cancelled: false,
-          partial: false,
-          error: 'Invalid color-system analysis request.',
-        };
-        figma.ui.postMessage(result);
-      } else if (msg.type === 'generate-color-system-strategies') {
-        const result: ColorSystemStrategySetResultMessage = {
-          type: 'color-system-strategy-set-result',
-          requestId: msg.requestId,
-          success: false,
-          error: 'Invalid color-system strategy request.',
-          blockers: [],
-        };
-        figma.ui.postMessage(result);
-      } else if (msg.type === 'select-color-system-strategy') {
-        const result: ColorSystemProposalApprovalResultMessage = {
-          type: 'color-system-proposal-approval-result',
-          requestId: msg.requestId,
-          success: false,
-          error: 'Invalid color-system strategy selection.',
-        };
-        figma.ui.postMessage(result);
-      } else if (msg.type === 'update-color-system-declared-pairs') {
-        const result: ColorSystemDeclaredPairsUpdateResultMessage = {
-          type: 'color-system-declared-pairs-update-result',
-          requestId: msg.requestId,
-          success: false,
-          error: 'Invalid declared accessibility pair update request.',
-        };
-        figma.ui.postMessage(result);
-      } else if (msg.type === 'approve-color-system-proposal') {
-        const result: ColorSystemProposalApprovalResultMessage = {
-          type: 'color-system-proposal-approval-result',
-          requestId: msg.requestId,
-          success: false,
-          error: 'Invalid color-system proposal approval request.',
-        };
-        figma.ui.postMessage(result);
-      } else if (msg.type === 'confirm-color-system-proposal') {
-        const result: ColorSystemProposalConfirmationResultMessage = {
-          type: 'color-system-proposal-confirmation-result',
-          requestId: msg.requestId,
-          success: false,
-          error: 'Invalid color-system proposal confirmation request.',
-        };
-        figma.ui.postMessage(result);
-      } else if (msg.type === 'apply-color-system-proposal') {
-        const result: ColorSystemProposalApplyResultMessage = {
-          type: 'color-system-proposal-apply-result',
-          requestId: msg.requestId,
-          success: false,
-          error: 'Invalid color-system proposal apply request.',
-          ...invalidColorSystemApplyFailureReceipt(),
-        };
-        figma.ui.postMessage(result);
-      } else {
-        const result: ColorSystemExportResultMessage = {
-          type: 'color-system-export-result',
-          requestId: msg.requestId,
-          success: false,
-          error: 'Invalid color-system export request.',
-        };
-        figma.ui.postMessage(result);
-      }
-    }
-    if (
-      typeof msg === 'object' &&
-      msg !== null &&
-      'type' in msg &&
       (msg.type === 'get-workspace-storage' || msg.type === 'set-workspace-storage') &&
       'requestId' in msg &&
       typeof msg.requestId === 'string' &&
@@ -564,6 +418,42 @@ figma.ui.onmessage = async (msg: unknown) => {
 
   const message: UIToPluginMessage = validation.message;
 
+  if (
+    message.type === 'color-system-authoring-v1' ||
+    message.type === 'cancel-color-system-authoring-v1'
+  ) {
+    if (!COLOR_SYSTEM_GENERIC_BUILDER_V2_ENABLED) {
+      figma.ui.postMessage({
+        type: 'color-system-authoring-result-v1',
+        requestId: message.requestId,
+        success: false,
+        code: 'CANDIDATE_ONLY',
+        error: GENERIC_BUILDER_QUALIFICATION_MESSAGE,
+      });
+      return;
+    }
+    await handleColorSystemAuthoringV1(message);
+    return;
+  }
+
+  if (
+    message.type === 'read-color-system-model-v1' ||
+    message.type === 'cancel-color-system-model-v1'
+  ) {
+    if (!COLOR_SYSTEM_GENERIC_BUILDER_V2_ENABLED) {
+      figma.ui.postMessage({
+        type: 'color-system-model-result-v1',
+        requestId: message.requestId,
+        success: false,
+        code: 'CANDIDATE_ONLY',
+        error: GENERIC_BUILDER_QUALIFICATION_MESSAGE,
+      });
+      return;
+    }
+    await handleColorSystemModelV1(message);
+    return;
+  }
+
   if (message.type === 'analyze-generic-color-system-v2') {
     ensureColorSystemBuilderV2Initialized();
     if (!COLOR_SYSTEM_GENERIC_BUILDER_V2_ENABLED) {
@@ -621,71 +511,6 @@ figma.ui.onmessage = async (msg: unknown) => {
     return;
   }
 
-  if (message.type === 'analyze-color-system') {
-    await handleAnalyzeColorSystem(message);
-    return;
-  }
-
-  if (message.type === 'import-structured-color-system') {
-    await handleImportStructuredColorSystem(message);
-    return;
-  }
-
-  if (message.type === 'import-color-system-builder-package') {
-    await handleImportColorSystemBuilderPackage(message);
-    return;
-  }
-
-  if (message.type === 'rebuild-color-system-builder-package') {
-    await handleRebuildColorSystemBuilderPackage(message);
-    return;
-  }
-
-  if (message.type === 'cancel-color-system-analysis') {
-    cancelColorSystemAnalysis(message.targetRequestId, message.preservePartial);
-    return;
-  }
-
-  if (message.type === 'clear-color-system-audit-session') {
-    clearColorSystemAuditSession(message.sourceHash);
-    return;
-  }
-
-  if (message.type === 'update-color-system-declared-pairs') {
-    await handleUpdateColorSystemDeclaredPairs(message);
-    return;
-  }
-
-  if (message.type === 'generate-color-system-strategies') {
-    await handleGenerateColorSystemStrategies(message);
-    return;
-  }
-
-  if (message.type === 'select-color-system-strategy') {
-    await handleSelectColorSystemStrategy(message);
-    return;
-  }
-
-  if (message.type === 'approve-color-system-proposal') {
-    await handleApproveColorSystemProposal(message);
-    return;
-  }
-
-  if (message.type === 'confirm-color-system-proposal') {
-    await handleConfirmColorSystemProposal(message);
-    return;
-  }
-
-  if (message.type === 'apply-color-system-proposal') {
-    await handleApplyColorSystemProposal(message);
-    return;
-  }
-
-  if (message.type === 'export-color-system-artifact') {
-    await handleExportColorSystemArtifact(message);
-    return;
-  }
-
   // Color Operations
   if (message.type === 'apply-fill') {
     const success = await handleApplyFill(message);
@@ -735,6 +560,11 @@ figma.ui.onmessage = async (msg: unknown) => {
 
   if (message.type === 'get-document-color-profile') {
     sendDocumentColorProfile();
+    return;
+  }
+
+  if (message.type === 'get-grid-preset-catalog') {
+    figma.ui.postMessage(getGridPresetCatalog(message));
     return;
   }
 

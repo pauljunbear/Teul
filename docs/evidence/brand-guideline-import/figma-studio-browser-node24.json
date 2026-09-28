@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-09-25T23:35:33.537Z",
+  "node": "v24.19.0",
+  "status": "passed",
+  "checks": [
+    "No ambient service/provider requests; missing session leaves PDF fallback enabled",
+    "PKCE browser link and authenticated cookie callback connect the real server manager without exposing credentials",
+    "Explicit selection dispatches one native job; full-precision paints, gradients, text, modes and gaps survive download; source text stays inert",
+    "Lost submission response retains its recovery record through a later 401 and reconciles the exact existing job after an explicit Check capture action",
+    "File access failure retains prior capture and allows recovery without substituting empty evidence",
+    "Cancel reaches the owned server job and retains the previous completed capture",
+    "Confirmed authentication and disabled-processor rejections release pending state and leave recovery controls enabled",
+    "Completion winning cancellation remains recoverable and is never reported as cancelled",
+    "Offline packet with a valid hash but conflicting repeated node identity is rejected without hiding a source restriction",
+    "Large source text is paged and gap/property previews are bounded; complete source data remains in the packet",
+    "Disconnect preserves portable evidence; offline reopen makes no request; 390px viewport and keyboard connection control work"
+  ],
+  "failures": [],
+  "providerRequests": 15,
+  "boundary": "Synthetic Figma transport, actual local browser/HTTP/session/job modules; no live OAuth app or deployment"
+}

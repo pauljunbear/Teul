@@ -1,0 +1,293 @@
+{
+  "schemaVersion": "teul.local-verification.v1",
+  "scope": "REQ-012 / AC-011 / TASK-009: artifact-specific rule continuity, unchanged paint and fresh review; acceptance inventory reconciled",
+  "recordedAt": "2026-09-26T11:16:16.372464+00:00",
+  "baselineCommit": "43016f6cee4c1772c3312debf855b8a5ded0df6a",
+  "lifecycle": "locally verified slice; full PRD acceptance, integration and deployment remain open",
+  "sourceHashes": {
+    "docs/evidence/brand-guideline-import/acceptance.md": "6348da5578bd119fbcb88d365ffb1e19519d63fdb0948a26676a0cf39126cff4",
+    "docs/evidence/brand-guideline-import/refresh-rule-scope.md": "fbc40b09d808ef79314b59143ed44b18d098de3fc2f1d41ec1a5a356f708c706",
+    "docs/plans/2026-09-25-brand-guideline-import-plan.md": "1297d6bc00ad6a6b883733b2511c1d833e400e169c278539e85bb69c9f7c04d6",
+    "docs/prds/2026-09-25-brand-guideline-import.md": "d272b133f167178af0b5c3e35e35081a384df8bccb4e19f93d942f96c85abd15",
+    "web/fixtures/guidelines/source-set-fixture.ts": "4494e58927581c8f9d02a1f5fdd6fa1f2e0847aa4ceab2b013d1bb1d55433bce",
+    "web/scripts/guideline-source-set-smoke.mjs": "a6e59d81d48dc60a9b984c227ab1b7b41b9e3352e5ea43278b816762ecef8396",
+    "web/src/lib/guideline/refreshReplay.test.ts": "a7aed35b19d2c984d8a7e7f54a8a293e08a8673f81dbafabb5f7a1e78e4f477e",
+    "web/src/lib/guideline/refreshReplay.ts": "01b2e9cdc0b8946a71e53b33da9c8a6a2dc8782e90396537fd4077ccdc22d13a",
+    "web/src/lib/guideline/refreshRuleScope.test.ts": "2110d495ec74174fc24bb65041efc92378dc60edafdde43012ce081bdafd837a",
+    "web/src/lib/guideline/refreshRuleScope.ts": "da8bacc53d8eeb0e93aafa4188f2aa5bc7c5a252cca26e5172fe8bf769919203",
+    "web/src/lib/guideline/sourceSetRefresh.test.ts": "b733e943155d3838eab7da77970703c5b78ea8ba9abca2ad4394eecde9373b68"
+  },
+  "runtimes": [
+    {
+      "node": "v22.13.1",
+      "npm": "10.9.2",
+      "checks": [
+        {
+          "command": "npm --prefix web test",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test\n> vitest run\n\n\n RUN  v5.0.1 /Users/paul.jun/Downloads/Projects/Teul/web\n\n(node:30675) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n\n Test Files  51 passed (51)\n      Tests  613 passed (613)\n   Start at  07:12:15\n   Duration  13.12s (tests 89%, import 6%, transform 5%)\n\n"
+        },
+        {
+          "command": "npm --prefix web run lint",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 lint\n> oxlint src --deny-warnings\n\n"
+        },
+        {
+          "command": "VITE_GUIDELINE_IMPORT=true npm --prefix web run build",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 build\n> tsc -b && vite build && node scripts/notices.mjs\n\nvite v8.3.0 building client environment for production...\ntransforming...\n\u2713 2179 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                                                0.81 kB \u2502 gzip:   0.45 kB\ndist/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2      7.42 kB\ndist/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2        8.00 kB\ndist/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2         15.08 kB\ndist/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2        16.51 kB\ndist/pdf-fonts/FoxitSymbol.pfb                                16.72 kB\ndist/pdf-fonts/FoxitFixed.pfb                                 17.59 kB\ndist/pdf-fonts/FoxitFixedBold.pfb                             18.05 kB\ndist/pdf-fonts/FoxitFixedItalic.pfb                           18.74 kB\ndist/pdf-fonts/FoxitFixedBoldItalic.pfb                       19.15 kB\ndist/pdf-fonts/FoxitSerifBold.pfb                             19.39 kB\ndist/pdf-fonts/FoxitSerif.pfb                                 19.46 kB\ndist/pdf-fonts/FoxitSerifBoldItalic.pfb                       20.73 kB\ndist/pdf-fonts/FoxitSerifItalic.pfb                           21.22 kB\ndist/assets/geist-latin-wght-normal-BgDaEnEv.woff2            29.40 kB\ndist/pdf-fonts/FoxitDingbats.pfb                              29.51 kB\ndist/pdf-fonts/LiberationSans-BoldItalic.ttf                 135.12 kB\ndist/pdf-fonts/LiberationSans-Bold.ttf                       137.05 kB\ndist/pdf-fonts/LiberationSans-Regular.ttf                    139.51 kB\ndist/pdf-fonts/LiberationSans-Italic.ttf                     162.03 kB\ndist/assets/pdf.worker.min-BmVo14Nb.mjs                    1,317.03 kB\ndist/assets/ProductSystemView-DJMb3_3z.css                     5.95 kB \u2502 gzip:   1.57 kB\ndist/assets/GuidelineWorkspace-BQYYCRG-.css                   29.60 kB \u2502 gzip:   5.10 kB\ndist/assets/index-BMMiDOxd.css                                57.48 kB \u2502 gzip:  11.28 kB\ndist/assets/ProductSystemView-Rq83lDsL.js                     10.03 kB \u2502 gzip:   3.32 kB\ndist/assets/authoring-6VZAA38u.js                             23.56 kB \u2502 gzip:   8.81 kB\ndist/assets/authoringControlOutlinesV1-Beg6FXBd.js            44.84 kB \u2502 gzip:  13.74 kB\ndist/assets/download-Bic2EQq1.js                              45.62 kB \u2502 gzip:  18.29 kB\ndist/assets/colorSystemRecipeV1-CCK0iwWS.js                  104.31 kB \u2502 gzip:  31.86 kB\ndist/assets/sourceProvenanceDisclosureData-CxLfFIWs.js       166.30 kB \u2502 gzip:  52.12 kB\ndist/assets/index-Tkjeh5_K.js                                359.52 kB \u2502 gzip: 113.15 kB\ndist/assets/GuidelineWorkspace-DuU_Ogcy.js                 1,194.47 kB \u2502 gzip: 357.43 kB\n\n[plugin builtin:vite-reporter] \n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n\u2713 built in 379ms\nIncluded 86 web dependency notices plus Teul source and APCA notices.\n"
+        },
+        {
+          "command": "npm --prefix web run test:guideline-source-set",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test:guideline-source-set\n> node scripts/guideline-source-set-smoke.mjs\n\n{\n  \"node\": \"v22.13.1\",\n  \"scriptSha256\": \"a6e59d81d48dc60a9b984c227ab1b7b41b9e3352e5ea43278b816762ecef8396\",\n  \"buildHashes\": {\n    \"index.html\": \"39b5531638623b22c84019434b9400aa85140384c7df9b0c6a6bf0c255a735ee\",\n    \"assets/GuidelineWorkspace-BQYYCRG-.css\": \"d1cf4cfcf62a767dbcea2bdb53827f531fe151868f6d4ea98e857c613506439c\",\n    \"assets/GuidelineWorkspace-DuU_Ogcy.js\": \"b5510ce689aed990fff64140f3d8169a8afd480efa9aa26c0d04ecea1b59a920\",\n    \"assets/ProductSystemView-DJMb3_3z.css\": \"85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764\",\n    \"assets/ProductSystemView-Rq83lDsL.js\": \"4cc2d6a9f1c4f646607aa4784823afa382db4065d0082b7ed2a5cc12e8933b2f\",\n    \"assets/authoring-6VZAA38u.js\": \"5fa9f085663e13adc1b2f046212a8f558b84d97e57fcc740448101fbe3e29b8b\",\n    \"assets/authoringControlOutlinesV1-Beg6FXBd.js\": \"78050f70acf297e8b9d8611c43cd4320f4fc82342a02bef8ab0671c2b8f839a4\",\n    \"assets/colorSystemRecipeV1-CCK0iwWS.js\": \"b891f6c3e76e73704668c72fbd53db6ffa0c115ae12e83b48d6f9f5003f7cf3e\",\n    \"assets/download-Bic2EQq1.js\": \"8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6\",\n    \"assets/index-BMMiDOxd.css\": \"0e359a3aeb7a2eb5c56422a31f451bda24c50d30c7ed62fc035c16ad0765f85e\",\n    \"assets/index-Tkjeh5_K.js\": \"dfae76a3c65aa7140115c9e0d8b2d96809ad8be238adc33a68de3e066c76d9f4\",\n    \"assets/sourceProvenanceDisclosureData-CxLfFIWs.js\": \"241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361\"\n  },\n  \"checks\": [\n    \"Reviewed PDFs add directly; unresolved conflict survives download/reopen; explicit choice preserves both original projects and drives extension and gradient engines\",\n    \"Browser/Node strict replay preserves exact generated shades and gradient SVG\",\n    \"Malformed and future imports retain current selected work and leave it exportable\",\n    \"Cancelled delayed file completion cannot replace a newer reviewed source set or invalidate its gradient\",\n    \"Changing use clears resolutions, approvals and outputs; authoring controls start in the only declared use\",\n    \"Reviewed source-set recovery and bundled gradient replay work offline after Studio is loaded\",\n    \"Native Figma reviewed source adds directly through the shared source review action\",\n    \"Production save/reload reopens exact selected shades and SVG; edit/save and historical restoration append revisions, copy creates a separate record, and file-open detaches device identity\",\n    \"Direct source-review comparison stages the update; rejection preserves the exact project and selected designs\",\n    \"Accepted refresh saves its predecessor, retains other source bytes and editable choices, and reopens pending review and exactly restored gradient paint\",\n    \"Failed or cancelled prerequisite saves leave current work intact; subsequent edits discard stale staged comparisons\",\n    \"Combined review remains within the mobile viewport\",\n    \"Changed A-only rules preserve B composition SVG exactly through restoration and portable reopen; a new global prominence rule prevents restoration\"\n  ],\n  \"errors\": [],\n  \"requests\": [],\n  \"browser\": \"153.0.8010.12\",\n  \"passed\": true\n}\n"
+        },
+        {
+          "command": "npm --prefix web run test:guideline-native-refresh",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test:guideline-native-refresh\n> node scripts/guideline-native-refresh-smoke.mjs\n\n7:14:08 AM [vite] (client) Re-optimizing dependencies because vite config has changed\n{\"status\":\"passed\",\"checks\":16,\"node\":\"v22.13.1\"}\n"
+        },
+        {
+          "command": "npm --prefix web run test:guideline-composition-refresh",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test:guideline-composition-refresh\n> node scripts/guideline-composition-refresh-smoke.mjs\n\n7:14:17 AM [vite] (client) Re-optimizing dependencies because vite config has changed\n{\n  \"status\": \"passed\",\n  \"checks\": [\n    \"Real source comparison, acceptance, renewed source review and restore retain exact paint and distinct embedded extension, with no old approval.\",\n    \"Pending work reopens exactly; missing and rejected decisions cannot enable renewal or export.\",\n    \"Saving during renewal preserves pending work, suppresses late approval and clears the checking status.\",\n    \"Cancelling renewal preserves pending composition; opening another project prevents late publication.\",\n    \"Explicit decisions target current proposal; full reassessment enables exact original SVG, leaves standalone extension intact, and reopens across browser/Node.\",\n    \"Pending rules, controls and retained composition fit desktop and 390px viewport.\"\n  ],\n  \"node\": \"v22.13.1\",\n  \"browser\": \"153.0.8010.12\"\n}\n"
+        }
+      ],
+      "browserReceipts": {
+        "sourceSet": {
+          "node": "v22.13.1",
+          "scriptSha256": "a6e59d81d48dc60a9b984c227ab1b7b41b9e3352e5ea43278b816762ecef8396",
+          "buildHashes": {
+            "index.html": "39b5531638623b22c84019434b9400aa85140384c7df9b0c6a6bf0c255a735ee",
+            "assets/GuidelineWorkspace-BQYYCRG-.css": "d1cf4cfcf62a767dbcea2bdb53827f531fe151868f6d4ea98e857c613506439c",
+            "assets/GuidelineWorkspace-DuU_Ogcy.js": "b5510ce689aed990fff64140f3d8169a8afd480efa9aa26c0d04ecea1b59a920",
+            "assets/ProductSystemView-DJMb3_3z.css": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764",
+            "assets/ProductSystemView-Rq83lDsL.js": "4cc2d6a9f1c4f646607aa4784823afa382db4065d0082b7ed2a5cc12e8933b2f",
+            "assets/authoring-6VZAA38u.js": "5fa9f085663e13adc1b2f046212a8f558b84d97e57fcc740448101fbe3e29b8b",
+            "assets/authoringControlOutlinesV1-Beg6FXBd.js": "78050f70acf297e8b9d8611c43cd4320f4fc82342a02bef8ab0671c2b8f839a4",
+            "assets/colorSystemRecipeV1-CCK0iwWS.js": "b891f6c3e76e73704668c72fbd53db6ffa0c115ae12e83b48d6f9f5003f7cf3e",
+            "assets/download-Bic2EQq1.js": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6",
+            "assets/index-BMMiDOxd.css": "0e359a3aeb7a2eb5c56422a31f451bda24c50d30c7ed62fc035c16ad0765f85e",
+            "assets/index-Tkjeh5_K.js": "dfae76a3c65aa7140115c9e0d8b2d96809ad8be238adc33a68de3e066c76d9f4",
+            "assets/sourceProvenanceDisclosureData-CxLfFIWs.js": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361"
+          },
+          "checks": [
+            "Reviewed PDFs add directly; unresolved conflict survives download/reopen; explicit choice preserves both original projects and drives extension and gradient engines",
+            "Browser/Node strict replay preserves exact generated shades and gradient SVG",
+            "Malformed and future imports retain current selected work and leave it exportable",
+            "Cancelled delayed file completion cannot replace a newer reviewed source set or invalidate its gradient",
+            "Changing use clears resolutions, approvals and outputs; authoring controls start in the only declared use",
+            "Reviewed source-set recovery and bundled gradient replay work offline after Studio is loaded",
+            "Native Figma reviewed source adds directly through the shared source review action",
+            "Production save/reload reopens exact selected shades and SVG; edit/save and historical restoration append revisions, copy creates a separate record, and file-open detaches device identity",
+            "Direct source-review comparison stages the update; rejection preserves the exact project and selected designs",
+            "Accepted refresh saves its predecessor, retains other source bytes and editable choices, and reopens pending review and exactly restored gradient paint",
+            "Failed or cancelled prerequisite saves leave current work intact; subsequent edits discard stale staged comparisons",
+            "Combined review remains within the mobile viewport",
+            "Changed A-only rules preserve B composition SVG exactly through restoration and portable reopen; a new global prominence rule prevents restoration"
+          ],
+          "errors": [],
+          "requests": [],
+          "browser": "153.0.8010.12",
+          "passed": true
+        },
+        "native": {
+          "status": "passed",
+          "node": "v22.13.1",
+          "checks": [
+            "Figma: capture-time-only recapture is a no-op and rejection preserves exact reviewed project bytes.",
+            "Figma: changed evidence can be inspected and rejected while the current source and applied review remain exact.",
+            "Figma: editing the current review invalidates its staged proposal.",
+            "Figma: replacing the editor during a delayed acceptance save prevents late source publication.",
+            "Figma: failed IndexedDB save blocks replacement and preserves exact old work.",
+            "Figma: acceptance saves the complete old project, installs the compared draft without applied authority, and fits 390px.",
+            "Figma: saving the new review appends to the existing project history and retains the exact old revision.",
+            "Figma: unchanged gradient paint is restored under fresh review, survives portable reopen, fits 390px, and editing invalidates the restoration check.",
+            "Website: capture-time-only recapture is a no-op and rejection preserves exact reviewed project bytes.",
+            "Website: changed evidence can be inspected and rejected while the current source and applied review remain exact.",
+            "Website: editing the current review invalidates its staged proposal.",
+            "Website: replacing the editor during a delayed acceptance save prevents late source publication.",
+            "Website: failed IndexedDB save blocks replacement and preserves exact old work.",
+            "Website: acceptance saves the complete old project, installs the compared draft without applied authority, and fits 390px.",
+            "Website: saving the new review appends to the existing project history and retains the exact old revision.",
+            "Website: unchanged gradient paint is restored under fresh review, survives portable reopen, fits 390px, and editing invalidates the restoration check."
+          ],
+          "errors": [],
+          "requests": []
+        },
+        "composition": {
+          "scope": "Production Studio UI, synthetic Figma source, shared composition restoration and rule renewal. No live source or visual acceptance claimed.",
+          "node": "v22.13.1",
+          "scriptSha256": "84e7fae39c9e20cd9fed8e7a6096c92db96588423902ade815678c44abdb7e8b",
+          "checks": [
+            "Real source comparison, acceptance, renewed source review and restore retain exact paint and distinct embedded extension, with no old approval.",
+            "Pending work reopens exactly; missing and rejected decisions cannot enable renewal or export.",
+            "Saving during renewal preserves pending work, suppresses late approval and clears the checking status.",
+            "Cancelling renewal preserves pending composition; opening another project prevents late publication.",
+            "Explicit decisions target current proposal; full reassessment enables exact original SVG, leaves standalone extension intact, and reopens across browser/Node.",
+            "Pending rules, controls and retained composition fit desktop and 390px viewport."
+          ],
+          "errors": [],
+          "requests": [],
+          "buildHashes": {
+            "index.html": "39b5531638623b22c84019434b9400aa85140384c7df9b0c6a6bf0c255a735ee",
+            "assets/GuidelineWorkspace-BQYYCRG-.css": "d1cf4cfcf62a767dbcea2bdb53827f531fe151868f6d4ea98e857c613506439c",
+            "assets/GuidelineWorkspace-DuU_Ogcy.js": "b5510ce689aed990fff64140f3d8169a8afd480efa9aa26c0d04ecea1b59a920",
+            "assets/ProductSystemView-DJMb3_3z.css": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764",
+            "assets/ProductSystemView-Rq83lDsL.js": "4cc2d6a9f1c4f646607aa4784823afa382db4065d0082b7ed2a5cc12e8933b2f",
+            "assets/authoring-6VZAA38u.js": "5fa9f085663e13adc1b2f046212a8f558b84d97e57fcc740448101fbe3e29b8b",
+            "assets/authoringControlOutlinesV1-Beg6FXBd.js": "78050f70acf297e8b9d8611c43cd4320f4fc82342a02bef8ab0671c2b8f839a4",
+            "assets/colorSystemRecipeV1-CCK0iwWS.js": "b891f6c3e76e73704668c72fbd53db6ffa0c115ae12e83b48d6f9f5003f7cf3e",
+            "assets/download-Bic2EQq1.js": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6",
+            "assets/index-BMMiDOxd.css": "0e359a3aeb7a2eb5c56422a31f451bda24c50d30c7ed62fc035c16ad0765f85e",
+            "assets/index-Tkjeh5_K.js": "dfae76a3c65aa7140115c9e0d8b2d96809ad8be238adc33a68de3e066c76d9f4",
+            "assets/sourceProvenanceDisclosureData-CxLfFIWs.js": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361"
+          },
+          "browser": "153.0.8010.12",
+          "status": "passed"
+        }
+      }
+    },
+    {
+      "node": "v24.19.0",
+      "npm": "10.9.2",
+      "checks": [
+        {
+          "command": "npm --prefix web test",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test\n> vitest run\n\n\n RUN  v5.0.1 /Users/paul.jun/Downloads/Projects/Teul/web\n\n\n Test Files  51 passed (51)\n      Tests  613 passed (613)\n   Start at  07:12:35\n   Duration  10.59s (tests 86%, transform 7%, import 7%)\n\n"
+        },
+        {
+          "command": "npm --prefix web run lint",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 lint\n> oxlint src --deny-warnings\n\n"
+        },
+        {
+          "command": "VITE_GUIDELINE_IMPORT=true npm --prefix web run build",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 build\n> tsc -b && vite build && node scripts/notices.mjs\n\nvite v8.3.0 building client environment for production...\ntransforming...\n\u2713 2179 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                                                0.81 kB \u2502 gzip:   0.45 kB\ndist/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2      7.42 kB\ndist/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2        8.00 kB\ndist/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2         15.08 kB\ndist/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2        16.51 kB\ndist/pdf-fonts/FoxitSymbol.pfb                                16.72 kB\ndist/pdf-fonts/FoxitFixed.pfb                                 17.59 kB\ndist/pdf-fonts/FoxitFixedBold.pfb                             18.05 kB\ndist/pdf-fonts/FoxitFixedItalic.pfb                           18.74 kB\ndist/pdf-fonts/FoxitFixedBoldItalic.pfb                       19.15 kB\ndist/pdf-fonts/FoxitSerifBold.pfb                             19.39 kB\ndist/pdf-fonts/FoxitSerif.pfb                                 19.46 kB\ndist/pdf-fonts/FoxitSerifBoldItalic.pfb                       20.73 kB\ndist/pdf-fonts/FoxitSerifItalic.pfb                           21.22 kB\ndist/assets/geist-latin-wght-normal-BgDaEnEv.woff2            29.40 kB\ndist/pdf-fonts/FoxitDingbats.pfb                              29.51 kB\ndist/pdf-fonts/LiberationSans-BoldItalic.ttf                 135.12 kB\ndist/pdf-fonts/LiberationSans-Bold.ttf                       137.05 kB\ndist/pdf-fonts/LiberationSans-Regular.ttf                    139.51 kB\ndist/pdf-fonts/LiberationSans-Italic.ttf                     162.03 kB\ndist/assets/pdf.worker.min-BmVo14Nb.mjs                    1,317.03 kB\ndist/assets/ProductSystemView-DJMb3_3z.css                     5.95 kB \u2502 gzip:   1.57 kB\ndist/assets/GuidelineWorkspace-BQYYCRG-.css                   29.60 kB \u2502 gzip:   5.10 kB\ndist/assets/index-BMMiDOxd.css                                57.48 kB \u2502 gzip:  11.28 kB\ndist/assets/ProductSystemView-Rq83lDsL.js                     10.03 kB \u2502 gzip:   3.32 kB\ndist/assets/authoring-6VZAA38u.js                             23.56 kB \u2502 gzip:   8.81 kB\ndist/assets/authoringControlOutlinesV1-Beg6FXBd.js            44.84 kB \u2502 gzip:  13.74 kB\ndist/assets/download-Bic2EQq1.js                              45.62 kB \u2502 gzip:  18.29 kB\ndist/assets/colorSystemRecipeV1-CCK0iwWS.js                  104.31 kB \u2502 gzip:  31.86 kB\ndist/assets/sourceProvenanceDisclosureData-CxLfFIWs.js       166.30 kB \u2502 gzip:  52.12 kB\ndist/assets/index-Tkjeh5_K.js                                359.52 kB \u2502 gzip: 113.15 kB\ndist/assets/GuidelineWorkspace-DuU_Ogcy.js                 1,194.47 kB \u2502 gzip: 357.43 kB\n\n[plugin builtin:vite-reporter] \n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n\u2713 built in 276ms\nIncluded 86 web dependency notices plus Teul source and APCA notices.\n"
+        },
+        {
+          "command": "npm --prefix web run test:guideline-source-set",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test:guideline-source-set\n> node scripts/guideline-source-set-smoke.mjs\n\n7:14:39 AM [vite] (client) Re-optimizing dependencies because vite config has changed\n{\n  \"node\": \"v24.19.0\",\n  \"scriptSha256\": \"a6e59d81d48dc60a9b984c227ab1b7b41b9e3352e5ea43278b816762ecef8396\",\n  \"buildHashes\": {\n    \"index.html\": \"39b5531638623b22c84019434b9400aa85140384c7df9b0c6a6bf0c255a735ee\",\n    \"assets/GuidelineWorkspace-BQYYCRG-.css\": \"d1cf4cfcf62a767dbcea2bdb53827f531fe151868f6d4ea98e857c613506439c\",\n    \"assets/GuidelineWorkspace-DuU_Ogcy.js\": \"b5510ce689aed990fff64140f3d8169a8afd480efa9aa26c0d04ecea1b59a920\",\n    \"assets/ProductSystemView-DJMb3_3z.css\": \"85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764\",\n    \"assets/ProductSystemView-Rq83lDsL.js\": \"4cc2d6a9f1c4f646607aa4784823afa382db4065d0082b7ed2a5cc12e8933b2f\",\n    \"assets/authoring-6VZAA38u.js\": \"5fa9f085663e13adc1b2f046212a8f558b84d97e57fcc740448101fbe3e29b8b\",\n    \"assets/authoringControlOutlinesV1-Beg6FXBd.js\": \"78050f70acf297e8b9d8611c43cd4320f4fc82342a02bef8ab0671c2b8f839a4\",\n    \"assets/colorSystemRecipeV1-CCK0iwWS.js\": \"b891f6c3e76e73704668c72fbd53db6ffa0c115ae12e83b48d6f9f5003f7cf3e\",\n    \"assets/download-Bic2EQq1.js\": \"8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6\",\n    \"assets/index-BMMiDOxd.css\": \"0e359a3aeb7a2eb5c56422a31f451bda24c50d30c7ed62fc035c16ad0765f85e\",\n    \"assets/index-Tkjeh5_K.js\": \"dfae76a3c65aa7140115c9e0d8b2d96809ad8be238adc33a68de3e066c76d9f4\",\n    \"assets/sourceProvenanceDisclosureData-CxLfFIWs.js\": \"241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361\"\n  },\n  \"checks\": [\n    \"Reviewed PDFs add directly; unresolved conflict survives download/reopen; explicit choice preserves both original projects and drives extension and gradient engines\",\n    \"Browser/Node strict replay preserves exact generated shades and gradient SVG\",\n    \"Malformed and future imports retain current selected work and leave it exportable\",\n    \"Cancelled delayed file completion cannot replace a newer reviewed source set or invalidate its gradient\",\n    \"Changing use clears resolutions, approvals and outputs; authoring controls start in the only declared use\",\n    \"Reviewed source-set recovery and bundled gradient replay work offline after Studio is loaded\",\n    \"Native Figma reviewed source adds directly through the shared source review action\",\n    \"Production save/reload reopens exact selected shades and SVG; edit/save and historical restoration append revisions, copy creates a separate record, and file-open detaches device identity\",\n    \"Direct source-review comparison stages the update; rejection preserves the exact project and selected designs\",\n    \"Accepted refresh saves its predecessor, retains other source bytes and editable choices, and reopens pending review and exactly restored gradient paint\",\n    \"Failed or cancelled prerequisite saves leave current work intact; subsequent edits discard stale staged comparisons\",\n    \"Combined review remains within the mobile viewport\",\n    \"Changed A-only rules preserve B composition SVG exactly through restoration and portable reopen; a new global prominence rule prevents restoration\"\n  ],\n  \"errors\": [],\n  \"requests\": [],\n  \"browser\": \"153.0.8010.12\",\n  \"passed\": true\n}\n"
+        },
+        {
+          "command": "npm --prefix web run test:guideline-native-refresh",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test:guideline-native-refresh\n> node scripts/guideline-native-refresh-smoke.mjs\n\n7:14:53 AM [vite] (client) Re-optimizing dependencies because vite config has changed\n{\"status\":\"passed\",\"checks\":16,\"node\":\"v24.19.0\"}\n"
+        },
+        {
+          "command": "npm --prefix web run test:guideline-composition-refresh",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test:guideline-composition-refresh\n> node scripts/guideline-composition-refresh-smoke.mjs\n\n7:15:01 AM [vite] (client) Re-optimizing dependencies because vite config has changed\n{\n  \"status\": \"passed\",\n  \"checks\": [\n    \"Real source comparison, acceptance, renewed source review and restore retain exact paint and distinct embedded extension, with no old approval.\",\n    \"Pending work reopens exactly; missing and rejected decisions cannot enable renewal or export.\",\n    \"Saving during renewal preserves pending work, suppresses late approval and clears the checking status.\",\n    \"Cancelling renewal preserves pending composition; opening another project prevents late publication.\",\n    \"Explicit decisions target current proposal; full reassessment enables exact original SVG, leaves standalone extension intact, and reopens across browser/Node.\",\n    \"Pending rules, controls and retained composition fit desktop and 390px viewport.\"\n  ],\n  \"node\": \"v24.19.0\",\n  \"browser\": \"153.0.8010.12\"\n}\n"
+        }
+      ],
+      "browserReceipts": {
+        "sourceSet": {
+          "node": "v24.19.0",
+          "scriptSha256": "a6e59d81d48dc60a9b984c227ab1b7b41b9e3352e5ea43278b816762ecef8396",
+          "buildHashes": {
+            "index.html": "39b5531638623b22c84019434b9400aa85140384c7df9b0c6a6bf0c255a735ee",
+            "assets/GuidelineWorkspace-BQYYCRG-.css": "d1cf4cfcf62a767dbcea2bdb53827f531fe151868f6d4ea98e857c613506439c",
+            "assets/GuidelineWorkspace-DuU_Ogcy.js": "b5510ce689aed990fff64140f3d8169a8afd480efa9aa26c0d04ecea1b59a920",
+            "assets/ProductSystemView-DJMb3_3z.css": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764",
+            "assets/ProductSystemView-Rq83lDsL.js": "4cc2d6a9f1c4f646607aa4784823afa382db4065d0082b7ed2a5cc12e8933b2f",
+            "assets/authoring-6VZAA38u.js": "5fa9f085663e13adc1b2f046212a8f558b84d97e57fcc740448101fbe3e29b8b",
+            "assets/authoringControlOutlinesV1-Beg6FXBd.js": "78050f70acf297e8b9d8611c43cd4320f4fc82342a02bef8ab0671c2b8f839a4",
+            "assets/colorSystemRecipeV1-CCK0iwWS.js": "b891f6c3e76e73704668c72fbd53db6ffa0c115ae12e83b48d6f9f5003f7cf3e",
+            "assets/download-Bic2EQq1.js": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6",
+            "assets/index-BMMiDOxd.css": "0e359a3aeb7a2eb5c56422a31f451bda24c50d30c7ed62fc035c16ad0765f85e",
+            "assets/index-Tkjeh5_K.js": "dfae76a3c65aa7140115c9e0d8b2d96809ad8be238adc33a68de3e066c76d9f4",
+            "assets/sourceProvenanceDisclosureData-CxLfFIWs.js": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361"
+          },
+          "checks": [
+            "Reviewed PDFs add directly; unresolved conflict survives download/reopen; explicit choice preserves both original projects and drives extension and gradient engines",
+            "Browser/Node strict replay preserves exact generated shades and gradient SVG",
+            "Malformed and future imports retain current selected work and leave it exportable",
+            "Cancelled delayed file completion cannot replace a newer reviewed source set or invalidate its gradient",
+            "Changing use clears resolutions, approvals and outputs; authoring controls start in the only declared use",
+            "Reviewed source-set recovery and bundled gradient replay work offline after Studio is loaded",
+            "Native Figma reviewed source adds directly through the shared source review action",
+            "Production save/reload reopens exact selected shades and SVG; edit/save and historical restoration append revisions, copy creates a separate record, and file-open detaches device identity",
+            "Direct source-review comparison stages the update; rejection preserves the exact project and selected designs",
+            "Accepted refresh saves its predecessor, retains other source bytes and editable choices, and reopens pending review and exactly restored gradient paint",
+            "Failed or cancelled prerequisite saves leave current work intact; subsequent edits discard stale staged comparisons",
+            "Combined review remains within the mobile viewport",
+            "Changed A-only rules preserve B composition SVG exactly through restoration and portable reopen; a new global prominence rule prevents restoration"
+          ],
+          "errors": [],
+          "requests": [],
+          "browser": "153.0.8010.12",
+          "passed": true
+        },
+        "native": {
+          "status": "passed",
+          "node": "v24.19.0",
+          "checks": [
+            "Figma: capture-time-only recapture is a no-op and rejection preserves exact reviewed project bytes.",
+            "Figma: changed evidence can be inspected and rejected while the current source and applied review remain exact.",
+            "Figma: editing the current review invalidates its staged proposal.",
+            "Figma: replacing the editor during a delayed acceptance save prevents late source publication.",
+            "Figma: failed IndexedDB save blocks replacement and preserves exact old work.",
+            "Figma: acceptance saves the complete old project, installs the compared draft without applied authority, and fits 390px.",
+            "Figma: saving the new review appends to the existing project history and retains the exact old revision.",
+            "Figma: unchanged gradient paint is restored under fresh review, survives portable reopen, fits 390px, and editing invalidates the restoration check.",
+            "Website: capture-time-only recapture is a no-op and rejection preserves exact reviewed project bytes.",
+            "Website: changed evidence can be inspected and rejected while the current source and applied review remain exact.",
+            "Website: editing the current review invalidates its staged proposal.",
+            "Website: replacing the editor during a delayed acceptance save prevents late source publication.",
+            "Website: failed IndexedDB save blocks replacement and preserves exact old work.",
+            "Website: acceptance saves the complete old project, installs the compared draft without applied authority, and fits 390px.",
+            "Website: saving the new review appends to the existing project history and retains the exact old revision.",
+            "Website: unchanged gradient paint is restored under fresh review, survives portable reopen, fits 390px, and editing invalidates the restoration check."
+          ],
+          "errors": [],
+          "requests": []
+        },
+        "composition": {
+          "scope": "Production Studio UI, synthetic Figma source, shared composition restoration and rule renewal. No live source or visual acceptance claimed.",
+          "node": "v24.19.0",
+          "scriptSha256": "84e7fae39c9e20cd9fed8e7a6096c92db96588423902ade815678c44abdb7e8b",
+          "checks": [
+            "Real source comparison, acceptance, renewed source review and restore retain exact paint and distinct embedded extension, with no old approval.",
+            "Pending work reopens exactly; missing and rejected decisions cannot enable renewal or export.",
+            "Saving during renewal preserves pending work, suppresses late approval and clears the checking status.",
+            "Cancelling renewal preserves pending composition; opening another project prevents late publication.",
+            "Explicit decisions target current proposal; full reassessment enables exact original SVG, leaves standalone extension intact, and reopens across browser/Node.",
+            "Pending rules, controls and retained composition fit desktop and 390px viewport."
+          ],
+          "errors": [],
+          "requests": [],
+          "buildHashes": {
+            "index.html": "39b5531638623b22c84019434b9400aa85140384c7df9b0c6a6bf0c255a735ee",
+            "assets/GuidelineWorkspace-BQYYCRG-.css": "d1cf4cfcf62a767dbcea2bdb53827f531fe151868f6d4ea98e857c613506439c",
+            "assets/GuidelineWorkspace-DuU_Ogcy.js": "b5510ce689aed990fff64140f3d8169a8afd480efa9aa26c0d04ecea1b59a920",
+            "assets/ProductSystemView-DJMb3_3z.css": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764",
+            "assets/ProductSystemView-Rq83lDsL.js": "4cc2d6a9f1c4f646607aa4784823afa382db4065d0082b7ed2a5cc12e8933b2f",
+            "assets/authoring-6VZAA38u.js": "5fa9f085663e13adc1b2f046212a8f558b84d97e57fcc740448101fbe3e29b8b",
+            "assets/authoringControlOutlinesV1-Beg6FXBd.js": "78050f70acf297e8b9d8611c43cd4320f4fc82342a02bef8ab0671c2b8f839a4",
+            "assets/colorSystemRecipeV1-CCK0iwWS.js": "b891f6c3e76e73704668c72fbd53db6ffa0c115ae12e83b48d6f9f5003f7cf3e",
+            "assets/download-Bic2EQq1.js": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6",
+            "assets/index-BMMiDOxd.css": "0e359a3aeb7a2eb5c56422a31f451bda24c50d30c7ed62fc035c16ad0765f85e",
+            "assets/index-Tkjeh5_K.js": "dfae76a3c65aa7140115c9e0d8b2d96809ad8be238adc33a68de3e066c76d9f4",
+            "assets/sourceProvenanceDisclosureData-CxLfFIWs.js": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361"
+          },
+          "browser": "153.0.8010.12",
+          "status": "passed"
+        }
+      }
+    }
+  ],
+  "reviews": {
+    "reuse": "no findings",
+    "quality": "no findings",
+    "efficiency": "no findings",
+    "acceptance": "read-only inventory recorded in acceptance.md"
+  },
+  "prdValidation": {
+    "command": "python3 /Users/paul.jun/.codex/skills/create-prd-and-build/scripts/validate_prd.py docs/prds/2026-09-25-brand-guideline-import.md --plan docs/plans/2026-09-25-brand-guideline-import-plan.md --profile full --extension ai --extension refactor --stage ready --strict",
+    "exitCode": 0,
+    "output": "PRD profile: full + ai, refactor\nValidation stage: ready\nPASS: no structural or traceability issues found\n"
+  }
+}

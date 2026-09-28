@@ -1,0 +1,240 @@
+{
+  "recordedAt": "2026-09-27T10:47:45.255903+00:00",
+  "baseline": "24fc5ca9b30a461b85e359f7036aa5b3429f7d09",
+  "status": "locally-verified",
+  "checks": {
+    "node22": {
+      "intake": {
+        "status": "passed",
+        "tests": 202,
+        "log": "release/private-pilot-2026-09-27/intake-node22-final.log",
+        "sha256": "1d9842999f968a2b911b551b9e5fae3f39a04a472b723f3d4a552326ad8116a4"
+      },
+      "hostBrowser": {
+        "status": "passed",
+        "node": "v22.13.1",
+        "checks": [
+          "Unauthenticated Studio access is refused; explicit synthetic session opens the same-origin API and static build.",
+          "The production Studio reads and renders a native PDF, locates source evidence, adopts four colors and generates a checked gradient through the host.",
+          "SVG, CSS and assessed JSON download through the real browser; no remote processor is registered and no external request is made."
+        ],
+        "errors": [],
+        "scriptSha256": "c753d77ad168c3f1f472d8dcbdf7d1f6e15276196aee981ea8e56081af285215",
+        "buildHashes": {
+          "/index.html": "b5dde9b09c44ba952660e40c728d2bc669ecc87ecb7fd0b2e4626954b1e9479e",
+          "/LICENSE": "6a6cd7dbd93f5795289a29771445d25bd12115530d5b9fb4175abf3c7b01e6a0",
+          "/pdf-fonts/FoxitDingbats.pfb": "845c752392b6c914fb989c75a08b7792b88f542d2499042ef2889f8c814a16ed",
+          "/pdf-fonts/LiberationSans-Bold.ttf": "361c61b82d575c5c35fd9157fda8b0194bcfcd0d88ea8521a4fb5dd53d33dddc",
+          "/pdf-fonts/FoxitSymbol.pfb": "47967d055530e7357088a08403115425643ec2cdfd6201ba8af0fbd7116c1539",
+          "/pdf-fonts/LiberationSans-BoldItalic.ttf": "a224075ac17495ad0a3af3bc0a419ac0704a8b3fd1095456201fb9b095fc281d",
+          "/pdf-fonts/FoxitFixedBoldItalic.pfb": "8a000945843bd31add06aee63bf9fd41b7578b4f3242a4b7cd46349ad9d24d4d",
+          "/pdf-fonts/FoxitFixedItalic.pfb": "5007faf8320fa1fcc08b8894b356ad976f60b992ba29ee5272578bbdebaf3876",
+          "/pdf-fonts/FoxitSerifItalic.pfb": "610ae0687198045c4db5d1a6650fd5e92536631706382eb8b72e38df578d0ae9",
+          "/pdf-fonts/FoxitSerifBoldItalic.pfb": "a406cac82583bf98175cb62c87ed5e95c45fbb34eece63a10b0a13e793cb2e10",
+          "/pdf-fonts/FoxitSerifBold.pfb": "0bdf4b04e964139818d51eda03d566ba999fc3ba2421b1c6c51f9dc969022e80",
+          "/pdf-fonts/FoxitFixed.pfb": "b6c8fe53f134b8b6d4578cd2d544df4cee9624c4efa8d51a560fb40ea296101b",
+          "/pdf-fonts/LiberationSans-Italic.ttf": "832b4406dbef23628800d3aaad21048534ac84d7e3ad955be83b8172ed8ef512",
+          "/pdf-fonts/FoxitSerif.pfb": "4f57d2b9d884af8f907bf22df6019b52d86cbf6214fdbd02b1ae05472a543f35",
+          "/pdf-fonts/LiberationSans-Regular.ttf": "f8ace1f892b2bd9dc1792ba7f097fa7588f84fed48321480e04de5390828221f",
+          "/pdf-fonts/FoxitFixedBold.pfb": "f1b7159702973f54fc86254ea38bcf3712b2a736eb3a0995751e9f4bb45ad603",
+          "/healthcheck": "43a2a50c8f51e8b1118184d9ce279895c7cdbc66a0f04b9f153f66415fa3dcb7",
+          "/THIRD_PARTY_LICENSES.txt": "95497389b7c8c8f87ccac227d97bb47549f6c5da77a25a878cfd602624f3ae59",
+          "/THIRD_PARTY_NOTICES.md": "0ff6af03ae96b7c3b5433f8317040d1d0e3b68d92e565af929e8063f29639275",
+          "/mark.svg": "b97988e0bfce860215e7b03be59c3ba5586efb8e640ba0bd22088b6a9eb37881",
+          "/APCA_LICENSE.md": "45822a7b8120d9792a1233b602839b66184beca222d0771672d773eafe26a438",
+          "/assets/sourceScalePlacement-Df-DJV7x.js": "189522fd6874049175127d54343ab1d1e7aadd5a9d6ed76f76c7ff89a7e244ac",
+          "/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2": "6894439694946a589d157ece003086960a6a4013d74a813dab7602efdb3d8c09",
+          "/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2": "2317fa4bb293c9c0b110e18315d529235c47a0ddd3338cea3d8c7955e927899e",
+          "/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2": "824f485b5d26e2f2da3c2b236132ece1bc8e4e43373452950bb0e40548b4313f",
+          "/assets/ProductSystemView-DJMb3_3z.css": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764",
+          "/assets/geist-latin-wght-normal-BgDaEnEv.woff2": "19f9c92546aa300c312235e3125af1b81394d8db9a4bc4a425cd5b641d2d54e1",
+          "/assets/download-Bic2EQq1.js": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6",
+          "/assets/authoring-D0a7zd1W.js": "685681f86e9679d12677f3d3f5ef8a3ad64b2748b02e9d8e848d7325590ee807",
+          "/assets/GuidelineWorkspace-CBX9n09I.css": "6d01ca68b30d16036f6a41a451f66119198fafd28ab2d5db701f7af5a6d46f2a",
+          "/assets/colorSystemRecipeV1-CrhhV28k.js": "43576a33dd5a7cea53535261f4522141dd06fb22dd9b90590f7ccbfd1d49c633",
+          "/assets/GuidelineWorkspace-BRPGctDe.js": "276895ad3547fcdc8e3c93578022c0025ca40f848b1f732501a5aa1217ff8965",
+          "/assets/index-k7qUNtEA.css": "c6a9c1c3d28d901d3d3c8b3ce7f514a8cff466d531752d1aedae65b2e0c53e0d",
+          "/assets/index-D-7NSIAl.js": "eb403540f5ad98a328c1463049167a875a68a7e2167fc19b56a1ef39584c68d5",
+          "/assets/pdf.worker.min-BmVo14Nb.mjs": "a33cfe728c584fdba4fcc1fd54bcdc2f9f2f13889ddbb5b2bd1d0f8cbe49b84e",
+          "/assets/ProductSystemView-LCQcGO0M.js": "9dde8acb9be5918ecf1cce87b4bf91c729d5a7d492dd1c798e272b1450428c60",
+          "/assets/sourceProvenanceDisclosureData-CxLfFIWs.js": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361",
+          "/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2": "8fa40e5d248247735eb97a0bd593b8852440430600d6ba01364c31fe0abc1fe1",
+          "/": "b5dde9b09c44ba952660e40c728d2bc669ecc87ecb7fd0b2e4626954b1e9479e"
+        },
+        "browser": "153.0.8010.12"
+      },
+      "mixedHost": {
+        "status": "passed",
+        "node": "v22.13.1",
+        "checks": [
+          "Thirty mixed jobs use all three real processor implementations through startIntakeHost; two owners remain isolated.",
+          "Restart preserves exact results and request deduplication without another processor call.",
+          "Two active and ten queued jobs saturate the owner queue; extra submission is refused and cancellation retains terminal state.",
+          "Disconnecting Figma aborts its active lease and cannot publish a late capture.",
+          "Deletion, offline maintenance and persistent processor disable work across restarts; re-enable requires explicit reconciliation."
+        ],
+        "errors": [],
+        "timingsMs": [
+          124.01233299999998, 218.43825, 369.984, 605.8485410000001, 650.4930830000001, 856.235,
+          109.391208, 198.29412500000012, 291.665125, 545.9010839999999, 591.3145000000002,
+          795.4967079999999, 104.93762500000003, 194.17045799999983, 287.3743340000001,
+          523.7186669999999, 610.9596670000001, 767.8842089999998, 128.03708400000005,
+          240.09187500000007, 332.2140000000004, 540.2466669999999, 650.7266659999996,
+          832.8575000000001, 110.56874999999991, 209.66658400000006, 525.1244590000001,
+          618.6462919999999, 709.7570830000004, 710.7670830000006
+        ],
+        "sourceTraffic": "synthetic only",
+        "scriptSha256": "f7d2cdee009b3c0a6a33dd2fedcfae98d3c8b52f5806177cbe3fd2f61d3cc86e",
+        "cost": "Synthetic token pricing only; not provider billing or live cost qualification.",
+        "memory": {
+          "rss": 202522624,
+          "heapTotal": 113819648,
+          "heapUsed": 87746912,
+          "external": 17377929,
+          "arrayBuffers": 13720271
+        },
+        "calls": {
+          "pdf": 12,
+          "figma": 11,
+          "website": 10
+        }
+      }
+    },
+    "node24": {
+      "intake": {
+        "status": "passed",
+        "tests": 202,
+        "log": "release/private-pilot-2026-09-27/intake-node24-final.log",
+        "sha256": "49f7e6a20b497b29f97d1c06ff2f1ccbfe363bb5e9d2b29458919a23094a1d24"
+      },
+      "hostBrowser": {
+        "status": "passed",
+        "node": "v24.19.0",
+        "checks": [
+          "Unauthenticated Studio access is refused; explicit synthetic session opens the same-origin API and static build.",
+          "The production Studio reads and renders a native PDF, locates source evidence, adopts four colors and generates a checked gradient through the host.",
+          "SVG, CSS and assessed JSON download through the real browser; no remote processor is registered and no external request is made."
+        ],
+        "errors": [],
+        "scriptSha256": "c753d77ad168c3f1f472d8dcbdf7d1f6e15276196aee981ea8e56081af285215",
+        "buildHashes": {
+          "/index.html": "b5dde9b09c44ba952660e40c728d2bc669ecc87ecb7fd0b2e4626954b1e9479e",
+          "/LICENSE": "6a6cd7dbd93f5795289a29771445d25bd12115530d5b9fb4175abf3c7b01e6a0",
+          "/pdf-fonts/FoxitDingbats.pfb": "845c752392b6c914fb989c75a08b7792b88f542d2499042ef2889f8c814a16ed",
+          "/pdf-fonts/LiberationSans-Bold.ttf": "361c61b82d575c5c35fd9157fda8b0194bcfcd0d88ea8521a4fb5dd53d33dddc",
+          "/pdf-fonts/FoxitSymbol.pfb": "47967d055530e7357088a08403115425643ec2cdfd6201ba8af0fbd7116c1539",
+          "/pdf-fonts/LiberationSans-BoldItalic.ttf": "a224075ac17495ad0a3af3bc0a419ac0704a8b3fd1095456201fb9b095fc281d",
+          "/pdf-fonts/FoxitFixedBoldItalic.pfb": "8a000945843bd31add06aee63bf9fd41b7578b4f3242a4b7cd46349ad9d24d4d",
+          "/pdf-fonts/FoxitFixedItalic.pfb": "5007faf8320fa1fcc08b8894b356ad976f60b992ba29ee5272578bbdebaf3876",
+          "/pdf-fonts/FoxitSerifItalic.pfb": "610ae0687198045c4db5d1a6650fd5e92536631706382eb8b72e38df578d0ae9",
+          "/pdf-fonts/FoxitSerifBoldItalic.pfb": "a406cac82583bf98175cb62c87ed5e95c45fbb34eece63a10b0a13e793cb2e10",
+          "/pdf-fonts/FoxitSerifBold.pfb": "0bdf4b04e964139818d51eda03d566ba999fc3ba2421b1c6c51f9dc969022e80",
+          "/pdf-fonts/FoxitFixed.pfb": "b6c8fe53f134b8b6d4578cd2d544df4cee9624c4efa8d51a560fb40ea296101b",
+          "/pdf-fonts/LiberationSans-Italic.ttf": "832b4406dbef23628800d3aaad21048534ac84d7e3ad955be83b8172ed8ef512",
+          "/pdf-fonts/FoxitSerif.pfb": "4f57d2b9d884af8f907bf22df6019b52d86cbf6214fdbd02b1ae05472a543f35",
+          "/pdf-fonts/LiberationSans-Regular.ttf": "f8ace1f892b2bd9dc1792ba7f097fa7588f84fed48321480e04de5390828221f",
+          "/pdf-fonts/FoxitFixedBold.pfb": "f1b7159702973f54fc86254ea38bcf3712b2a736eb3a0995751e9f4bb45ad603",
+          "/healthcheck": "43a2a50c8f51e8b1118184d9ce279895c7cdbc66a0f04b9f153f66415fa3dcb7",
+          "/THIRD_PARTY_LICENSES.txt": "95497389b7c8c8f87ccac227d97bb47549f6c5da77a25a878cfd602624f3ae59",
+          "/THIRD_PARTY_NOTICES.md": "0ff6af03ae96b7c3b5433f8317040d1d0e3b68d92e565af929e8063f29639275",
+          "/mark.svg": "b97988e0bfce860215e7b03be59c3ba5586efb8e640ba0bd22088b6a9eb37881",
+          "/APCA_LICENSE.md": "45822a7b8120d9792a1233b602839b66184beca222d0771672d773eafe26a438",
+          "/assets/sourceScalePlacement-Df-DJV7x.js": "189522fd6874049175127d54343ab1d1e7aadd5a9d6ed76f76c7ff89a7e244ac",
+          "/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2": "6894439694946a589d157ece003086960a6a4013d74a813dab7602efdb3d8c09",
+          "/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2": "2317fa4bb293c9c0b110e18315d529235c47a0ddd3338cea3d8c7955e927899e",
+          "/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2": "824f485b5d26e2f2da3c2b236132ece1bc8e4e43373452950bb0e40548b4313f",
+          "/assets/ProductSystemView-DJMb3_3z.css": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764",
+          "/assets/geist-latin-wght-normal-BgDaEnEv.woff2": "19f9c92546aa300c312235e3125af1b81394d8db9a4bc4a425cd5b641d2d54e1",
+          "/assets/download-Bic2EQq1.js": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6",
+          "/assets/authoring-D0a7zd1W.js": "685681f86e9679d12677f3d3f5ef8a3ad64b2748b02e9d8e848d7325590ee807",
+          "/assets/GuidelineWorkspace-CBX9n09I.css": "6d01ca68b30d16036f6a41a451f66119198fafd28ab2d5db701f7af5a6d46f2a",
+          "/assets/colorSystemRecipeV1-CrhhV28k.js": "43576a33dd5a7cea53535261f4522141dd06fb22dd9b90590f7ccbfd1d49c633",
+          "/assets/GuidelineWorkspace-BRPGctDe.js": "276895ad3547fcdc8e3c93578022c0025ca40f848b1f732501a5aa1217ff8965",
+          "/assets/index-k7qUNtEA.css": "c6a9c1c3d28d901d3d3c8b3ce7f514a8cff466d531752d1aedae65b2e0c53e0d",
+          "/assets/index-D-7NSIAl.js": "eb403540f5ad98a328c1463049167a875a68a7e2167fc19b56a1ef39584c68d5",
+          "/assets/pdf.worker.min-BmVo14Nb.mjs": "a33cfe728c584fdba4fcc1fd54bcdc2f9f2f13889ddbb5b2bd1d0f8cbe49b84e",
+          "/assets/ProductSystemView-LCQcGO0M.js": "9dde8acb9be5918ecf1cce87b4bf91c729d5a7d492dd1c798e272b1450428c60",
+          "/assets/sourceProvenanceDisclosureData-CxLfFIWs.js": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361",
+          "/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2": "8fa40e5d248247735eb97a0bd593b8852440430600d6ba01364c31fe0abc1fe1",
+          "/": "b5dde9b09c44ba952660e40c728d2bc669ecc87ecb7fd0b2e4626954b1e9479e"
+        },
+        "browser": "153.0.8010.12"
+      },
+      "mixedHost": {
+        "status": "passed",
+        "node": "v24.19.0",
+        "checks": [
+          "Thirty mixed jobs use all three real processor implementations through startIntakeHost; two owners remain isolated.",
+          "Restart preserves exact results and request deduplication without another processor call.",
+          "Two active and ten queued jobs saturate the owner queue; extra submission is refused and cancellation retains terminal state.",
+          "Disconnecting Figma aborts its active lease and cannot publish a late capture.",
+          "Deletion, offline maintenance and persistent processor disable work across restarts; re-enable requires explicit reconciliation."
+        ],
+        "errors": [],
+        "timingsMs": [
+          125.827292, 223.61616600000002, 398.1295, 658.151875, 706.281708, 879.8149999999999,
+          137.13250000000016, 234.49699999999984, 337.0229999999999, 565.527083, 640.2022919999999,
+          839.7446249999998, 91.8024170000001, 204.73233299999993, 304.7042080000001,
+          551.3513340000002, 599.21225, 773.0561660000001, 138.01712499999985, 212.5798749999999,
+          326.76429199999984, 572.8023329999996, 617.563208, 803.5053330000001, 136.15237499999967,
+          233.85166600000002, 323.32641699999976, 527.709625, 623.1642919999995, 799.5752920000004
+        ],
+        "sourceTraffic": "synthetic only",
+        "scriptSha256": "f7d2cdee009b3c0a6a33dd2fedcfae98d3c8b52f5806177cbe3fd2f61d3cc86e",
+        "cost": "Synthetic token pricing only; not provider billing or live cost qualification.",
+        "memory": {
+          "rss": 253132800,
+          "heapTotal": 213024768,
+          "heapUsed": 66445016,
+          "external": 13712294,
+          "arrayBuffers": 9530074
+        },
+        "calls": {
+          "pdf": 13,
+          "figma": 11,
+          "website": 10
+        }
+      }
+    }
+  },
+  "additionalChecks": {
+    "intakeLint": "passed",
+    "scriptTests": {
+      "status": "passed",
+      "tests": 61
+    },
+    "prdStrictReady": "passed-full-ai-refactor"
+  },
+  "sourceHashes": {
+    "services/guideline-intake/src/host.ts": "7dd9fa6bf1464fd5b2bcb32bc709a049203c69ed4ba33fd432030bd05f6b3b4a",
+    "services/guideline-intake/src/hostState.ts": "3ab0da0cf82d46723e86850a364ec771ab906e6f078ce62d2e1658dcae9dc161",
+    "services/guideline-intake/src/hostConfig.ts": "21f541f9b387ff863fb64a442a8e62b4c0aba22db3f6d2b79993e11dbc668eb5",
+    "services/guideline-intake/src/start.ts": "a38233d24c1c7a2549adf31131c314beea55e7ca0846b026b1541e0202a9e5c7",
+    "services/guideline-intake/src/operator.ts": "dd58c1a1fa65351edde53af6a020bae5e5502c9cf1b7b225312dba77d14fdc3b",
+    "services/guideline-intake/src/operatorCli.ts": "07c4a92925c89be9e705e4a2d57c75db8944f67ef61a73b20085a1bc263dfcdd",
+    "services/guideline-intake/src/operator.test.ts": "096e8e2813d10b49af235fc2a49503e3244d18507748cb91f3ce7e40e3abe57a",
+    "services/guideline-intake/src/store.ts": "648a79cd4c2345371143f1967149819027786e715449b6914ecc647775b76e04",
+    "services/guideline-intake/src/service.ts": "c9980bca9606559a5c24ad4864b356d744a373a31e7c9e9ad01b53b9730a2c19",
+    "services/guideline-intake/src/service.test.ts": "b26bf2d999d42b51f83042ad70fe9d41828a5c8b6351931cd4fc49ffeaceb4d5",
+    "web/scripts/guideline-host-integration.mjs": "f7d2cdee009b3c0a6a33dd2fedcfae98d3c8b52f5806177cbe3fd2f61d3cc86e",
+    "scripts/verify-local.mjs": "af4256469bfba26b4428754ed21fa00ecf472f1bb7c57692002461332230652f"
+  },
+  "pluginGates": [
+    "docs/evidence/gates/2026-09-27T10-36-43Z-24fc5ca/receipt.json",
+    "docs/evidence/gates/2026-09-27T10-40-59Z-24fc5ca/receipt.json"
+  ],
+  "simplify": {
+    "reviews": ["reuse", "quality", "efficiency"],
+    "fixes": [
+      "Shared independent-key predicate between host and operator.",
+      "Await all concurrent mixed-job checks before teardown.",
+      "Bound complete HTTP requests and polling with abort signals."
+    ]
+  },
+  "limits": [
+    "Synthetic transports, authentication and costs; no live provider or OAuth qualification.",
+    "Chromium fixture launcher does not establish OS renderer isolation.",
+    "Thirty mixed jobs comprise ten per processor; not the frozen source evaluation corpus.",
+    "Human design and actual assistive-technology acceptance remain open."
+  ]
+}

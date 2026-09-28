@@ -10,11 +10,12 @@ import hybridConflict from '../../../fixtures/color-builder/generic-source-v2/hy
 import manifest from '../../../fixtures/color-builder/generic-source-v2/manifest.json';
 import styleFirst from '../../../fixtures/color-builder/generic-source-v2/style-first.json';
 import variableFirst from '../../../fixtures/color-builder/generic-source-v2/variable-first.json';
-import { canonicalJson, deterministicContentHash } from '../colorSystemAudit';
+import { canonicalJson, deterministicContentHash } from '../colorSystemHashing';
 import {
   buildColorSystemGenericSourceSnapshotV2,
   parseColorSystemGenericSourceSnapshotV2,
   type ColorSystemGenericSourceSnapshotInputV2,
+  type ColorSystemGenericSourceSnapshotV2,
   type GenericColorCollectionV2,
   type GenericColorValueV2,
   type GenericColorVariableV2,
@@ -42,6 +43,28 @@ function clone<T>(value: T): T {
 
 function sha256(bytes: string | Buffer): string {
   return `sha256:${createHash('sha256').update(bytes).digest('hex')}`;
+}
+
+/** Frozen pre-native identity: only the additional exact-value binding may change this corpus. */
+function legacySourceSnapshotHash(snapshot: ColorSystemGenericSourceSnapshotV2): string {
+  const {
+    schemaVersion,
+    adapterVersion,
+    capturedAt: _capturedAt,
+    currentFileContentHash: _currentFileContentHash,
+    sourceSnapshotHash: _sourceSnapshotHash,
+    exactNativeValueHash: _exactNativeValueHash,
+    enabledLibraryDescriptors,
+    libraryBoundaryNote,
+    ...currentFileContent
+  } = snapshot;
+  return deterministicContentHash({
+    schemaVersion,
+    adapterVersion,
+    currentFileContentHash: deterministicContentHash(currentFileContent),
+    enabledLibraryDescriptors,
+    libraryBoundaryNote,
+  });
 }
 
 function randomSource(seed: number): () => number {
@@ -199,6 +222,7 @@ describe('generic source qualification corpus', () => {
     expect(manifest.families).toHaveLength(7);
     expect(new Set(manifest.families.map(item => item.id)).size).toBe(7);
     expect(manifest.authority).toBe('synthetic-local-engineering-evidence');
+    expect(manifest.corpusVersion).toBe('2026-09-24.1');
 
     for (const family of manifest.families) {
       const fixture = FIXTURES[family.id];
@@ -210,14 +234,41 @@ describe('generic source qualification corpus', () => {
       );
       const bytes = readFileSync(fixturePath);
       expect(sha256(bytes)).toBe(family.fileSha256);
-      expect(buildColorSystemGenericSourceSnapshotV2(fixture).sourceSnapshotHash).toBe(
-        family.sourceSnapshotHash
-      );
+      const snapshot = buildColorSystemGenericSourceSnapshotV2(fixture);
+      expect(snapshot.sourceSnapshotHash).toBe(family.sourceSnapshotHash);
+      expect(legacySourceSnapshotHash(snapshot)).toBe(family.legacySourceSnapshotHash);
+      expect(snapshot.exactNativeValueHash ?? null).toBe(family.exactNativeValueHash);
     }
+
+    const byteCollection = collection('byte-native-free', 2);
+    const byteVariable = literalVariable('byte-native-free', byteCollection, () => 0);
+    byteVariable.valuesByMode = byteVariable.valuesByMode.map((mode, index) => {
+      const value: GenericColorValueV2 = {
+        colorSpace: 'srgb',
+        components: [51 / 255, 102 / 255, 204 / 255],
+        alpha: index === 0 ? 1 : 0.5,
+      };
+      return { ...mode, rawValue: { kind: 'color', value }, resolvedValue: value };
+    });
+    const byteSnapshot = buildColorSystemGenericSourceSnapshotV2(
+      baseInput('byte-native-free', {
+        collections: [byteCollection],
+        variables: [byteVariable],
+        evidence: [evidence('byte-native-free')],
+      })
+    );
+    expect(byteSnapshot.exactNativeValueHash).toBeUndefined();
+    expect(byteSnapshot.sourceSnapshotHash).toBe(legacySourceSnapshotHash(byteSnapshot));
   });
 
   it('runs a seeded 1,000-case valid/invalid mode, alias, paint, order, permutation, and mutation matrix', () => {
     const next = randomSource(PROPERTY_SEED);
+    const legacyReceipts = new Map<string, string>();
+    const buildSnapshot = (input: ColorSystemGenericSourceSnapshotInputV2) => {
+      const snapshot = buildColorSystemGenericSourceSnapshotV2(input);
+      legacyReceipts.set(snapshot.sourceSnapshotHash, legacySourceSnapshotHash(snapshot));
+      return snapshot;
+    };
     const outcomes: Array<{
       caseId: string;
       category: string;
@@ -233,7 +284,7 @@ describe('generic source qualification corpus', () => {
       const resourceEvidence = evidence(id);
 
       if (category === 0) {
-        const snapshot = buildColorSystemGenericSourceSnapshotV2(
+        const snapshot = buildSnapshot(
           baseInput(id, {
             collections: [sourceCollection],
             variables: [literal],
@@ -267,7 +318,7 @@ describe('generic source qualification corpus', () => {
           })),
           evidenceIds: [aliasEvidence.evidenceId],
         };
-        const snapshot = buildColorSystemGenericSourceSnapshotV2(
+        const snapshot = buildSnapshot(
           baseInput(id, {
             collections: [sourceCollection],
             variables: [alias, literal],
@@ -330,7 +381,7 @@ describe('generic source qualification corpus', () => {
         const value = color(next);
         value.alpha = 1;
         const style = eligibleStyle(id, value);
-        const snapshot = buildColorSystemGenericSourceSnapshotV2(
+        const snapshot = buildSnapshot(
           baseInput(id, { paintStyles: [style], evidence: [resourceEvidence] })
         );
         outcomes.push({
@@ -379,7 +430,7 @@ describe('generic source qualification corpus', () => {
             locator: entry.entryId,
           })),
         ];
-        const snapshot = buildColorSystemGenericSourceSnapshotV2(
+        const snapshot = buildSnapshot(
           baseInput(id, { paletteStructures: [sourcePalette], evidence: paletteEvidence })
         );
         outcomes.push({
@@ -429,8 +480,8 @@ describe('generic source qualification corpus', () => {
         permuted.variables.forEach(item => {
           item.valuesByMode = [...item.valuesByMode].reverse();
         });
-        const first = buildColorSystemGenericSourceSnapshotV2(firstInput);
-        const secondSnapshot = buildColorSystemGenericSourceSnapshotV2(permuted);
+        const first = buildSnapshot(firstInput);
+        const secondSnapshot = buildSnapshot(permuted);
         if (canonicalJson(first) !== canonicalJson(secondSnapshot)) {
           throw new Error(`Property ${id} changed under non-semantic permutation.`);
         }
@@ -443,7 +494,7 @@ describe('generic source qualification corpus', () => {
         continue;
       }
 
-      const snapshot = buildColorSystemGenericSourceSnapshotV2(
+      const snapshot = buildSnapshot(
         baseInput(id, {
           collections: [sourceCollection],
           variables: [literal],
@@ -476,8 +527,23 @@ describe('generic source qualification corpus', () => {
     expect(outcomes).toHaveLength(PROPERTY_CASE_COUNT);
     expect(outcomes.filter(item => item.outcome === 'accepted')).toHaveLength(500);
     expect(outcomes.filter(item => item.outcome === 'rejected')).toHaveLength(500);
+    expect(manifest.propertyMatrix).toMatchObject({
+      seed: PROPERTY_SEED,
+      caseCount: PROPERTY_CASE_COUNT,
+      accepted: 500,
+      rejected: 500,
+    });
     expect(deterministicContentHash({ seed: PROPERTY_SEED, outcomes })).toBe(
-      'sha256:2c9aa8ab42c124eab2e761071ebd901f3e756d82a5aee4e572e8b7283eced503'
+      manifest.propertyMatrix.outcomeFingerprint
     );
+    expect(
+      deterministicContentHash({
+        seed: PROPERTY_SEED,
+        outcomes: outcomes.map(item => ({
+          ...item,
+          receipt: item.outcome === 'accepted' ? legacyReceipts.get(item.receipt) : item.receipt,
+        })),
+      })
+    ).toBe(manifest.propertyMatrix.legacyOutcomeFingerprint);
   });
 });

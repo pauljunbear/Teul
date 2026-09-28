@@ -1,0 +1,37 @@
+.guideline-statement-group {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.guideline-statement-group blockquote {
+  margin: 0 0 8px;
+  white-space: pre-wrap;
+  max-height: 220px;
+  overflow: auto;
+}
+.guideline-statement-group > label {
+  display: block;
+}
+.guideline-statement-context {
+  margin-top: 12px;
+  padding-left: 12px;
+  border-left: 2px solid var(--border);
+}
+.guideline-statement-context button {
+  display: block;
+  text-align: left;
+  padding: 5px 0;
+  cursor: pointer;
+}
+.guideline-statement-context button[aria-current='true'] {
+  font-weight: 600;
+}
+.guideline-statement-batch {
+  margin-top: 12px;
+}
+.guideline-statement-batch button {
+  white-space: normal;
+  height: auto;
+  min-height: 40px;
+}

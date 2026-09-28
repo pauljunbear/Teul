@@ -15,11 +15,8 @@ const {
 } = require('../src/backend/colorSystemGenericSourceInventoryV2.ts');
 
 const ROOT = path.resolve(__dirname, '..');
-const RECEIPT_PATH = path.join(
-  ROOT,
-  'release',
-  'color-system-generic-source-benchmark-v2.json'
-);
+const requestedReceiptPath = process.env.TEUL_BENCHMARK_RECEIPT_PATH?.trim();
+const RECEIPT_PATH = requestedReceiptPath ? path.resolve(ROOT, requestedReceiptPath) : null;
 const BENCHMARK_VERSION = 'teul.generic-source-benchmark/v2.0.0';
 const RUN_COUNT = 20;
 const NORMAL_NODE_COUNT = 10_000;
@@ -132,25 +129,26 @@ function createBenchmarkHost({ nodeCount, variableCount, styleCount, sparseVaria
     defaultModeId: 'mode-default',
     modes: [{ modeId: 'mode-default', name: 'Default' }],
   };
-  const variables = sparseVariableCount > 0
-    ? new Array(sparseVariableCount)
-    : Array.from({ length: variableCount }, (_, index) => ({
-        id: `variable-${index}`,
-        key: `variable-key-${index}`,
-        name: `Color/${index}`,
-        description: '',
-        resolvedType: 'COLOR',
-        variableCollectionId: collection.id,
-        scopes: ['ALL_FILLS'],
-        valuesByMode: {
-          'mode-default': {
-            r: (index % 251) / 250,
-            g: (index % 127) / 126,
-            b: (index % 61) / 60,
-            a: 1,
+  const variables =
+    sparseVariableCount > 0
+      ? new Array(sparseVariableCount)
+      : Array.from({ length: variableCount }, (_, index) => ({
+          id: `variable-${index}`,
+          key: `variable-key-${index}`,
+          name: `Color/${index}`,
+          description: '',
+          resolvedType: 'COLOR',
+          variableCollectionId: collection.id,
+          scopes: ['ALL_FILLS'],
+          valuesByMode: {
+            'mode-default': {
+              r: (index % 251) / 250,
+              g: (index % 127) / 126,
+              b: (index % 61) / 60,
+              a: 1,
+            },
           },
-        },
-      }));
+        }));
   const styles = Array.from({ length: styleCount }, (_, index) => ({
     id: `style-${index}`,
     key: `style-key-${index}`,
@@ -163,7 +161,7 @@ function createBenchmarkHost({ nodeCount, variableCount, styleCount, sparseVaria
   const getLocalVariableCollectionsAsync = async () =>
     sparseVariableCount > 0 || variableCount > 0 ? [collection] : [];
   const getVariableByIdAsync = async id =>
-    sparseVariableCount > 0 ? null : variables.find(variable => variable.id === id) ?? null;
+    sparseVariableCount > 0 ? null : (variables.find(variable => variable.id === id) ?? null);
 
   class PrototypeBackedBenchmarkHost {
     constructor() {
@@ -255,9 +253,7 @@ async function runOnce(instrumentation) {
     status: result.status,
     durationMs,
     scannedNodeCount: result.snapshot?.scannedNodeCount ?? 0,
-    snapshotBytes: result.snapshot
-      ? Buffer.byteLength(JSON.stringify(result.snapshot), 'utf8')
-      : 0,
+    snapshotBytes: result.snapshot ? Buffer.byteLength(JSON.stringify(result.snapshot), 'utf8') : 0,
     sourceSnapshotHash: result.snapshot?.sourceSnapshotHash ?? null,
     message: result.message,
     ...instrument,
@@ -294,7 +290,9 @@ function implementationHash() {
   ];
   return sha256(
     files
-      .map(relativePath => `${relativePath}\n${fs.readFileSync(path.join(ROOT, relativePath), 'utf8')}`)
+      .map(
+        relativePath => `${relativePath}\n${fs.readFileSync(path.join(ROOT, relativePath), 'utf8')}`
+      )
       .join('\n')
   );
 }
@@ -347,8 +345,7 @@ async function main() {
     largeReadyOrCapacity:
       largeResults.statuses.ready === RUN_COUNT || largeResults.statuses.capacity === RUN_COUNT,
     largeP95: largeResults.p95Ms <= LARGE_P95_LIMIT_MS,
-    cancellation:
-      cancelled.status === 'cancelled' && postCancelVisits <= MAX_POST_CANCEL_VISITS,
+    cancellation: cancelled.status === 'cancelled' && postCancelVisits <= MAX_POST_CANCEL_VISITS,
     retry: retry.status === 'ready' && retry.scannedNodeCount === LARGE_NODE_COUNT,
     resourceCapacity: capacityResult.status === 'capacity',
     zeroMutation:
@@ -427,12 +424,17 @@ async function main() {
     gates,
   };
 
-  fs.mkdirSync(path.dirname(RECEIPT_PATH), { recursive: true });
-  fs.writeFileSync(RECEIPT_PATH, `${JSON.stringify(receipt, null, 2)}\n`, 'utf8');
+  if (RECEIPT_PATH) {
+    fs.mkdirSync(path.dirname(RECEIPT_PATH), { recursive: true });
+    fs.writeFileSync(RECEIPT_PATH, `${JSON.stringify(receipt, null, 2)}\n`, 'utf8');
+  }
   process.stdout.write(
     `${pass ? 'PASS' : 'FAIL'} ${BENCHMARK_VERSION}\n` +
       `10k+2k+500 p95 ${normalResults.p95Ms} ms; 100k p95 ${largeResults.p95Ms} ms; ` +
-      `cancel additional visits ${postCancelVisits}; receipt ${path.relative(ROOT, RECEIPT_PATH)}\n`
+      `cancel additional visits ${postCancelVisits}; ` +
+      (RECEIPT_PATH
+        ? `receipt ${path.relative(ROOT, RECEIPT_PATH)}\n`
+        : 'receipt not written (set TEUL_BENCHMARK_RECEIPT_PATH to persist one)\n')
   );
   if (!pass) process.exitCode = 1;
 }

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Harbor synthetic color guideline</title>
+    <style>
+      body {
+        margin: 24px;
+        font: 16px sans-serif;
+        background: #f4efe6;
+        color: #182e34;
+      }
+      #guideline {
+        --ocean: #1b7c86;
+        --sand: #ecbf74;
+        --paper: #f4efe6;
+        --ink: #182e34;
+      }
+      .swatches {
+        display: flex;
+        gap: 16px;
+      }
+      .swatch {
+        width: 120px;
+        height: 80px;
+      }
+      #ocean {
+        background: var(--ocean);
+      }
+      #sand {
+        background: var(--sand);
+      }
+      #paper {
+        background: var(--paper);
+      }
+      #ink {
+        background: var(--ink);
+      }
+    </style>
+  </head>
+  <body>
+    <main id="guideline">
+      <h1>Harbor color guidelines</h1>
+      <p>Synthetic technical fixture. Not a real brand.</p>
+      <div class="swatches">
+        <div>
+          <div class="swatch" id="ocean"></div>
+          <p>Ocean</p>
+        </div>
+        <div>
+          <div class="swatch" id="sand"></div>
+          <p>Sand</p>
+        </div>
+        <div>
+          <div class="swatch" id="paper"></div>
+          <p>Paper</p>
+        </div>
+        <div>
+          <div class="swatch" id="ink"></div>
+          <p>Ink</p>
+        </div>
+      </div>
+      <p>Ocean and Sand are equal accent families.</p>
+      <p>Paper is the light background. Ink is the text color.</p>
+      <p>Do not use Ocean and Sand together for text and background.</p>
+      <p>Do not use gradients in product controls.</p>
+      <p>Gradients between existing colors may be used in brand artwork.</p>
+      <p>New supporting colors are proposals; keep existing values unchanged.</p>
+    </main>
+    <aside style="background: #ad1234">Unselected source region</aside>
+  </body>
+</html>

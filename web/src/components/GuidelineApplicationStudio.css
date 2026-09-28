@@ -1,0 +1,111 @@
+.guideline-application fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.guideline-application-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+.guideline-application-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 13px;
+  min-width: 0;
+}
+.guideline-application-controls select {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 9px;
+  background: var(--background);
+  color: var(--foreground);
+}
+.guideline-paint-control > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.guideline-paint-control i {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+.guideline-role-controls {
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.guideline-state-overrides {
+  margin: 16px 0;
+  font-size: 13px;
+}
+.guideline-state-overrides summary {
+  cursor: pointer;
+}
+.guideline-open-application {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 100%;
+  font-size: 12px;
+}
+.guideline-open-application input {
+  max-width: 100%;
+}
+.guideline-application-boards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 310px), 1fr));
+  gap: 20px;
+  margin-top: 24px;
+}
+.guideline-application-boards article {
+  min-width: 0;
+}
+.guideline-application-boards svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+}
+.guideline-board-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+.guideline-board-heading h3 {
+  text-transform: capitalize;
+  font-size: 13px;
+  color: var(--foreground);
+}
+.guideline-application-boards details {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+  margin: 12px 0;
+}
+.guideline-application-boards ul {
+  padding-left: 16px;
+}
+.guideline-application-boards button {
+  margin-top: 12px;
+}
+@media (max-width: 520px) {
+  .guideline-application-controls {
+    grid-template-columns: 1fr;
+  }
+}
+
+.guideline-application-boards[data-kind='brand'] {
+  max-width: 720px;
+}

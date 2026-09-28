@@ -11,7 +11,11 @@ export default [
     ignores: ['dist/', 'node_modules/', '*.js', '*.d.ts', 'eslint.config.mjs'],
   },
   {
-    files: ['src/**/*.{ts,tsx}'],
+    files: [
+      'src/**/*.{ts,tsx}',
+      'services/guideline-intake/src/**/*.ts',
+      'scripts/experiments/gradient-fidelity/**/*.ts',
+    ],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -80,6 +84,19 @@ export default [
       'prefer-const': 'error',
       'no-var': 'error',
       'no-undef': 'off', // TypeScript handles this
+    },
+  },
+  {
+    // These three components intentionally synchronize draft, reset, tag, and
+    // focus state with external dialog inputs. Keep the exception narrow until
+    // their lifecycle is redesigned around keyed component state.
+    files: [
+      'src/components/ColorSystemGenericPlanReviewV2.tsx',
+      'src/components/ColorSystemModal.tsx',
+      'src/components/SaveGridModal.tsx',
+    ],
+    rules: {
+      'react-hooks/set-state-in-effect': 'off',
     },
   },
   prettierConfig,

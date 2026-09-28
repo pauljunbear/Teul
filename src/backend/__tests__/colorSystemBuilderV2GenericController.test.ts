@@ -1,11 +1,16 @@
 import { describe, expect, it, vi } from 'vitest';
-import { canonicalJson, deterministicContentHash } from '../../lib/colorSystemAudit';
+import type { ColorSystemBrandTerritoryRuleV1 } from '../../lib/colorSystemBrandConstraintsV1';
+import { canonicalJson, deterministicContentHash } from '../../lib/colorSystemHashing';
 import { validateColorSystemBuilderV2PluginMessage } from '../../lib/colorSystemBuilderV2MessageValidation';
 import {
   buildColorSystemGenericBuilderOrchestratorV2,
   buildColorSystemGenericBuilderOrchestratorV2Input,
 } from '../../lib/colorSystemBuilderOrchestratorV2';
-import { COLOR_SYSTEM_GENERIC_MAX_DISPLAYED_PLAN_JSON_V2 } from '../../lib/colorSystemGenericIntentPolicyV2';
+import {
+  COLOR_SYSTEM_GENERIC_MAX_DISPLAYED_PLAN_JSON_V2,
+  buildColorSystemGenericAgentAdoptionV1,
+  buildColorSystemGenericIntentProposalV2,
+} from '../../lib/colorSystemGenericIntentPolicyV2';
 import { COLOR_SYSTEM_GENERIC_SOURCE_TEXT_MAX_LENGTH_V2 } from '../../lib/colorSystemGenericLimitsV2';
 import {
   buildColorSystemGenericSourceSnapshotV2,
@@ -24,6 +29,7 @@ import type {
 import {
   createColorSystemBuilderV2Controller,
   type BuildColorSystemGenericOrchestratorV2Input,
+  exportColorSystemTokensWithOwnerSpotColorsV2, // p4-DE
 } from '../colorSystemBuilderV2Controller';
 import type { ColorSystemGenericSourceInventoryV2Result } from '../colorSystemGenericSourceInventoryV2';
 import type {
@@ -33,6 +39,21 @@ import type {
 } from '../colorSystemResourceRendererV2';
 
 const channel = (value: number): number => value / 255;
+
+const importedRule: ColorSystemBrandTerritoryRuleV1 = {
+  id: 'working-accent-limit',
+  label: 'Working limit for new accents',
+  kind: 'brand-territory',
+  effect: 'exclude',
+  scope: { kind: 'generated-families', prominence: ['accent'], modes: 'all', jobs: 'all' },
+  bounds: {
+    hueRanges: [{ minimum: 300, maximum: 310 }],
+    chroma: { minimum: 0.3, maximum: 0.4 },
+    lightness: { minimum: 0.9, maximum: 1 },
+  },
+  origin: 'owner-authored',
+  evidenceRefs: ['brief:synthetic-working-limit'],
+};
 
 function color(red: number, green: number, blue: number): GenericColorValueV2 {
   return {
@@ -423,6 +444,138 @@ async function analyzeReviewable(state: ReturnType<typeof setup>) {
 }
 
 describe('ColorSystemBuilderV2Controller generic source flow', () => {
+  it('does not create a native session or render from a valid local agent adoption', async () => {
+    const state = setup();
+    await analyzeReviewable(state);
+    const proposal = buildColorSystemGenericIntentProposalV2(state.source);
+    const plan = { sections: proposal.sections };
+    const decision = buildColorSystemGenericAgentAdoptionV1(state.source, proposal, {
+      adoption: {
+        version: 'teul-agent-plan-adoption/v1',
+        actor: { kind: 'agent', ref: 'agent:local' },
+        authorizationRef: 'task:local-review',
+        stage: 'generation-review-export',
+        ownerAcceptance: false,
+        creationAuthorized: false,
+      },
+      displayedSections: proposal.sections,
+      displayedPlanJson: canonicalJson(plan),
+      displayedPlanHash: deterministicContentHash(plan),
+      sectionDecisions: proposal.sections.map(section => ({
+        role: section.role,
+        order: section.order,
+        disposition: section.disposition,
+        jobs: section.jobs,
+        sourceRefIds: section.sourceRefIds,
+        evidenceIds: section.evidenceIds,
+        status: 'agent-adopted',
+      })),
+      editedRoles: [],
+      acknowledgedGapIds: [
+        ...proposal.unsupported,
+        ...proposal.contradictions,
+        ...proposal.insufficiencies,
+      ].map(gap => gap.gapId),
+      adoptedAt: '2026-08-21T14:00:00.000Z',
+    });
+    expect(state.controller.getSessionCount()).toBe(0);
+    const result = await state.controller.handleCreate(
+      createMessage(decision.confirmationHash, 'secondary-close-harmony')
+    );
+    expect(result.success).toBe(false);
+    expect(result.success ? '' : result.error).toContain('session is missing');
+    expect(state.render).not.toHaveBeenCalled();
+  });
+
+  it.each(['accepted', 'rejected'] as const)(
+    'binds an imported rule to the fresh source and carries the explicit %s decision into generation',
+    async status => {
+      const state = setup();
+      const plan = await state.controller.handleAnalyzeGeneric({
+        ...ANALYZE,
+        brandConstraintRules: [importedRule],
+      });
+      if (!plan.proposal || !plan.analysisId) throw new Error('Expected a reviewable plan.');
+      const constraints = plan.proposal.reviewedBrandConstraints;
+      expect(constraints).toMatchObject({
+        sourceSnapshotHash: state.source.sourceSnapshotHash,
+        decisions: [],
+        rules: [{ id: importedRule.id, origin: 'owner-authored' }],
+      });
+      if (!constraints) throw new Error('Missing imported rule fragment.');
+      expect(state.orchestrateGeneric).not.toHaveBeenCalled();
+      const confirmation = confirmationMessage(
+        plan as Extract<ColorSystemGenericV2PlanResultMessage, { proposal: object }>
+      );
+      confirmation.draft.brandRuleDecisions = {
+        fragmentHash: constraints.fragmentHash,
+        decisions: [{ ruleId: importedRule.id, status }],
+      };
+      const result = await state.controller.handleConfirmGeneric(confirmation);
+      if (!result.success) throw new Error(result.error);
+
+      expect(result.receipt.reviewedBrandConstraints).toMatchObject({
+        sourceSnapshotHash: state.source.sourceSnapshotHash,
+        rules: [{ id: importedRule.id, origin: 'owner-authored' }],
+        decisions: [
+          {
+            ruleId: importedRule.id,
+            status,
+            actor: { kind: 'user', ref: 'local-plugin-user' },
+            authorityRef: confirmation.requestId,
+          },
+        ],
+      });
+      expect(
+        state.buildGenericInput.mock.calls[0]?.[0].confirmation.reviewedBrandConstraints
+      ).toEqual(result.receipt.reviewedBrandConstraints);
+      expect(validateColorSystemBuilderV2PluginMessage(result).valid).toBe(true);
+      expect(state.render).not.toHaveBeenCalled();
+    }
+  );
+
+  it.each(['omitted', 'undecided', 'altered-hash', 'unknown-rule', 'duplicate-rule'] as const)(
+    'rejects %s imported rule decisions before orchestration',
+    async fault => {
+      const state = setup();
+      const plan = await state.controller.handleAnalyzeGeneric({
+        ...ANALYZE,
+        brandConstraintRules: [importedRule],
+      });
+      if (!plan.proposal || !plan.analysisId || !plan.proposal.reviewedBrandConstraints) {
+        throw new Error('Expected a plan with imported rules.');
+      }
+      const confirmation = confirmationMessage(
+        plan as Extract<ColorSystemGenericV2PlanResultMessage, { proposal: object }>
+      );
+      const decision = { ruleId: importedRule.id, status: 'accepted' as const };
+      if (fault !== 'omitted') {
+        confirmation.draft.brandRuleDecisions = {
+          fragmentHash:
+            fault === 'altered-hash'
+              ? deterministicContentHash('different rules')
+              : plan.proposal.reviewedBrandConstraints.fragmentHash,
+          decisions:
+            fault === 'undecided'
+              ? []
+              : fault === 'unknown-rule'
+                ? [{ ...decision, ruleId: 'injected-rule' }]
+                : fault === 'duplicate-rule'
+                  ? [decision, decision]
+                  : [decision],
+        };
+      }
+      const result = await state.controller.handleConfirmGeneric(confirmation);
+      expect(result.success).toBe(false);
+      expect(result.success ? '' : result.error).toContain(
+        'every unchanged displayed brand rule exactly once'
+      );
+      expect(state.buildGenericInput).not.toHaveBeenCalled();
+      expect(state.orchestrateGeneric).not.toHaveBeenCalled();
+      expect(state.render).not.toHaveBeenCalled();
+    }
+  );
+
   it('keeps Analyze read-only and returns a five-section evidence/plan review', async () => {
     const state = setup();
 
@@ -442,6 +595,9 @@ describe('ColorSystemBuilderV2Controller generic source flow', () => {
       decision: 'propose',
       allowedDecisions: ['propose', 'exclude'],
     });
+    // p5-A: each section states how many recorded colors a Replace would not carry.
+    expect(result.proposal.sections[0].recordedColorCount).toBeGreaterThanOrEqual(1);
+    expect(result.proposal.sections[1].recordedColorCount).toBe(0);
     expect(result.proposal.gaps.every(gap => gap.blocking === false)).toBe(true);
     expect(state.inventoryGenericSource).toHaveBeenCalledTimes(1);
     expect(state.buildGenericInput).not.toHaveBeenCalled();
@@ -983,4 +1139,121 @@ describe('ColorSystemBuilderV2Controller generic source flow', () => {
     expect(state.buildGenericInput).not.toHaveBeenCalled();
     expect(state.render).not.toHaveBeenCalled();
   });
+
+  // p4-DE: owner-supplied spot colors ride the Create request into the renderer and the receipt.
+  it('dates the owner’s spot colors by the authorization, hands them to the renderer, and echoes the descriptions written', async () => {
+    let seen: RenderColorSystemResourceBlueprintV2Options | null = null;
+    let rendered: ColorSystemResourceBlueprintV2 | null = null;
+    const state = setup({
+      render: async (_host, blueprint, renderOptions) => {
+        seen = renderOptions;
+        rendered = blueprint;
+        return { ...createdReceipt(blueprint, renderOptions), spotDescriptionsWritten: 2 };
+      },
+    });
+    const plan = await analyzeReviewable(state);
+    const confirmation = await state.controller.handleConfirmGeneric(confirmationMessage(plan));
+    if (!confirmation.success) throw new Error(confirmation.error);
+    const review = confirmation.reviews.find(
+      item => item.directionId === confirmation.recommendedDirectionId
+    );
+    const family = review?.brandSurfaces?.families.find(item => item.surfaces.includes('print'));
+    if (!family) throw new Error('No family in the recommended direction reaches print.');
+
+    const created = await state.controller.handleCreate({
+      ...createMessage(confirmation.sessionId, confirmation.recommendedDirectionId),
+      ownerSpotColors: {
+        [family.id]: {
+          system: 'other',
+          name: 'Sample spot 01',
+          finish: 'uncoated',
+          source: 'owner-supplied',
+        },
+      },
+    });
+
+    // The renderer receives the shape it writes, dated by now() in UTC, without the wire's `source`.
+    expect(seen).not.toBeNull();
+    expect(seen!.ownerSpotColors).toEqual({
+      suppliedOn: '2026-08-21',
+      byFamilyId: { [family.id]: { system: 'other', name: 'Sample spot 01', finish: 'uncoated' } },
+    });
+    expect(created).toMatchObject({
+      success: true,
+      action: 'created',
+      ownerSpotColors: { supplied: 1, descriptionsWritten: 2 },
+    });
+    expect(validateColorSystemBuilderV2PluginMessage(created).valid).toBe(true);
+    expect(state.posts[state.posts.length - 1]).toEqual(created);
+
+    // Without spot colors neither the renderer options nor the receipt mention them.
+    const plain = setup();
+    const plainPlan = await analyzeReviewable(plain);
+    const plainConfirmation = await plain.controller.handleConfirmGeneric(
+      confirmationMessage(plainPlan)
+    );
+    if (!plainConfirmation.success) throw new Error(plainConfirmation.error);
+    const plainCreated = await plain.controller.handleCreate(
+      createMessage(plainConfirmation.sessionId, plainConfirmation.recommendedDirectionId)
+    );
+    expect('ownerSpotColors' in plain.render.mock.calls[0]![2]).toBe(false);
+    expect('ownerSpotColors' in plainCreated).toBe(false);
+
+    // The export adapter passes the owner's map through to the DTCG export.
+    expect(rendered).not.toBeNull();
+    const exported = exportColorSystemTokensWithOwnerSpotColorsV2(rendered!, {
+      [family.id]: {
+        system: 'other',
+        name: 'Sample spot 01',
+        finish: 'uncoated',
+        source: 'owner-supplied',
+      },
+    });
+    expect(exported.format).toBe('dtcg-2025.10');
+    expect(exported.tokenCount).toBeGreaterThan(0);
+  }, 60_000);
+
+  it('carries the owner’s spot text into the DTCG export', async () => {
+    let rendered: ColorSystemResourceBlueprintV2 | null = null;
+    const state = setup({
+      render: async (_host, blueprint, renderOptions) => {
+        rendered = blueprint;
+        return createdReceipt(blueprint, renderOptions);
+      },
+    });
+    const plan = await analyzeReviewable(state);
+    const confirmation = await state.controller.handleConfirmGeneric(confirmationMessage(plan));
+    if (!confirmation.success) throw new Error(confirmation.error);
+    const review = confirmation.reviews.find(
+      item => item.directionId === confirmation.recommendedDirectionId
+    );
+    const family = review?.brandSurfaces?.families.find(item => item.surfaces.includes('print'));
+    if (!family) throw new Error('No family in the recommended direction reaches print.');
+    await state.controller.handleCreate(
+      createMessage(confirmation.sessionId, confirmation.recommendedDirectionId)
+    );
+    const exported = exportColorSystemTokensWithOwnerSpotColorsV2(rendered!, {
+      [family.id]: {
+        system: 'other',
+        name: 'Sample spot 01',
+        finish: 'uncoated',
+        source: 'owner-supplied',
+      },
+    });
+    expect(exported.dtcgJson).toContain('Sample spot 01');
+    expect(exported.dtcgJson).toContain('owner-supplied');
+    expect(exported.spotColorCount).toBe(1);
+    // A finish of 'none' is the owner saying no finish applies; the export omits it.
+    const noFinish = exportColorSystemTokensWithOwnerSpotColorsV2(rendered!, {
+      [family.id]: {
+        system: 'other',
+        name: 'Sample spot 02',
+        finish: 'none',
+        source: 'owner-supplied',
+      },
+    });
+    expect(noFinish.dtcgJson).toContain('Sample spot 02');
+    expect(noFinish.cssText).toMatch(/spot: Sample spot 02 \(other\); owner-supplied/);
+    expect(exported.dtcgJson).not.toMatch(/pantone/i);
+  }, 60_000);
 });

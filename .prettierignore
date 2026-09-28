@@ -1,2 +1,11 @@
 # Verbatim third-party license; preserve upstream whitespace.
 APCA_LICENSE.md
+
+# Frozen synthetic benchmark input; tests and evidence bind the exact bytes.
+scripts/fixtures/color-system-authoring-cancellation-v1.json
+
+# Deterministic finite label artwork; reproduce with generate-authoring-outlines.py.
+src/data/authoringControlOutlinesV1.json
+
+# Actual browser export from 949f540; preserve the prior codec's exact bytes.
+web/fixtures/guidelines/legacy-project-v3.json

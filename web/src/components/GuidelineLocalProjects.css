@@ -1,0 +1,55 @@
+.guideline-local {
+  margin-block: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+}
+.guideline-local summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.guideline-local ul {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+.guideline-local li {
+  border-top: 1px solid var(--border);
+  padding-block: 0.75rem;
+  display: grid;
+  gap: 0.5rem;
+  overflow-wrap: anywhere;
+}
+.guideline-local small {
+  display: block;
+  color: var(--muted-foreground);
+}
+.guideline-local-actions,
+.guideline-local-save {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.guideline-local-save {
+  margin-block: 0.75rem;
+}
+.guideline-local-save label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+.guideline-local button {
+  white-space: normal;
+  height: auto;
+  min-height: 2.25rem;
+}
+
+.guideline-local-guard {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}

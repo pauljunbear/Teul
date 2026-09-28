@@ -1,3 +1,11 @@
+import {
+  readColorSystemNativeContextV1,
+  findColorSystemNativeNameCollisionsV1,
+  createColorSystemNativeCollectionV1,
+  createColorSystemNativeVariableV1,
+  createColorSystemNativePaintStyleV1,
+  colorSystemNativeSolidPaintV1,
+} from './colorSystemNativeOperationsV1';
 import type {
   ColorSystemHostResourceRefV2,
   ColorSystemRendererAliasVariableRequestV2,
@@ -5,7 +13,6 @@ import type {
   ColorSystemRendererComponentRequestV2,
   ColorSystemRendererFontV2,
   ColorSystemRendererFrameRequestV2,
-  ColorSystemRendererHostContextV2,
   ColorSystemRendererHostInventoryV2,
   ColorSystemRendererHostV2,
   ColorSystemRendererOwnershipMetadataV2,
@@ -13,16 +20,18 @@ import type {
 } from './colorSystemResourceRendererV2';
 import { COLOR_SYSTEM_CREATE_JOURNAL_V2_PAGE_RECIPE_ID } from './colorSystemCreateJournalV2';
 import { COLOR_SYSTEM_FIGMA_HOST_V2_PLUGIN_DATA } from './colorSystemResourceOwnershipV2';
+import { buildColorSystemVisualizationLegendV2 } from '../lib/colorSystemApplicationBlueprintV2';
+import { readColorSystemProductGraphicsRenderingV1 } from '../lib/colorSystemProductGraphicsPlanV1';
+import {
+  COLOR_SYSTEM_PRODUCT_GRAPHICS_DOCUMENTATION_V1,
+  colorSystemProductGraphicsComponentSizeV1,
+  layoutColorSystemProductGraphicsComponentsV1,
+} from '../lib/colorSystemProductGraphicsLayoutV1';
 
 export { COLOR_SYSTEM_FIGMA_HOST_V2_PLUGIN_DATA } from './colorSystemResourceOwnershipV2';
 
 type ManagedResource =
-  | VariableCollection
-  | Variable
-  | PaintStyle
-  | ComponentNode
-  | FrameNode
-  | PageNode;
+  VariableCollection | Variable | PaintStyle | ComponentNode | FrameNode | PageNode;
 type ManagedNode = ComponentNode | FrameNode;
 
 interface ResourceRecord {
@@ -96,13 +105,7 @@ function chromePaint(hex: '#000000' | '#FFFFFF', opacity = 1): SolidPaint {
   };
 }
 
-function exactPaint(rgba: RGBA): SolidPaint {
-  return {
-    type: 'SOLID',
-    color: { r: rgba.r, g: rgba.g, b: rgba.b },
-    ...(rgba.a === 1 ? {} : { opacity: rgba.a }),
-  };
-}
+const exactPaint = colorSystemNativeSolidPaintV1;
 
 function sameBlackOrWhite(paint: Paint): boolean {
   if (paint.type !== 'SOLID') return false;
@@ -129,28 +132,6 @@ function metadataFor(resource: PluginDataMixin): {
     resourceBlueprintHash: resource.getPluginData(keys.resourceBlueprintHash),
     sectionBlueprintHash: resource.getPluginData(keys.sectionBlueprintHash),
   };
-}
-
-function normalizedProfile(root: DocumentNode): ColorSystemRendererHostContextV2['colorProfile'] {
-  let value: unknown;
-  try {
-    value = (root as DocumentNode & { readonly documentColorProfile?: unknown })
-      .documentColorProfile;
-  } catch {
-    return 'unknown';
-  }
-  if (value === 'SRGB') return 'srgb';
-  if (value === 'DISPLAY_P3') return 'display-p3';
-  return 'unknown';
-}
-
-function hostDocumentType(
-  editorType: PluginAPI['editorType']
-): ColorSystemRendererHostContextV2['documentType'] {
-  if (editorType === 'figma') return 'figma-design';
-  if (editorType === 'figjam') return 'figjam';
-  if ((editorType as string) === 'slides') return 'slides';
-  return 'unknown';
 }
 
 function variableScopes(scopes: readonly string[]): VariableScope[] {
@@ -539,85 +520,149 @@ export function createColorSystemFigmaRendererHostV2(
     });
   };
 
+  const prepareProductGraphic = (request: ColorSystemRendererComponentRequestV2) => {
+    const content = objectValue(request.recipe.content);
+    if (!content?.rendering) {
+      throw new Error(
+        'Product graphics require normalized rendering. Rebuild resources before Create.'
+      );
+    }
+    const rendering = readColorSystemProductGraphicsRenderingV1(content.rendering);
+    const mode = content?.mode;
+    if (
+      typeof mode !== 'string' ||
+      !['product-graphic', 'functional-iconography', 'product-ui-surface'].includes(
+        String(content?.job)
+      )
+    ) {
+      throw new Error('Product graphics require an explicit job and mode.');
+    }
+    const bindings = new Map(request.paintBindings.map(binding => [binding.purpose, binding]));
+    const recipes = new Map(
+      request.recipe.paintBindings.map(binding => [binding.purpose, binding])
+    );
+    if (
+      bindings.size !== rendering.uses.length ||
+      bindings.size !== request.paintBindings.length ||
+      recipes.size !== rendering.uses.length ||
+      recipes.size !== request.recipe.paintBindings.length
+    ) {
+      throw new Error('Product graphics require exactly one named binding for each paint use.');
+    }
+    const requireMode = (variableId: string, seen = new Set<string>()): void => {
+      if (seen.has(variableId)) throw new Error('Product graphics contain a Variable alias cycle.');
+      seen.add(variableId);
+      const record = variableRecord(variableId);
+      const entries = record.kind === 'primitive' ? record.request.values : record.request.aliases;
+      const entry = entries.find(value => value.modeName === mode);
+      const collection = collections.get(record.request.collectionId);
+      if (!entry || !collection?.modes.some(value => value.modeId === entry.modeId)) {
+        throw new Error(`Product graphics cannot resolve exact mode ${mode}.`);
+      }
+      if ('targetVariableId' in entry) requireMode(entry.targetVariableId, seen);
+    };
+    for (const use of rendering.uses) {
+      if ((use.ref.kind === 'preserved-source-color' ? use.ref.mode : use.ref.ref.mode) !== mode) {
+        throw new Error('Product graphics paint references must retain the exact declared mode.');
+      }
+      const purpose = `use:${use.id}`;
+      const binding = bindings.get(purpose);
+      const recipe = recipes.get(purpose);
+      if (
+        !binding ||
+        !recipe ||
+        binding.mode !== mode ||
+        recipe.mode !== mode ||
+        variableRecord(binding.variableId).request.recipeId !== recipe.variableRecipeId
+      ) {
+        throw new Error(`Product graphics have a missing or reversed binding for ${purpose}.`);
+      }
+      requireMode(binding.variableId);
+    }
+    if (rendering.nodes.some(item => item.kind === 'vector') && !figmaApi.createVector) {
+      throw new Error('Product graphics require Figma vector geometry support.');
+    }
+    return { rendering, bindings, mode, job: String(content.job) };
+  };
+
   const renderProductGraphicComponent = (
     node: ComponentNode,
     request: ColorSystemRendererComponentRequestV2,
-    font: FontName
+    font: FontName,
+    prepared: ReturnType<typeof prepareProductGraphic>
   ) => {
-    node.resize(2700, 1050);
-    createText(node, request.name, 56, 42, 2588, 32, font);
+    const { rendering, bindings, mode, job } = prepared;
+    const { width, height } = colorSystemProductGraphicsComponentSizeV1(rendering);
+    node.resize(width, height);
+    createText(node, request.name, 56, 42, width - 112, 32, font);
     createText(
       node,
-      'Variable-bound application specimen · not a new palette color',
+      rendering.provenance === 'declared-context'
+        ? 'Source-bound application geometry · not brand approval'
+        : 'Exact assessed pair · no source-backed spatial permission',
       56,
       88,
-      2588,
+      width - 112,
       18,
       font,
       0.62
     );
-    const binding = request.paintBindings[0];
-    if (!binding) return;
-    if (request.name.toLowerCase().includes('icon')) {
-      [0, 1, 2].forEach(index =>
-        createBoundSwatch(
-          node,
-          binding.variableId,
-          binding.mode,
-          420 + index * 610,
-          260,
-          430,
-          430,
-          visibilityBoundary(binding.variableId, binding.mode)
-        )
+    const board = figmaApi.createFrame();
+    node.appendChild(board);
+    board.name = `Graphic / ${rendering.contextId}`;
+    board.x = COLOR_SYSTEM_PRODUCT_GRAPHICS_DOCUMENTATION_V1.padding;
+    board.y = COLOR_SYSTEM_PRODUCT_GRAPHICS_DOCUMENTATION_V1.boardTop;
+    board.resize(rendering.width, rendering.height);
+    board.fills = [];
+    board.strokes = [];
+    board.effects = [];
+    board.opacity = 1;
+    board.blendMode = 'NORMAL';
+    board.layoutMode = 'NONE';
+    board.clipsContent = false;
+    board.setPluginData('teul:graphic:contextId', rendering.contextId);
+    board.setPluginData('teul:graphic:layoutHash', rendering.layoutHash);
+    board.setPluginData('teul:graphic:requirementsHash', rendering.requirementsHash ?? '');
+    board.setPluginData('teul:graphic:provenance', rendering.provenance);
+    board.setPluginData('teul:graphic:pairs', JSON.stringify(rendering.pairs));
+    const uses = new Map(rendering.uses.map(use => [use.id, use]));
+    for (const item of rendering.nodes) {
+      const binding = bindings.get(`use:${item.useId}`)!;
+      const use = uses.get(item.useId)!;
+      const shape =
+        item.kind === 'rectangle' ? figmaApi.createRectangle() : figmaApi.createVector();
+      board.appendChild(shape);
+      shape.name = item.textAlternative ?? `${use.role} / ${item.id}`;
+      if (shape.type === 'VECTOR') {
+        shape.vectorPaths = [{ windingRule: 'EVENODD', data: item.path! }];
+      }
+      shape.resize(item.width, item.height);
+      shape.x = item.x;
+      shape.y = item.y;
+      shape.opacity = 1;
+      shape.blendMode = 'NORMAL';
+      shape.rotation = 0;
+      shape.visible = true;
+      shape.effects = [];
+      shape.strokes = [];
+      shape.cornerRadius = 0;
+      shape.fills = [boundPaint(binding.variableId, mode)];
+      applyExplicitVariableMode(shape, binding.variableId, mode);
+      shape.setPluginData(
+        COLOR_SYSTEM_FIGMA_HOST_V2_PLUGIN_DATA.paintClassification,
+        'system-bound'
       );
-      createChromeRule(node, 555, 395, 160, 18);
-      createChromeRule(node, 555, 455, 160, 18);
-      createChromeRule(node, 555, 515, 100, 18);
-    } else if (request.name.toLowerCase().includes('surface')) {
-      const surface = createBoundSwatch(
-        node,
-        binding.variableId,
-        binding.mode,
-        230,
-        220,
-        2240,
-        590,
-        visibilityBoundary(binding.variableId, binding.mode)
+      shape.setPluginData(
+        COLOR_SYSTEM_FIGMA_HOST_V2_PLUGIN_DATA.sceneRole,
+        'product-graphic-paint'
       );
-      surface.name = 'Product surface specimen';
-      createChromeRule(node, 440, 410, 1120, 24);
-      createChromeRule(node, 440, 480, 760, 18);
-      createChromeRule(node, 440, 610, 420, 96);
-    } else {
-      [
-        [220, 260, 760, 470],
-        [1040, 260, 560, 470],
-        [1660, 260, 820, 220],
-        [1660, 530, 820, 200],
-      ].forEach(([x, y, width, height]) =>
-        createBoundSwatch(
-          node,
-          binding.variableId,
-          binding.mode,
-          x,
-          y,
-          width,
-          height,
-          visibilityBoundary(binding.variableId, binding.mode)
-        )
-      );
+      shape.setPluginData('teul:graphic:nodeId', item.id);
+      shape.setPluginData('teul:graphic:parentId', item.parentId ?? '');
+      shape.setPluginData('teul:graphic:useId', item.useId);
+      shape.setPluginData('teul:graphic:role', use.role);
+      shape.setPluginData('teul:graphic:assessment', use.assessment);
     }
-    createText(
-      node,
-      `${formatColor(binding.variableId, binding.mode)} · ${binding.mode}`,
-      56,
-      940,
-      2588,
-      17,
-      font,
-      0.62
-    );
+    createText(node, `${job} · ${mode}`, 56, rendering.height + 170, width - 112, 17, font, 0.62);
   };
 
   const renderDataVisualizationComponent = (
@@ -626,11 +671,19 @@ export function createColorSystemFigmaRendererHostV2(
     font: FontName
   ) => {
     const content = objectValue(request.recipe.content);
-    const marks = Array.isArray(content?.marks) ? content.marks.map(objectValue) : [];
-    const markLabel = (index: number, fallback: string): string => {
-      const label = marks[index]?.label;
-      return typeof label === 'string' && label.trim().length > 0 ? label : fallback;
-    };
+    const kind = content?.kind;
+    if (kind !== 'categorical' && kind !== 'sequential' && kind !== 'diverging') {
+      throw new Error('Data visualization requires a normalized chart kind.');
+    }
+    const entries = buildColorSystemVisualizationLegendV2(
+      content?.marks,
+      request.paintBindings
+        .filter(binding => binding.purpose.startsWith('mark-'))
+        .map(binding => ({
+          order: /^mark-[1-9]\d*$/.test(binding.purpose) ? Number(binding.purpose.slice(5)) : NaN,
+          paint: binding,
+        }))
+    );
     const nonColorCue =
       typeof content?.nonColorCue === 'string'
         ? content.nonColorCue
@@ -640,7 +693,6 @@ export function createColorSystemFigmaRendererHostV2(
         : 'direct labels';
     const surfaceBinding = request.paintBindings.find(binding => binding.purpose === 'surface');
     const boundaryBinding = request.paintBindings.find(binding => binding.purpose === 'boundary');
-    const bindings = request.paintBindings.filter(binding => binding.purpose.startsWith('mark-'));
     const chartTextColor = surfaceBinding
       ? readableChromeColor(surfaceBinding.variableId, surfaceBinding.mode)
       : '#000000';
@@ -652,6 +704,7 @@ export function createColorSystemFigmaRendererHostV2(
         'system-bound'
       );
     }
+    let contentBottom = 0;
     const chartText = (
       characters: string,
       x: number,
@@ -662,6 +715,7 @@ export function createColorSystemFigmaRendererHostV2(
     ) => {
       const text = createText(node, characters, x, y, width, fontSize, font, opacity);
       setDocumentationTextColor(text, chartTextColor);
+      contentBottom = Math.max(contentBottom, y + text.height);
       return text;
     };
     const chartRule = (x: number, y: number, width: number, height: number) => {
@@ -687,14 +741,13 @@ export function createColorSystemFigmaRendererHostV2(
       0.62
     );
     chartRule(220, 830, 2260, 12);
-    const kind = request.name.toLowerCase();
-    if (kind.includes('sequential')) {
+    if (kind === 'sequential') {
       const endpointLabels =
         Array.isArray(content?.endpointLabels) && content.endpointLabels.length === 2
           ? content.endpointLabels
           : ['Lower', 'Higher'];
-      const width = 2100 / Math.max(bindings.length, 1);
-      bindings.forEach((binding, index) => {
+      const width = 2100 / entries.length;
+      entries.forEach(({ label, paint: binding }, index) => {
         createBoundSwatch(
           node,
           binding.variableId,
@@ -705,25 +758,18 @@ export function createColorSystemFigmaRendererHostV2(
           430,
           visibilityBoundary(binding.variableId, binding.mode)
         );
-        chartText(
-          markLabel(index, `Value ${index + 1}`),
-          300 + index * width,
-          770,
-          width - 18,
-          17,
-          0.65
-        );
+        chartText(label, 300 + index * width, 770, width - 18, 17, 0.65);
       });
       chartText(String(endpointLabels[0]), 300, 885, 300, 18, 0.7);
       chartText(String(endpointLabels[1]), 2100, 885, 300, 18, 0.7);
-    } else if (kind.includes('diverging')) {
+    } else if (kind === 'diverging') {
       const gap = 24;
-      const width = (2100 - Math.max(0, bindings.length - 1) * gap) / Math.max(bindings.length, 1);
+      const width = (2100 - (entries.length - 1) * gap) / entries.length;
       const midpointOrder =
         typeof content?.midpointOrder === 'number'
           ? content.midpointOrder
-          : Math.floor(bindings.length / 2) + 1;
-      bindings.forEach((binding, index) => {
+          : Math.floor(entries.length / 2) + 1;
+      entries.forEach(({ label, paint: binding }, index) => {
         const x = 300 + index * (width + gap);
         const height = index === midpointOrder - 1 ? 270 : 500;
         createBoundSwatch(
@@ -736,24 +782,14 @@ export function createColorSystemFigmaRendererHostV2(
           height,
           visibilityBoundary(binding.variableId, binding.mode)
         );
-        chartText(
-          markLabel(
-            index,
-            index === 0 ? 'Negative' : index === bindings.length - 1 ? 'Positive' : 'Zero'
-          ),
-          x,
-          875,
-          width,
-          17,
-          0.7
-        );
+        chartText(label, x, 875, width, 17, 0.7);
       });
       chartRule(1344, 220, 12, 690);
     } else {
       const touching = content?.adjacency === 'touching';
       const gap = touching ? 0 : 28;
-      const width = (2100 - Math.max(0, bindings.length - 1) * gap) / Math.max(bindings.length, 1);
-      bindings.forEach((binding, index) => {
+      const width = (2100 - (entries.length - 1) * gap) / entries.length;
+      entries.forEach(({ label, paint: binding }, index) => {
         const height = 340 + (index % 3) * 120;
         const x = 300 + index * (width + gap);
         const swatch = createBoundSwatch(
@@ -768,9 +804,34 @@ export function createColorSystemFigmaRendererHostV2(
         );
         swatch.cornerRadius = index % 3 === 0 ? 0 : index % 3 === 1 ? 54 : 240;
         bindCategoricalBoundary(swatch);
-        chartText(markLabel(index, `Category ${index + 1}`), x, 875, width, 17, 0.7);
+        chartText(label, x, 875, width, 17, 0.7);
       });
     }
+    const legendTop = Math.max(950, contentBottom + 32);
+    chartText('Legend', 300, legendTop, 2100, 18);
+    let rowTop = legendTop + 34;
+    let rowBottom = rowTop;
+    entries.forEach(({ order, label, paint: binding }, index) => {
+      const column = index % 3;
+      if (column === 0 && index > 0) rowTop = rowBottom + 18;
+      const x = 300 + column * 700;
+      const swatch = createBoundSwatch(
+        node,
+        binding.variableId,
+        binding.mode,
+        x,
+        rowTop,
+        24,
+        24,
+        visibilityBoundary(binding.variableId, binding.mode)
+      );
+      swatch.name = `Legend / ${order} / ${label}`;
+      if (kind === 'categorical') bindCategoricalBoundary(swatch);
+      const text = chartText(label, x + 36, rowTop, 630, 17);
+      text.name = `Legend label / ${order}`;
+      rowBottom = Math.max(rowBottom, rowTop + 24, text.y + text.height);
+    });
+    node.resize(2700, Math.max(1120, rowBottom + 80));
   };
 
   const renderTypographyComponent = (
@@ -838,45 +899,11 @@ export function createColorSystemFigmaRendererHostV2(
       createdResourceObserver = observer;
     },
     async getContext() {
-      return {
-        documentType: hostDocumentType(figmaApi.editorType),
-        editable: figmaApi.editorType === 'figma' && figmaApi.mode === 'default',
-        colorProfile: normalizedProfile(figmaApi.root),
-        currentFileIdentityHash,
-        capabilities: {
-          colorVariables:
-            typeof figmaApi.variables?.createVariableCollection === 'function' &&
-            typeof figmaApi.variables?.createVariable === 'function',
-          variableAliases: typeof figmaApi.variables?.createVariableAlias === 'function',
-          variableBoundPaintStyles:
-            typeof figmaApi.variables?.setBoundVariableForPaint === 'function' &&
-            typeof figmaApi.createPaintStyle === 'function',
-          components: typeof figmaApi.createComponent === 'function',
-          frames:
-            typeof figmaApi.createFrame === 'function' && typeof figmaApi.createPage === 'function',
-        },
-      };
+      return readColorSystemNativeContextV1(figmaApi, currentFileIdentityHash);
     },
 
     async findNameCollisions(names) {
-      await figmaApi.loadAllPagesAsync();
-      const requested = new Set(names);
-      const collisions = new Set<string>();
-      const compare = (actual: string) => {
-        if (requested.has(actual)) collisions.add(actual);
-        for (const candidate of requested) {
-          if (actual === `${candidate} — Color System`) collisions.add(candidate);
-        }
-      };
-      (await figmaApi.variables.getLocalVariableCollectionsAsync()).forEach(collection =>
-        compare(collection.name)
-      );
-      (await figmaApi.getLocalPaintStylesAsync()).forEach(style => compare(style.name));
-      for (const candidatePage of figmaApi.root.children) {
-        compare(candidatePage.name);
-        candidatePage.findAll().forEach(node => compare(node.name));
-      }
-      return [...collisions].sort();
+      return findColorSystemNativeNameCollisionsV1(figmaApi, names);
     },
 
     async loadFonts(fonts) {
@@ -887,89 +914,75 @@ export function createColorSystemFigmaRendererHostV2(
     },
 
     async createCollection(request): Promise<ColorSystemRendererCollectionResultV2> {
-      const collection = figmaApi.variables.createVariableCollection(request.name);
-      try {
-        outputName = stripCollectionSuffix(request.name);
-        const modes: Record<string, string> = {};
-        request.recipe.modes.forEach((mode, index) => {
-          if (index === 0) {
-            collection.renameMode(collection.defaultModeId, mode);
-            modes[mode] = collection.defaultModeId;
-          } else {
-            modes[mode] = collection.addMode(mode);
-          }
-        });
-        const ref = remember(collection, 'collection', request.recipe.recipeId, request.metadata);
-        collection.setPluginData(
-          COLOR_SYSTEM_FIGMA_HOST_V2_PLUGIN_DATA.collectionRole,
-          request.recipe.role
-        );
-        collections.set(collection.id, collection);
-        return { ref, modeIds: modes };
-      } catch (error) {
-        collection.remove();
-        throw error;
-      }
+      return createColorSystemNativeCollectionV1(
+        figmaApi,
+        request.name,
+        request.recipe.modes.map(mode => ({ id: mode, name: mode })),
+        (collection, modeIds) => {
+          outputName = stripCollectionSuffix(request.name);
+          const ref = remember(collection, 'collection', request.recipe.recipeId, request.metadata);
+          collection.setPluginData(
+            COLOR_SYSTEM_FIGMA_HOST_V2_PLUGIN_DATA.collectionRole,
+            request.recipe.role
+          );
+          collections.set(collection.id, collection);
+          return { ref, modeIds };
+        }
+      );
     },
 
     async createPrimitiveVariable(request) {
       const collection = collections.get(request.collectionId);
       if (!collection) throw new Error(`Unknown Variable collection ${request.collectionId}.`);
-      const variable = figmaApi.variables.createVariable(request.name, collection, 'COLOR');
-      try {
-        variable.description = request.description;
-        variable.scopes = variableScopes(request.scopes);
-        request.values.forEach(entry => variable.setValueForMode(entry.modeId, entry.rgba));
-        const ref = remember(variable, 'variable', request.recipeId, request.metadata);
-        variables.set(variable.id, { kind: 'primitive', variable, request });
-        return ref;
-      } catch (error) {
-        variable.remove();
-        throw error;
-      }
+      return createColorSystemNativeVariableV1(
+        figmaApi,
+        collection,
+        { ...request, scopes: variableScopes(request.scopes) },
+        () => request.values.map(entry => ({ modeId: entry.modeId, value: entry.rgba })),
+        variable => {
+          const ref = remember(variable, 'variable', request.recipeId, request.metadata);
+          variables.set(variable.id, { kind: 'primitive', variable, request });
+          return ref;
+        }
+      );
     },
 
     async createAliasVariable(request) {
       const collection = collections.get(request.collectionId);
       if (!collection) throw new Error(`Unknown Variable collection ${request.collectionId}.`);
-      const variable = figmaApi.variables.createVariable(request.name, collection, 'COLOR');
-      try {
-        variable.description = request.description;
-        variable.scopes = variableScopes(request.scopes);
-        request.aliases.forEach(entry => {
-          const target = variableRecord(entry.targetVariableId).variable;
-          variable.setValueForMode(entry.modeId, figmaApi.variables.createVariableAlias(target));
-        });
-        const ref = remember(variable, 'variable', request.recipeId, request.metadata);
-        variables.set(variable.id, { kind: 'alias', variable, request });
-        return ref;
-      } catch (error) {
-        variable.remove();
-        throw error;
-      }
+      return createColorSystemNativeVariableV1(
+        figmaApi,
+        collection,
+        { ...request, scopes: variableScopes(request.scopes) },
+        () =>
+          request.aliases.map(entry => ({
+            modeId: entry.modeId,
+            value: figmaApi.variables.createVariableAlias(
+              variableRecord(entry.targetVariableId).variable
+            ),
+          })),
+        variable => {
+          const ref = remember(variable, 'variable', request.recipeId, request.metadata);
+          variables.set(variable.id, { kind: 'alias', variable, request });
+          return ref;
+        }
+      );
     },
 
     async createPaintStyle(request) {
       const target = variableRecord(request.variableId);
-      const style = figmaApi.createPaintStyle();
-      try {
-        style.name = request.name;
-        style.description = request.description;
-        style.paints = [
-          figmaApi.variables.setBoundVariableForPaint(
-            exactPaint(exactColor(request.variableId)),
-            'color',
-            target.variable
-          ),
-        ];
-        return remember(style, 'style', request.recipeId, request.metadata);
-      } catch (error) {
-        style.remove();
-        throw error;
-      }
+      return createColorSystemNativePaintStyleV1(
+        figmaApi,
+        request,
+        target.variable,
+        exactColor(request.variableId),
+        style => remember(style, 'style', request.recipeId, request.metadata)
+      );
     },
 
     async createComponent(request) {
+      const graphic =
+        request.recipe.kind === 'product-graphics' ? prepareProductGraphic(request) : null;
       const destination = ensurePage(request.metadata);
       const node = figmaApi.createComponent();
       try {
@@ -994,7 +1007,7 @@ export function createColorSystemFigmaRendererHostV2(
         ) {
           renderFamilyComponent(node, request, font);
         } else if (request.recipe.kind === 'product-graphics') {
-          renderProductGraphicComponent(node, request, font);
+          renderProductGraphicComponent(node, request, font, graphic!);
         } else if (request.recipe.kind === 'data-visualization') {
           renderDataVisualizationComponent(node, request, font);
         } else if (request.recipe.kind === 'typography') {
@@ -1011,6 +1024,32 @@ export function createColorSystemFigmaRendererHostV2(
     },
 
     async createFrame(request) {
+      const componentRecords = request.componentIds
+        .map(componentId => {
+          const componentRecord = components.get(componentId);
+          if (!componentRecord) throw new Error(`Unknown component ${componentId}.`);
+          return componentRecord;
+        })
+        .sort(
+          (left, right) =>
+            contentOrder(left.request.recipe.content) -
+              contentOrder(right.request.recipe.content) ||
+            left.component.name.localeCompare(right.component.name)
+        );
+      const graphicPlacements =
+        request.recipe.role === 'product-graphics'
+          ? layoutColorSystemProductGraphicsComponentsV1({
+              components: componentRecords.map(({ component }) => ({
+                id: component.id,
+                width: component.width,
+                height: component.height,
+              })),
+              frame: request.geometry,
+              palette: request.geometry.palette,
+              rows: request.recipe.presentationContent.section.rows,
+              systemVariableCount: request.systemVariableIds.length,
+            })
+          : null;
       const destination = ensurePage(request.metadata);
       const node = figmaApi.createFrame();
       try {
@@ -1140,18 +1179,6 @@ export function createColorSystemFigmaRendererHostV2(
           cardEndY += cardHeight + palette.rowGap;
         });
 
-        const componentRecords = request.componentIds
-          .map(componentId => {
-            const componentRecord = components.get(componentId);
-            if (!componentRecord) throw new Error(`Unknown component ${componentId}.`);
-            return componentRecord;
-          })
-          .sort(
-            (left, right) =>
-              contentOrder(left.request.recipe.content) -
-                contentOrder(right.request.recipe.content) ||
-              left.component.name.localeCompare(right.component.name)
-          );
         const componentLayout =
           role === 'secondary'
             ? { columns: 4, startY: palette.y, gapX: 92, gapY: 74 }
@@ -1185,10 +1212,12 @@ export function createColorSystemFigmaRendererHostV2(
             const column = index % componentLayout.columns;
             const row = Math.floor(index / componentLayout.columns);
             instance.x =
+              graphicPlacements?.[index].x ??
               palette.x + column * (componentRecord.component.width + componentLayout.gapX);
             instance.y =
+              graphicPlacements?.[index].y ??
               componentLayout.startY +
-              row * (componentRecord.component.height + componentLayout.gapY);
+                row * (componentRecord.component.height + componentLayout.gapY);
           });
         }
 
@@ -1216,7 +1245,7 @@ export function createColorSystemFigmaRendererHostV2(
           node,
           summary,
           palette.x,
-          request.geometry.height - 190,
+          request.geometry.height - COLOR_SYSTEM_PRODUCT_GRAPHICS_DOCUMENTATION_V1.footerTop,
           palette.width * 0.62,
           18,
           font,

@@ -1,0 +1,158 @@
+{
+  "schemaVersion": "teul.pdf-table-evidence-verification.v1",
+  "baselineCommit": "4efff194a21972f3b26be0b0f772893019f613ce",
+  "scope": "Local explicitly labeled integer RGB table recovery, saved evidence validation and Studio import/replay. No corpus accuracy, human acceptance, live-host or beta qualification claim.",
+  "extractionVersion": "teul.pdf-evidence.v2-table-1/pdfjs-6.3.289",
+  "sources": {
+    "web/src/lib/guideline/evidence.ts": "d8aff7410d96a18df4b38889657be6b604e508967a160f2016ab4c0f21fe68ff",
+    "web/src/lib/guideline/evidenceV2.ts": "a1b0627dc9906cc41325417a0aa6ced7497acfe1b1dac8e7aec020d783baa360",
+    "web/src/lib/guideline/pdf.ts": "540e70a999c0b06c806d6dc0d32bb0886ccf99dae43ed3a15e5b45383989d691",
+    "web/src/lib/guideline/pdfV2.ts": "fd58d65cf8117fb3ad3d011b9201a9f7e94f2ef1cfd777d5ddfd400708f6b748",
+    "web/src/lib/guideline/pdfV2.test.ts": "bd758870cce6589b48b4518ce907d8df3394e84bc3b45883c2b581f9f0d46f39",
+    "web/src/lib/guideline/pdfTableEvidence.ts": "06a839cb13d9460ef61896edea7bcb51e322f7b179bb0493af672947a5cc355d",
+    "web/src/lib/guideline/pdfTableEvidence.test.ts": "98ac1a24166e8cf359a2bd15e79a3073894e6d7d3aa5872214128ba4d8edc3ff",
+    "web/scripts/guideline-numeric-smoke.mjs": "57d710837ee74e9ee26c1c43778f27468d5b157430b7c533cfe00459dc294dda",
+    "web/fixtures/guidelines/generate-table.py": "fa6fdc3305db1ca34dab6bdad6a2440c3195637a4b5911c7af5df1fda9ae8988",
+    "web/fixtures/guidelines/harbor-table.pdf": "7bccbd9fb0e504944f33ec54528e1a45463c6cb030726b66c412657b6f96fcf8"
+  },
+  "runs": [
+    {
+      "node": "v22.13.1",
+      "tests": 631,
+      "testFiles": 52,
+      "focusedGate": {
+        "path": "docs/evidence/local-gates/2026-09-26T12-49-53Z-4efff19/receipt.json",
+        "bytes": 27576,
+        "sha256": "540c33dc0e6ce46d3eba2c8886849356ccb74343394ad14d533ca61aa311df5e"
+      },
+      "finalWordingBuildAndBrowserGate": {
+        "path": "docs/evidence/local-gates/2026-09-26T12-51-43Z-4efff19/receipt.json",
+        "bytes": 17276,
+        "sha256": "abd44a9c0d14b0025731f60a670fa5d890e09d9ff7a77d52832f5ba6c17c75ac"
+      },
+      "browser": {
+        "path": "docs/evidence/brand-guideline-import/pdf-table-browser-node22.json",
+        "bytes": 5485,
+        "sha256": "ac716fc3e622dfd0dd5ab7d8869fdd8acb3cdb3ba9d6539240f6889159411a90"
+      },
+      "developmentComparison": {
+        "path": "crane-development/after-table-node22.json",
+        "bytes": 1066,
+        "sha256": "c14d11a1b98fdf983a6cd6511847a5ecbfa8873110cbf8a933566febd6d38aec"
+      },
+      "developmentCapture": {
+        "path": "crane-development/after-table-node22.capture.json",
+        "bytes": 117123,
+        "sha256": "45e76899277bce0fb41594458eb5dae835052977f482d8c7a75f18d6f4bd981f"
+      }
+    },
+    {
+      "node": "v24.19.0",
+      "tests": 631,
+      "testFiles": 52,
+      "focusedGate": {
+        "path": "docs/evidence/local-gates/2026-09-26T12-50-50Z-4efff19/receipt.json",
+        "bytes": 27575,
+        "sha256": "7d6520044f0d2a569c718d0b1a1d35bcadd34e7cdb2fd3ab84d43d804209d6ee"
+      },
+      "finalWordingBuildAndBrowserGate": {
+        "path": "docs/evidence/local-gates/2026-09-26T12-52-01Z-4efff19/receipt.json",
+        "bytes": 17276,
+        "sha256": "b0fe6bc9b3c7167db0bcb94f0cdc9cba279d213f3a31fae2f08021ca23660068"
+      },
+      "browser": {
+        "path": "docs/evidence/brand-guideline-import/pdf-table-browser-node24.json",
+        "bytes": 5485,
+        "sha256": "502837fc3d6f60113aeebb89eaa1646ea8136b35dd2ecd97d89b5eb5fe92f774"
+      },
+      "developmentComparison": {
+        "path": "crane-development/after-table-node24.json",
+        "bytes": 1066,
+        "sha256": "fb9e1938beb47d06c756db69ff0c2cbae56cfba00c011b2b789fc0d1e2e69eb9"
+      },
+      "developmentCapture": {
+        "path": "crane-development/after-table-node24.capture.json",
+        "bytes": 117123,
+        "sha256": "2ff17fbe0c2f8c2ae28e7994699b212afe7eb7581bda28fe0cc209bd267d9442"
+      }
+    }
+  ],
+  "development": {
+    "caseId": "pdf-dev-crane-color",
+    "annotationStatus": "agent-draft-not-reconciled",
+    "baselineCandidate": "f79788896ca9599cb1b96ec6786e10d644ce7001",
+    "counts": {
+      "before": {
+        "hex": 17,
+        "rgb": 0,
+        "distinct": 17
+      },
+      "after": {
+        "hex": 17,
+        "rgb": 17,
+        "distinct": 19
+      }
+    },
+    "captureHash": "sha256:80ba340c8adf76dc70198ff1c5ae091d108e2a831de4f793eb67a26b59804653",
+    "originalCaptureHash": "sha256:6eb31b42935f362a063976b19667df029b57f7aa2ac00e0fda84115c7ca6a3c3",
+    "conflictingChannelPairs": 2,
+    "privateRoot": "/Users/paul.jun/Documents/private-jobs/teul-guideline-evaluation-2026-09-26",
+    "boundInputs": [
+      {
+        "path": "check-crane-table.mjs",
+        "bytes": 3511,
+        "sha256": "3e2bffe0b254ac534e1a3c6fea4d4ff9f18dde56048f61fc5545963f233e6ef5"
+      },
+      {
+        "path": "crane-development/source-annotation.draft.json",
+        "bytes": 9829,
+        "sha256": "8c10ed5d8aed1a98ecb4967dca0c1c6c001c0797e34dd8398615a3d88266acca"
+      },
+      {
+        "path": "crane-development/comparison.json",
+        "bytes": 2819,
+        "sha256": "abbfb78b05defbe9510806d019c6ed1d0a7acec95b4983fd18be00552033f575"
+      },
+      {
+        "path": "crane-v2-capture.json",
+        "bytes": 104832,
+        "sha256": "c188ea0d74155958a15770e8c87848660f768258cbdad821fc497f7771355a6a"
+      }
+    ],
+    "humanReaders": [],
+    "metrics": null,
+    "qualified": false
+  },
+  "fixture": {
+    "regeneration": "byte-exact second generation",
+    "pageRendersInspected": [1, 2, 3],
+    "originalDistributed": false
+  },
+  "reviews": {
+    "reuse": "No material findings.",
+    "quality": "Resolved nonfinite bounds and forged null locator admission across table and adjacent witnesses; exact regression included.",
+    "efficiency": "No material findings; complete-page comparisons bounded at 250,000 inspections."
+  },
+  "retainedFailures": [
+    {
+      "path": "docs/evidence/local-gates/2026-09-26T12-47-23Z-4efff19/receipt.json",
+      "bytes": 27495,
+      "sha256": "69e3003e598988d8f8756067faac9c90694bab8c39cfd57ebe5d72c2d4b8e30c"
+    },
+    {
+      "path": "docs/evidence/local-gates/2026-09-26T12-49-22Z-4efff19/receipt.json",
+      "bytes": 10053,
+      "sha256": "3115079627c2082b927aa4ae8a467d8461f48a6430bcc35394e9b3ebaf348b4b"
+    }
+  ],
+  "verificationNotes": [
+    "The first browser attempt did not expand the existing Coverage disclosure before asserting visibility. The corrected harness uses the actual control.",
+    "The exact forged-locator regression exposed the preexisting adjacent fallback overflow; shared locator validation and finite union checks now reject it.",
+    "The final two-step gates verify page-number wording against the production build on each runtime. The preceding nine-step gates cover the unchanged recovery algorithm, all Studio tests, manual recovery and cross-format extraction."
+  ],
+  "remaining": [
+    "Thirty-case source corpus and independent annotation reconciliation.",
+    "Independent visual evaluation and frozen manual comparison.",
+    "Actual assistive-technology and live service qualification."
+  ]
+}

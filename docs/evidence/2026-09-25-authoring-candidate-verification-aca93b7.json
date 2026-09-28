@@ -1,0 +1,149 @@
+{
+  "version": "teul.authoring-current-engineering.v1",
+  "status": "passed-local-engineering",
+  "productCommit": "aca93b713e2d28585c0559124605d72c00f28f28",
+  "releaseState": "locally-verified-candidate",
+  "trackedFilesUnchangedDuringGates": 594,
+  "releaseGates": [
+    {
+      "path": "docs/evidence/gates/2026-09-25T12-01-59Z-aca93b7/receipt.json",
+      "sha256": "633c63da3ddf5d47749c2b9bb093843671fb6311d5720ad48ddf3186d02099a5",
+      "runtime": {
+        "node": "v22.13.1",
+        "npm": "10.9.2",
+        "platform": "darwin",
+        "arch": "arm64",
+        "commit": "aca93b713e2d28585c0559124605d72c00f28f28",
+        "shortCommit": "aca93b7",
+        "branch": "codex/brand-color-system-authoring",
+        "dirty": false,
+        "packageVersion": "1.0.0"
+      },
+      "stepsPassed": 17
+    },
+    {
+      "path": "docs/evidence/gates/2026-09-25T12-05-37Z-aca93b7/receipt.json",
+      "sha256": "f60cf0089103f082de16a32e4858df8302a45c21d8777595e0a234ede696af96",
+      "runtime": {
+        "node": "v24.19.0",
+        "npm": "11.8.0",
+        "platform": "darwin",
+        "arch": "arm64",
+        "commit": "aca93b713e2d28585c0559124605d72c00f28f28",
+        "shortCommit": "aca93b7",
+        "branch": "codex/brand-color-system-authoring",
+        "dirty": true,
+        "packageVersion": "1.0.0"
+      },
+      "stepsPassed": 17
+    }
+  ],
+  "testsPerRuntime": 2992,
+  "testFiles": 156,
+  "scriptTestsPerRuntime": 48,
+  "fourArtifactsByteIdenticalAcrossRuntimes": true,
+  "artifacts": [
+    {
+      "path": "dist/code.js",
+      "bytes": 236883,
+      "sha256": "9ac3fe34ff9b6f01d904d8cbaa94264580c8474006605f222314b1cf9d45e8bf"
+    },
+    {
+      "path": "dist/ui.html",
+      "bytes": 306972,
+      "sha256": "5870df4d9ee8d323f1e1d147f22aef07f08aa15615f1e3e263dd17380733ae32"
+    },
+    {
+      "path": "figma-candidate/dist/code.js",
+      "bytes": 1571080,
+      "sha256": "ac573434ca7dc37d5fbe18210b12b9c84a2669600619ecfd0cc069200d5d246d"
+    },
+    {
+      "path": "figma-candidate/dist/ui.html",
+      "bytes": 429989,
+      "sha256": "ffef0da3b79354c31a514cfa85ad01b91e11acfedf6e63ae602d03846106ed10"
+    }
+  ],
+  "performance": {
+    "runtime": "v22.13.1",
+    "p95Ms": 1726.062417000001,
+    "medianMs": 1698.859291499998,
+    "maximumCancellationMs": 138.674500000001,
+    "warmRuns": 30,
+    "p95LimitMs": 2000,
+    "cancellationLimitMs": 250,
+    "node24TimingStatus": "not-measured; retained preflight failure from exact source fixture regeneration",
+    "node24Limit": "The original benchmark was pinned on Node 22. Independent Node 24 fixture regeneration changes tiny Math.pow-derived channels and therefore exact source/proposal identities. No review pin, workload or threshold was changed."
+  },
+  "referenceReconstruction": {
+    "runtimes": [
+      "v22.13.1",
+      "v24.19.0"
+    ],
+    "canonicalModels": 4,
+    "numericVariants": 7,
+    "canonicalAssessments": 38,
+    "variantAssessments": 87,
+    "ruleCases": 118,
+    "rules": 82,
+    "assertions": 160,
+    "originalInputsUnchanged": 276,
+    "deterministicFilesIdenticalAcrossRuntimes": 10,
+    "limitations": "Represented source subset only; 107 numeric records, 641 claims, 20 conflicts, 33 unconverted instructions and 28 missing numeric identities remain explicit.",
+    "originalReplayProductCommit": "026ee73b7ee39b1018eec0c1083959d9ad5a9d1a",
+    "currentProductBinding": "Transferred by independent exact engine/dependency/module-closure equality to ACA; not rerun at ACA."
+  },
+  "retainedSevenCases": {
+    "cases": 7,
+    "svgBoards": 19,
+    "negativeChecksPerRuntime": 49,
+    "protectedBindingsUnchanged": 1477,
+    "status": "Both-runtime replay at026ee73; independently transferred to byte-identical ACA engine.",
+    "limitations": "Previously seen cases are not fresh held-outs. Existing scoped numerical policy permits only diagnostic floating-point tails; accepted designs, thresholds, decisions and SVGs remain exact.",
+    "originalReplayProductCommit": "026ee73b7ee39b1018eec0c1083959d9ad5a9d1a"
+  },
+  "evidence": [
+    {
+      "privateLocator": "implementation-baseline/task008-repair6/verification/release-gates-aca93b7/verification-summary.json",
+      "bytes": 20812,
+      "sha256": "e16433e50e650c9aaf156ae968f88222e1e3026c6c3eaf792ac133cfcb799b6c"
+    },
+    {
+      "privateLocator": "implementation-baseline/task008-repair6/verification/release-gates-aca93b7/authoring-performance-node22.json",
+      "bytes": 27805,
+      "sha256": "015ad6310cf49ef41db4fdc54275e548a21a07caf7ad6194b40f1d84af884672"
+    },
+    {
+      "privateLocator": "implementation-baseline/task008-repair6/verification/current-product-regression-binding-aca93b7.json",
+      "bytes": 21589,
+      "sha256": "115b19bf34cf168640f6cf1f1163a57642c0c294c85955d14206424b933c8df6"
+    },
+    {
+      "privateLocator": "implementation-baseline/task008-repair6/verification/engine-aca93b7-equivalence.json",
+      "bytes": 1605,
+      "sha256": "a6c122bbf82ead356186bbe386208339ac6fa9181b9165be91b4db13ce9c6234"
+    },
+    {
+      "privateLocator": "implementation-baseline/task008-repair6/verification/reconstruction-026ee73/REPLAY.md",
+      "bytes": 2389,
+      "sha256": "366ef83076c9d6a29987e1e2cfec81f5d7b3f391222f21c896618c598dfca629"
+    },
+    {
+      "privateLocator": "implementation-baseline/task008-repair6/retained-seven-026ee73/REPORT.md",
+      "bytes": 5299,
+      "sha256": "60de8e1372fcee6adb9f57fe187b315cf3defceba3821bee2d32ee9fd777c8fe"
+    },
+    {
+      "privateLocator": "implementation-baseline/task008-repair6/verification/owner-packet-aca93b7/receipt.json",
+      "bytes": 6236,
+      "sha256": "07c26591566616d4a5e1e0a89d1b49797315888c150f056dff48e7576ea6d187"
+    }
+  ],
+  "sourceCraftAcceptance": "Original Round6 aggregate remains attributed to that round. Trial02 fails two-reviewer source admission despite one exact authentication pass; DEC045 prepares a common-fixture border correction before another trial. No scoped craft pass.",
+  "ownerAcceptance": false,
+  "realFigmaObserved": false,
+  "assistiveTechnologyObserved": false,
+  "published": false,
+  "qualified": false,
+  "testedIdentityBoundary": "Full gates ran with all594tracked files matching ACA. Later planning/evidence edits are documentation only and do not change the tested runtime identity."
+}

@@ -1,0 +1,530 @@
+.guideline-workspace {
+  padding: 36px 48px 64px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.guideline-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 12px;
+}
+.guideline-heading h1 {
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: -1.1px;
+  margin: 8px 0;
+}
+.guideline-heading p {
+  color: var(--studio-muted);
+  max-width: 60ch;
+}
+.guideline-file-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+.guideline-file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+}
+.guideline-file input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  width: 100%;
+  cursor: pointer;
+}
+.guideline-file:focus-within {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+.guideline-muted {
+  color: var(--studio-muted);
+  font-size: 13px;
+  margin: 12px 0;
+  max-width: 85ch;
+}
+.guideline-status {
+  min-height: 28px;
+  margin: 12px 0;
+}
+.guideline-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+  margin-top: 24px;
+}
+@media (min-width: 1001px) {
+  .guideline-source {
+    position: sticky;
+    top: 16px;
+    max-height: calc(100dvh - 32px);
+    overflow: auto;
+    scrollbar-gutter: stable;
+    padding: 4px;
+  }
+}
+.guideline-section-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.guideline-section-heading h2 {
+  font-size: 18px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+.guideline-section-heading span {
+  white-space: nowrap;
+  color: var(--studio-muted);
+  font-size: 12px;
+}
+.guideline-page-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 12px 0;
+}
+.guideline-page-controls label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.guideline-page-controls input {
+  width: 64px;
+  min-height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+.guideline-pdf-page {
+  position: relative;
+  background: white;
+  box-shadow: 0 0 0 1px var(--border);
+}
+.guideline-pdf-page canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.guideline-highlight {
+  position: absolute;
+  outline: 2px solid #295bcc;
+  background: #4c85ff26;
+  pointer-events: none;
+  min-height: 4px;
+}
+.guideline-extract {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  margin-top: 24px;
+}
+.guideline-extract label {
+  flex: 1;
+}
+.guideline-workspace label > input,
+.guideline-workspace label > select {
+  margin-top: 6px;
+}
+.guideline-workspace [data-slot='button'] {
+  min-height: 40px;
+}
+.guideline-empty {
+  padding: 48px 24px;
+  color: var(--studio-muted);
+}
+.guideline-empty h2 {
+  font-size: 22px;
+  color: var(--foreground);
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+.guideline-color-list {
+  margin: 20px 0 28px;
+}
+.guideline-color-row {
+  display: grid;
+  grid-template-columns: 20px 48px minmax(90px, 1fr) minmax(90px, 0.8fr);
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.guideline-swatch {
+  height: 48px;
+  width: 48px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px #0002;
+  cursor: pointer;
+}
+.guideline-include {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+}
+.guideline-source-link {
+  overflow-wrap: anywhere;
+  max-width: 100%;
+  font-size: 12px;
+  color: var(--studio-muted);
+  margin-top: 5px;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.guideline-review h3 {
+  font-size: 16px;
+  font-weight: 500;
+}
+.guideline-quote {
+  text-align: left;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.guideline-rule-fields {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 12px;
+  margin: 12px 0;
+}
+.guideline-workspace select {
+  display: block;
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--background);
+  padding: 6px 10px;
+  font-size: 13px;
+}
+.guideline-coverage,
+.guideline-source-text {
+  padding: 12px 0;
+  font-size: 13px;
+}
+.guideline-workspace summary {
+  cursor: pointer;
+  padding: 6px 0;
+}
+.guideline-source-text[open] {
+  max-height: 350px;
+  overflow: auto;
+}
+.guideline-source-text button {
+  display: block;
+  text-align: left;
+  padding: 5px 0;
+  cursor: pointer;
+}
+.guideline-text-item {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.guideline-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+.guideline-notice {
+  overflow-wrap: anywhere;
+  padding: 14px 16px;
+  border-left: 3px solid var(--foreground);
+  background: var(--muted);
+  margin: 16px 0;
+}
+.guideline-notice ul,
+.guideline-coverage ul {
+  padding-left: 20px;
+  list-style: disc;
+}
+.guideline-notice li {
+  margin-top: 8px;
+}
+.guideline-result {
+  border-top: 1px solid var(--border);
+  margin-top: 36px;
+  padding-top: 28px;
+}
+.guideline-design-workspace > label {
+  display: block;
+  max-width: 440px;
+}
+.guideline-extension-controls {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+.guideline-addition {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  margin: 12px 0;
+  max-width: 720px;
+}
+.guideline-extension-swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 12px;
+  margin: 24px 0;
+}
+.guideline-extension-swatch {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.guideline-extension-swatch > div {
+  height: 96px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px #0002;
+  margin-bottom: 10px;
+}
+.guideline-extension-swatch strong,
+.guideline-extension-swatch code,
+.guideline-extension-swatch span {
+  display: block;
+}
+.guideline-extension-swatch span {
+  font-size: 12px;
+  color: var(--studio-muted);
+  margin-top: 5px;
+}
+.guideline-renewal {
+  display: block;
+  margin: 18px 0;
+}
+.guideline-renewal > span {
+  display: block;
+  margin: 4px 0;
+}
+.guideline-gradient-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 16px;
+  margin: 20px 0;
+}
+.guideline-gradient-preview {
+  height: 300px;
+  border-radius: 8px;
+  margin-top: 24px;
+}
+.guideline-contrast-checks {
+  display: flex;
+  gap: 32px;
+  margin: 18px 0;
+}
+.guideline-contrast-checks div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.guideline-contrast-checks span {
+  color: var(--studio-muted);
+  font-size: 13px;
+}
+.guideline-workspace button:focus-visible,
+.guideline-workspace select:focus-visible,
+.guideline-workspace input:focus-visible,
+.guideline-workspace summary:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+.guideline-statement-group blockquote:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+@media (max-width: 1000px) {
+  .guideline-workspace {
+    padding: 28px 24px;
+  }
+  .guideline-columns {
+    grid-template-columns: 1fr;
+  }
+  .guideline-source {
+    max-width: 720px;
+  }
+}
+@media (max-width: 600px) {
+  .guideline-heading {
+    align-items: start;
+    flex-direction: column;
+  }
+  .guideline-workspace {
+    padding: 24px 16px;
+  }
+  .guideline-gradient-controls {
+    grid-template-columns: 1fr 1fr;
+  }
+  .guideline-extension-controls {
+    grid-template-columns: 1fr 1fr;
+  }
+  .guideline-addition {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .guideline-addition > button {
+    justify-self: start;
+  }
+  .guideline-color-row {
+    grid-template-columns: 20px 36px minmax(90px, 1fr);
+    gap: 8px;
+  }
+  .guideline-swatch {
+    width: 36px;
+    height: 44px;
+  }
+  .guideline-color-row > input {
+    grid-column: 3;
+  }
+  .guideline-extract {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .guideline-rule-fields {
+    grid-template-columns: 1fr;
+  }
+  .guideline-gradient-preview {
+    height: 220px;
+  }
+  .guideline-contrast-checks {
+    gap: 20px;
+  }
+}
+
+.guideline-refresh {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  overflow-wrap: anywhere;
+}
+.guideline-refresh > summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.guideline-refresh > p,
+.guideline-refresh section > p {
+  margin: 0.75rem 0;
+}
+.guideline-refresh label {
+  display: grid;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.guideline-refresh-changes {
+  padding-left: 1.25rem;
+}
+.guideline-refresh-changes li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.guideline-refresh-changes p {
+  margin: 0.25rem 0;
+  white-space: pre-wrap;
+}
+
+.guideline-authored-stops {
+  display: grid;
+  gap: 12px;
+  padding: 0;
+  list-style: none;
+}
+.guideline-authored-stops > li {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(80px, 1fr);
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.guideline-authored-stops label {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+}
+.guideline-authored-stops select {
+  min-width: 0;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--background);
+}
+.guideline-authored-stops .guideline-stop-lock {
+  display: flex;
+  align-items: center;
+}
+@media (max-width: 500px) {
+  .guideline-gradient-controls {
+    grid-template-columns: 1fr;
+  }
+  .guideline-authored-stops > li {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.guideline-gradient-use {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.guideline-gradient-use fieldset {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.guideline-gradient-suggestions {
+  margin: 1.25rem 0;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+.guideline-gradient-suggestions summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.guideline-gradient-suggestions fieldset {
+  border: 0;
+  padding: 0;
+  min-width: 0;
+}
+.guideline-gradient-candidates {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  gap: 1rem;
+}
+.guideline-gradient-candidates article {
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+.guideline-gradient-candidates h3 {
+  margin: 1rem 0 0.5rem;
+}

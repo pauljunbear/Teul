@@ -1,0 +1,338 @@
+{
+  "node": "v24.19.0",
+  "scope": "synthetic engineering fixture; explicit test review, not human or brand approval",
+  "fixtureHashes": {
+    "harbor-native.pdf": "sha256:4a6b3f600697dbd46bed4988a07224fc8ed894da2429a0b57294712745dfec35",
+    "harbor-cross-format.json": "sha256:c4d32b1f8f8dfb0c7aa566cc337dc106ed882a836e50898e77244fa2cc16cf6c",
+    "harbor-cross-format.html": "sha256:436d69fb8719c2cbbe963b595e6638b675dbcc68ee1506da9341b02108e2ceba",
+    "harbor-cross-format-figma.json": "sha256:262a57997a9f72172e74fd63bf6c217520e0b450f0127361cb819cc9dcd604fa"
+  },
+  "checks": [
+    "Real PDF extraction, Figma REST parsing and isolated-world HTML capture preserve independently annotated numeric values, selected scope, provenance, one declared/observed mode and adopted constraints.",
+    "Three extracted sources merge without erasing observations; a deliberate exact-value conflict blocks generation regardless of entry order. Explicit PDF selection retains all three governing prohibitions and exact portable project replay."
+  ],
+  "sources": [
+    {
+      "kind": "pdf",
+      "modelHash": "sha256:084a548d8fcd7a86b877ceb7e4e40207e4c904a339e9349c773f6692dd6830f0",
+      "modes": [
+        {
+          "id": "Source",
+          "label": "Source values (no display mode stated)"
+        }
+      ],
+      "sources": [
+        {
+          "id": "source:4a6b3f600697dbd46bed4988a07224fc8ed894da2429a0b57294712745dfec35",
+          "label": "harbor-native.pdf",
+          "sourceHash": "sha256:4a6b3f600697dbd46bed4988a07224fc8ed894da2429a0b57294712745dfec35",
+          "version": null,
+          "locator": null,
+          "freshnessMode": "imported-snapshot",
+          "status": "draft"
+        }
+      ],
+      "values": [
+        {
+          "label": "Paper",
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#F4EFE6",
+            "components": {
+              "r": 0.9568627450980393,
+              "g": 0.9372549019607843,
+              "b": 0.9019607843137255
+            },
+            "alpha": 1
+          }
+        },
+        {
+          "label": "Ink",
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#182E34",
+            "components": {
+              "r": 0.09411764705882353,
+              "g": 0.1803921568627451,
+              "b": 0.20392156862745098
+            },
+            "alpha": 1
+          }
+        },
+        {
+          "label": "Sand",
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#ECBF74",
+            "components": {
+              "r": 0.9254901960784314,
+              "g": 0.7490196078431373,
+              "b": 0.4549019607843137
+            },
+            "alpha": 1
+          }
+        },
+        {
+          "label": "Ocean",
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#126E78",
+            "components": {
+              "r": 0.07058823529411765,
+              "g": 0.43137254901960786,
+              "b": 0.47058823529411764
+            },
+            "alpha": 1
+          }
+        }
+      ],
+      "rules": [
+        {
+          "id": "rule:ef23e43d59f9fe3fd3b9fbf241f50132cf9356d70c632ee16a49a0139d38f174",
+          "label": "Do not use Ocean and Sand together for text and background.",
+          "contextIds": ["brand", "gradient:brand", "gradient:product", "product"],
+          "modeIds": ["Source"],
+          "origin": "inferred",
+          "force": "prohibition",
+          "evidenceRefs": ["pdf:4a6b3f600697dbd4:2:2:text"],
+          "claimIds": ["claim:ef23e43d59f9fe3fd3b9fbf241f50132cf9356d70c632ee16a49a0139d38f174"],
+          "kind": "forbidden-pair",
+          "operands": {
+            "left": [
+              {
+                "kind": "color",
+                "id": "color:e2dea6ce3e250ac6e1ffd1fe21adb7f305269ec346be491353b5623316820633"
+              }
+            ],
+            "right": [
+              {
+                "kind": "color",
+                "id": "color:e239e89d223f2a511d774fa7e2c02d632ad975ed8826e52bedef2af9f668ee64"
+              }
+            ],
+            "ordered": false,
+            "relation": "foreground-background"
+          }
+        }
+      ],
+      "evidenceCount": 12,
+      "conflicts": 0
+    },
+    {
+      "kind": "figma",
+      "modelHash": "sha256:f3ed3833fe00cbf4f1ba49bafbbd9a2b04f9b1e7f57cb909f33af31299155830",
+      "modes": [
+        {
+          "id": "figma:captured-paints",
+          "label": "Captured node paints (working binding)"
+        }
+      ],
+      "sources": [
+        {
+          "id": "figma:source:c19f5bb59c2b6a90f15568a188b01c2d",
+          "label": "Harbor synthetic color guideline / captured nodes",
+          "sourceHash": "sha256:a3456bfed05351c124684eaa524849177cdb4112d4a1c3485e5d20ad019de9cb",
+          "version": "harbor-fixture-1",
+          "locator": "https://www.figma.com/design/HarborFixture",
+          "freshnessMode": "imported-snapshot",
+          "status": "unknown"
+        }
+      ],
+      "values": [
+        {
+          "label": "Ink",
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#182E34",
+            "components": {
+              "r": 0.09411764705882353,
+              "g": 0.1803921568627451,
+              "b": 0.20392156862745098
+            },
+            "alpha": 1
+          }
+        },
+        {
+          "label": "Paper",
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#F4EFE6",
+            "components": {
+              "r": 0.9568627450980393,
+              "g": 0.9372549019607843,
+              "b": 0.9019607843137255
+            },
+            "alpha": 1
+          }
+        },
+        {
+          "label": "Sand",
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#ECBF74",
+            "components": {
+              "r": 0.9254901960784314,
+              "g": 0.7490196078431373,
+              "b": 0.4549019607843137
+            },
+            "alpha": 1
+          }
+        },
+        {
+          "label": "Ocean",
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#126E78",
+            "components": {
+              "r": 0.07058823529411765,
+              "g": 0.43137254901960786,
+              "b": 0.47058823529411764
+            },
+            "alpha": 1
+          }
+        }
+      ],
+      "rules": [
+        {
+          "id": "figma:rule:c354c3ccee93be234331dbf212b42613",
+          "label": "Do not use Ocean and Sand together for text and background.",
+          "contextIds": ["brand", "gradient:brand", "gradient:product", "product"],
+          "modeIds": ["figma:captured-paints"],
+          "origin": "inferred",
+          "force": "prohibition",
+          "evidenceRefs": ["figma:evidence:ebd598ec3eb855fa9248cea09a5417e2"],
+          "claimIds": ["figma:claim:ebd598ec3eb855fa9248cea09a5417e2"],
+          "kind": "forbidden-pair",
+          "operands": {
+            "left": [
+              {
+                "kind": "color",
+                "id": "figma:paint:f452a63ca5290bdee309394b39580465"
+              }
+            ],
+            "right": [
+              {
+                "kind": "color",
+                "id": "figma:paint:50d735e36e9098dcc3e70923fa513371"
+              }
+            ],
+            "ordered": false,
+            "relation": "foreground-background"
+          }
+        }
+      ],
+      "evidenceCount": 15,
+      "conflicts": 0
+    },
+    {
+      "kind": "website",
+      "modelHash": "sha256:5980d5c21b496e4c1ab7a78fc807d28cf673a420174ed3d516182baa73170fdf",
+      "modes": [
+        {
+          "id": "website:mode:3500c55ff03620b76364f0cae5f774ee",
+          "label": "Observed light preference \u00b7 1280 \u00d7 900"
+        }
+      ],
+      "sources": [
+        {
+          "id": "website:source:b7a1f066af05f66feb771ed923291bf3",
+          "label": "Website observation \u00b7 fixture.example",
+          "sourceHash": "sha256:1e344303fe72ce14a3b2483c3a568c1a84c17ee62dfe20ba334033986764a548",
+          "version": "2026-09-26T12:13:25.492Z",
+          "locator": "https://fixture.example/harbor",
+          "freshnessMode": "imported-snapshot",
+          "status": "unknown"
+        }
+      ],
+      "values": [
+        {
+          "label": "Ocean",
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#1B7C86",
+            "components": {
+              "r": 0.10588235294117647,
+              "g": 0.48627450980392156,
+              "b": 0.5254901960784314
+            },
+            "alpha": 1
+          }
+        },
+        {
+          "label": "Sand",
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#ECBF74",
+            "components": {
+              "r": 0.9254901960784314,
+              "g": 0.7490196078431373,
+              "b": 0.4549019607843137
+            },
+            "alpha": 1
+          }
+        },
+        {
+          "label": "Ink",
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#182E34",
+            "components": {
+              "r": 0.09411764705882353,
+              "g": 0.1803921568627451,
+              "b": 0.20392156862745098
+            },
+            "alpha": 1
+          }
+        },
+        {
+          "label": "Paper",
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#F4EFE6",
+            "components": {
+              "r": 0.9568627450980393,
+              "g": 0.9372549019607843,
+              "b": 0.9019607843137255
+            },
+            "alpha": 1
+          }
+        }
+      ],
+      "rules": [
+        {
+          "id": "website:rule:21db6781b437368560883ec9421328bf",
+          "label": "Do not use Ocean and Sand together for text and background.",
+          "contextIds": ["brand", "gradient:brand", "gradient:product", "product"],
+          "modeIds": ["website:mode:3500c55ff03620b76364f0cae5f774ee"],
+          "origin": "inferred",
+          "force": "prohibition",
+          "evidenceRefs": ["website:evidence:72df1cea14e6506d0c3e2a1b096b7f05"],
+          "claimIds": ["website:claim:72df1cea14e6506d0c3e2a1b096b7f05"],
+          "kind": "forbidden-pair",
+          "operands": {
+            "left": [
+              {
+                "kind": "color",
+                "id": "website:custom-property:011be4a5819e07359d0e5e79b255cf55"
+              }
+            ],
+            "right": [
+              {
+                "kind": "color",
+                "id": "website:custom-property:3e5a422688da0e58e4ca0e75a8ae03a6"
+              }
+            ],
+            "ordered": false,
+            "relation": "foreground-background"
+          }
+        }
+      ],
+      "evidenceCount": 30,
+      "conflicts": 0
+    }
+  ],
+  "scriptHash": "sha256:f2a058057dfb977b7721a7ae4b05486fe94c49e4da5224e70b2b57ac6e0fe06e",
+  "mergedModelHash": "sha256:8373dde219071303909a4f4ba38566e4749cde823271fc09485684990b439fa8",
+  "status": "passed",
+  "cleanupErrors": []
+}

@@ -54,7 +54,7 @@ describe('UI to validator to router to Figma integration', () => {
         on: vi.fn(),
         notify,
         commitUndo,
-        root: {},
+        root: { documentColorProfile: 'SRGB' },
         currentPage: { selection: [target], on: vi.fn(), off: vi.fn() },
         ui: { onmessage: undefined, postMessage: uiPostMessage },
       },

@@ -35,6 +35,21 @@ test('rejects impossible calendar dates instead of accepting Date normalization'
   );
 });
 
+test('requires a named owner for the re-review', () => {
+  assert.equal(manifest.reviewOwner, 'Paul Jun (repository owner)');
+  const { reviewOwner: _omitted, ...unowned } = manifest;
+  for (const candidate of [
+    unowned,
+    { ...manifest, reviewOwner: '' },
+    { ...manifest, reviewOwner: 7 },
+  ]) {
+    assert.match(
+      validateColorFoundationsManifest(candidate, '2026-08-02').join('\n'),
+      /reviewOwner must name who owns the re-review/
+    );
+  }
+});
+
 test('rejects a reviewedAt date later than the verification clock', () => {
   const futureReview = { ...manifest, reviewedAt: '2026-08-03' };
   assert.match(

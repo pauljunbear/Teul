@@ -3,11 +3,9 @@ import type {
   SnapshotUsageScope,
   SourceColorSectionKind,
 } from '../types/colorSystemAudit';
-import {
-  COLOR_SYSTEM_AUDIT_TRANSPORT_LIMITS,
-  canonicalJson,
-  deterministicContentHash,
-} from './colorSystemAudit';
+import { COLOR_SYSTEM_AUDIT_TRANSPORT_LIMITS } from './colorSystemAudit';
+import { canonicalHashJson, canonicalJson, deterministicContentHash } from './colorSystemHashing';
+import { colorSystemSrgbNeedsNativeRepresentationV1 } from './colorSystemSrgbValueV1';
 import { COLOR_SYSTEM_GENERIC_SOURCE_TEXT_MAX_LENGTH_V2 } from './colorSystemGenericLimitsV2';
 import { utf8ByteLength } from './utf8';
 
@@ -28,12 +26,7 @@ const SECTION_ORDER: readonly SourceColorSectionKind[] = [
 ];
 
 export type GenericJsonValueV2 =
-  | null
-  | boolean
-  | number
-  | string
-  | readonly GenericJsonValueV2[]
-  | GenericJsonObjectV2;
+  null | boolean | number | string | readonly GenericJsonValueV2[] | GenericJsonObjectV2;
 export interface GenericJsonObjectV2 {
   readonly [key: string]: GenericJsonValueV2;
 }
@@ -113,8 +106,7 @@ export interface GenericPaintRecordV2 {
 }
 
 export type GenericPaintDirectDeclarationV2 =
-  | { kind: 'literal'; value: GenericColorValueV2 }
-  | { kind: 'alias'; targetVariableId: string };
+  { kind: 'literal'; value: GenericColorValueV2 } | { kind: 'alias'; targetVariableId: string };
 
 export interface GenericPaintStyleV2 {
   styleId: string;
@@ -145,11 +137,7 @@ export interface GenericPaletteStructureV2 {
 }
 
 export type GenericUsageContextKindV2 =
-  | 'product-ui'
-  | 'text'
-  | 'chart'
-  | 'product-graphic'
-  | 'unknown';
+  'product-ui' | 'text' | 'chart' | 'product-graphic' | 'unknown';
 
 export interface GenericColorUsageV2 {
   usageId: string;
@@ -241,6 +229,8 @@ export interface ColorSystemGenericSourceSnapshotV2 extends Omit<
   adapterVersion: typeof COLOR_SYSTEM_GENERIC_SOURCE_ADAPTER_VERSION;
   currentFileContentHash: string;
   sourceSnapshotHash: string;
+  /** Exact serialized identity for native color values and preserved paint numerics. */
+  exactNativeValueHash?: string;
 }
 
 function fail(message: string): never {
@@ -1197,6 +1187,27 @@ export function buildColorSystemGenericSourceSnapshotV2(
   if (allValues.some(value => value.colorSpace !== expectedColorSpace)) {
     fail(`Color channels must retain the declared ${documentProfile} document profile.`);
   }
+  const paintNumerics = paintStyles.map(style => ({
+    styleId: style.styleId,
+    paints: style.paints.map(paint => ({
+      order: paint.order,
+      opacity: paint.opacity,
+      payload: paint.payload,
+    })),
+  }));
+  // These numbers were captured from the document. They are not results of
+  // perceptual calculations, including when the paint itself is unsupported.
+  const needsExactPaintIdentity = canonicalJson(paintNumerics) !== canonicalHashJson(paintNumerics);
+  const needsExactColorIdentity = allValues.some(value =>
+    colorSystemSrgbNeedsNativeRepresentationV1(
+      { r: value.components[0], g: value.components[1], b: value.components[2] },
+      value.alpha
+    )
+  );
+  const exactNativeValueHash =
+    needsExactColorIdentity || needsExactPaintIdentity
+      ? deterministicContentHash(canonicalJson({ values: allValues, paintNumerics }))
+      : undefined;
 
   const base = {
     schemaVersion: COLOR_SYSTEM_GENERIC_SOURCE_SCHEMA_VERSION,
@@ -1204,6 +1215,7 @@ export function buildColorSystemGenericSourceSnapshotV2(
     capturedAt: textValue(source.capturedAt, 'capturedAt'),
     scope: normalizeScope(source.scope),
     documentProfile,
+    ...(exactNativeValueHash === undefined ? {} : { exactNativeValueHash }),
     collections,
     variables,
     paintStyles,
@@ -1234,6 +1246,7 @@ export function buildColorSystemGenericSourceSnapshotV2(
   }
 
   const currentFileContentHash = deterministicContentHash({
+    ...(exactNativeValueHash === undefined ? {} : { exactNativeValueHash }),
     scope: base.scope,
     documentProfile: base.documentProfile,
     collections: base.collections,
@@ -1284,7 +1297,7 @@ export function parseColorSystemGenericSourceSnapshotV2(
       'currentFileContentHash',
       'sourceSnapshotHash',
     ],
-    [],
+    ['exactNativeValueHash'],
     'snapshot'
   );
   const suppliedContentHash = textValue(source.currentFileContentHash, 'currentFileContentHash');

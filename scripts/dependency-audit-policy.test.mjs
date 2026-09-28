@@ -71,3 +71,34 @@ test('rejects malformed audit output', () => {
   assert.equal(result.ok, false);
   assert.match(result.errors.join('\n'), /Production audit returned an npm error/);
 });
+
+test('rejects array-shaped vulnerability maps', () => {
+  const result = evaluateAuditReports({
+    productionReport: { ...report(), vulnerabilities: [] },
+    allReport: report(),
+    ledger,
+  });
+
+  assert.equal(result.ok, false);
+  assert.match(result.errors.join('\n'), /missing its vulnerabilities map/);
+});
+
+test('rejects impossible or future ledger dates', () => {
+  const impossible = evaluateAuditReports({
+    productionReport: report(),
+    allReport: report(),
+    ledger: { ...ledger, reviewedOn: '2026-02-30' },
+    now: new Date('2026-09-02T12:00:00.000Z'),
+  });
+  const future = evaluateAuditReports({
+    productionReport: report(),
+    allReport: report(),
+    ledger: { ...ledger, reviewedOn: '2026-09-03' },
+    now: new Date('2026-09-02T12:00:00.000Z'),
+  });
+
+  assert.equal(impossible.ok, false);
+  assert.match(impossible.errors.join('\n'), /real YYYY-MM-DD calendar date/);
+  assert.equal(future.ok, false);
+  assert.match(future.errors.join('\n'), /is in the future/);
+});

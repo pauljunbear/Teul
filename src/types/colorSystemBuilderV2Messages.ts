@@ -1,5 +1,9 @@
 import type { ColorSystemReviewModelV2 } from '../lib/colorSystemReviewModelV2';
 import type {
+  ColorSystemBrandConstraintsV1,
+  ColorSystemBrandTerritoryRuleV1,
+} from '../lib/colorSystemBrandConstraintsV1';
+import type {
   ColorSystemGenericPlanConfirmationDraftV2,
   ColorSystemGenericPlanGapV2,
   ColorSystemGenericPlanOutcomeKindV2,
@@ -30,6 +34,46 @@ export interface AnalyzeIntelligentColorSystemV2Message {
   dataVisualization: ColorSystemBuilderV2DataVisualizationRequest;
 }
 
+/**
+ * p4-DE: bounds for an owner-supplied spot color. The name is the reference
+ * exactly as the owner typed it; Teul validates its shape and never its content.
+ */
+export const COLOR_SYSTEM_OWNER_SPOT_COLOR_LIMITS_V2 = {
+  maximumNameLength: 40,
+  /** One entry per family at most; mirrors the 24-family ceiling. */
+  maximumEntries: 24,
+} as const;
+
+/**
+ * p4-DE: a spot reference the owner typed for one brand-surface family. Spot
+ * references are licensed data, so the only accepted source is the owner.
+ */
+export interface ColorSystemBuilderV2OwnerSpotColorMessage {
+  system: 'pantone' | 'other';
+  /** Trimmed, 1–40 characters, no control characters. */
+  name: string;
+  finish: 'coated' | 'uncoated' | 'none';
+  source: 'owner-supplied';
+}
+
+/** p4-DE: keyed by the review's `brandSurfaces.families[].id` (the family's stable id). */
+export type ColorSystemBuilderV2OwnerSpotColorsMessage = Readonly<
+  Record<string, ColorSystemBuilderV2OwnerSpotColorMessage>
+>;
+
+/**
+ * p4-DE: how a spot reference prints everywhere Teul shows it: the system word
+ * once, then the owner's text verbatim. Shared by the review, the Variable
+ * descriptions and the success receipt so the three never disagree.
+ */
+export function colorSystemOwnerSpotColorLabelV2(
+  spot: Pick<ColorSystemBuilderV2OwnerSpotColorMessage, 'system' | 'name'>
+): string {
+  return spot.system === 'pantone' && !/^pantone\b/i.test(spot.name)
+    ? `Pantone ${spot.name}`
+    : spot.name;
+}
+
 export interface CreateIntelligentColorSystemV2Message {
   type: 'create-intelligent-color-system-v2';
   requestId: string;
@@ -38,13 +82,12 @@ export interface CreateIntelligentColorSystemV2Message {
   collisionPolicy: 'create-copy';
   currentFileAcknowledged: true;
   manualPublicationAcknowledged: true;
+  /** p4-DE: present only when the owner typed at least one spot reference. */
+  ownerSpotColors?: ColorSystemBuilderV2OwnerSpotColorsMessage;
 }
 
 export type ColorSystemGenericV2SourceScope =
-  | 'automatic'
-  | 'selection'
-  | 'current-page'
-  | 'whole-file';
+  'automatic' | 'selection' | 'current-page' | 'whole-file';
 
 export interface AnalyzeGenericColorSystemV2Message {
   type: 'analyze-generic-color-system-v2';
@@ -52,6 +95,8 @@ export interface AnalyzeGenericColorSystemV2Message {
   sourceScope: ColorSystemGenericV2SourceScope;
   confirmWholeFile: boolean;
   dataVisualization: ColorSystemBuilderV2DataVisualizationRequest;
+  /** Unadopted source or working rules, bound to the fresh snapshot by the backend. */
+  brandConstraintRules?: readonly ColorSystemBrandTerritoryRuleV1[];
 }
 
 export interface CancelGenericColorSystemV2Message {
@@ -142,6 +187,7 @@ export type ColorSystemGenericV2PlanResultMessage =
     };
 
 export interface ColorSystemGenericV2ConfirmationReceiptMessage {
+  reviewedBrandConstraints?: ColorSystemBrandConstraintsV1;
   sourceSnapshotHash: string;
   proposalHash: string;
   displayedPlanHash: string;
@@ -203,8 +249,7 @@ export interface ColorSystemGenericV2ConfirmationFailureMessage {
 }
 
 export type ColorSystemGenericV2ConfirmationResultMessage =
-  | ColorSystemGenericV2ConfirmedReadyMessage
-  | ColorSystemGenericV2ConfirmationFailureMessage;
+  ColorSystemGenericV2ConfirmedReadyMessage | ColorSystemGenericV2ConfirmationFailureMessage;
 
 export type ColorSystemBuilderV2AnalysisResultMessage =
   | {
@@ -235,6 +280,23 @@ export interface ColorSystemBuilderV2CleanupReceiptMessage {
   errors: readonly string[];
 }
 
+/**
+ * p3-C: portable token texts derived from the created (or verified) resource
+ * blueprint. Optional so older backends and export failures degrade to a
+ * success without copy actions.
+ */
+export interface ColorSystemBuilderV2TokenExportMessage {
+  format: 'dtcg-2025.10';
+  defaultMode: string;
+  modes: readonly string[];
+  tokenCount: number;
+  aliasCount: number;
+  /** W3C Design Tokens (DTCG 2025.10) JSON document. */
+  dtcgJson: string;
+  /** Flat CSS custom properties, one `:root` block per mode. */
+  cssText: string;
+}
+
 interface ColorSystemBuilderV2CreateSuccessBase {
   type: 'intelligent-color-system-v2-create-result';
   requestId: string;
@@ -247,6 +309,17 @@ interface ColorSystemBuilderV2CreateSuccessBase {
   createAuthorizationHash: string;
   manualPublicationRequired: true;
   warnings: readonly string[];
+  /** p3-C: present when the backend could derive the token exports. */
+  tokens?: ColorSystemBuilderV2TokenExportMessage;
+  /**
+   * p4-DE: present when the Create request carried owner spot colors. `supplied`
+   * counts the request entries; `descriptionsWritten` counts the Variable
+   * descriptions the renderer wrote (anchor step and matching source token).
+   */
+  ownerSpotColors?: {
+    supplied: number;
+    descriptionsWritten: number;
+  };
 }
 
 export type ColorSystemBuilderV2CreateResultMessage =

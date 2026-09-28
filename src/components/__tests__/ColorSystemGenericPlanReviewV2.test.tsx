@@ -2,9 +2,11 @@ import * as React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { buildColorSystemBrandConstraintsV1 } from '../../lib/colorSystemBrandConstraintsV1';
 import {
   ColorSystemGenericPlanReviewV2,
   GENERIC_PLAN_SECTION_ORDER,
+  splitErrorReference,
   type ColorSystemGenericPlanGapV2,
   type ColorSystemGenericPlanOutcomeKindV2,
   type ColorSystemGenericPlanProposalV2,
@@ -170,6 +172,206 @@ describe('ColorSystemGenericPlanReviewV2', () => {
     });
   });
 
+  it('requires a separate explicit decision for every imported rule and preserves evidence-only choices', () => {
+    const constraints = buildColorSystemBrandConstraintsV1({
+      schemaVersion: 'teul.brand-constraints.v1',
+      sourceSnapshotHash: `sha256:${'1'.repeat(64)}`,
+      rules: ['working-limit', 'observed-limit'].map((id, index) => ({
+        id,
+        label: `${id} for new accents`,
+        kind: 'brand-territory',
+        effect: index === 0 ? 'restrict-to' : 'exclude',
+        ...(index === 0 ? { allowedJobs: ['categorical-data'] } : {}),
+        scope: { kind: 'generated-families', prominence: ['accent'], modes: 'all', jobs: 'all' },
+        bounds: {
+          hueRanges: [{ minimum: 300, maximum: 310 }],
+          chroma: { minimum: 0.3, maximum: 0.4 },
+          lightness: { minimum: 0.9, maximum: 1 },
+        },
+        origin: index === 0 ? 'owner-authored' : 'observed-example',
+        evidenceRefs: [`brief:synthetic-${id}`],
+      })),
+      decisions: [],
+    });
+    const props = render({ proposal: proposal({ reviewedBrandConstraints: constraints }) });
+    const submit = container.querySelector<HTMLButtonElement>('button[type="submit"]');
+    const selects = Array.from(
+      container.querySelectorAll<HTMLSelectElement>('select[id^="g-rule-"]')
+    );
+
+    expect(selects).toHaveLength(2);
+    expect(selects.map(select => select.value)).toEqual(['', '']);
+    expect(submit?.disabled).toBe(true);
+    act(() => submit?.click());
+    expect(props.onUsePlan).not.toHaveBeenCalled();
+    act(() => {
+      selects[0].value = 'accepted';
+      selects[0].dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(submit?.disabled).toBe(true);
+    act(() => {
+      selects[1].value = 'rejected';
+      selects[1].dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(submit?.disabled).toBe(false);
+    act(() => submit?.click());
+    expect(props.onUsePlan).toHaveBeenCalledWith(
+      expect.objectContaining({
+        brandRuleDecisions: {
+          fragmentHash: constraints.fragmentHash,
+          decisions: constraints.rules.map((rule, index) => ({
+            ruleId: rule.id,
+            status: index === 0 ? 'accepted' : 'rejected',
+          })),
+        },
+      })
+    );
+    expect(container.textContent).toContain('Origin: observed example.');
+    expect(container.textContent).toContain('Origin: owner authored.');
+    expect(container.textContent).toContain('Allowed uses only: categorical data.');
+    expect(container.textContent).toContain('Exclude this range from every scale step and use.');
+
+    render({
+      proposal: proposal({ id: 'replacement-plan', reviewedBrandConstraints: constraints }),
+      onUsePlan: props.onUsePlan,
+    });
+    expect(
+      Array.from(container.querySelectorAll<HTMLSelectElement>('select[id^="g-rule-"]')).map(
+        select => select.value
+      )
+    ).toEqual(['', '']);
+    expect(container.querySelector<HTMLButtonElement>('button[type="submit"]')?.disabled).toBe(
+      true
+    );
+  });
+
+  it.each(['constructor', 'toString', 'hasOwnProperty'])(
+    'requires an explicit decision for the valid rule id %s and lets it be cleared',
+    id => {
+      const constraints = buildColorSystemBrandConstraintsV1({
+        schemaVersion: 'teul.brand-constraints.v1',
+        sourceSnapshotHash: `sha256:${'a'.repeat(64)}`,
+        rules: [
+          {
+            id,
+            label: 'Reserved range',
+            kind: 'brand-territory',
+            effect: 'exclude',
+            scope: {
+              kind: 'generated-families',
+              prominence: ['accent'],
+              modes: 'all',
+              jobs: 'all',
+            },
+            bounds: {
+              hueRanges: [{ minimum: 320, maximum: 340 }],
+              chroma: { minimum: 0.2, maximum: 0.5 },
+              lightness: { minimum: 0, maximum: 1 },
+            },
+            origin: 'proposal',
+            evidenceRefs: ['test:reserved-range'],
+          },
+        ],
+        decisions: [],
+      });
+      const props = render({ proposal: proposal({ reviewedBrandConstraints: constraints }) });
+      const button = container.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+      const select = container.querySelector<HTMLSelectElement>('select[id^="g-rule-"]')!;
+      expect(button.disabled).toBe(true);
+      act(() => {
+        select.value = 'accepted';
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      expect(button.disabled).toBe(false);
+      act(() => {
+        container
+          .querySelector('form')!
+          .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      });
+      expect(props.onUsePlan).toHaveBeenCalledWith(
+        expect.objectContaining({
+          brandRuleDecisions: {
+            fragmentHash: constraints.fragmentHash,
+            decisions: [{ ruleId: id, status: 'accepted' }],
+          },
+        })
+      );
+      act(() => {
+        select.value = '';
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+      expect(button.disabled).toBe(true);
+    }
+  );
+
+  it('defines each choice under its label and states what a live Replace does not carry (p5-A)', () => {
+    render({
+      proposal: proposal({
+        proposed: [
+          'Secondary: secondary was found with strong evidence; owner confirmation is still required.',
+          'Product Graphics and Data Visualization examples built from that Secondary.',
+        ],
+        sections: proposal().sections.map(section =>
+          section.role === 'secondary'
+            ? { ...section, decision: 'extend' as const, recordedColorCount: 22 }
+            : section
+        ),
+      }),
+    });
+    const details = container.querySelector<HTMLDetailsElement>('details');
+    act(() => {
+      if (!details) return;
+      details.open = true;
+      details.dispatchEvent(new Event('toggle'));
+    });
+    const secondaryRow = details?.querySelector('[data-teul-generic-role-row="secondary"]');
+    const definitions = secondaryRow?.querySelector('[data-teul-generic-choice-definitions]');
+    expect(definitions?.textContent).toContain(
+      'Keep — exact colors, nothing added beyond what the jobs need'
+    );
+    expect(definitions?.textContent).toContain(
+      'Extend — exact colors plus new hues where the strategies add them'
+    );
+    expect(definitions?.textContent).toContain(
+      'Replace — a new system from your primary and grays; these colors are not carried'
+    );
+    expect(definitions?.textContent).toContain(
+      'Exclude — no section; dependent jobs report their gap'
+    );
+    expect(
+      details?.querySelector('[data-teul-generic-role-row="data-visualization"]')?.textContent
+    ).toContain('Create — a new section from your primary; nothing recorded to carry');
+    // A locked single-choice row needs no definitions.
+    expect(
+      details?.querySelector(
+        '[data-teul-generic-role-row="primary"] [data-teul-generic-choice-definitions]'
+      )
+    ).toBeNull();
+
+    const card = container.querySelector('section[aria-label="What Teul will propose"]');
+    expect(card?.textContent).toContain('Secondary: secondary was found');
+    const secondary = details?.querySelector<HTMLSelectElement>('select[id*="-secondary-"]');
+    act(() => {
+      if (!secondary) return;
+      secondary.value = 'rebuild';
+      secondary.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(card?.textContent).toContain('Secondary: replaced — 22 recorded colors not carried');
+    expect(card?.textContent).not.toContain('Secondary: secondary was found');
+    expect(
+      secondaryRow?.querySelector('[data-teul-generic-choice-definitions] li[data-selected="true"]')
+        ?.textContent
+    ).toContain('Replace');
+
+    act(() => {
+      if (!secondary) return;
+      secondary.value = 'extend';
+      secondary.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(card?.textContent).toContain('Secondary: secondary was found');
+    expect(card?.textContent).not.toContain('replaced —');
+  });
+
   it('keeps all material edits in one optional disclosure and records only changed roles', () => {
     const props = render();
     const details = container.querySelector<HTMLDetailsElement>('details');
@@ -278,6 +480,50 @@ describe('ColorSystemGenericPlanReviewV2', () => {
         ownerEditedRoles: ['secondary'],
         acknowledgedGapIds: ['secondary-conflict'],
       })
+    );
+  });
+
+  it('resets owner edits when a replacement proposal becomes ambiguous', () => {
+    const onUsePlan = vi.fn();
+    render({ onUsePlan });
+    const secondary = container.querySelector<HTMLSelectElement>('select[id*="-secondary-"]');
+    act(() => {
+      if (!secondary) return;
+      secondary.value = 'extend';
+      secondary.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(secondary?.value).toBe('extend');
+
+    const replacementGap = gap({
+      id: 'replacement-conflict',
+      kind: 'conflicting-source',
+      title: 'Replacement proposal needs a Secondary decision',
+      message: 'The replacement source has conflicting Secondary evidence.',
+      remediation: 'Choose the intended Secondary action.',
+      blocking: true,
+      sectionRole: 'secondary',
+      resolvableByEdit: true,
+    });
+    const base = proposal();
+    render({
+      state: { kind: 'ambiguous', firstBlockerId: replacementGap.id },
+      proposal: proposal({
+        id: 'generic-plan-2',
+        sections: base.sections.map(section =>
+          section.role === 'secondary' ? { ...section, decision: null } : section
+        ),
+        gaps: [replacementGap],
+      }),
+      onUsePlan,
+    });
+
+    const replacementSecondary = container.querySelector<HTMLSelectElement>(
+      'select[id*="-secondary-"]'
+    );
+    expect(container.querySelector<HTMLDetailsElement>('details')?.open).toBe(true);
+    expect(replacementSecondary?.value).toBe('');
+    expect(container.querySelector<HTMLButtonElement>('button[type="submit"]')?.disabled).toBe(
+      true
     );
   });
 
@@ -476,5 +722,147 @@ describe('ColorSystemGenericPlanReviewV2', () => {
     expect(container.querySelectorAll('button[type="submit"]')).toHaveLength(1);
     expect(container.querySelectorAll('select[aria-describedby]')).toHaveLength(5);
     expect(container.querySelector('style')?.textContent).toContain('focus-visible');
+  });
+
+  function styleRules(): CSSRule[] {
+    const sheet = container.querySelector('style')?.sheet ?? null;
+    if (!sheet) throw new Error('The plan review stylesheet was not parsed.');
+    return Array.from(sheet.cssRules);
+  }
+
+  function isStyleRule(rule: CSSRule): rule is CSSStyleRule {
+    return 'selectorText' in rule;
+  }
+
+  function isMediaRule(rule: CSSRule): rule is CSSMediaRule {
+    return 'media' in rule && 'cssRules' in rule;
+  }
+
+  it('renders the status title as a heading and the message as its own paragraph', () => {
+    render({
+      submitError:
+        'INVALID_CONFIRMATION: Figma rejected the confirmation. Analyze again before continuing.',
+    });
+    const alert = container.querySelector<HTMLElement>('[role="alert"]');
+    const heading = alert?.querySelector('h3') ?? null;
+    const paragraphs = Array.from(alert?.querySelectorAll('p') ?? []);
+
+    expect(heading?.textContent).toBe('The plan was not confirmed');
+    expect(heading?.nextElementSibling).toBe(paragraphs[0]);
+    expect(paragraphs[0]?.textContent).toBe(
+      'Figma rejected the confirmation. Analyze again before continuing.'
+    );
+    expect(paragraphs[1]?.getAttribute('data-teul-error-reference')).toBe('true');
+    expect(paragraphs[1]?.textContent).toBe('Reference: INVALID_CONFIRMATION');
+    expect(alert?.textContent).not.toContain('INVALID_CONFIRMATION: Figma');
+    expect(alert?.querySelector('strong')).toBeNull();
+  });
+
+  it('keeps the first issue as its own paragraph inside an ambiguous alert', () => {
+    const base = proposal();
+    render({
+      state: { kind: 'ambiguous', firstBlockerId: 'secondary-conflict' },
+      proposal: proposal({
+        sections: base.sections.map(section =>
+          section.role === 'secondary' ? { ...section, decision: null } : section
+        ),
+        gaps: [
+          gap({
+            id: 'secondary-conflict',
+            kind: 'conflicting-source',
+            title: 'Two palettes claim to be Secondary',
+            message: 'Teul cannot tell which palette should govern Secondary.',
+            remediation: 'Choose the intended Secondary action below.',
+            blocking: true,
+            sectionRole: 'secondary',
+            resolvableByEdit: true,
+          }),
+        ],
+      }),
+    });
+    const alert = container.querySelector<HTMLElement>('[role="alert"]');
+    const paragraphs = Array.from(alert?.querySelectorAll('p') ?? []);
+    expect(alert?.querySelector('h3')?.textContent).toBe('One or more roles need your decision');
+    expect(paragraphs.map(paragraph => paragraph.textContent)).toEqual([
+      'Choose each unclear role in Edit plan.',
+      'First issue: Teul cannot tell which palette should govern Secondary. Choose the intended Secondary action below.',
+    ]);
+  });
+
+  it('boxes only the status message, never the focusable title', () => {
+    render({ submitError: 'Figma rejected the confirmation.' });
+    const title = container.querySelector<HTMLElement>('h2[tabindex="-1"]');
+    const status = container.querySelector<HTMLElement>('[data-teul-generic-status]');
+    if (!title || !status) throw new Error('Missing title or status box.');
+
+    expect(status.getAttribute('role')).toBe('alert');
+    expect(getComputedStyle(status).padding).toBe('11px');
+    expect(getComputedStyle(status).borderRadius).toBe('8px');
+    expect(getComputedStyle(title).padding).toBe('');
+    expect(getComputedStyle(title).borderRadius).toBe('');
+    expect(getComputedStyle(title).marginTop).toBe('4px');
+    expect(
+      styleRules().some(rule => isStyleRule(rule) && rule.selectorText.includes('[tabindex="-1"]'))
+    ).toBe(false);
+  });
+
+  it('stacks the three summary cards in one column and spreads them only from 600px up', () => {
+    render();
+    const cards = container.querySelector<HTMLElement>('form > div');
+    if (!cards) throw new Error('Missing summary cards.');
+    expect(cards.querySelectorAll('section')).toHaveLength(3);
+    expect(getComputedStyle(cards).display).toBe('grid');
+    expect(getComputedStyle(cards).gridTemplateColumns).toBe('');
+
+    const rules = styleRules();
+    const base = rules.find(rule => isStyleRule(rule) && rule.selectorText === '.g form>div');
+    expect(base && isStyleRule(base) ? base.style.gridTemplateColumns : 'missing').toBe('');
+    const media = rules.filter(isMediaRule);
+    expect(media).toHaveLength(1);
+    expect(media[0]?.media.mediaText.replace(/\s/g, '')).toBe('(min-width:600px)');
+    const wide = Array.from(media[0]?.cssRules ?? []).find(
+      rule => isStyleRule(rule) && rule.selectorText === '.g form>div'
+    );
+    expect(wide && isStyleRule(wide) ? wide.style.gridTemplateColumns : 'missing').toBe(
+      'repeat(3,minmax(0,1fr))'
+    );
+  });
+
+  it('keeps every stylesheet font size at or above 11px', () => {
+    render();
+    const sizes = styleRules()
+      .filter(isStyleRule)
+      .map(rule => rule.style.fontSize)
+      .filter(size => size !== '')
+      .map(size => Number.parseFloat(size));
+    expect(sizes.length).toBeGreaterThanOrEqual(3);
+    expect(Math.min(...sizes)).toBeGreaterThanOrEqual(11);
+    const root = styleRules().find(rule => isStyleRule(rule) && rule.selectorText === '.g');
+    expect(Number.parseFloat(root && isStyleRule(root) ? root.style.font : 'missing')).toBe(13);
+  });
+
+  it('lifts machine codes out of error text without touching ordinary sentences', () => {
+    expect(splitErrorReference('SOURCE_SCOPE_INCOMPLETE: The selection is incomplete.')).toEqual({
+      headline: 'The selection is incomplete.',
+      reference: 'SOURCE_SCOPE_INCOMPLETE',
+    });
+    expect(
+      splitErrorReference('HEX_MISMATCH: One value changed. TOKEN_NOT_FOUND: One token is missing.')
+    ).toEqual({
+      headline: 'One value changed. One token is missing.',
+      reference: 'HEX_MISMATCH · TOKEN_NOT_FOUND',
+    });
+    expect(splitErrorReference('Figma rejected the confirmation. NOTE: nothing changed.')).toEqual({
+      headline: 'Figma rejected the confirmation. NOTE: nothing changed.',
+      reference: null,
+    });
+    expect(splitErrorReference('The plan was not confirmed because its source changed.')).toEqual({
+      headline: 'The plan was not confirmed because its source changed.',
+      reference: null,
+    });
+    expect(splitErrorReference('HEX_MISMATCH:')).toEqual({
+      headline: 'HEX_MISMATCH:',
+      reference: 'HEX_MISMATCH',
+    });
   });
 });

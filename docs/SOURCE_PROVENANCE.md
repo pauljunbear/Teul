@@ -192,6 +192,9 @@ guarantees.
 - The exact development dependency imports the authoritative package in tests;
   all 744 bundled values match it directly and the sorted payload also matches
   the reviewed SHA-256 integrity fixture.
+- Scale literals use lossless concatenated six-digit sRGB values to reduce the
+  offline UI bundle. Runtime decoding preserves every published value, step,
+  family and metadata field; it performs no color conversion or approximation.
 - Teul-authored family matching uses Delta E OK across all 24 published sRGB
   solid steps per accent family. The UI reports the matched mode, step, hex,
   and distance; matching evidence is not part of the Radix source guarantee.

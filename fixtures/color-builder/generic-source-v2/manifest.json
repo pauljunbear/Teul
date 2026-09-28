@@ -1,6 +1,6 @@
 {
   "schemaVersion": "teul.color-system.generic-source-corpus.v2",
-  "corpusVersion": "2026-08-21.1",
+  "corpusVersion": "2026-09-24.1",
   "authority": "synthetic-local-engineering-evidence",
   "releaseBoundary": "These fixtures prove local engineering behavior only. They are not live Figma observation, domain-expert judgment, owner acceptance, publication, or evidence that every company source is supported.",
   "families": [
@@ -10,7 +10,9 @@
       "purpose": "Exact collection modes, raw literals, per-mode aliases, scopes, alpha, and deterministic resource enumeration.",
       "acceptanceIds": ["AC-801", "AC-802", "AC-810"],
       "fileSha256": "sha256:3eb7f59b2bb458a53e13dc15ef327f164cc0bcd55da738a672e26c1774da086b",
-      "sourceSnapshotHash": "sha256:ad84f0b2acd48dc051321fed2f0a02330f321c8dd275b98de99f617437a8ea51"
+      "sourceSnapshotHash": "sha256:182e48c2b2012025ff42af7346e471a3dac513b7be620d95c360b621fe7837b8",
+      "legacySourceSnapshotHash": "sha256:ad84f0b2acd48dc051321fed2f0a02330f321c8dd275b98de99f617437a8ea51",
+      "exactNativeValueHash": "sha256:5f07754dfec927e383dbf8b5f3216b9bb2977130ab3c569a5d65286ccbc2e2d9"
     },
     {
       "id": "style-first",
@@ -18,7 +20,9 @@
       "purpose": "Eligible opaque normal solid Paint Style declaration and exact structured paint payload.",
       "acceptanceIds": ["AC-803"],
       "fileSha256": "sha256:21d5de6762b89ae6b674df7d941c4c8cfd61102018b0c3ef086cccdc09ead9bb",
-      "sourceSnapshotHash": "sha256:4f99d777479bd452ff741cb677033182145cb8d0fc172afdba018f3a96d2ad10"
+      "sourceSnapshotHash": "sha256:485c5a9cd5e6aa6de9d178367b009d0f980905f1dfc1a02d4631d53d895f5e43",
+      "legacySourceSnapshotHash": "sha256:4f99d777479bd452ff741cb677033182145cb8d0fc172afdba018f3a96d2ad10",
+      "exactNativeValueHash": "sha256:d64e3f316d8c89fb9820ff2adcb90017e18f0fe5ca133a3fd563fc0e53179654"
     },
     {
       "id": "canvas-only",
@@ -26,7 +30,9 @@
       "purpose": "Explicitly headed palette structure with native swatch-card order and no authored resources.",
       "acceptanceIds": ["AC-804"],
       "fileSha256": "sha256:9f7f29f63b67aff088ebbc037bb7b49d0ccab15380e15e9b0a7872498a22d5a3",
-      "sourceSnapshotHash": "sha256:de2995cd42ceeb7a64c822e60875c4a92ebf7369d2af2d05469ae1039a520abd"
+      "sourceSnapshotHash": "sha256:42a5039e1fc64413e0dc9b27e2b0675501c8a2afafa2722e0c26a0592119f3c0",
+      "legacySourceSnapshotHash": "sha256:de2995cd42ceeb7a64c822e60875c4a92ebf7369d2af2d05469ae1039a520abd",
+      "exactNativeValueHash": "sha256:8d2625cdb07de96659fa65e2654abc82b76238e10a8636597a38690868cb3dc0"
     },
     {
       "id": "hybrid-conflict",
@@ -34,7 +40,9 @@
       "purpose": "Variable, Style, and canvas evidence coexist while one declaration carries conflicting Primary and Secondary semantics.",
       "acceptanceIds": ["AC-805", "AC-806", "AC-813"],
       "fileSha256": "sha256:b1d070fd16f99269e81c2e1b018db78590bb24ae25c0d5596420a9bb5438fcca",
-      "sourceSnapshotHash": "sha256:6833ddf2c96df9aeec3a4e35ecaee02ed33c73b3f359d79986dc9a1aa55c95dd"
+      "sourceSnapshotHash": "sha256:da51153ebe530a19c7d64b51ca2eaa02bf13ca8c2620a2d8db84d97ed5eb58af",
+      "legacySourceSnapshotHash": "sha256:6833ddf2c96df9aeec3a4e35ecaee02ed33c73b3f359d79986dc9a1aa55c95dd",
+      "exactNativeValueHash": "sha256:d80ed06cc328c48f74af12e6ac8b1aebc5a920f7f2c264e6e76bfe3ec0f552d4"
     },
     {
       "id": "display-p3",
@@ -42,7 +50,9 @@
       "purpose": "Exact Display P3 components remain unconverted and are blocked from the current sRGB engine.",
       "acceptanceIds": ["AC-810"],
       "fileSha256": "sha256:e105b503762a86e193e76e9982c1aeab2e801078d4adefeccc21fd2481bcda97",
-      "sourceSnapshotHash": "sha256:34dccd4f1b3ba0d4a9889acfb6b3044e2fde2ae2cd54b43dc31958742dd699df"
+      "sourceSnapshotHash": "sha256:d6054b772c3cd53e34531115b932fab85221593ec370614a7d80b3fef921bd80",
+      "legacySourceSnapshotHash": "sha256:34dccd4f1b3ba0d4a9889acfb6b3044e2fde2ae2cd54b43dc31958742dd699df",
+      "exactNativeValueHash": "sha256:9de7c995b9419052554c85d0cf16b591edb994c088e8924f1b7f18207c40adb8"
     },
     {
       "id": "compositing-context",
@@ -50,7 +60,9 @@
       "purpose": "Gradient and translucent non-normal paint evidence remains structured and cannot govern a solid declaration.",
       "acceptanceIds": ["AC-803", "AC-811"],
       "fileSha256": "sha256:14228a5f115f2943dc18ec9325ecd517a5666d3c7094669f5ce2bb03a7193bb0",
-      "sourceSnapshotHash": "sha256:f9c8423371fb8ae34c03f660a9bf059c2d1848a7c845fa5f98c84696ebf39091"
+      "sourceSnapshotHash": "sha256:f9c8423371fb8ae34c03f660a9bf059c2d1848a7c845fa5f98c84696ebf39091",
+      "legacySourceSnapshotHash": "sha256:f9c8423371fb8ae34c03f660a9bf059c2d1848a7c845fa5f98c84696ebf39091",
+      "exactNativeValueHash": null
     },
     {
       "id": "empty-capacity",
@@ -58,7 +70,24 @@
       "purpose": "Empty and capacity-blocked source state with no fabricated declaration or handoff authority.",
       "acceptanceIds": ["AC-815", "AC-816", "AC-818"],
       "fileSha256": "sha256:37bf407aede1ebc320c66bce9d0c575daa93066e3b07ae5041cec3dd7b42274d",
-      "sourceSnapshotHash": "sha256:a61de45af88857b636bbca83647152b6895d2fe05230f9969e5f7d18cad7a482"
+      "sourceSnapshotHash": "sha256:a61de45af88857b636bbca83647152b6895d2fe05230f9969e5f7d18cad7a482",
+      "legacySourceSnapshotHash": "sha256:a61de45af88857b636bbca83647152b6895d2fe05230f9969e5f7d18cad7a482",
+      "exactNativeValueHash": null
     }
-  ]
+  ],
+  "hashRevision": {
+    "previousCorpusVersion": "2026-08-21.1",
+    "reason": "Native exactNativeValueHash now binds full captured color and paint precision into source identity. Fixture bytes, source values, accepted/rejected cases, error receipts, and ordering are unchanged; native-free hashes remain identical.",
+    "sourceFixtureBytesChanged": false,
+    "sourceValuesChanged": false,
+    "acceptanceOrOrderingChanged": false
+  },
+  "propertyMatrix": {
+    "seed": 1424498726,
+    "caseCount": 1000,
+    "accepted": 500,
+    "rejected": 500,
+    "legacyOutcomeFingerprint": "sha256:2c9aa8ab42c124eab2e761071ebd901f3e756d82a5aee4e572e8b7283eced503",
+    "outcomeFingerprint": "sha256:76ad10434cee24d117f73d1f7665f362454d51778a06f4de6aa94c118550ce0f"
+  }
 }

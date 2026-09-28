@@ -1,0 +1,194 @@
+{
+  "schemaVersion": "teul.local-verification.v1",
+  "scope": "TASK-002/004/009 and REQ-004/005/006/011: reviewed source-set projection, Studio authoring and strict portable recovery",
+  "recordedAt": "2026-09-26T10:39:04.933536+00:00",
+  "baselineCommit": "b70da5c97574804d40fd46bfa9b46ec6a41aaf7a",
+  "lifecycle": "locally verified; not integrated, pushed, deployed or visually accepted",
+  "sourceHashes": {
+    "docs/evidence/brand-guideline-import/source-set-desktop.png": "19adaca0d4ad3af583b0ee85aaa25d98b2aa70d72be383acb210195da6fb8df5",
+    "docs/evidence/brand-guideline-import/source-set-mobile.png": "5e71b93381a653b294b49b0b4fd21d8b9bc5c65963bdfb57c575b522df464f23",
+    "docs/evidence/brand-guideline-import/source-set.md": "1970d7d31692cede9ad78f7e4085d1ee153d0463fd544021dee6770e2d495b18",
+    "docs/plans/2026-09-25-brand-guideline-import-plan.md": "37098f97c8e09ff6a2affacd8ea3058c1175a5c34875ba3959cf77478a9ea03d",
+    "docs/prds/2026-09-25-brand-guideline-import.md": "e6a05403bc5ae7743eac1c7700fb7beafc0879c9250353aff8441748f4e62cab",
+    "web/README.md": "1c3dc42d9bcf57178401590c56535d3391e9c5efa6c5c3ae91782fd56cb82e26",
+    "web/fixtures/guidelines/source-set-fixture.ts": "11c097770276d7041c09185da3ad2af073d6b6d4748baae985cb7127d01b0f7f",
+    "web/package.json": "78c8767c7740a38392854053660b2d37db89cb68103efb18d636678e88f9eb1d",
+    "web/scripts/guideline-source-set-smoke.mjs": "8b34eda6843c9dc1b8ab1c680e4343cabff51cf70048e30a06e30e3dfe8cef70",
+    "web/src/components/GuidelineApplicationStudio.tsx": "7a62747f56655072d8c260666df9d93415cb0c638b53fcf4e55c890a08e6a243",
+    "web/src/components/GuidelineExtensionPreview.tsx": "06335778c3524086dbaf02cd468e854bf32d10832f3005542d2061f0acd82fc2",
+    "web/src/components/GuidelineModeGradientEditor.tsx": "b159b8d8f09096a4a1570535a47b342dec4bb0f303cd612ba865e4448c801164",
+    "web/src/components/GuidelineSourceReview.tsx": "950b21243b937a7791d6f6628c714aa1eace6d981da1218b707746679f847dd1",
+    "web/src/components/GuidelineSourceSet.css": "9cc1254a68d6e9d60388490f3f537ca391fa60c2d90da747a61f75f628230752",
+    "web/src/components/GuidelineSourceSet.tsx": "2de3c7d54ab41adccf3cb59c847c9adb5c4b14ac37a825c821f55ed841f54158",
+    "web/src/components/GuidelineSupportingStudio.tsx": "44d7bb9765b0986758b1c48ec6f94625567b279d221ad45a98a9697bc423d86e",
+    "web/src/components/GuidelineWorkspace.tsx": "3ef723f449bddaeec218779264fe0af2695ccc3697e4f96b4e6b40c65d43c454",
+    "web/src/lib/guideline/sourceSet.test.ts": "cba9094c459df2b073e4af750e6a4db5b125d6598625b20541e8689c6c337417",
+    "web/src/lib/guideline/sourceSet.ts": "b0ed370f02a5122b0d494fccd2f821e041492a8a01f5f149c1f5849ce1d5b8f0",
+    "web/src/lib/guideline/sourceSetProject.ts": "8bf07c597a5be167d67c876cca88fd1bb59c12746b634ec9d2cfcee10529e73c"
+  },
+  "runtimes": [
+    {
+      "node": "v22.13.1",
+      "npm": "10.9.2",
+      "checks": [
+        {
+          "command": "npm --prefix web test",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test\n> vitest run\n\n\n RUN  v5.0.1 /Users/paul.jun/Downloads/Projects/Teul/web\n\n\n Test Files  48 passed (48)\n      Tests  589 passed (589)\n   Start at  06:36:25\n   Duration  10.31s (tests 84%, transform 9%, import 7%)\n\n"
+        },
+        {
+          "command": "npm --prefix web run lint",
+          "exitCode": 0,
+          "output": "oxlint src --deny-warnings: passed"
+        },
+        {
+          "command": "VITE_GUIDELINE_IMPORT=true npm --prefix web run build",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 build\n> tsc -b && vite build && node scripts/notices.mjs\n\nvite v8.3.0 building client environment for production...\ntransforming...\n✓ 2176 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                                                0.81 kB │ gzip:   0.45 kB\ndist/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2      7.42 kB\ndist/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2        8.00 kB\ndist/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2         15.08 kB\ndist/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2        16.51 kB\ndist/pdf-fonts/FoxitSymbol.pfb                                16.72 kB\ndist/pdf-fonts/FoxitFixed.pfb                                 17.59 kB\ndist/pdf-fonts/FoxitFixedBold.pfb                             18.05 kB\ndist/pdf-fonts/FoxitFixedItalic.pfb                           18.74 kB\ndist/pdf-fonts/FoxitFixedBoldItalic.pfb                       19.15 kB\ndist/pdf-fonts/FoxitSerifBold.pfb                             19.39 kB\ndist/pdf-fonts/FoxitSerif.pfb                                 19.46 kB\ndist/pdf-fonts/FoxitSerifBoldItalic.pfb                       20.73 kB\ndist/pdf-fonts/FoxitSerifItalic.pfb                           21.22 kB\ndist/assets/geist-latin-wght-normal-BgDaEnEv.woff2            29.40 kB\ndist/pdf-fonts/FoxitDingbats.pfb                              29.51 kB\ndist/pdf-fonts/LiberationSans-BoldItalic.ttf                 135.12 kB\ndist/pdf-fonts/LiberationSans-Bold.ttf                       137.05 kB\ndist/pdf-fonts/LiberationSans-Regular.ttf                    139.51 kB\ndist/pdf-fonts/LiberationSans-Italic.ttf                     162.03 kB\ndist/assets/pdf.worker.min-BmVo14Nb.mjs                    1,317.03 kB\ndist/assets/ProductSystemView-DJMb3_3z.css                     5.95 kB │ gzip:   1.57 kB\ndist/assets/GuidelineWorkspace-oDgW2Cfq.css                   29.60 kB │ gzip:   5.10 kB\ndist/assets/index-BMMiDOxd.css                                57.48 kB │ gzip:  11.28 kB\ndist/assets/ProductSystemView-CsqSjGDg.js                     10.03 kB │ gzip:   3.32 kB\ndist/assets/authoring-Cm32eeaj.js                             23.56 kB │ gzip:   8.82 kB\ndist/assets/authoringControlOutlinesV1-CwPafVr1.js            44.84 kB │ gzip:  13.74 kB\ndist/assets/download-Bic2EQq1.js                              45.62 kB │ gzip:  18.29 kB\ndist/assets/colorSystemRecipeV1-HF2Dh_o-.js                  104.31 kB │ gzip:  31.85 kB\ndist/assets/sourceProvenanceDisclosureData-CxLfFIWs.js       166.30 kB │ gzip:  52.12 kB\ndist/assets/index-CUQ3ZBwS.js                                359.52 kB │ gzip: 113.14 kB\ndist/assets/GuidelineWorkspace-CpXTw_F_.js                 1,177.37 kB │ gzip: 352.59 kB\n\n✓ built in 290ms\nIncluded 86 web dependency notices plus Teul source and APCA notices.\n"
+        },
+        {
+          "command": "npm --prefix web run test:guideline-source-set",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test:guideline-source-set\n> node scripts/guideline-source-set-smoke.mjs\n\n{\n  \"node\": \"v22.13.1\",\n  \"scriptSha256\": \"8b34eda6843c9dc1b8ab1c680e4343cabff51cf70048e30a06e30e3dfe8cef70\",\n  \"buildHashes\": {\n    \"index.html\": \"65dd3db8cedeb4e586764f314205432da27e82e6c6c0bbb52aa92da37dcac26a\",\n    \"assets/GuidelineWorkspace-CpXTw_F_.js\": \"10b2bcffc9e49f1e3424d917067d9a84e215295ebc6c22f0ce8f1459c9a09863\",\n    \"assets/GuidelineWorkspace-oDgW2Cfq.css\": \"a3dae599168f0d45be9fcd424134309e19656531fa4936431972345ab25fd475\",\n    \"assets/ProductSystemView-CsqSjGDg.js\": \"5828ca07a31f82cea868a52356da622faebfb9910abdba30379de27ed8ece23e\",\n    \"assets/ProductSystemView-DJMb3_3z.css\": \"85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764\",\n    \"assets/authoring-Cm32eeaj.js\": \"9835d9845d7bcd1b697593815152551378ca7e108082a1dc23ad2f53692f6946\",\n    \"assets/authoringControlOutlinesV1-CwPafVr1.js\": \"d4fecafb0f934397d1d13e3880cfda9467d879f6b0252c093835f5da03bc6f07\",\n    \"assets/colorSystemRecipeV1-HF2Dh_o-.js\": \"7136f148ffe73189a3bdd1aab81b8f3dda503410d40c903c3122168a87d325c4\",\n    \"assets/download-Bic2EQq1.js\": \"8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6\",\n    \"assets/index-BMMiDOxd.css\": \"0e359a3aeb7a2eb5c56422a31f451bda24c50d30c7ed62fc035c16ad0765f85e\",\n    \"assets/index-CUQ3ZBwS.js\": \"9ea86dc7ef94f4264310f72ed5747f7a8e31e04e2da7ba8ceea899dbabaaec2d\",\n    \"assets/sourceProvenanceDisclosureData-CxLfFIWs.js\": \"241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361\"\n  },\n  \"checks\": [\n    \"Reviewed PDFs add directly; unresolved conflict survives download/reopen; explicit choice preserves both original projects and drives extension and gradient engines\",\n    \"Browser/Node strict replay preserves exact generated shades and gradient SVG\",\n    \"Malformed and future imports retain current selected work and leave it exportable\",\n    \"Cancelled delayed file completion cannot replace a newer reviewed source set or invalidate its gradient\",\n    \"Changing use clears resolutions, approvals and outputs; authoring controls start in the only declared use\",\n    \"Reviewed source-set recovery and bundled gradient replay work offline after Studio is loaded\",\n    \"Native Figma reviewed source adds directly through the shared source review action\",\n    \"Combined review remains within the mobile viewport\"\n  ],\n  \"errors\": [],\n  \"requests\": [],\n  \"browser\": \"153.0.8010.12\",\n  \"passed\": true\n}\n"
+        },
+        {
+          "command": "npm --prefix web run test:guideline-output-recovery",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test:guideline-output-recovery\n> node scripts/guideline-output-recovery-smoke.mjs\n\n6:37:49 AM [vite] (client) Re-optimizing dependencies because vite config has changed\n{\n  \"status\": \"passed\",\n  \"checks\": [\n    \"Browser/Node bundle replay preserves extension, gradient and exact component SVG\",\n    \"Actual IndexedDB save, reload and reopen restores selected controls and checked exports\",\n    \"Corrupt and future bundles leave the selected application and source intact\",\n    \"Completed failed paint assessment restores visibly and remains nonexportable\",\n    \"Re-applying source review and editing extension controls invalidate visible and retained results\",\n    \"Cancelling replay prevents the subsequent local write\",\n    \"Desktop and 390px restored composition render without page errors or source/provider requests\"\n  ]\n}\n"
+        }
+      ]
+    },
+    {
+      "node": "v24.19.0",
+      "npm": "10.9.2",
+      "checks": [
+        {
+          "command": "npm --prefix web test",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test\n> vitest run\n\n\n RUN  v5.0.1 /Users/paul.jun/Downloads/Projects/Teul/web\n\n\n Test Files  48 passed (48)\n      Tests  589 passed (589)\n   Start at  06:37:08\n   Duration  9.03s (tests 84%, transform 8%, import 8%)\n\n"
+        },
+        {
+          "command": "npm --prefix web run lint",
+          "exitCode": 0,
+          "output": "oxlint src --deny-warnings: passed"
+        },
+        {
+          "command": "VITE_GUIDELINE_IMPORT=true npm --prefix web run build",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 build\n> tsc -b && vite build && node scripts/notices.mjs\n\nvite v8.3.0 building client environment for production...\ntransforming...\n✓ 2176 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                                                0.81 kB │ gzip:   0.45 kB\ndist/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2      7.42 kB\ndist/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2        8.00 kB\ndist/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2         15.08 kB\ndist/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2        16.51 kB\ndist/pdf-fonts/FoxitSymbol.pfb                                16.72 kB\ndist/pdf-fonts/FoxitFixed.pfb                                 17.59 kB\ndist/pdf-fonts/FoxitFixedBold.pfb                             18.05 kB\ndist/pdf-fonts/FoxitFixedItalic.pfb                           18.74 kB\ndist/pdf-fonts/FoxitFixedBoldItalic.pfb                       19.15 kB\ndist/pdf-fonts/FoxitSerifBold.pfb                             19.39 kB\ndist/pdf-fonts/FoxitSerif.pfb                                 19.46 kB\ndist/pdf-fonts/FoxitSerifBoldItalic.pfb                       20.73 kB\ndist/pdf-fonts/FoxitSerifItalic.pfb                           21.22 kB\ndist/assets/geist-latin-wght-normal-BgDaEnEv.woff2            29.40 kB\ndist/pdf-fonts/FoxitDingbats.pfb                              29.51 kB\ndist/pdf-fonts/LiberationSans-BoldItalic.ttf                 135.12 kB\ndist/pdf-fonts/LiberationSans-Bold.ttf                       137.05 kB\ndist/pdf-fonts/LiberationSans-Regular.ttf                    139.51 kB\ndist/pdf-fonts/LiberationSans-Italic.ttf                     162.03 kB\ndist/assets/pdf.worker.min-BmVo14Nb.mjs                    1,317.03 kB\ndist/assets/ProductSystemView-DJMb3_3z.css                     5.95 kB │ gzip:   1.57 kB\ndist/assets/GuidelineWorkspace-oDgW2Cfq.css                   29.60 kB │ gzip:   5.10 kB\ndist/assets/index-BMMiDOxd.css                                57.48 kB │ gzip:  11.28 kB\ndist/assets/ProductSystemView-CsqSjGDg.js                     10.03 kB │ gzip:   3.32 kB\ndist/assets/authoring-Cm32eeaj.js                             23.56 kB │ gzip:   8.82 kB\ndist/assets/authoringControlOutlinesV1-CwPafVr1.js            44.84 kB │ gzip:  13.74 kB\ndist/assets/download-Bic2EQq1.js                              45.62 kB │ gzip:  18.29 kB\ndist/assets/colorSystemRecipeV1-HF2Dh_o-.js                  104.31 kB │ gzip:  31.85 kB\ndist/assets/sourceProvenanceDisclosureData-CxLfFIWs.js       166.30 kB │ gzip:  52.12 kB\ndist/assets/index-CUQ3ZBwS.js                                359.52 kB │ gzip: 113.14 kB\ndist/assets/GuidelineWorkspace-CpXTw_F_.js                 1,177.37 kB │ gzip: 352.59 kB\n\n✓ built in 294ms\nIncluded 86 web dependency notices plus Teul source and APCA notices.\n"
+        },
+        {
+          "command": "npm --prefix web run test:guideline-source-set",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test:guideline-source-set\n> node scripts/guideline-source-set-smoke.mjs\n\n6:38:10 AM [vite] (client) Re-optimizing dependencies because vite config has changed\n{\n  \"node\": \"v24.19.0\",\n  \"scriptSha256\": \"8b34eda6843c9dc1b8ab1c680e4343cabff51cf70048e30a06e30e3dfe8cef70\",\n  \"buildHashes\": {\n    \"index.html\": \"65dd3db8cedeb4e586764f314205432da27e82e6c6c0bbb52aa92da37dcac26a\",\n    \"assets/GuidelineWorkspace-CpXTw_F_.js\": \"10b2bcffc9e49f1e3424d917067d9a84e215295ebc6c22f0ce8f1459c9a09863\",\n    \"assets/GuidelineWorkspace-oDgW2Cfq.css\": \"a3dae599168f0d45be9fcd424134309e19656531fa4936431972345ab25fd475\",\n    \"assets/ProductSystemView-CsqSjGDg.js\": \"5828ca07a31f82cea868a52356da622faebfb9910abdba30379de27ed8ece23e\",\n    \"assets/ProductSystemView-DJMb3_3z.css\": \"85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764\",\n    \"assets/authoring-Cm32eeaj.js\": \"9835d9845d7bcd1b697593815152551378ca7e108082a1dc23ad2f53692f6946\",\n    \"assets/authoringControlOutlinesV1-CwPafVr1.js\": \"d4fecafb0f934397d1d13e3880cfda9467d879f6b0252c093835f5da03bc6f07\",\n    \"assets/colorSystemRecipeV1-HF2Dh_o-.js\": \"7136f148ffe73189a3bdd1aab81b8f3dda503410d40c903c3122168a87d325c4\",\n    \"assets/download-Bic2EQq1.js\": \"8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6\",\n    \"assets/index-BMMiDOxd.css\": \"0e359a3aeb7a2eb5c56422a31f451bda24c50d30c7ed62fc035c16ad0765f85e\",\n    \"assets/index-CUQ3ZBwS.js\": \"9ea86dc7ef94f4264310f72ed5747f7a8e31e04e2da7ba8ceea899dbabaaec2d\",\n    \"assets/sourceProvenanceDisclosureData-CxLfFIWs.js\": \"241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361\"\n  },\n  \"checks\": [\n    \"Reviewed PDFs add directly; unresolved conflict survives download/reopen; explicit choice preserves both original projects and drives extension and gradient engines\",\n    \"Browser/Node strict replay preserves exact generated shades and gradient SVG\",\n    \"Malformed and future imports retain current selected work and leave it exportable\",\n    \"Cancelled delayed file completion cannot replace a newer reviewed source set or invalidate its gradient\",\n    \"Changing use clears resolutions, approvals and outputs; authoring controls start in the only declared use\",\n    \"Reviewed source-set recovery and bundled gradient replay work offline after Studio is loaded\",\n    \"Native Figma reviewed source adds directly through the shared source review action\",\n    \"Combined review remains within the mobile viewport\"\n  ],\n  \"errors\": [],\n  \"requests\": [],\n  \"browser\": \"153.0.8010.12\",\n  \"passed\": true\n}\n"
+        },
+        {
+          "command": "npm --prefix web run test:guideline-output-recovery",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test:guideline-output-recovery\n> node scripts/guideline-output-recovery-smoke.mjs\n\n6:38:16 AM [vite] (client) Re-optimizing dependencies because vite config has changed\n{\n  \"status\": \"passed\",\n  \"checks\": [\n    \"Browser/Node bundle replay preserves extension, gradient and exact component SVG\",\n    \"Actual IndexedDB save, reload and reopen restores selected controls and checked exports\",\n    \"Corrupt and future bundles leave the selected application and source intact\",\n    \"Completed failed paint assessment restores visibly and remains nonexportable\",\n    \"Re-applying source review and editing extension controls invalidate visible and retained results\",\n    \"Cancelling replay prevents the subsequent local write\",\n    \"Desktop and 390px restored composition render without page errors or source/provider requests\"\n  ]\n}\n"
+        }
+      ]
+    }
+  ],
+  "browserReports": {
+    "sourceSetNode22": {
+      "node": "v22.13.1",
+      "scriptSha256": "8b34eda6843c9dc1b8ab1c680e4343cabff51cf70048e30a06e30e3dfe8cef70",
+      "buildHashes": {
+        "index.html": "65dd3db8cedeb4e586764f314205432da27e82e6c6c0bbb52aa92da37dcac26a",
+        "assets/GuidelineWorkspace-CpXTw_F_.js": "10b2bcffc9e49f1e3424d917067d9a84e215295ebc6c22f0ce8f1459c9a09863",
+        "assets/GuidelineWorkspace-oDgW2Cfq.css": "a3dae599168f0d45be9fcd424134309e19656531fa4936431972345ab25fd475",
+        "assets/ProductSystemView-CsqSjGDg.js": "5828ca07a31f82cea868a52356da622faebfb9910abdba30379de27ed8ece23e",
+        "assets/ProductSystemView-DJMb3_3z.css": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764",
+        "assets/authoring-Cm32eeaj.js": "9835d9845d7bcd1b697593815152551378ca7e108082a1dc23ad2f53692f6946",
+        "assets/authoringControlOutlinesV1-CwPafVr1.js": "d4fecafb0f934397d1d13e3880cfda9467d879f6b0252c093835f5da03bc6f07",
+        "assets/colorSystemRecipeV1-HF2Dh_o-.js": "7136f148ffe73189a3bdd1aab81b8f3dda503410d40c903c3122168a87d325c4",
+        "assets/download-Bic2EQq1.js": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6",
+        "assets/index-BMMiDOxd.css": "0e359a3aeb7a2eb5c56422a31f451bda24c50d30c7ed62fc035c16ad0765f85e",
+        "assets/index-CUQ3ZBwS.js": "9ea86dc7ef94f4264310f72ed5747f7a8e31e04e2da7ba8ceea899dbabaaec2d",
+        "assets/sourceProvenanceDisclosureData-CxLfFIWs.js": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361"
+      },
+      "checks": [
+        "Reviewed PDFs add directly; unresolved conflict survives download/reopen; explicit choice preserves both original projects and drives extension and gradient engines",
+        "Browser/Node strict replay preserves exact generated shades and gradient SVG",
+        "Malformed and future imports retain current selected work and leave it exportable",
+        "Cancelled delayed file completion cannot replace a newer reviewed source set or invalidate its gradient",
+        "Changing use clears resolutions, approvals and outputs; authoring controls start in the only declared use",
+        "Reviewed source-set recovery and bundled gradient replay work offline after Studio is loaded",
+        "Native Figma reviewed source adds directly through the shared source review action",
+        "Combined review remains within the mobile viewport"
+      ],
+      "errors": [],
+      "requests": [],
+      "browser": "153.0.8010.12",
+      "passed": true
+    },
+    "existingRecoveryNode22": {
+      "status": "passed",
+      "node": "v22.13.1",
+      "checks": [
+        "Browser/Node bundle replay preserves extension, gradient and exact component SVG",
+        "Actual IndexedDB save, reload and reopen restores selected controls and checked exports",
+        "Corrupt and future bundles leave the selected application and source intact",
+        "Completed failed paint assessment restores visibly and remains nonexportable",
+        "Re-applying source review and editing extension controls invalidate visible and retained results",
+        "Cancelling replay prevents the subsequent local write",
+        "Desktop and 390px restored composition render without page errors or source/provider requests"
+      ]
+    },
+    "sourceSetNode24": {
+      "node": "v24.19.0",
+      "scriptSha256": "8b34eda6843c9dc1b8ab1c680e4343cabff51cf70048e30a06e30e3dfe8cef70",
+      "buildHashes": {
+        "index.html": "65dd3db8cedeb4e586764f314205432da27e82e6c6c0bbb52aa92da37dcac26a",
+        "assets/GuidelineWorkspace-CpXTw_F_.js": "10b2bcffc9e49f1e3424d917067d9a84e215295ebc6c22f0ce8f1459c9a09863",
+        "assets/GuidelineWorkspace-oDgW2Cfq.css": "a3dae599168f0d45be9fcd424134309e19656531fa4936431972345ab25fd475",
+        "assets/ProductSystemView-CsqSjGDg.js": "5828ca07a31f82cea868a52356da622faebfb9910abdba30379de27ed8ece23e",
+        "assets/ProductSystemView-DJMb3_3z.css": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764",
+        "assets/authoring-Cm32eeaj.js": "9835d9845d7bcd1b697593815152551378ca7e108082a1dc23ad2f53692f6946",
+        "assets/authoringControlOutlinesV1-CwPafVr1.js": "d4fecafb0f934397d1d13e3880cfda9467d879f6b0252c093835f5da03bc6f07",
+        "assets/colorSystemRecipeV1-HF2Dh_o-.js": "7136f148ffe73189a3bdd1aab81b8f3dda503410d40c903c3122168a87d325c4",
+        "assets/download-Bic2EQq1.js": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6",
+        "assets/index-BMMiDOxd.css": "0e359a3aeb7a2eb5c56422a31f451bda24c50d30c7ed62fc035c16ad0765f85e",
+        "assets/index-CUQ3ZBwS.js": "9ea86dc7ef94f4264310f72ed5747f7a8e31e04e2da7ba8ceea899dbabaaec2d",
+        "assets/sourceProvenanceDisclosureData-CxLfFIWs.js": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361"
+      },
+      "checks": [
+        "Reviewed PDFs add directly; unresolved conflict survives download/reopen; explicit choice preserves both original projects and drives extension and gradient engines",
+        "Browser/Node strict replay preserves exact generated shades and gradient SVG",
+        "Malformed and future imports retain current selected work and leave it exportable",
+        "Cancelled delayed file completion cannot replace a newer reviewed source set or invalidate its gradient",
+        "Changing use clears resolutions, approvals and outputs; authoring controls start in the only declared use",
+        "Reviewed source-set recovery and bundled gradient replay work offline after Studio is loaded",
+        "Native Figma reviewed source adds directly through the shared source review action",
+        "Combined review remains within the mobile viewport"
+      ],
+      "errors": [],
+      "requests": [],
+      "browser": "153.0.8010.12",
+      "passed": true
+    },
+    "existingRecoveryNode24": {
+      "status": "passed",
+      "node": "v24.19.0",
+      "checks": [
+        "Browser/Node bundle replay preserves extension, gradient and exact component SVG",
+        "Actual IndexedDB save, reload and reopen restores selected controls and checked exports",
+        "Corrupt and future bundles leave the selected application and source intact",
+        "Completed failed paint assessment restores visibly and remains nonexportable",
+        "Re-applying source review and editing extension controls invalidate visible and retained results",
+        "Cancelling replay prevents the subsequent local write",
+        "Desktop and 390px restored composition render without page errors or source/provider requests"
+      ]
+    }
+  },
+  "review": {
+    "reuse": "no actionable duplication",
+    "quality": "resolved dynamic scale membership, cross-source group guard, transient-error recovery and source/operation lifetime findings",
+    "efficiency": "resolved repeated source output replay with exact-byte bounded receipts, duplicate concurrent cache accounting and temporary choice retention"
+  },
+  "notRun": [
+    "Full plugin/shared-core release gates: no shared-core or plugin changes",
+    "Live source/provider qualification and human visual acceptance"
+  ]
+}

@@ -1,0 +1,344 @@
+{
+  "schemaVersion": "teul.local-verification.v1",
+  "scope": "TASK-009 / REQ-012 / AC-011: fresh manual PDF confirmation, exact-region correspondence and selective recovery",
+  "recordedAt": "2026-09-26T09:35:41.793459+00:00",
+  "baselineCommit": "a762005cf8296ea2c49fa87204b427a73332e59e",
+  "lifecycle": "locally verified; not integrated, pushed, deployed or visually accepted",
+  "sourceHashes": {
+    "docs/evidence/brand-guideline-import/composition-refresh.md": "619d4c8dd97dddc3972faf37942d5d32d7c6e68a5f94069d0e25ba73e051a3a4",
+    "docs/evidence/brand-guideline-import/manual-pdf-refresh-desktop.png": "4a8f2e5bb88cd630a98c06790c12e0badba69ada0853e3335c070a00d6192278",
+    "docs/evidence/brand-guideline-import/manual-pdf-refresh-mobile.png": "b7a47ff5e3b56b1dd2ac99ae784b1232ad7d0fb9a4a38b8d83413c6cb510e965",
+    "docs/evidence/brand-guideline-import/manual-pdf-refresh.md": "a6c49e204471e6a1459e3b146b10f54962c04b45f474869a74503c3271c3f86b",
+    "docs/plans/2026-09-25-brand-guideline-import-plan.md": "070d4a6301d9661c50615184c275ebfd7030332970340b534c2e25d701ac1d09",
+    "docs/prds/2026-09-25-brand-guideline-import.md": "5897c1848697dbd7feac07c34bc3627ee6d3726517d76a99d641a80ca60a06c8",
+    "web/README.md": "56df0f60403f7e3659aea08514a17b0cffd3f8ecf3208a02c84ffb6179f990e5",
+    "web/package.json": "ddcb010bfe1c17d794fd6308d2562ce24d94bcbc3a7eba4ef0eada3b946bf91e",
+    "web/scripts/guideline-manual-refresh-smoke.mjs": "74b45ddf2d4cd680606457cb260b379f3f4ac79173b73fac5deadfc4c090ed08",
+    "web/scripts/guideline-manual-smoke.mjs": "6e551b5acae9a4b211314ddd39c534b08e5472caf26f60ecab1d3bcd23f71709",
+    "web/src/components/GuidelineManualColorPanel.tsx": "252b5f1a77f4386528202aaea71547e9e55b6d6b61e28973511322e491062ab7",
+    "web/src/components/GuidelineWorkspace.tsx": "3b17674028ee490501b49e11f8ee22da7c05edd98fad15ea715b601db5d6c3d5",
+    "web/src/lib/guideline/pdfRegion.test.ts": "358c9b97401f8496a3782c7215edd7bb3c4940fb3dbdfaa19b2a272e71595f9f",
+    "web/src/lib/guideline/pdfRegion.ts": "3971ef8024a31559bde3f99cc093d435f69dc07054527a96468540c394419af5",
+    "web/src/lib/guideline/pdfReviewedContinuity.test.ts": "0153651b81ad2c5baa16fca8d1d53bf4ecd6c85a5575cfc3d531256e0f7f2a9e",
+    "web/src/lib/guideline/pdfReviewedContinuity.ts": "8694dd4ac71126320abfb09251fd996d68c1cd51e440045b0ff18988e68cecb6",
+    "web/src/lib/guideline/refreshLineage.ts": "af7aac0658849b354c8fc29520d49e6a93871d67ba1e94f621d0eadb8418753a"
+  },
+  "runtimes": [
+    {
+      "node": "v22.13.1",
+      "npm": "10.9.2",
+      "checks": [
+        {
+          "command": "npm --prefix web test",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test\n> vitest run\n\n\n RUN  v5.0.1 /Users/paul.jun/Downloads/Projects/Teul/web\n\n(node:88425) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n\n Test Files  47 passed (47)\n      Tests  571 passed (571)\n   Start at  05:31:47\n   Duration  13.17s (tests 87%, import 7%, transform 5%)\n\n"
+        },
+        {
+          "command": "npm --prefix web run lint",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 lint\n> oxlint src --deny-warnings\n\n"
+        },
+        {
+          "command": "VITE_GUIDELINE_IMPORT=true npm --prefix web run build",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 build\n> tsc -b && vite build && node scripts/notices.mjs\n\nvite v8.3.0 building client environment for production...\ntransforming...\n\u2713 2172 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                                                0.81 kB \u2502 gzip:   0.45 kB\ndist/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2      7.42 kB\ndist/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2        8.00 kB\ndist/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2         15.08 kB\ndist/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2        16.51 kB\ndist/pdf-fonts/FoxitSymbol.pfb                                16.72 kB\ndist/pdf-fonts/FoxitFixed.pfb                                 17.59 kB\ndist/pdf-fonts/FoxitFixedBold.pfb                             18.05 kB\ndist/pdf-fonts/FoxitFixedItalic.pfb                           18.74 kB\ndist/pdf-fonts/FoxitFixedBoldItalic.pfb                       19.15 kB\ndist/pdf-fonts/FoxitSerifBold.pfb                             19.39 kB\ndist/pdf-fonts/FoxitSerif.pfb                                 19.46 kB\ndist/pdf-fonts/FoxitSerifBoldItalic.pfb                       20.73 kB\ndist/pdf-fonts/FoxitSerifItalic.pfb                           21.22 kB\ndist/assets/geist-latin-wght-normal-BgDaEnEv.woff2            29.40 kB\ndist/pdf-fonts/FoxitDingbats.pfb                              29.51 kB\ndist/pdf-fonts/LiberationSans-BoldItalic.ttf                 135.12 kB\ndist/pdf-fonts/LiberationSans-Bold.ttf                       137.05 kB\ndist/pdf-fonts/LiberationSans-Regular.ttf                    139.51 kB\ndist/pdf-fonts/LiberationSans-Italic.ttf                     162.03 kB\ndist/assets/pdf.worker.min-BmVo14Nb.mjs                    1,317.03 kB\ndist/assets/ProductSystemView-DJMb3_3z.css                     5.95 kB \u2502 gzip:   1.57 kB\ndist/assets/GuidelineWorkspace-pv6HtDMK.css                   28.06 kB \u2502 gzip:   4.89 kB\ndist/assets/index-DqZwDzbM.css                                57.43 kB \u2502 gzip:  11.26 kB\ndist/assets/ProductSystemView-CE-uCM25.js                     10.03 kB \u2502 gzip:   3.33 kB\ndist/assets/authoring-B-72gCZG.js                             23.56 kB \u2502 gzip:   8.82 kB\ndist/assets/authoringControlOutlinesV1-CUn7KnTU.js            44.84 kB \u2502 gzip:  13.74 kB\ndist/assets/download-Bic2EQq1.js                              45.62 kB \u2502 gzip:  18.29 kB\ndist/assets/colorSystemRecipeV1-j5Vien0D.js                  104.31 kB \u2502 gzip:  31.85 kB\ndist/assets/sourceProvenanceDisclosureData-CxLfFIWs.js       166.30 kB \u2502 gzip:  52.12 kB\ndist/assets/index-BmqK63Sg.js                                359.52 kB \u2502 gzip: 113.15 kB\ndist/assets/GuidelineWorkspace-Bx1OtM9V.js                 1,149.57 kB \u2502 gzip: 343.64 kB\n\n[plugin builtin:vite-reporter] \n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n\u2713 built in 265ms\nIncluded 86 web dependency notices plus Teul source and APCA notices.\n"
+        }
+      ],
+      "browsers": {
+        "manualRefresh": {
+          "node": "v22.13.1",
+          "scriptSha256": "74b45ddf2d4cd680606457cb260b379f3f4ac79173b73fac5deadfc4c090ed08",
+          "fixtureSha256": "16d34e044eae78d05115054ad8b2350c04ff818018b2768d39a80053aaac38d6",
+          "updatedSha256": "2ccb8502d3e759d1adfa0148db9eec422074f4037a8002fa1d9f1bbe74c5f684",
+          "buildHashes": {
+            "index.html": "a980370a2eabf628b30a09e019a540f53f758f0650cd86d6ac5c5b9d27a64d79",
+            "assets/GuidelineWorkspace-Bx1OtM9V.js": "8ac40182f10359259027ce66deabf35c56c61821d815f56aa14fa7bbf1dcff07",
+            "assets/GuidelineWorkspace-pv6HtDMK.css": "ecf811dfe4d1f6341fef82b5470b65f8797494db4b415ee152ac1e5377db88c9",
+            "assets/ProductSystemView-CE-uCM25.js": "7ed7b85c6c3fe8c199c8e177d5f7fe61edb05ca357a04327be14315ba1061bb5",
+            "assets/ProductSystemView-DJMb3_3z.css": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764",
+            "assets/authoring-B-72gCZG.js": "6fed5cfbc6b659ecfe3d1435772aea6712cd35a0b6642cf934f093c2441f557a",
+            "assets/authoringControlOutlinesV1-CUn7KnTU.js": "3f567ccdb932031887a839cac1c8742746bec46f1578a9903af7d0124036a6c5",
+            "assets/colorSystemRecipeV1-j5Vien0D.js": "50461895434c739ede52f5eb0f22a2738e77526a6a44c7dd685b0b7f5cf0bb31",
+            "assets/download-Bic2EQq1.js": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6",
+            "assets/index-BmqK63Sg.js": "a429e7c6c3f878907c7df9e42dea5a26e69288c0d4e996a8fe8c50c269f0e636",
+            "assets/index-DqZwDzbM.css": "b390d285db969f0ef874b31cd0d191b798ad63ec29ebc6faaac63b7aa9378bde",
+            "assets/sourceProvenanceDisclosureData-CxLfFIWs.js": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361"
+          },
+          "checks": [
+            "Updated PDF has a new digest, no carried confirmations; preparing and cancelling a fresh crop leaves the pending project byte-identical.",
+            "An edge-touching region whose reconstructed percentages exceed 100 by floating-point rounding remains reviewable through exact saved pixel geometry.",
+            "Both transcription and approximate sample require fresh confirmation; complete scale anchors restore only after both, and pending work reopens exactly in browser and Node.",
+            "Fresh source review restores the exact gradient stops, extension paint and composition SVG; recovered output reopens byte-identically.",
+            "Opening another project discards the pending editor and prevents its prepared crop from publishing.",
+            "Opening another project while a real PDF render is held cancels preparation; releasing the old paint cannot publish its crop or alter the new project.",
+            "Previous/fresh crops and confirmation controls fit a 390px viewport; Escape cancels without changing the saved source."
+          ],
+          "errors": [],
+          "requests": [],
+          "browser": "153.0.8010.12",
+          "status": "passed"
+        },
+        "manual": {
+          "startedAt": "2026-09-26T09:33:02.847Z",
+          "node": "v22.13.1",
+          "fixtureHashes": {
+            "harbor-scanned.pdf": "16d34e044eae78d05115054ad8b2350c04ff818018b2768d39a80053aaac38d6",
+            "harbor-native.pdf": "4a6b3f600697dbd46bed4988a07224fc8ed894da2429a0b57294712745dfec35"
+          },
+          "buildHashes": {
+            "index.html": "a980370a2eabf628b30a09e019a540f53f758f0650cd86d6ac5c5b9d27a64d79",
+            "assets/GuidelineWorkspace-Bx1OtM9V.js": "8ac40182f10359259027ce66deabf35c56c61821d815f56aa14fa7bbf1dcff07",
+            "assets/GuidelineWorkspace-pv6HtDMK.css": "ecf811dfe4d1f6341fef82b5470b65f8797494db4b415ee152ac1e5377db88c9",
+            "assets/ProductSystemView-CE-uCM25.js": "7ed7b85c6c3fe8c199c8e177d5f7fe61edb05ca357a04327be14315ba1061bb5",
+            "assets/ProductSystemView-DJMb3_3z.css": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764",
+            "assets/authoring-B-72gCZG.js": "6fed5cfbc6b659ecfe3d1435772aea6712cd35a0b6642cf934f093c2441f557a",
+            "assets/authoringControlOutlinesV1-CUn7KnTU.js": "3f567ccdb932031887a839cac1c8742746bec46f1578a9903af7d0124036a6c5",
+            "assets/colorSystemRecipeV1-j5Vien0D.js": "50461895434c739ede52f5eb0f22a2738e77526a6a44c7dd685b0b7f5cf0bb31",
+            "assets/download-Bic2EQq1.js": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6",
+            "assets/index-BmqK63Sg.js": "a429e7c6c3f878907c7df9e42dea5a26e69288c0d4e996a8fe8c50c269f0e636",
+            "assets/index-DqZwDzbM.css": "b390d285db969f0ef874b31cd0d191b798ad63ec29ebc6faaac63b7aa9378bde",
+            "assets/sourceProvenanceDisclosureData-CxLfFIWs.js": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361"
+          },
+          "status": "passed",
+          "finishedAt": "2026-09-26T09:33:08.542Z",
+          "url": "http://127.0.0.1:63107/",
+          "checks": [
+            "A real scanned PDF has zero extracted text/color observations and an explicit coverage gap; adding user evidence is a separate action.",
+            "Invalid values and values lacking retained source evidence cannot be confirmed. A user-confirmed transcription retains its crop and literal without rewriting the native capture.",
+            "Preparing a sample does not accept it. Escape declines the sample, restores keyboard focus, and leaves the saved project byte-for-byte unchanged.",
+            "Explicit sample acceptance records the exact retained center pixel as an opaque, approximate rendered sRGB value. Bounds validation, 44px controls and keyboard acceptance work at 390px without overflow.",
+            "Both accepted methods feed the shared review and gradient compiler; the review and CSS export preserve their distinct provenance notices.",
+            "V4 project, selected gradient and provenance exports reopen byte-for-byte offline without the PDF. Recorded crops remain inspectable; preparing new regions is unavailable.",
+            "Canceling a correction preserves all work. Confirming a wrong-digit correction works from the saved crop offline, appends a replacement, revokes/excludes its predecessor, and clears reviewed/generated results.",
+            "Revocation clears a selected design and excludes the sample from the next compiled review while keeping its evidence and acceptance history.",
+            "Moving to an unselected page discards the pending form and disables adding source evidence. Returning to a selected page re-enables preparation without committing the discarded value.",
+            "Corrected and revoked history survives a later project reopen with exact source and acceptance state."
+          ],
+          "failures": [],
+          "diagnostics": [],
+          "externalRequests": [],
+          "artifacts": [
+            {
+              "file": "node22-manual-mobile-keyboard.png",
+              "sha256": "d1cd7f90706a7a3a4f55334138e2bc7f4184a9c65e883375504f5c659dee7ac1"
+            },
+            {
+              "file": "node22-manual-mobile-sample.png",
+              "sha256": "84dbb6471e9d1ffb901859bf9414e6c7042f9ea55058ce0916069c2fad1db89a"
+            },
+            {
+              "file": "node22-accepted-source-review.json",
+              "sha256": "282e05c99e5b7af876ee2e3a552aa5057c2ffda35f58c2fa93d5706b5d47b589"
+            },
+            {
+              "file": "node22-accepted-project.json",
+              "sha256": "dd49d59bb17a1df6342fa7200d3a258ad1305104a9fccf41775fb325ca539752"
+            },
+            {
+              "file": "node22-accepted-gradient.css",
+              "sha256": "2157492723a5556331ca30626f102cdf65c2799ee8dd466d252029fc778247eb"
+            },
+            {
+              "file": "node22-manual-desktop.png",
+              "sha256": "e1a8180a7273fa7db1d53bf5395ca67a1678a143ed34367b9f2e047083b99cac"
+            },
+            {
+              "file": "node22-manual-offline-crop.png",
+              "sha256": "7937584ec5e2ba79744c1d82bc7065848888e30230074232e7145a2c8222c157"
+            },
+            {
+              "file": "node22-corrected-project.json",
+              "sha256": "de1465bfbc687a8684d2df20d0db64e15fb80621f46762904ce8d5393abedf67"
+            }
+          ]
+        },
+        "pdfRefresh": {
+          "status": "passed",
+          "node": "v22.13.1",
+          "checks": [
+            "Recapturing the same PDF/pages is a no-op even with a fresh capture timestamp; no revision or design reset occurs.",
+            "An unrelated selected-page edit retains both color decisions; rejecting preserves byte-exact project and gradient.",
+            "Editing the current review discards its staged proposal, preventing acceptance against a stale draft.",
+            "A real IndexedDB save failure prevents source replacement and preserves the exact selected design.",
+            "Acceptance preserves the exact prior design first, resets changed-color inclusion and applied results, and subsequent save appends the new source alongside the old revision.",
+            "A changed PDF anchor makes its previous gradient stale; restoration cannot silently substitute a new paint.",
+            "An added restriction enters the proposed draft unresolved; rejecting retains the preceding approved local review and gradient.",
+            "Malformed updated input preserves the current source, review and output.",
+            "Cancelling a delayed real File read prevents its late completion from publishing a comparison or changing the project.",
+            "Opening another project while acceptance waits on storage cancels the stale save and prevents late source replacement.",
+            "An unrelated PDF change preserves exact gradient paint under the renewed review, survives portable reopen, and a later review edit invalidates restoration.",
+            "390px comparison fits, no browser errors and no source or service network requests."
+          ],
+          "errors": [],
+          "requests": []
+        }
+      }
+    },
+    {
+      "node": "v24.19.0",
+      "npm": "10.9.2",
+      "checks": [
+        {
+          "command": "npm --prefix web test",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test\n> vitest run\n\n\n RUN  v5.0.1 /Users/paul.jun/Downloads/Projects/Teul/web\n\n\n Test Files  47 passed (47)\n      Tests  571 passed (571)\n   Start at  05:32:08\n   Duration  9.45s (tests 85%, import 8%, transform 7%)\n\n"
+        },
+        {
+          "command": "npm --prefix web run lint",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 lint\n> oxlint src --deny-warnings\n\n"
+        },
+        {
+          "command": "VITE_GUIDELINE_IMPORT=true npm --prefix web run build",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 build\n> tsc -b && vite build && node scripts/notices.mjs\n\nvite v8.3.0 building client environment for production...\ntransforming...\n\u2713 2172 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                                                0.81 kB \u2502 gzip:   0.45 kB\ndist/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2      7.42 kB\ndist/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2        8.00 kB\ndist/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2         15.08 kB\ndist/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2        16.51 kB\ndist/pdf-fonts/FoxitSymbol.pfb                                16.72 kB\ndist/pdf-fonts/FoxitFixed.pfb                                 17.59 kB\ndist/pdf-fonts/FoxitFixedBold.pfb                             18.05 kB\ndist/pdf-fonts/FoxitFixedItalic.pfb                           18.74 kB\ndist/pdf-fonts/FoxitFixedBoldItalic.pfb                       19.15 kB\ndist/pdf-fonts/FoxitSerifBold.pfb                             19.39 kB\ndist/pdf-fonts/FoxitSerif.pfb                                 19.46 kB\ndist/pdf-fonts/FoxitSerifBoldItalic.pfb                       20.73 kB\ndist/pdf-fonts/FoxitSerifItalic.pfb                           21.22 kB\ndist/assets/geist-latin-wght-normal-BgDaEnEv.woff2            29.40 kB\ndist/pdf-fonts/FoxitDingbats.pfb                              29.51 kB\ndist/pdf-fonts/LiberationSans-BoldItalic.ttf                 135.12 kB\ndist/pdf-fonts/LiberationSans-Bold.ttf                       137.05 kB\ndist/pdf-fonts/LiberationSans-Regular.ttf                    139.51 kB\ndist/pdf-fonts/LiberationSans-Italic.ttf                     162.03 kB\ndist/assets/pdf.worker.min-BmVo14Nb.mjs                    1,317.03 kB\ndist/assets/ProductSystemView-DJMb3_3z.css                     5.95 kB \u2502 gzip:   1.57 kB\ndist/assets/GuidelineWorkspace-pv6HtDMK.css                   28.06 kB \u2502 gzip:   4.89 kB\ndist/assets/index-DqZwDzbM.css                                57.43 kB \u2502 gzip:  11.26 kB\ndist/assets/ProductSystemView-CE-uCM25.js                     10.03 kB \u2502 gzip:   3.33 kB\ndist/assets/authoring-B-72gCZG.js                             23.56 kB \u2502 gzip:   8.82 kB\ndist/assets/authoringControlOutlinesV1-CUn7KnTU.js            44.84 kB \u2502 gzip:  13.74 kB\ndist/assets/download-Bic2EQq1.js                              45.62 kB \u2502 gzip:  18.29 kB\ndist/assets/colorSystemRecipeV1-j5Vien0D.js                  104.31 kB \u2502 gzip:  31.85 kB\ndist/assets/sourceProvenanceDisclosureData-CxLfFIWs.js       166.30 kB \u2502 gzip:  52.12 kB\ndist/assets/index-BmqK63Sg.js                                359.52 kB \u2502 gzip: 113.15 kB\ndist/assets/GuidelineWorkspace-Bx1OtM9V.js                 1,149.57 kB \u2502 gzip: 343.64 kB\n\n[plugin builtin:vite-reporter] \n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n\u2713 built in 241ms\nIncluded 86 web dependency notices plus Teul source and APCA notices.\n"
+        }
+      ],
+      "browsers": {
+        "manualRefresh": {
+          "node": "v24.19.0",
+          "scriptSha256": "74b45ddf2d4cd680606457cb260b379f3f4ac79173b73fac5deadfc4c090ed08",
+          "fixtureSha256": "16d34e044eae78d05115054ad8b2350c04ff818018b2768d39a80053aaac38d6",
+          "updatedSha256": "2ccb8502d3e759d1adfa0148db9eec422074f4037a8002fa1d9f1bbe74c5f684",
+          "buildHashes": {
+            "index.html": "a980370a2eabf628b30a09e019a540f53f758f0650cd86d6ac5c5b9d27a64d79",
+            "assets/GuidelineWorkspace-Bx1OtM9V.js": "8ac40182f10359259027ce66deabf35c56c61821d815f56aa14fa7bbf1dcff07",
+            "assets/GuidelineWorkspace-pv6HtDMK.css": "ecf811dfe4d1f6341fef82b5470b65f8797494db4b415ee152ac1e5377db88c9",
+            "assets/ProductSystemView-CE-uCM25.js": "7ed7b85c6c3fe8c199c8e177d5f7fe61edb05ca357a04327be14315ba1061bb5",
+            "assets/ProductSystemView-DJMb3_3z.css": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764",
+            "assets/authoring-B-72gCZG.js": "6fed5cfbc6b659ecfe3d1435772aea6712cd35a0b6642cf934f093c2441f557a",
+            "assets/authoringControlOutlinesV1-CUn7KnTU.js": "3f567ccdb932031887a839cac1c8742746bec46f1578a9903af7d0124036a6c5",
+            "assets/colorSystemRecipeV1-j5Vien0D.js": "50461895434c739ede52f5eb0f22a2738e77526a6a44c7dd685b0b7f5cf0bb31",
+            "assets/download-Bic2EQq1.js": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6",
+            "assets/index-BmqK63Sg.js": "a429e7c6c3f878907c7df9e42dea5a26e69288c0d4e996a8fe8c50c269f0e636",
+            "assets/index-DqZwDzbM.css": "b390d285db969f0ef874b31cd0d191b798ad63ec29ebc6faaac63b7aa9378bde",
+            "assets/sourceProvenanceDisclosureData-CxLfFIWs.js": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361"
+          },
+          "checks": [
+            "Updated PDF has a new digest, no carried confirmations; preparing and cancelling a fresh crop leaves the pending project byte-identical.",
+            "An edge-touching region whose reconstructed percentages exceed 100 by floating-point rounding remains reviewable through exact saved pixel geometry.",
+            "Both transcription and approximate sample require fresh confirmation; complete scale anchors restore only after both, and pending work reopens exactly in browser and Node.",
+            "Fresh source review restores the exact gradient stops, extension paint and composition SVG; recovered output reopens byte-identically.",
+            "Opening another project discards the pending editor and prevents its prepared crop from publishing.",
+            "Opening another project while a real PDF render is held cancels preparation; releasing the old paint cannot publish its crop or alter the new project.",
+            "Previous/fresh crops and confirmation controls fit a 390px viewport; Escape cancels without changing the saved source."
+          ],
+          "errors": [],
+          "requests": [],
+          "browser": "153.0.8010.12",
+          "status": "passed"
+        },
+        "manual": {
+          "startedAt": "2026-09-26T09:35:05.065Z",
+          "node": "v24.19.0",
+          "fixtureHashes": {
+            "harbor-scanned.pdf": "16d34e044eae78d05115054ad8b2350c04ff818018b2768d39a80053aaac38d6",
+            "harbor-native.pdf": "4a6b3f600697dbd46bed4988a07224fc8ed894da2429a0b57294712745dfec35"
+          },
+          "buildHashes": {
+            "index.html": "a980370a2eabf628b30a09e019a540f53f758f0650cd86d6ac5c5b9d27a64d79",
+            "assets/GuidelineWorkspace-Bx1OtM9V.js": "8ac40182f10359259027ce66deabf35c56c61821d815f56aa14fa7bbf1dcff07",
+            "assets/GuidelineWorkspace-pv6HtDMK.css": "ecf811dfe4d1f6341fef82b5470b65f8797494db4b415ee152ac1e5377db88c9",
+            "assets/ProductSystemView-CE-uCM25.js": "7ed7b85c6c3fe8c199c8e177d5f7fe61edb05ca357a04327be14315ba1061bb5",
+            "assets/ProductSystemView-DJMb3_3z.css": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764",
+            "assets/authoring-B-72gCZG.js": "6fed5cfbc6b659ecfe3d1435772aea6712cd35a0b6642cf934f093c2441f557a",
+            "assets/authoringControlOutlinesV1-CUn7KnTU.js": "3f567ccdb932031887a839cac1c8742746bec46f1578a9903af7d0124036a6c5",
+            "assets/colorSystemRecipeV1-j5Vien0D.js": "50461895434c739ede52f5eb0f22a2738e77526a6a44c7dd685b0b7f5cf0bb31",
+            "assets/download-Bic2EQq1.js": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6",
+            "assets/index-BmqK63Sg.js": "a429e7c6c3f878907c7df9e42dea5a26e69288c0d4e996a8fe8c50c269f0e636",
+            "assets/index-DqZwDzbM.css": "b390d285db969f0ef874b31cd0d191b798ad63ec29ebc6faaac63b7aa9378bde",
+            "assets/sourceProvenanceDisclosureData-CxLfFIWs.js": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361"
+          },
+          "status": "passed",
+          "finishedAt": "2026-09-26T09:35:10.646Z",
+          "url": "http://127.0.0.1:63167/",
+          "checks": [
+            "A real scanned PDF has zero extracted text/color observations and an explicit coverage gap; adding user evidence is a separate action.",
+            "Invalid values and values lacking retained source evidence cannot be confirmed. A user-confirmed transcription retains its crop and literal without rewriting the native capture.",
+            "Preparing a sample does not accept it. Escape declines the sample, restores keyboard focus, and leaves the saved project byte-for-byte unchanged.",
+            "Explicit sample acceptance records the exact retained center pixel as an opaque, approximate rendered sRGB value. Bounds validation, 44px controls and keyboard acceptance work at 390px without overflow.",
+            "Both accepted methods feed the shared review and gradient compiler; the review and CSS export preserve their distinct provenance notices.",
+            "V4 project, selected gradient and provenance exports reopen byte-for-byte offline without the PDF. Recorded crops remain inspectable; preparing new regions is unavailable.",
+            "Canceling a correction preserves all work. Confirming a wrong-digit correction works from the saved crop offline, appends a replacement, revokes/excludes its predecessor, and clears reviewed/generated results.",
+            "Revocation clears a selected design and excludes the sample from the next compiled review while keeping its evidence and acceptance history.",
+            "Moving to an unselected page discards the pending form and disables adding source evidence. Returning to a selected page re-enables preparation without committing the discarded value.",
+            "Corrected and revoked history survives a later project reopen with exact source and acceptance state."
+          ],
+          "failures": [],
+          "diagnostics": [],
+          "externalRequests": [],
+          "artifacts": [
+            {
+              "file": "node24-manual-mobile-keyboard.png",
+              "sha256": "d1cd7f90706a7a3a4f55334138e2bc7f4184a9c65e883375504f5c659dee7ac1"
+            },
+            {
+              "file": "node24-manual-mobile-sample.png",
+              "sha256": "a2b5cefcebfab3c882023bebff52982c09af1bfa30c6795f9541f26f94c0537b"
+            },
+            {
+              "file": "node24-accepted-source-review.json",
+              "sha256": "55a8ae4d9a0affffac14d723c2c4734b71a322500ffdeaae863ba9e997aadb49"
+            },
+            {
+              "file": "node24-accepted-project.json",
+              "sha256": "0c245b031848261fa710700061a84bfc0712747efc3eeacd891f60c8c2345fe5"
+            },
+            {
+              "file": "node24-accepted-gradient.css",
+              "sha256": "2157492723a5556331ca30626f102cdf65c2799ee8dd466d252029fc778247eb"
+            },
+            {
+              "file": "node24-manual-desktop.png",
+              "sha256": "e1a8180a7273fa7db1d53bf5395ca67a1678a143ed34367b9f2e047083b99cac"
+            },
+            {
+              "file": "node24-manual-offline-crop.png",
+              "sha256": "12d4b7293fe557a9c1bdacb0f7667e13845f00ff0b5a2ae7c14ebd5ba1de918e"
+            },
+            {
+              "file": "node24-corrected-project.json",
+              "sha256": "c451570525e568f284d9737d1750f02b6d9b7d813b402f5888ed0b58cdccc523"
+            }
+          ]
+        },
+        "pdfRefresh": {
+          "status": "passed",
+          "node": "v24.19.0",
+          "checks": [
+            "Recapturing the same PDF/pages is a no-op even with a fresh capture timestamp; no revision or design reset occurs.",
+            "An unrelated selected-page edit retains both color decisions; rejecting preserves byte-exact project and gradient.",
+            "Editing the current review discards its staged proposal, preventing acceptance against a stale draft.",
+            "A real IndexedDB save failure prevents source replacement and preserves the exact selected design.",
+            "Acceptance preserves the exact prior design first, resets changed-color inclusion and applied results, and subsequent save appends the new source alongside the old revision.",
+            "A changed PDF anchor makes its previous gradient stale; restoration cannot silently substitute a new paint.",
+            "An added restriction enters the proposed draft unresolved; rejecting retains the preceding approved local review and gradient.",
+            "Malformed updated input preserves the current source, review and output.",
+            "Cancelling a delayed real File read prevents its late completion from publishing a comparison or changing the project.",
+            "Opening another project while acceptance waits on storage cancels the stale save and prevents late source replacement.",
+            "An unrelated PDF change preserves exact gradient paint under the renewed review, survives portable reopen, and a later review edit invalidates restoration.",
+            "390px comparison fits, no browser errors and no source or service network requests."
+          ],
+          "errors": [],
+          "requests": []
+        }
+      }
+    }
+  ],
+  "review": {
+    "status": "resolved",
+    "findings": [
+      "Exact saved geometry bypasses rounded percentage validation.",
+      "Scale capacity and invalid edited drafts surface a notice without replacing current work.",
+      "Invariant comparison and frozen witness appearances are cached across edits."
+    ],
+    "compatibility": "Capture-only proposal hash and historical saved formats unchanged."
+  },
+  "remaining": [
+    "Multi-source reconciliation",
+    "Broader source evaluation and full acceptance criteria",
+    "Live connector/host readiness",
+    "Human palette and composition judgment",
+    "Integration and release gates"
+  ]
+}

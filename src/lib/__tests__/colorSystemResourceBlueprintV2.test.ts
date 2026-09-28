@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { deterministicContentHash } from '../colorSystemAudit';
+import { deterministicContentHash } from '../colorSystemHashing';
 import {
   COLOR_SYSTEM_BUILDER_BRIEF_V2_SCHEMA_VERSION,
   COLOR_SYSTEM_BUILDER_V2_POLICY_VERSION,
@@ -18,10 +18,15 @@ import {
   buildColorSystemStrategySetV2,
 } from '../colorSystemBuilderV2Integrity';
 import {
+  buildColorSystemApplicationBlueprintV2,
   buildColorSystemSectionBlueprintV2,
+  colorSystemApplicationInputFromBlueprintV2,
   type ColorSystemSectionBlueprintV2FrameTuple,
 } from '../colorSystemApplicationBlueprintV2';
 import { composeColorSystemApplicationBlueprintV2 } from '../colorSystemApplicationComposerV2';
+import { graphicsRequirementsFixtureV1 } from './helpers/colorSystemGraphicsRequirementsFixtureV1';
+import { buildColorSystemReviewModelV2 } from '../colorSystemReviewModelV2';
+import { validateColorSystemBuilderV2PluginMessage } from '../colorSystemBuilderV2MessageValidation';
 import {
   COLOR_SYSTEM_PRESENTATION_PROFILE_V2_SCHEMA_VERSION,
   type ColorSystemPresentationProfileV2,
@@ -32,6 +37,10 @@ import {
   buildColorSystemResourceBlueprintV2,
 } from '../colorSystemResourceBlueprintV2';
 import { hexToOklch, hexToRgb } from '../utils';
+import {
+  buildColorSystemFreshSourceAuthorityV2,
+  buildColorSystemReviewedSelectionV2,
+} from '../colorSystemCreateAuthorizationV2';
 
 const MODE = 'Light';
 const SOURCE_HASH = deterministicContentHash('resource-source-authority');
@@ -397,14 +406,14 @@ function sectionFrames(brief: ColorSystemBuilderBriefV2): ColorSystemSectionBlue
   })) as unknown as ColorSystemSectionBlueprintV2FrameTuple;
 }
 
-function fixture(permuted = false) {
+function fixture(permuted = false, declaredGraphics = false) {
   const profile = presentationProfile();
   const brief = buildBrief(profile);
   const families = [0, 1, 2, 3].map(family);
   const candidate = buildColorSystemStrategyCandidateV2(brief, {
     version: COLOR_SYSTEM_STRATEGY_CANDIDATE_V2_SCHEMA_VERSION,
     policyVersion: COLOR_SYSTEM_BUILDER_V2_POLICY_VERSION,
-    id: 'resource-candidate',
+    id: 'secondary-balanced-contrast',
     label: 'Resource candidate',
     status: 'complete',
     targetFamilyCount: 4,
@@ -454,6 +463,9 @@ function fixture(permuted = false) {
     categoricalMarkCount: 4,
     sequentialMarkCount: 3,
     divergingMarkCount: 3,
+    ...(declaredGraphics
+      ? { productGraphicsRequirements: graphicsRequirementsFixtureV1(brief) }
+      : {}),
   });
   if (composed.status !== 'ready') {
     throw new Error(`Fixture application blocked: ${JSON.stringify(composed.blockers)}`);
@@ -473,14 +485,144 @@ function fixture(permuted = false) {
     profile,
     {
       compilerVersion: 'resource-compiler-test-v2',
-      systemId: 'ramp-color-system',
-      outputName: 'Ramp Color System',
+      systemId: 'example-color-system',
+      outputName: 'Example Color System',
     }
   );
   return { profile, brief, candidate, strategySet, application, section, resource };
 }
 
 describe('ColorSystemResourceBlueprintV2', () => {
+  it('keeps every declared layer and exact pair in named resource bindings and review receipts', () => {
+    const built = fixture(false, true);
+    const review = buildColorSystemReviewModelV2(built.brief, built.candidate, built.section);
+    const specimens = review.sections.find(
+      section => section.role === 'product-graphics'
+    )!.productGraphicsSpecimens!;
+    expect(specimens).toHaveLength(3);
+    for (const component of built.resource.components.filter(
+      component => component.kind === 'product-graphics'
+    )) {
+      const specimen = specimens.find(
+        specimen =>
+          specimen.derivationId === (component.content as { derivationId: string }).derivationId
+      )!;
+      expect(specimen.rendering!.provenance).toBe('declared-context');
+      expect(specimen.rendering!.pairs).toHaveLength(2);
+      expect(specimen.rendering!.pairs.every(pair => pair.contrast.status === 'pass')).toBe(true);
+      expect(component.paintBindings.map(binding => binding.purpose).sort()).toEqual(
+        specimen.rendering!.uses.map(use => `use:${use.id}`).sort()
+      );
+      expect(specimen.renderingLimitation).toBeNull();
+    }
+    const message = {
+      type: 'intelligent-color-system-v2-analysis-result',
+      requestId: 'builder:graphics',
+      success: true,
+      sessionId: 'session-graphics',
+      sourceColorCount: built.brief.preservedColors.length,
+      scannedNodeCount: 1,
+      resolvedUsageScope: 'whole-file',
+      recommendedDirectionId: review.directionId,
+      selectedDirectionId: review.directionId,
+      reviews: [review],
+      limitations: [],
+    };
+    expect(validateColorSystemBuilderV2PluginMessage(message).valid).toBe(true);
+    const malformed = structuredClone(review);
+    const graphic = malformed.sections.find(section => section.role === 'product-graphics')!
+      .productGraphicsSpecimens![0];
+    graphic.rendering = {
+      ...graphic.rendering!,
+      nodes: graphic.rendering!.nodes.map((node, index) =>
+        index ? node : { ...node, width: node.width - 1 }
+      ),
+    };
+    const { reviewModelHash: _hash, ...content } = malformed;
+    malformed.reviewModelHash = deterministicContentHash(content);
+    expect(
+      validateColorSystemBuilderV2PluginMessage({ ...message, reviews: [malformed] }).valid
+    ).toBe(false);
+  });
+
+  it('keeps legacy decorative alpha colors and derived aliases exportable with an explicit rendering limitation', () => {
+    const built = fixture();
+    const input = colorSystemApplicationInputFromBlueprintV2(built.application);
+    const application = buildColorSystemApplicationBlueprintV2(built.brief, built.candidate, {
+      ...input,
+      pairContexts: input.pairContexts.filter(
+        pair => !input.productGraphics[0].pairEvidenceIds.includes(pair.id)
+      ),
+      productGraphics: input.productGraphics.map((specimen, index) =>
+        index
+          ? specimen
+          : {
+              ...specimen,
+              assessment: 'decorative',
+              transform: { kind: 'alpha', alpha: 0.4 },
+              pairEvidenceIds: [],
+              nonColorCue: null,
+            }
+      ),
+    });
+    const section = buildColorSystemSectionBlueprintV2(built.brief, built.candidate, {
+      applicationBlueprint: application,
+      compilerVersion: 'resource-section-compiler-v2',
+      frames: sectionFrames(built.brief),
+    });
+    const resource = buildColorSystemResourceBlueprintV2(
+      built.brief,
+      built.strategySet,
+      built.candidate,
+      application,
+      section,
+      built.profile,
+      {
+        compilerVersion: 'resource-compiler-test-v2',
+        systemId: 'example-color-system',
+        outputName: 'Example Color System',
+      }
+    );
+    const graphic = application.productGraphics[0];
+    const derived = resource.collections[0].variables.find(
+      variable =>
+        variable.kind === 'derivation' &&
+        variable.origin.kind === 'application-derivation' &&
+        variable.origin.derivationId === graphic.derivationId
+    );
+    expect(derived).toBeDefined();
+    if (!derived) throw new Error('Missing derived color.');
+    expect(derived.valuesByMode.Light).toEqual(graphic.colors[0].appliedValue);
+    expect(derived.valuesByMode.Light.alpha).toBe(0.4);
+    const content = resource.components.find(
+      component =>
+        component.kind === 'product-graphics' &&
+        (component.content as { derivationId: string }).derivationId === graphic.derivationId
+    )!.content as { rendering: unknown; renderingLimitation: string };
+    expect(content.rendering).toBeNull();
+    expect(content.renderingLimitation).toMatch(/legacy/i);
+    expect(() =>
+      assertColorSystemResourceBlueprintV2Integrity(
+        built.brief,
+        built.strategySet,
+        built.candidate,
+        application,
+        section,
+        built.profile,
+        resource
+      )
+    ).not.toThrow();
+    const specimen = buildColorSystemReviewModelV2(
+      built.brief,
+      built.candidate,
+      section
+    ).sections.find(section => section.role === 'product-graphics')!.productGraphicsSpecimens![0];
+    expect(specimen.colors[0].alpha).toBe(0.4);
+    expect(specimen.accessibilityStatus).toBe('exempt');
+    expect(specimen.rendering).toBeNull();
+    expect(specimen.renderingLimitation).toMatch(/legacy/i);
+  });
+
   it('compiles a deterministic closed graph with exactly two collections and five governed frames', () => {
     const first = fixture();
     const second = fixture(true);
@@ -518,6 +660,28 @@ describe('ColorSystemResourceBlueprintV2', () => {
         component.paintBindings.every(binding => semanticRecipeIds.has(binding.variableRecipeId))
       ).toBe(true);
     }
+    const legacyEstimate =
+      first.resource.counts.variables +
+      first.resource.styles.length +
+      first.resource.components.reduce(
+        (sum, component) =>
+          sum +
+          4 +
+          (component.kind === 'product-graphics'
+            ? (component.content as { rendering: { nodes: unknown[] } }).rendering.nodes.length
+            : component.paintBindings.length * 2),
+        0
+      ) +
+      first.resource.frames.reduce(
+        (sum, frame) =>
+          sum + 8 + frame.componentRecipeIds.length * 2 + frame.systemVariableRecipeIds.length,
+        0
+      );
+    const legendNodes = dataVisualizationComponents.reduce((sum, component) => {
+      const content = component.content as { marks: unknown[] };
+      return sum + 1 + content.marks.length * 2;
+    }, 0);
+    expect(first.resource.counts.estimatedNodes).toBe(legacyEstimate + legendNodes);
     expect(first.resource.counts.variables).toBeLessThanOrEqual(512);
     expect(first.resource.counts.aliasVariables).toBeLessThanOrEqual(128);
     expect(() =>
@@ -531,6 +695,163 @@ describe('ColorSystemResourceBlueprintV2', () => {
         first.resource
       )
     ).not.toThrow();
+  });
+
+  it('retains only the exact historical node estimate through the create review integrity chain', () => {
+    const built = fixture();
+    const historical = structuredClone(built.resource);
+    historical.counts.estimatedNodes -= historical.components
+      .filter(component => component.kind === 'data-visualization')
+      .reduce((sum, component) => {
+        const content = component.content as { marks: unknown[] };
+        return sum + 1 + 2 * content.marks.length;
+      }, 0);
+    const rehash = (resource: typeof historical) => {
+      const { resourceBlueprintHash: _hash, ...content } = resource;
+      resource.resourceBlueprintHash = deterministicContentHash(content);
+      return resource;
+    };
+    rehash(historical);
+    const now = '2026-09-25T12:00:00.000Z';
+    const review = (resourceBlueprint: typeof historical) =>
+      buildColorSystemReviewedSelectionV2({
+        sourceAuthority: buildColorSystemFreshSourceAuthorityV2({
+          sourceAuthorityHash: built.brief.sourceHash,
+          sourcePackageHash: built.brief.sourcePackageHash,
+          liveSourceHash: deterministicContentHash('historical-resource-live-source'),
+          currentFileIdentityHash: deterministicContentHash('historical-resource-file'),
+          revalidatedAt: now,
+          validUntil: '2026-09-25T12:05:00.000Z',
+        }),
+        brief: built.brief,
+        strategySet: built.strategySet,
+        candidate: built.candidate,
+        applicationBlueprint: built.application,
+        sectionBlueprint: built.section,
+        presentationProfile: built.profile,
+        resourceBlueprint,
+        sessionId: 'historical-resource-session',
+        reviewedAt: now,
+        now,
+      });
+    expect(review(historical).resourceBlueprintHash).toBe(historical.resourceBlueprintHash);
+    const alteredCount = structuredClone(historical);
+    alteredCount.counts.estimatedNodes -= 1;
+    expect(() => review(rehash(alteredCount))).toThrow();
+    const alteredMark = structuredClone(historical);
+    const chart = alteredMark.components.find(
+      component => component.kind === 'data-visualization'
+    )!;
+    (chart.content as { marks: { label: string }[] }).marks[0].label = 'Changed category';
+    expect(() => review(rehash(alteredMark))).toThrow();
+    const forgedHash = structuredClone(historical);
+    forgedHash.resourceBlueprintHash = built.resource.resourceBlueprintHash;
+    expect(() => review(forgedHash)).toThrow();
+  });
+
+  it('names tokens by path, anchors styles, and records skipped state tokens for named pairs (p3-C)', () => {
+    const { resource } = fixture();
+    const primitives = resource.collections[0].variables;
+    const aliases = resource.collections[1].variables;
+    expect(
+      primitives.map(variable => variable.name).filter(name => name.startsWith('source/'))
+    ).toEqual(
+      expect.arrayContaining([
+        'source/primary/solar',
+        'source/typography/white',
+        'source/typography/black',
+        'source/typography/supporting',
+      ])
+    );
+    expect(primitives.map(variable => variable.name)).toEqual(
+      expect.arrayContaining(['color/family-1/base', 'color/family-1/light', 'color/family-4/base'])
+    );
+    expect(resource.tokenNaming.families.map(family => family.slug).sort()).toEqual([
+      'family-1',
+      'family-2',
+      'family-3',
+      'family-4',
+    ]);
+    expect(resource.tokenNaming.families.every(family => family.basis === 'brand-name')).toBe(true);
+    expect(
+      resource.tokenNaming.families.every(family => family.anchorMemberId?.endsWith('-base'))
+    ).toBe(true);
+    for (const alias of aliases) expect(alias.name).toMatch(/^semantic\//);
+    // Named base/light pairs have no step 10 or 11: every interactive role is skipped, and says why.
+    expect(resource.tokenNaming.stateTokens).toEqual([]);
+    expect(resource.tokenNaming.stateTokenSkips.map(skip => skip.role)).toEqual(
+      expect.arrayContaining(['success', 'error', 'selected', 'link'])
+    );
+    for (const skip of resource.tokenNaming.stateTokenSkips) {
+      expect(skip.reason).toContain('12-step scale');
+    }
+    // Styles: four exact sources, four base anchors, and every non-typography alias.
+    const styled = new Set(resource.styles.map(style => style.binding.variableRecipeId));
+    for (const primitive of primitives) {
+      const anchor =
+        primitive.origin.kind === 'preserved-source' || primitive.name.endsWith('/base');
+      expect(styled.has(primitive.recipeId)).toBe(anchor);
+    }
+    for (const alias of aliases) {
+      expect(styled.has(alias.recipeId)).toBe(alias.applicationKind !== 'typography');
+    }
+    expect(resource.tokenNaming.stylePolicy.emittedStyles).toBe(resource.styles.length);
+    expect(resource.counts.styles).toBe(resource.styles.length);
+    expect(resource.tokenNaming.stylePolicy.anchorVariableRecipeIds).toHaveLength(8);
+  });
+
+  it('keeps colliding family names apart with deterministic suffixes (p3-C)', () => {
+    const base = fixture();
+    const families = base.candidate.families.map((family, index) => ({
+      ...family,
+      // Distinct display names that fold to the same slug.
+      displayName: ['Sky', 'sky', ' Sky ', 'SKY!'][index],
+    }));
+    const {
+      actualSystemHash: _actualSystemHash,
+      candidateHash: _candidateHash,
+      compositionReceipt: _compositionReceipt,
+      ...candidateInput
+    } = base.candidate;
+    const candidate = buildColorSystemStrategyCandidateV2(base.brief, {
+      ...candidateInput,
+      families,
+    });
+    const strategySet = buildColorSystemStrategySetV2(base.brief, {
+      status: 'ready',
+      candidates: [candidate],
+      blockers: [],
+    });
+    const composed = composeColorSystemApplicationBlueprintV2(base.brief, candidate, {
+      modes: [MODE],
+      applicationMode: MODE,
+      categoricalMarkCount: 4,
+      sequentialMarkCount: 3,
+      divergingMarkCount: 3,
+    });
+    if (composed.status !== 'ready') throw new Error('Collision fixture blocked.');
+    const section = buildColorSystemSectionBlueprintV2(base.brief, candidate, {
+      applicationBlueprint: composed.blueprint,
+      compilerVersion: 'resource-section-compiler-v2',
+      frames: sectionFrames(base.brief),
+    });
+    const resource = buildColorSystemResourceBlueprintV2(
+      base.brief,
+      strategySet,
+      candidate,
+      composed.blueprint,
+      section,
+      base.profile,
+      { compilerVersion: 'resource-compiler-test-v2', systemId: 'sky', outputName: 'Sky' }
+    );
+    const slugs = resource.tokenNaming.families
+      .slice()
+      .sort((left, right) => left.familyId.localeCompare(right.familyId))
+      .map(family => family.slug);
+    expect(slugs).toEqual(['sky', 'sky-2', 'sky-3', 'sky-4']);
+    const names = resource.collections[0].variables.map(variable => variable.name);
+    expect(new Set(names).size).toBe(names.length);
+    expect(names).toContain('color/sky-4/light');
   });
 
   it('preserves exact Primary and alpha values while never materializing evidence-only source colors', () => {
@@ -620,8 +941,8 @@ describe('ColorSystemResourceBlueprintV2', () => {
         staleProfile,
         {
           compilerVersion: 'resource-compiler-test-v2',
-          systemId: 'ramp-color-system',
-          outputName: 'Ramp Color System',
+          systemId: 'example-color-system',
+          outputName: 'Example Color System',
         }
       )
     ).toThrow('stale or forged');

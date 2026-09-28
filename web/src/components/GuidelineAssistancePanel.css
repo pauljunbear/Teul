@@ -1,0 +1,215 @@
+.guideline-assistance {
+  min-width: 0;
+  margin: 24px 0;
+  padding: 20px 0;
+  border-block: 1px solid var(--border);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.guideline-assistance :is(h3, h4, h5, p) {
+  margin: 0;
+}
+.guideline-assistance h3 {
+  font-size: 18px;
+  font-weight: 500;
+}
+.guideline-assistance h4 {
+  font-size: 16px;
+  font-weight: 500;
+}
+.guideline-assistance h5 {
+  font-size: 14px;
+  font-weight: 500;
+}
+.guideline-assistance h5 span {
+  display: block;
+  color: var(--studio-muted);
+  font-weight: 400;
+}
+.guideline-assistance-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.guideline-assistance-heading p {
+  color: var(--studio-muted);
+  margin-top: 4px;
+}
+.guideline-assistance .guideline-assistance-status {
+  margin: 14px 0;
+}
+.guideline-assistance .guideline-assistance-problem {
+  margin: 12px 0;
+  border-left: 2px solid currentColor;
+  padding-left: 12px;
+}
+.guideline-assistance-options {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+}
+.guideline-assistance-options > label:first-child {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+}
+.guideline-assistance select {
+  color: inherit;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  min-height: 44px;
+  width: 100%;
+}
+.guideline-assistance :is(button, summary) {
+  min-height: 44px;
+}
+.guideline-assistance select:focus-visible,
+.guideline-assistance summary:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+.guideline-assistance select:disabled {
+  opacity: 0.5;
+}
+.guideline-assistance-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  cursor: pointer;
+}
+.guideline-assistance .guideline-assistance-check input {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  min-height: 18px;
+  padding: 0;
+  accent-color: var(--foreground);
+}
+.guideline-assistance-check small {
+  display: block;
+  color: var(--studio-muted);
+}
+.guideline-assistance-consent,
+.guideline-assistance-results {
+  display: grid;
+  gap: 14px;
+  margin-top: 20px;
+}
+.guideline-assistance-consent > button {
+  justify-self: start;
+}
+.guideline-assistance dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+.guideline-assistance dl > div {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 12px;
+}
+.guideline-assistance dt {
+  color: var(--studio-muted);
+}
+.guideline-assistance dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.guideline-assistance summary {
+  cursor: pointer;
+  align-content: center;
+  padding-block: 8px;
+}
+.guideline-assistance pre {
+  margin-top: 8px;
+  padding: 12px;
+  border-radius: 6px;
+  background: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 320px;
+  overflow: auto;
+}
+.guideline-assistance-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
+  gap: 16px;
+}
+.guideline-assistance-images figure {
+  margin: 0;
+}
+.guideline-assistance-images img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.guideline-assistance-images figcaption {
+  margin-top: 6px;
+  color: var(--studio-muted);
+}
+.guideline-assistance-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.guideline-assistance-actions:not(:empty) {
+  margin-top: 12px;
+}
+.guideline-assistance-group {
+  border-top: 1px solid var(--border);
+}
+.guideline-assistance-group summary span {
+  margin-left: 8px;
+  color: var(--studio-muted);
+  font-variant-numeric: tabular-nums;
+}
+.guideline-assistance-group ol {
+  display: grid;
+  gap: 16px;
+  list-style: none;
+  margin: 8px 0 16px;
+  padding: 0;
+}
+.guideline-assistance-group li {
+  display: grid;
+  gap: 6px;
+  overflow-wrap: anywhere;
+}
+.guideline-assistance-basis {
+  color: var(--studio-muted);
+  font-size: 12px;
+  text-transform: capitalize;
+}
+.guideline-assistance-evidence {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  color: var(--studio-muted);
+  font-size: 12px;
+}
+.guideline-assistance-evidence button {
+  padding-inline: 0;
+  font-size: 12px;
+}
+@media (max-width: 600px) {
+  .guideline-assistance-heading {
+    align-items: start;
+    flex-direction: column;
+  }
+  .guideline-assistance dl > div {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+  .guideline-assistance-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

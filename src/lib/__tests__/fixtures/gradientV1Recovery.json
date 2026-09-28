@@ -1,0 +1,1674 @@
+[
+  {
+    "name": "restrained",
+    "design": {
+      "sourceModelHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "briefHash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "angleDegrees": 120,
+      "stops": [
+        {
+          "position": 0,
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#1A334D",
+            "components": {
+              "r": 0.1,
+              "g": 0.2,
+              "b": 0.3
+            },
+            "alpha": 1,
+            "representation": {
+              "kind": "native-srgb",
+              "exactValueHash": "sha256:88b3c17ce16f1c8b99d40a876a20c6d55d4c2183d22a895b0797d2b2b6728082"
+            }
+          },
+          "sourceColorId": "source-0",
+          "locked": true
+        },
+        {
+          "position": 1,
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#334D66",
+            "components": {
+              "r": 0.2,
+              "g": 0.3,
+              "b": 0.4
+            },
+            "alpha": 1,
+            "representation": {
+              "kind": "native-srgb",
+              "exactValueHash": "sha256:274ee915546636022b675c86b56126f72e36a24b52b9c929bdc4fa8eefce9cae"
+            }
+          },
+          "sourceColorId": "source-1",
+          "locked": true
+        }
+      ],
+      "route": {
+        "space": "oklab"
+      },
+      "schemaVersion": "teul.gradient-design.v1",
+      "compiledPaint": {
+        "version": "teul.opaque-srgb-gradient.v1",
+        "interpolation": "srgb",
+        "stops": [
+          {
+            "position": 0,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#1A334D",
+              "components": {
+                "r": 0.1,
+                "g": 0.2,
+                "b": 0.3
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:88b3c17ce16f1c8b99d40a876a20c6d55d4c2183d22a895b0797d2b2b6728082"
+              }
+            }
+          },
+          {
+            "position": 1,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#334D66",
+              "components": {
+                "r": 0.2,
+                "g": 0.3,
+                "b": 0.4
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:274ee915546636022b675c86b56126f72e36a24b52b9c929bdc4fa8eefce9cae"
+              }
+            }
+          }
+        ],
+        "approximation": {
+          "method": "uniform-oracle",
+          "intervalsPerAuthoredSegment": 4096,
+          "maxObservedDeltaEOK": 0.0005925189207317688
+        }
+      },
+      "designHash": "sha256:fd64287db1d8df22a6732bf542850eacbb47ff0925d8abef2fffd8b871835874"
+    },
+    "css": "linear-gradient(120deg in srgb, rgb(10%, 20%, 30%) 0%, rgb(20%, 30%, 40%) 100%)",
+    "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"800\" height=\"480\" viewBox=\"0 0 800 480\"><defs><linearGradient id=\"teul-gradient\" gradientUnits=\"userSpaceOnUse\" color-interpolation=\"sRGB\" x1=\"-3.92304845413\" y1=\"6.79491924311\" x2=\"803.923048454\" y2=\"473.205080757\"><stop offset=\"0\" stop-color=\"rgb(10%, 20%, 30%)\"/><stop offset=\"1\" stop-color=\"rgb(20%, 30%, 40%)\"/></linearGradient></defs><rect width=\"800\" height=\"480\" fill=\"url(#teul-gradient)\"/></svg>"
+  },
+  {
+    "name": "black-white",
+    "design": {
+      "sourceModelHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "briefHash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "angleDegrees": 120,
+      "stops": [
+        {
+          "position": 0,
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#000000",
+            "components": {
+              "r": 0,
+              "g": 0,
+              "b": 0
+            },
+            "alpha": 1
+          },
+          "sourceColorId": "source-0",
+          "locked": true
+        },
+        {
+          "position": 1,
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#FFFFFF",
+            "components": {
+              "r": 1,
+              "g": 1,
+              "b": 1
+            },
+            "alpha": 1
+          },
+          "sourceColorId": "source-1",
+          "locked": true
+        }
+      ],
+      "route": {
+        "space": "oklab"
+      },
+      "schemaVersion": "teul.gradient-design.v1",
+      "compiledPaint": {
+        "version": "teul.opaque-srgb-gradient.v1",
+        "interpolation": "srgb",
+        "stops": [
+          {
+            "position": 0,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#000000",
+              "components": {
+                "r": 0,
+                "g": 0,
+                "b": 0
+              },
+              "alpha": 1
+            }
+          },
+          {
+            "position": 0.0068359375,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#000000",
+              "components": {
+                "r": 0.000004127212155740896,
+                "g": 0.0000041272117874045,
+                "b": 0.000004127210790386074
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:5cfd82da4b9f3d231fd1dfb8d3dadfef71cb4273757016ac4c905e0fa185e1f8"
+              }
+            }
+          },
+          {
+            "position": 0.014404296875,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#000000",
+              "components": {
+                "r": 0.000038613461431027215,
+                "g": 0.000038613457984937556,
+                "b": 0.000038613448657010826
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:37f95ab95b576dcc1a9f73510f4569bdb18075732429517a86fe71875a706cc4"
+              }
+            }
+          },
+          {
+            "position": 0.035888671875,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#000000",
+              "components": {
+                "r": 0.0005972204964736934,
+                "g": 0.000597220443174268,
+                "b": 0.0005972202989025848
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:0c2bfd4917a98ac6a4bbace7f4c19992975c677e3d5b1eb08287145caff0c3d5"
+              }
+            }
+          },
+          {
+            "position": 0.0498046875,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#000000",
+              "components": {
+                "r": 0.0015961481623066622,
+                "g": 0.0015961480198571282,
+                "b": 0.0015961476342726023
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:ea6d2e1b5bb7e53b39614bc75a77b537cdeaacfaff8b580162dcc6e31bf3bda4"
+              }
+            }
+          },
+          {
+            "position": 0.07421875,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#010101",
+              "components": {
+                "r": 0.005282061467284315,
+                "g": 0.0052820609958824415,
+                "b": 0.005282059719884892
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:a0fd0d321cba9123d8b2b37a636517a81a6f7f0232dacb96178a730d8be6f5dc"
+              }
+            }
+          },
+          {
+            "position": 0.109619140625,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#040404",
+              "components": {
+                "r": 0.01701851739779858,
+                "g": 0.01701851587896721,
+                "b": 0.017018511767771843
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:02151f02b8d49bbabbf2b3cd2d05acf4053287b5bc633e70f7d84b56c95d8c46"
+              }
+            }
+          },
+          {
+            "position": 0.134765625,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#080808",
+              "components": {
+                "r": 0.0316227717334177,
+                "g": 0.031622768911217874,
+                "b": 0.0316227612720452
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:7874d682802c21b35ef628ef201c71d435839ccea6bfe2c0371f6c283f848e7c"
+              }
+            }
+          },
+          {
+            "position": 0.20947265625,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#181818",
+              "components": {
+                "r": 0.09450704131865831,
+                "g": 0.09450703575912617,
+                "b": 0.09450702071050004
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:f577b738dde72df9651f0599fb26d15290df75efd82df6316576965b60b5da96"
+              }
+            }
+          },
+          {
+            "position": 0.353515625,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#3B3B3B",
+              "components": {
+                "r": 0.23258301968223566,
+                "g": 0.2325830089882438,
+                "b": 0.23258298004158495
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:083adaec5d9ccdab186b7dc966b0d2aab18cb34fdf5551ed6a47e0d46d82da7f"
+              }
+            }
+          },
+          {
+            "position": 0.5341796875,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#6D6D6D",
+              "components": {
+                "r": 0.42679432959893254,
+                "g": 0.42679431168304643,
+                "b": 0.42679426318805497
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:17b7009b783791258e6b8d07fef69d3fb101c48a63b4a493fbe00c14053591b7"
+              }
+            }
+          },
+          {
+            "position": 0.7490234375,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#ADADAD",
+              "components": {
+                "r": 0.6801428393565744,
+                "g": 0.6801428120197321,
+                "b": 0.6801427380239556
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:a8a6e67f03da52a61e2a1c02b2b29d3ef690bd2305ab42e9d8907ecc8fd21e03"
+              }
+            }
+          },
+          {
+            "position": 1,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#FFFFFF",
+              "components": {
+                "r": 1,
+                "g": 1,
+                "b": 1
+              },
+              "alpha": 1
+            }
+          }
+        ],
+        "approximation": {
+          "method": "uniform-oracle",
+          "intervalsPerAuthoredSegment": 4096,
+          "maxObservedDeltaEOK": 0.0043472943338046495
+        }
+      },
+      "designHash": "sha256:6573faa3dbc32340eddf9b98c5e60512e8907877bade843b648c54a751b18995"
+    },
+    "css": "linear-gradient(120deg in srgb, rgb(0%, 0%, 0%) 0%, rgb(0.00041272121557408957%, 0.00041272117874045%, 0.00041272107903860737%) 0.68359375%, rgb(0.0038613461431027214%, 0.0038613457984937555%, 0.0038613448657010825%) 1.4404296875%, rgb(0.05972204964736934%, 0.059722044317426795%, 0.05972202989025849%) 3.5888671875%, rgb(0.15961481623066623%, 0.15961480198571282%, 0.15961476342726022%) 4.98046875%, rgb(0.5282061467284315%, 0.5282060995882442%, 0.5282059719884892%) 7.421875%, rgb(1.7018517397798578%, 1.7018515878967209%, 1.7018511767771842%) 10.9619140625%, rgb(3.1622771733417703%, 3.1622768911217873%, 3.1622761272045197%) 13.4765625%, rgb(9.45070413186583%, 9.450703575912616%, 9.450702071050005%) 20.947265625%, rgb(23.258301968223567%, 23.25830089882438%, 23.258298004158494%) 35.3515625%, rgb(42.679432959893255%, 42.679431168304646%, 42.6794263188055%) 53.41796875%, rgb(68.01428393565743%, 68.01428120197322%, 68.01427380239556%) 74.90234375%, rgb(100%, 100%, 100%) 100%)",
+    "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"800\" height=\"480\" viewBox=\"0 0 800 480\"><defs><linearGradient id=\"teul-gradient\" gradientUnits=\"userSpaceOnUse\" color-interpolation=\"sRGB\" x1=\"-3.92304845413\" y1=\"6.79491924311\" x2=\"803.923048454\" y2=\"473.205080757\"><stop offset=\"0\" stop-color=\"rgb(0%, 0%, 0%)\"/><stop offset=\"0.0068359375\" stop-color=\"rgb(0.00041272121557408957%, 0.00041272117874045%, 0.00041272107903860737%)\"/><stop offset=\"0.014404296875\" stop-color=\"rgb(0.0038613461431027214%, 0.0038613457984937555%, 0.0038613448657010825%)\"/><stop offset=\"0.035888671875\" stop-color=\"rgb(0.05972204964736934%, 0.059722044317426795%, 0.05972202989025849%)\"/><stop offset=\"0.0498046875\" stop-color=\"rgb(0.15961481623066623%, 0.15961480198571282%, 0.15961476342726022%)\"/><stop offset=\"0.07421875\" stop-color=\"rgb(0.5282061467284315%, 0.5282060995882442%, 0.5282059719884892%)\"/><stop offset=\"0.109619140625\" stop-color=\"rgb(1.7018517397798578%, 1.7018515878967209%, 1.7018511767771842%)\"/><stop offset=\"0.134765625\" stop-color=\"rgb(3.1622771733417703%, 3.1622768911217873%, 3.1622761272045197%)\"/><stop offset=\"0.20947265625\" stop-color=\"rgb(9.45070413186583%, 9.450703575912616%, 9.450702071050005%)\"/><stop offset=\"0.353515625\" stop-color=\"rgb(23.258301968223567%, 23.25830089882438%, 23.258298004158494%)\"/><stop offset=\"0.5341796875\" stop-color=\"rgb(42.679432959893255%, 42.679431168304646%, 42.6794263188055%)\"/><stop offset=\"0.7490234375\" stop-color=\"rgb(68.01428393565743%, 68.01428120197322%, 68.01427380239556%)\"/><stop offset=\"1\" stop-color=\"rgb(100%, 100%, 100%)\"/></linearGradient></defs><rect width=\"800\" height=\"480\" fill=\"url(#teul-gradient)\"/></svg>"
+  },
+  {
+    "name": "shorter",
+    "design": {
+      "sourceModelHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "briefHash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "angleDegrees": 120,
+      "stops": [
+        {
+          "position": 0,
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#1F8099",
+            "components": {
+              "r": 0.12,
+              "g": 0.5,
+              "b": 0.6
+            },
+            "alpha": 1,
+            "representation": {
+              "kind": "native-srgb",
+              "exactValueHash": "sha256:eb57009b22ae0ce00c6a451c6e3db810a4e164e5fe7ff41232501d5d1d59f1f2"
+            }
+          },
+          "sourceColorId": "source-0",
+          "locked": true
+        },
+        {
+          "position": 1,
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#5973B3",
+            "components": {
+              "r": 0.35,
+              "g": 0.45,
+              "b": 0.7
+            },
+            "alpha": 1,
+            "representation": {
+              "kind": "native-srgb",
+              "exactValueHash": "sha256:f249a615a893a7790ed12fb411b9c25d6f1be244e0875a53e3971053db93a0a1"
+            }
+          },
+          "sourceColorId": "source-1",
+          "locked": true
+        }
+      ],
+      "route": {
+        "space": "oklch",
+        "huePath": "shorter"
+      },
+      "schemaVersion": "teul.gradient-design.v1",
+      "compiledPaint": {
+        "version": "teul.opaque-srgb-gradient.v1",
+        "interpolation": "srgb",
+        "stops": [
+          {
+            "position": 0,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#1F8099",
+              "components": {
+                "r": 0.12,
+                "g": 0.5,
+                "b": 0.6
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:eb57009b22ae0ce00c6a451c6e3db810a4e164e5fe7ff41232501d5d1d59f1f2"
+              }
+            }
+          },
+          {
+            "position": 0.52197265625,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#3C7AAA",
+              "components": {
+                "r": 0.23602219862035784,
+                "g": 0.4781665492939889,
+                "b": 0.6668745286181508
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:c4f55a697cba08b22a97145864e84eb452625b6cb7d8a0bdb13fe81e945d8bc3"
+              }
+            }
+          },
+          {
+            "position": 1,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#5973B3",
+              "components": {
+                "r": 0.35,
+                "g": 0.45,
+                "b": 0.7
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:f249a615a893a7790ed12fb411b9c25d6f1be244e0875a53e3971053db93a0a1"
+              }
+            }
+          }
+        ],
+        "approximation": {
+          "method": "uniform-oracle",
+          "intervalsPerAuthoredSegment": 4096,
+          "maxObservedDeltaEOK": 0.001583054468408386
+        }
+      },
+      "designHash": "sha256:ba0cd3b31f914f4cc7f26bd70f6df130a616fbdc197fe1ef623d8801962c5b06"
+    },
+    "css": "linear-gradient(120deg in srgb, rgb(12%, 50%, 60%) 0%, rgb(23.602219862035785%, 47.81665492939889%, 66.68745286181507%) 52.197265625%, rgb(35%, 45%, 70%) 100%)",
+    "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"800\" height=\"480\" viewBox=\"0 0 800 480\"><defs><linearGradient id=\"teul-gradient\" gradientUnits=\"userSpaceOnUse\" color-interpolation=\"sRGB\" x1=\"-3.92304845413\" y1=\"6.79491924311\" x2=\"803.923048454\" y2=\"473.205080757\"><stop offset=\"0\" stop-color=\"rgb(12%, 50%, 60%)\"/><stop offset=\"0.52197265625\" stop-color=\"rgb(23.602219862035785%, 47.81665492939889%, 66.68745286181507%)\"/><stop offset=\"1\" stop-color=\"rgb(35%, 45%, 70%)\"/></linearGradient></defs><rect width=\"800\" height=\"480\" fill=\"url(#teul-gradient)\"/></svg>"
+  },
+  {
+    "name": "longer",
+    "design": {
+      "sourceModelHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "briefHash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "angleDegrees": 120,
+      "stops": [
+        {
+          "position": 0,
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#CC1A33",
+            "components": {
+              "r": 0.8,
+              "g": 0.1,
+              "b": 0.2
+            },
+            "alpha": 1,
+            "representation": {
+              "kind": "native-srgb",
+              "exactValueHash": "sha256:07d29ee4ef797e596360af5ed38486761fcc516b0097c6ee87a86152a934c6fb"
+            }
+          },
+          "sourceColorId": "source-0",
+          "locked": true
+        },
+        {
+          "position": 1,
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#1A1ACC",
+            "components": {
+              "r": 0.1,
+              "g": 0.1,
+              "b": 0.8
+            },
+            "alpha": 1,
+            "representation": {
+              "kind": "native-srgb",
+              "exactValueHash": "sha256:5ae111fb9f206cbee565636e7a36a5e435f66eb1ad6d1a3624cf3e0e5bc9960a"
+            }
+          },
+          "sourceColorId": "source-1",
+          "locked": true
+        }
+      ],
+      "route": {
+        "space": "oklch",
+        "huePath": "longer"
+      },
+      "schemaVersion": "teul.gradient-design.v1",
+      "compiledPaint": {
+        "version": "teul.opaque-srgb-gradient.v1",
+        "interpolation": "srgb",
+        "stops": [
+          {
+            "position": 0,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#CC1A33",
+              "components": {
+                "r": 0.8,
+                "g": 0.1,
+                "b": 0.2
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:07d29ee4ef797e596360af5ed38486761fcc516b0097c6ee87a86152a934c6fb"
+              }
+            }
+          },
+          {
+            "position": 0.018310546875,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#CC1A22",
+              "components": {
+                "r": 0.7982390716446052,
+                "g": 0.10166974310108456,
+                "b": 0.1320179373623594
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:002b21cbf83f159300a50de0da46e235cef01ccad66d09f9f5e20bf0aa8f78ff"
+              }
+            }
+          },
+          {
+            "position": 0.03759765625,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#CB1C00",
+              "components": {
+                "r": 0.7945077266197038,
+                "g": 0.10838746628484688,
+                "b": 0
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:4cb2b1dd8647bee4cbdba44ce42fd541a9aa62407b3a6ec6b33a669245bc3f50"
+              }
+            }
+          },
+          {
+            "position": 0.061279296875,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#C91F00",
+              "components": {
+                "r": 0.7872511519783608,
+                "g": 0.12260058777844454,
+                "b": 0
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:d051fd3d4a7531ad1cbea468d0c76411635e5070456d8ca12536f2e25fa1ec90"
+              }
+            }
+          },
+          {
+            "position": 0.079345703125,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#BF3200",
+              "components": {
+                "r": 0.7508400277467775,
+                "g": 0.19722718451485827,
+                "b": 0
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:dbb1521b8dc91193c23619633999709a139dcee7efd4d5cbe42f3863e01eb8f8"
+              }
+            }
+          },
+          {
+            "position": 0.09912109375,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#B73E00",
+              "components": {
+                "r": 0.7161276106573218,
+                "g": 0.24314570761052628,
+                "b": 0
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:edf62bcdd50cd04e553b6508a15403f9be44b16336f3ab5981af1b6974a42281"
+              }
+            }
+          },
+          {
+            "position": 0.139404296875,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#A74C00",
+              "components": {
+                "r": 0.6566199433473083,
+                "g": 0.2972529895679595,
+                "b": 0
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:1dcecf95ab64f4ef345e80cb61386b9f453b0a495912948fbadf14204e219480"
+              }
+            }
+          },
+          {
+            "position": 0.238525390625,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#8A5C00",
+              "components": {
+                "r": 0.5404270996069599,
+                "g": 0.3591725606239268,
+                "b": 0
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:9534527c0c9f667e4eaf67856abc574015cf76002a6e974dafa24b9beb5546ed"
+              }
+            }
+          },
+          {
+            "position": 0.3779296875,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#5F6700",
+              "components": {
+                "r": 0.37392107783062295,
+                "g": 0.4054127165653802,
+                "b": 0
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:714b21bc7b969002f989ae49aa97b0b05f4134486c86fcd364be043be10a9633"
+              }
+            }
+          },
+          {
+            "position": 0.42822265625,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#476C00",
+              "components": {
+                "r": 0.2793896874199914,
+                "g": 0.4226517266224751,
+                "b": 0
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:0ba3feee2da6aa2951b1a0ea805898b251b1c19117be0ac3d9a7ad87a8c51d87"
+              }
+            }
+          },
+          {
+            "position": 0.453369140625,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#346E00",
+              "components": {
+                "r": 0.20315261775516602,
+                "g": 0.4329500032007954,
+                "b": 0
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:af277287e9e44f13e15bc373752a25fe9ccfc7c5f1e4da27e631b7ee1e358385"
+              }
+            }
+          },
+          {
+            "position": 0.4658203125,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#257000",
+              "components": {
+                "r": 0.1436535038195979,
+                "g": 0.4387116202782007,
+                "b": 0
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:b9f905853b4b153adc211507e75b5c1eb069c7a61f10f1b9ea108d94ef7d7265"
+              }
+            }
+          },
+          {
+            "position": 0.47900390625,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#007200",
+              "components": {
+                "r": 0,
+                "g": 0.44545143338046905,
+                "b": 0
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:3ac290a61588ea3afe4f049d76e46fc631f917ebc5d0a6e99ef9842248dc3bf4"
+              }
+            }
+          },
+          {
+            "position": 0.507080078125,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#007300",
+              "components": {
+                "r": 0,
+                "g": 0.4496258310974674,
+                "b": 0
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:7d49b9788c495eed04a386aa4648837c05ea40a40e5bae5e017423b35748f51b"
+              }
+            }
+          },
+          {
+            "position": 0.521484375,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#007120",
+              "components": {
+                "r": 0,
+                "g": 0.44449498811206756,
+                "b": 0.1255247912420462
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:2f508ff03bc6c5bf4aaf9578cb903f8f66beda6e67f72353a0e106d569c40a88"
+              }
+            }
+          },
+          {
+            "position": 0.533447265625,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#00702C",
+              "components": {
+                "r": 0,
+                "g": 0.44038464632374197,
+                "b": 0.1733424220966101
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:1cf7a8a012ac21b0ac3fe09ee8e4f2fc9eb12b5d402c1f92514a9bc6ca2e9b8a"
+              }
+            }
+          },
+          {
+            "position": 0.561279296875,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#006E3E",
+              "components": {
+                "r": 0,
+                "g": 0.4311412560528589,
+                "b": 0.2421757142508995
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:da9ca94ac683a7bd6655ce63189c178c0ab6b8810e4ad91ac027829f2cc2f28e"
+              }
+            }
+          },
+          {
+            "position": 0.627197265625,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#006954",
+              "components": {
+                "r": 0,
+                "g": 0.4108090529302012,
+                "b": 0.3297051446870499
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:7dbd124853092050ef1131fafe082a1ce8f093ee35db29af395edbee6841a4df"
+              }
+            }
+          },
+          {
+            "position": 0.8623046875,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#005580",
+              "components": {
+                "r": 0,
+                "g": 0.3346691257068412,
+                "b": 0.5032532344001909
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:d2c56672eebfb499caed94512feaf33fb98821a946622dea483c1d4497b9cff6"
+              }
+            }
+          },
+          {
+            "position": 0.90234375,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#00508D",
+              "components": {
+                "r": 0,
+                "g": 0.3132243289109895,
+                "b": 0.5510168874541296
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:9a1f22a6fc19088aa31552c6d4c1a54b62ef930b355d14680fc00ca30d2639b7"
+              }
+            }
+          },
+          {
+            "position": 0.931396484375,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#004A9A",
+              "components": {
+                "r": 0,
+                "g": 0.2888040276497011,
+                "b": 0.6051673864437156
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:b11d4dd633fd608fe59f912147887939b1c1f9722e40228c206c184f63603ae6"
+              }
+            }
+          },
+          {
+            "position": 0.954833984375,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#0040AE",
+              "components": {
+                "r": 0,
+                "g": 0.25015095818933475,
+                "b": 0.6817052006323576
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:8b878b9116d7d5aa628bc2b3044b07db327c1e8317cd5d5e41dc0c1687e584e6"
+              }
+            }
+          },
+          {
+            "position": 0.96337890625,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#0038BA",
+              "components": {
+                "r": 0,
+                "g": 0.21980752187021435,
+                "b": 0.7312489563360351
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:a7819711015f12eed951e8c2e52207aa0496c0eecb7f7b73720824dc3a53473f"
+              }
+            }
+          },
+          {
+            "position": 0.969970703125,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#002ACC",
+              "components": {
+                "r": 0,
+                "g": 0.1640939278163799,
+                "b": 0.7996574061291938
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:11de1eb0597057220a3fd23883b1e8797bd1350ed2a0e883f80a4d33719a47ab"
+              }
+            }
+          },
+          {
+            "position": 0.987060546875,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#0021CC",
+              "components": {
+                "r": 0.0009067603338467495,
+                "g": 0.13016011108125064,
+                "b": 0.8008961553835432
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:02171c64344deb5d92ee1d4d1c1cefbd0d6c98ae36c055bd4d85e17af8d28392"
+              }
+            }
+          },
+          {
+            "position": 1,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#1A1ACC",
+              "components": {
+                "r": 0.1,
+                "g": 0.1,
+                "b": 0.8
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:5ae111fb9f206cbee565636e7a36a5e435f66eb1ad6d1a3624cf3e0e5bc9960a"
+              }
+            }
+          }
+        ],
+        "approximation": {
+          "method": "uniform-oracle",
+          "intervalsPerAuthoredSegment": 4096,
+          "maxObservedDeltaEOK": 0.004342733881075139
+        }
+      },
+      "designHash": "sha256:422babcf561669397417e8f9fd0aa35466c3e5bdae1e5f6bd557eee494844852"
+    },
+    "css": "linear-gradient(120deg in srgb, rgb(80%, 10%, 20%) 0%, rgb(79.82390716446052%, 10.166974310108456%, 13.20179373623594%) 1.8310546875%, rgb(79.45077266197038%, 10.838746628484689%, 0%) 3.759765625%, rgb(78.72511519783608%, 12.260058777844455%, 0%) 6.1279296875%, rgb(75.08400277467774%, 19.722718451485825%, 0%) 7.9345703125%, rgb(71.61276106573217%, 24.31457076105263%, 0%) 9.912109375%, rgb(65.66199433473084%, 29.72529895679595%, 0%) 13.9404296875%, rgb(54.04270996069599%, 35.917256062392674%, 0%) 23.8525390625%, rgb(37.39210778306229%, 40.54127165653802%, 0%) 37.79296875%, rgb(27.938968741999137%, 42.26517266224751%, 0%) 42.822265625%, rgb(20.315261775516603%, 43.29500032007954%, 0%) 45.3369140625%, rgb(14.365350381959791%, 43.87116202782007%, 0%) 46.58203125%, rgb(0%, 44.545143338046906%, 0%) 47.900390625%, rgb(0%, 44.96258310974674%, 0%) 50.7080078125%, rgb(0%, 44.44949881120676%, 12.552479124204622%) 52.1484375%, rgb(0%, 44.0384646323742%, 17.33424220966101%) 53.3447265625%, rgb(0%, 43.11412560528589%, 24.21757142508995%) 56.1279296875%, rgb(0%, 41.08090529302012%, 32.97051446870499%) 62.7197265625%, rgb(0%, 33.46691257068412%, 50.32532344001909%) 86.23046875%, rgb(0%, 31.32243289109895%, 55.10168874541296%) 90.234375%, rgb(0%, 28.88040276497011%, 60.51673864437156%) 93.1396484375%, rgb(0%, 25.015095818933474%, 68.17052006323576%) 95.4833984375%, rgb(0%, 21.980752187021434%, 73.12489563360351%) 96.337890625%, rgb(0%, 16.40939278163799%, 79.96574061291938%) 96.9970703125%, rgb(0.09067603338467495%, 13.016011108125063%, 80.08961553835432%) 98.7060546875%, rgb(10%, 10%, 80%) 100%)",
+    "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"800\" height=\"480\" viewBox=\"0 0 800 480\"><defs><linearGradient id=\"teul-gradient\" gradientUnits=\"userSpaceOnUse\" color-interpolation=\"sRGB\" x1=\"-3.92304845413\" y1=\"6.79491924311\" x2=\"803.923048454\" y2=\"473.205080757\"><stop offset=\"0\" stop-color=\"rgb(80%, 10%, 20%)\"/><stop offset=\"0.018310546875\" stop-color=\"rgb(79.82390716446052%, 10.166974310108456%, 13.20179373623594%)\"/><stop offset=\"0.03759765625\" stop-color=\"rgb(79.45077266197038%, 10.838746628484689%, 0%)\"/><stop offset=\"0.061279296875\" stop-color=\"rgb(78.72511519783608%, 12.260058777844455%, 0%)\"/><stop offset=\"0.079345703125\" stop-color=\"rgb(75.08400277467774%, 19.722718451485825%, 0%)\"/><stop offset=\"0.09912109375\" stop-color=\"rgb(71.61276106573217%, 24.31457076105263%, 0%)\"/><stop offset=\"0.139404296875\" stop-color=\"rgb(65.66199433473084%, 29.72529895679595%, 0%)\"/><stop offset=\"0.238525390625\" stop-color=\"rgb(54.04270996069599%, 35.917256062392674%, 0%)\"/><stop offset=\"0.3779296875\" stop-color=\"rgb(37.39210778306229%, 40.54127165653802%, 0%)\"/><stop offset=\"0.42822265625\" stop-color=\"rgb(27.938968741999137%, 42.26517266224751%, 0%)\"/><stop offset=\"0.453369140625\" stop-color=\"rgb(20.315261775516603%, 43.29500032007954%, 0%)\"/><stop offset=\"0.4658203125\" stop-color=\"rgb(14.365350381959791%, 43.87116202782007%, 0%)\"/><stop offset=\"0.47900390625\" stop-color=\"rgb(0%, 44.545143338046906%, 0%)\"/><stop offset=\"0.507080078125\" stop-color=\"rgb(0%, 44.96258310974674%, 0%)\"/><stop offset=\"0.521484375\" stop-color=\"rgb(0%, 44.44949881120676%, 12.552479124204622%)\"/><stop offset=\"0.533447265625\" stop-color=\"rgb(0%, 44.0384646323742%, 17.33424220966101%)\"/><stop offset=\"0.561279296875\" stop-color=\"rgb(0%, 43.11412560528589%, 24.21757142508995%)\"/><stop offset=\"0.627197265625\" stop-color=\"rgb(0%, 41.08090529302012%, 32.97051446870499%)\"/><stop offset=\"0.8623046875\" stop-color=\"rgb(0%, 33.46691257068412%, 50.32532344001909%)\"/><stop offset=\"0.90234375\" stop-color=\"rgb(0%, 31.32243289109895%, 55.10168874541296%)\"/><stop offset=\"0.931396484375\" stop-color=\"rgb(0%, 28.88040276497011%, 60.51673864437156%)\"/><stop offset=\"0.954833984375\" stop-color=\"rgb(0%, 25.015095818933474%, 68.17052006323576%)\"/><stop offset=\"0.96337890625\" stop-color=\"rgb(0%, 21.980752187021434%, 73.12489563360351%)\"/><stop offset=\"0.969970703125\" stop-color=\"rgb(0%, 16.40939278163799%, 79.96574061291938%)\"/><stop offset=\"0.987060546875\" stop-color=\"rgb(0.09067603338467495%, 13.016011108125063%, 80.08961553835432%)\"/><stop offset=\"1\" stop-color=\"rgb(10%, 10%, 80%)\"/></linearGradient></defs><rect width=\"800\" height=\"480\" fill=\"url(#teul-gradient)\"/></svg>"
+  },
+  {
+    "name": "neutral",
+    "design": {
+      "sourceModelHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "briefHash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "angleDegrees": 120,
+      "stops": [
+        {
+          "position": 0,
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#666666",
+            "components": {
+              "r": 0.4,
+              "g": 0.4,
+              "b": 0.4
+            },
+            "alpha": 1
+          },
+          "sourceColorId": "source-0",
+          "locked": true
+        },
+        {
+          "position": 1,
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#4D8099",
+            "components": {
+              "r": 0.3,
+              "g": 0.5,
+              "b": 0.6
+            },
+            "alpha": 1,
+            "representation": {
+              "kind": "native-srgb",
+              "exactValueHash": "sha256:6498b2d1b7b1c6ce5df72908de865ccdbcd5eb37de83900a7e56ae065de14fbf"
+            }
+          },
+          "sourceColorId": "source-1",
+          "locked": true
+        }
+      ],
+      "route": {
+        "space": "oklch",
+        "huePath": "longer"
+      },
+      "schemaVersion": "teul.gradient-design.v1",
+      "compiledPaint": {
+        "version": "teul.opaque-srgb-gradient.v1",
+        "interpolation": "srgb",
+        "stops": [
+          {
+            "position": 0,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#666666",
+              "components": {
+                "r": 0.4,
+                "g": 0.4,
+                "b": 0.4
+              },
+              "alpha": 1
+            }
+          },
+          {
+            "position": 1,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#4D8099",
+              "components": {
+                "r": 0.3,
+                "g": 0.5,
+                "b": 0.6
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:6498b2d1b7b1c6ce5df72908de865ccdbcd5eb37de83900a7e56ae065de14fbf"
+              }
+            }
+          }
+        ],
+        "approximation": {
+          "method": "uniform-oracle",
+          "intervalsPerAuthoredSegment": 4096,
+          "maxObservedDeltaEOK": 0.0032189783121353978
+        }
+      },
+      "designHash": "sha256:e6010eb85501b367ba0ca1a5b2b2b8fae9407abf9b575e7b8f2603d677b03df5"
+    },
+    "css": "linear-gradient(120deg in srgb, rgb(40%, 40%, 40%) 0%, rgb(30%, 50%, 60%) 100%)",
+    "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"800\" height=\"480\" viewBox=\"0 0 800 480\"><defs><linearGradient id=\"teul-gradient\" gradientUnits=\"userSpaceOnUse\" color-interpolation=\"sRGB\" x1=\"-3.92304845413\" y1=\"6.79491924311\" x2=\"803.923048454\" y2=\"473.205080757\"><stop offset=\"0\" stop-color=\"rgb(40%, 40%, 40%)\"/><stop offset=\"1\" stop-color=\"rgb(30%, 50%, 60%)\"/></linearGradient></defs><rect width=\"800\" height=\"480\" fill=\"url(#teul-gradient)\"/></svg>"
+  },
+  {
+    "name": "five",
+    "design": {
+      "sourceModelHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "briefHash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "angleDegrees": 120,
+      "stops": [
+        {
+          "position": 0,
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#1A334D",
+            "components": {
+              "r": 0.1,
+              "g": 0.2,
+              "b": 0.3
+            },
+            "alpha": 1,
+            "representation": {
+              "kind": "native-srgb",
+              "exactValueHash": "sha256:88b3c17ce16f1c8b99d40a876a20c6d55d4c2183d22a895b0797d2b2b6728082"
+            }
+          },
+          "sourceColorId": "source-0",
+          "locked": true
+        },
+        {
+          "position": 0.25,
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#1F3D5C",
+            "components": {
+              "r": 0.12,
+              "g": 0.24,
+              "b": 0.36
+            },
+            "alpha": 1,
+            "representation": {
+              "kind": "native-srgb",
+              "exactValueHash": "sha256:389bdfa6eb4147863b4a81d5e53be0ec6f549073647b84a3360adefe588c0aa0"
+            }
+          },
+          "sourceColorId": "source-1",
+          "locked": true
+        },
+        {
+          "position": 0.5,
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#2E4D66",
+            "components": {
+              "r": 0.18,
+              "g": 0.3,
+              "b": 0.4
+            },
+            "alpha": 1,
+            "representation": {
+              "kind": "native-srgb",
+              "exactValueHash": "sha256:ff4a7434c4279105212eca3841263fa9b97b3179df2329e9f7cd27d6ccec862e"
+            }
+          },
+          "sourceColorId": "source-2",
+          "locked": true
+        },
+        {
+          "position": 0.75,
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#335973",
+            "components": {
+              "r": 0.2,
+              "g": 0.35,
+              "b": 0.45
+            },
+            "alpha": 1,
+            "representation": {
+              "kind": "native-srgb",
+              "exactValueHash": "sha256:2440afa6e69add0ccdf84cd65c3f996da8b66c6776644ff2562ee96e3984c402"
+            }
+          },
+          "sourceColorId": "source-3",
+          "locked": true
+        },
+        {
+          "position": 1,
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#4D6680",
+            "components": {
+              "r": 0.3,
+              "g": 0.4,
+              "b": 0.5
+            },
+            "alpha": 1,
+            "representation": {
+              "kind": "native-srgb",
+              "exactValueHash": "sha256:4a983417be81e90b4b2a269e7a3c6b7eefe55af9f5e3fdc06196c9b21957269e"
+            }
+          },
+          "sourceColorId": "source-4",
+          "locked": true
+        }
+      ],
+      "route": {
+        "space": "oklab"
+      },
+      "schemaVersion": "teul.gradient-design.v1",
+      "compiledPaint": {
+        "version": "teul.opaque-srgb-gradient.v1",
+        "interpolation": "srgb",
+        "stops": [
+          {
+            "position": 0,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#1A334D",
+              "components": {
+                "r": 0.1,
+                "g": 0.2,
+                "b": 0.3
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:88b3c17ce16f1c8b99d40a876a20c6d55d4c2183d22a895b0797d2b2b6728082"
+              }
+            }
+          },
+          {
+            "position": 0.25,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#1F3D5C",
+              "components": {
+                "r": 0.12,
+                "g": 0.24,
+                "b": 0.36
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:389bdfa6eb4147863b4a81d5e53be0ec6f549073647b84a3360adefe588c0aa0"
+              }
+            }
+          },
+          {
+            "position": 0.5,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#2E4D66",
+              "components": {
+                "r": 0.18,
+                "g": 0.3,
+                "b": 0.4
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:ff4a7434c4279105212eca3841263fa9b97b3179df2329e9f7cd27d6ccec862e"
+              }
+            }
+          },
+          {
+            "position": 0.75,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#335973",
+              "components": {
+                "r": 0.2,
+                "g": 0.35,
+                "b": 0.45
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:2440afa6e69add0ccdf84cd65c3f996da8b66c6776644ff2562ee96e3984c402"
+              }
+            }
+          },
+          {
+            "position": 1,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#4D6680",
+              "components": {
+                "r": 0.3,
+                "g": 0.4,
+                "b": 0.5
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:4a983417be81e90b4b2a269e7a3c6b7eefe55af9f5e3fdc06196c9b21957269e"
+              }
+            }
+          }
+        ],
+        "approximation": {
+          "method": "uniform-oracle",
+          "intervalsPerAuthoredSegment": 4096,
+          "maxObservedDeltaEOK": 0.00032974606583828226
+        }
+      },
+      "designHash": "sha256:399eda542243ec7b6e94ea8f5dbe4198dc36a00169f79532156b49075c5fd9bc"
+    },
+    "css": "linear-gradient(120deg in srgb, rgb(10%, 20%, 30%) 0%, rgb(12%, 24%, 36%) 25%, rgb(18%, 30%, 40%) 50%, rgb(20%, 35%, 45%) 75%, rgb(30%, 40%, 50%) 100%)",
+    "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"800\" height=\"480\" viewBox=\"0 0 800 480\"><defs><linearGradient id=\"teul-gradient\" gradientUnits=\"userSpaceOnUse\" color-interpolation=\"sRGB\" x1=\"-3.92304845413\" y1=\"6.79491924311\" x2=\"803.923048454\" y2=\"473.205080757\"><stop offset=\"0\" stop-color=\"rgb(10%, 20%, 30%)\"/><stop offset=\"0.25\" stop-color=\"rgb(12%, 24%, 36%)\"/><stop offset=\"0.5\" stop-color=\"rgb(18%, 30%, 40%)\"/><stop offset=\"0.75\" stop-color=\"rgb(20%, 35%, 45%)\"/><stop offset=\"1\" stop-color=\"rgb(30%, 40%, 50%)\"/></linearGradient></defs><rect width=\"800\" height=\"480\" fill=\"url(#teul-gradient)\"/></svg>"
+  },
+  {
+    "name": "between-sample-failure",
+    "design": {
+      "sourceModelHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "briefHash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      "angleDegrees": 120,
+      "stops": [
+        {
+          "position": 0,
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#29B249",
+            "components": {
+              "r": 0.16032589599490166,
+              "g": 0.6980988865252584,
+              "b": 0.28516142861917615
+            },
+            "alpha": 1,
+            "representation": {
+              "kind": "native-srgb",
+              "exactValueHash": "sha256:09c460ff4765f553d0a19c2baa4930033fcc5b7b6cee5330a095feb11d400ef0"
+            }
+          },
+          "sourceColorId": "source-0",
+          "locked": true
+        },
+        {
+          "position": 1,
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#90E696",
+            "components": {
+              "r": 0.5630403070244938,
+              "g": 0.9031179184094071,
+              "b": 0.5892083912622184
+            },
+            "alpha": 1,
+            "representation": {
+              "kind": "native-srgb",
+              "exactValueHash": "sha256:fef25dfcb0b67136159e8eb1f76164d5e3bf9b2ccbc89b42b51ca02aeaf92592"
+            }
+          },
+          "sourceColorId": "source-1",
+          "locked": true
+        }
+      ],
+      "route": {
+        "space": "oklch",
+        "huePath": "longer"
+      },
+      "schemaVersion": "teul.gradient-design.v1",
+      "compiledPaint": {
+        "version": "teul.opaque-srgb-gradient.v1",
+        "interpolation": "srgb",
+        "stops": [
+          {
+            "position": 0,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#29B249",
+              "components": {
+                "r": 0.16032589599490166,
+                "g": 0.6980988865252584,
+                "b": 0.28516142861917615
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:09c460ff4765f553d0a19c2baa4930033fcc5b7b6cee5330a095feb11d400ef0"
+              }
+            }
+          },
+          {
+            "position": 0.0322265625,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#00B76A",
+              "components": {
+                "r": 0,
+                "g": 0.71859782301853,
+                "b": 0.41500393437388133
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:f365ceed5c3bbc512ff808bd38fb4a7fb08a1acd1dafa6d912d30726f561def3"
+              }
+            }
+          },
+          {
+            "position": 0.08056640625,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#00B796",
+              "components": {
+                "r": 0,
+                "g": 0.7162849289391546,
+                "b": 0.5867540161040801
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:bfc715ec5a091d7d7b7582a03bb205f06cd43d78f158907267c1353c99eb3367"
+              }
+            }
+          },
+          {
+            "position": 0.1923828125,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#00B5D9",
+              "components": {
+                "r": 0,
+                "g": 0.7095945867404632,
+                "b": 0.850900107436016
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:84ef671e3452b96d17a683d5f7099f8c91c5266a8547419b8abf53d0ef24c315"
+              }
+            }
+          },
+          {
+            "position": 0.24658203125,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#00B1FF",
+              "components": {
+                "r": 0,
+                "g": 0.6931195807870346,
+                "b": 0.9998542395129114
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:5b83d41b24cc23f56f9c4eaffd11c227625ace5dce1616b8fd5fc09832482f9f"
+              }
+            }
+          },
+          {
+            "position": 0.321044921875,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#6DA4FF",
+              "components": {
+                "r": 0.42789892512654804,
+                "g": 0.644328562015833,
+                "b": 1
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:8cfcd6f70250387eec714965488c0f8bfb4c6116008ceccd722c9acf022b8506"
+              }
+            }
+          },
+          {
+            "position": 0.36572265625,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#949DFF",
+              "components": {
+                "r": 0.5787267717586638,
+                "g": 0.6150645707854316,
+                "b": 1
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:4c52e7a6d127951dc2cade2851b0c6774b4b16daf6f1696abd755a02135d4d34"
+              }
+            }
+          },
+          {
+            "position": 0.445068359375,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#C990FF",
+              "components": {
+                "r": 0.7883154460642442,
+                "g": 0.5631652790164459,
+                "b": 1
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:6220fec90b49a7498aa7c47fa7dde485aa99fa9c2ffe17bd75d580b5ce62051b"
+              }
+            }
+          },
+          {
+            "position": 0.473388671875,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#D98CF4",
+              "components": {
+                "r": 0.8493964662073906,
+                "g": 0.5501278583826276,
+                "b": 0.9559443202303383
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:45733bee672fdf4c765454764700a5f59c6f3fe2104a30e7808d7fd0050f65f6"
+              }
+            }
+          },
+          {
+            "position": 0.5205078125,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#EE88DD",
+              "components": {
+                "r": 0.9350705865701924,
+                "g": 0.5349809093401594,
+                "b": 0.8658956621240861
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:f4b9ff1bdf2749d60d55b0de728867c9e2d8a3f27332f542d302075bebad3170"
+              }
+            }
+          },
+          {
+            "position": 0.567626953125,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#FF87C2",
+              "components": {
+                "r": 1,
+                "g": 0.530323181063232,
+                "b": 0.7612845533666345
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:55f8ddd1704fce85e4cbb27191ab830063580964b546de517dda6d8d4e742bde"
+              }
+            }
+          },
+          {
+            "position": 0.6181640625,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#FF8AA3",
+              "components": {
+                "r": 1,
+                "g": 0.5401420848088861,
+                "b": 0.6405213304752272
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:641cce689c980b3d08358678241f3bdde3b0285aa38ab2b83e2eebaa1baab169"
+              }
+            }
+          },
+          {
+            "position": 0.733642578125,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#FF9F5E",
+              "components": {
+                "r": 1,
+                "g": 0.6246867057996979,
+                "b": 0.37055236786201906
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:543e85dd754e4b7da38735c98961cad04b97b6db1b3f7c5d23d81f7649c6358a"
+              }
+            }
+          },
+          {
+            "position": 0.781494140625,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#FFAD49",
+              "components": {
+                "r": 1,
+                "g": 0.6781277055605871,
+                "b": 0.2856407961563836
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:c63f6d4182015d2605d2c2c3e34644f55554b7c7e7bfb27e6cebb1dba5314ff8"
+              }
+            }
+          },
+          {
+            "position": 0.83203125,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#EFBC41",
+              "components": {
+                "r": 0.9362782723880745,
+                "g": 0.7384086652740395,
+                "b": 0.25412397244515395
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:9fdc661da4e558d8d1a9374a6cf33658e3bd1d7ab8a7ef8d1c54632e830e2dd7"
+              }
+            }
+          },
+          {
+            "position": 0.88671875,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#D5CC50",
+              "components": {
+                "r": 0.835804680901663,
+                "g": 0.8016137755807526,
+                "b": 0.3146397795890419
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:2589ecfdad3da643caef765fe6af45fe24b08b78b0b2130f478a6ba0a6978898"
+              }
+            }
+          },
+          {
+            "position": 0.94287109375,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#B5DB70",
+              "components": {
+                "r": 0.7090893368098214,
+                "g": 0.8583845609586392,
+                "b": 0.43912751425664726
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:e3faf22d7de03955c3617e762e4fe8b7d814c6552c186e9cea67595f2e185b05"
+              }
+            }
+          },
+          {
+            "position": 1,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#90E696",
+              "components": {
+                "r": 0.5630403070244938,
+                "g": 0.9031179184094071,
+                "b": 0.5892083912622184
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:fef25dfcb0b67136159e8eb1f76164d5e3bf9b2ccbc89b42b51ca02aeaf92592"
+              }
+            }
+          }
+        ],
+        "approximation": {
+          "method": "uniform-oracle",
+          "intervalsPerAuthoredSegment": 4096,
+          "maxObservedDeltaEOK": 0.00496512613293328
+        }
+      },
+      "designHash": "sha256:43a33adcd3bfa229ac6b22477b51e076d9383861593750f8ea25596cd675575b"
+    },
+    "css": "linear-gradient(120deg in srgb, rgb(16.032589599490166%, 69.80988865252584%, 28.516142861917615%) 0%, rgb(0%, 71.859782301853%, 41.500393437388134%) 3.22265625%, rgb(0%, 71.62849289391546%, 58.67540161040801%) 8.056640625%, rgb(0%, 70.95945867404632%, 85.0900107436016%) 19.23828125%, rgb(0%, 69.31195807870346%, 99.98542395129114%) 24.658203125%, rgb(42.7898925126548%, 64.4328562015833%, 100%) 32.1044921875%, rgb(57.872677175866386%, 61.506457078543164%, 100%) 36.572265625%, rgb(78.83154460642442%, 56.316527901644584%, 100%) 44.5068359375%, rgb(84.93964662073907%, 55.01278583826276%, 95.59443202303383%) 47.3388671875%, rgb(93.50705865701924%, 53.49809093401594%, 86.58956621240861%) 52.05078125%, rgb(100%, 53.032318106323196%, 76.12845533666345%) 56.7626953125%, rgb(100%, 54.01420848088861%, 64.05213304752272%) 61.81640625%, rgb(100%, 62.46867057996979%, 37.0552367862019%) 73.3642578125%, rgb(100%, 67.81277055605871%, 28.56407961563836%) 78.1494140625%, rgb(93.62782723880744%, 73.84086652740395%, 25.412397244515393%) 83.203125%, rgb(83.5804680901663%, 80.16137755807526%, 31.463977958904188%) 88.671875%, rgb(70.90893368098214%, 85.83845609586392%, 43.91275142566472%) 94.287109375%, rgb(56.30403070244938%, 90.31179184094071%, 58.920839126221836%) 100%)",
+    "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"800\" height=\"480\" viewBox=\"0 0 800 480\"><defs><linearGradient id=\"teul-gradient\" gradientUnits=\"userSpaceOnUse\" color-interpolation=\"sRGB\" x1=\"-3.92304845413\" y1=\"6.79491924311\" x2=\"803.923048454\" y2=\"473.205080757\"><stop offset=\"0\" stop-color=\"rgb(16.032589599490166%, 69.80988865252584%, 28.516142861917615%)\"/><stop offset=\"0.0322265625\" stop-color=\"rgb(0%, 71.859782301853%, 41.500393437388134%)\"/><stop offset=\"0.08056640625\" stop-color=\"rgb(0%, 71.62849289391546%, 58.67540161040801%)\"/><stop offset=\"0.1923828125\" stop-color=\"rgb(0%, 70.95945867404632%, 85.0900107436016%)\"/><stop offset=\"0.24658203125\" stop-color=\"rgb(0%, 69.31195807870346%, 99.98542395129114%)\"/><stop offset=\"0.321044921875\" stop-color=\"rgb(42.7898925126548%, 64.4328562015833%, 100%)\"/><stop offset=\"0.36572265625\" stop-color=\"rgb(57.872677175866386%, 61.506457078543164%, 100%)\"/><stop offset=\"0.445068359375\" stop-color=\"rgb(78.83154460642442%, 56.316527901644584%, 100%)\"/><stop offset=\"0.473388671875\" stop-color=\"rgb(84.93964662073907%, 55.01278583826276%, 95.59443202303383%)\"/><stop offset=\"0.5205078125\" stop-color=\"rgb(93.50705865701924%, 53.49809093401594%, 86.58956621240861%)\"/><stop offset=\"0.567626953125\" stop-color=\"rgb(100%, 53.032318106323196%, 76.12845533666345%)\"/><stop offset=\"0.6181640625\" stop-color=\"rgb(100%, 54.01420848088861%, 64.05213304752272%)\"/><stop offset=\"0.733642578125\" stop-color=\"rgb(100%, 62.46867057996979%, 37.0552367862019%)\"/><stop offset=\"0.781494140625\" stop-color=\"rgb(100%, 67.81277055605871%, 28.56407961563836%)\"/><stop offset=\"0.83203125\" stop-color=\"rgb(93.62782723880744%, 73.84086652740395%, 25.412397244515393%)\"/><stop offset=\"0.88671875\" stop-color=\"rgb(83.5804680901663%, 80.16137755807526%, 31.463977958904188%)\"/><stop offset=\"0.94287109375\" stop-color=\"rgb(70.90893368098214%, 85.83845609586392%, 43.91275142566472%)\"/><stop offset=\"1\" stop-color=\"rgb(56.30403070244938%, 90.31179184094071%, 58.920839126221836%)\"/></linearGradient></defs><rect width=\"800\" height=\"480\" fill=\"url(#teul-gradient)\"/></svg>"
+  }
+]

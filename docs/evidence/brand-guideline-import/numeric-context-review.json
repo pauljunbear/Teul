@@ -1,0 +1,56 @@
+{
+  "status": "passed",
+  "node": "v22.13.1",
+  "at": "2026-09-25T22:33:06.240Z",
+  "checks": [
+    {
+      "pieces": ["rgb(256 0 0", "#123456"],
+      "admittedColors": 0,
+      "admittedReferences": [],
+      "replay": "exact",
+      "forgedInnerFragment": "rejected"
+    },
+    {
+      "pieces": ["color(display-p3", "#123456"],
+      "admittedColors": 0,
+      "admittedReferences": [],
+      "replay": "exact",
+      "forgedInnerFragment": "rejected"
+    },
+    {
+      "pieces": ["color(display-p3", "rgb(18 110 120)"],
+      "admittedColors": 0,
+      "admittedReferences": [],
+      "replay": "exact",
+      "forgedInnerFragment": "rejected"
+    },
+    {
+      "pieces": ["url(", "#abcdef"],
+      "admittedColors": 0,
+      "admittedReferences": [],
+      "replay": "exact",
+      "forgedInnerFragment": "rejected"
+    },
+    {
+      "pieces": ["Primary color(display-p3", "rgb(18 110 120)"],
+      "admittedColors": 0,
+      "admittedReferences": [],
+      "replay": "exact",
+      "forgedInnerFragment": "rejected"
+    },
+    {
+      "pieces": ["#123456; color(display-p3", "#123456"],
+      "admittedColors": 1,
+      "admittedReferences": [["pdf:bbbbbbbbbbbbbbbb:1:0:text"]],
+      "replay": "exact",
+      "forgedInnerFragment": "rejected"
+    },
+    {
+      "pieces": ["rgb(18 110 120); color(display-p3", "rgb(18 110 120)"],
+      "admittedColors": 1,
+      "admittedReferences": [["pdf:bbbbbbbbbbbbbbbb:1:0:text"]],
+      "replay": "exact",
+      "forgedInnerFragment": "rejected"
+    }
+  ]
+}

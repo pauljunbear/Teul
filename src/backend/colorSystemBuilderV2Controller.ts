@@ -1,4 +1,6 @@
-import { canonicalJson, deterministicContentHash } from '../lib/colorSystemAudit';
+import type { OwnerSuppliedSpotColor } from '../lib/colorSystemSurfaceAdvisoriesV3';
+import { canonicalJson, deterministicContentHash } from '../lib/colorSystemHashing';
+import { buildColorSystemBrandConstraintsV1 } from '../lib/colorSystemBrandConstraintsV1';
 import {
   buildColorSystemGenericIntentProposalV2,
   buildColorSystemGenericOwnerConfirmationV2,
@@ -40,7 +42,9 @@ import type {
   CancelGenericColorSystemV2Message,
   ColorSystemBuilderV2AnalysisResultMessage,
   ColorSystemBuilderV2CreateResultMessage,
+  ColorSystemBuilderV2OwnerSpotColorsMessage, // p4-DE
   ColorSystemBuilderV2PluginMessage,
+  ColorSystemBuilderV2TokenExportMessage,
   ColorSystemBuilderV2UsageScope,
   ColorSystemGenericV2ConfirmationResultMessage,
   ColorSystemGenericV2PlanResultMessage,
@@ -55,12 +59,60 @@ import type {
 import {
   renderColorSystemResourceBlueprintV2,
   type ColorSystemRendererHostV2,
+  type ColorSystemRendererOwnerSpotColorsV2, // p4-DE
   type ColorSystemRendererReceiptV2,
 } from './colorSystemResourceRendererV2';
+import type { ColorSystemResourceBlueprintV2 } from '../lib/colorSystemResourceBlueprintV2'; // p4-DE
 import type { ColorSystemCreateJournalRuntimeV2 } from './colorSystemCreateJournalV2';
 import type { ColorSystemAuditProgress } from './colorSystemAuditInventory';
 import type { ColorSystemGenericSourceInventoryV2Result } from './colorSystemGenericSourceInventoryV2';
 import { compareText } from '../lib/utils';
+// p3-C: portable token exports ride on the Create success payload.
+import {
+  exportColorSystemTokensV2,
+  type ColorSystemTokenExportV2,
+} from '../lib/colorSystemTokenExportV2';
+
+/** p4-DE: the owner's spot references as the renderer takes them, dated by the authorization instant (UTC). */
+function rendererOwnerSpotColors(
+  spots: ColorSystemBuilderV2OwnerSpotColorsMessage,
+  authorizedAtIso: string
+): ColorSystemRendererOwnerSpotColorsV2 {
+  return {
+    suppliedOn: authorizedAtIso.slice(0, 10),
+    byFamilyId: Object.fromEntries(
+      Object.entries(spots)
+        .sort(([left], [right]) => compareText(left, right))
+        .map(([familyId, spot]) => [
+          familyId,
+          { system: spot.system, name: spot.name, finish: spot.finish },
+        ])
+    ),
+  };
+}
+
+/**
+ * The DTCG export with the owner's spot references. The review message allows a
+ * `finish` of `'none'` so the owner can state that no finish applies; the export
+ * and the print triplet model finish as absent, so `'none'` is dropped here and
+ * every other field is passed through unchanged.
+ */
+export function exportColorSystemTokensWithOwnerSpotColorsV2(
+  blueprint: ColorSystemResourceBlueprintV2,
+  ownerSpotColors?: ColorSystemBuilderV2OwnerSpotColorsMessage
+): ColorSystemTokenExportV2 {
+  if (!ownerSpotColors) return exportColorSystemTokensV2(blueprint);
+  const normalized: Record<string, OwnerSuppliedSpotColor> = {};
+  for (const [familyId, spot] of Object.entries(ownerSpotColors)) {
+    normalized[familyId] = {
+      system: spot.system,
+      name: spot.name,
+      ...(spot.finish === 'none' ? {} : { finish: spot.finish }),
+      source: 'owner-supplied',
+    };
+  }
+  return exportColorSystemTokensV2(blueprint, normalized);
+}
 
 export const COLOR_SYSTEM_BUILDER_V2_SESSION_TTL_MS =
   COLOR_SYSTEM_CREATE_AUTHORIZATION_V2_MAX_LIFETIME_MS;
@@ -313,6 +365,52 @@ const GENERIC_ROLE_LABELS = {
   typography: 'Typography',
 } as const;
 
+type GenericSectionRole = GenericIntakeProposalV2['sections'][number]['role'];
+
+const GENERIC_TENTATIVE_GAP_PREFIX = 'generic-intent-tentative:';
+
+/**
+ * A section whose role rests on colour geometry alone (no name, heading, or
+ * usage evidence) is a proposal the owner must confirm or change. The intent
+ * policy marks such sections `inferenceBasis: 'geometry'` and adds one
+ * `generic-intent-tentative:<role>` gap per section.
+ */
+function genericSectionIsTentative(
+  section: Pick<GenericIntakeProposalV2['sections'][number], 'inferenceBasis'>
+): boolean {
+  return section.inferenceBasis === 'geometry';
+}
+
+/**
+ * The policy's plain-words statement for a geometry-proposed role, taken from
+ * its `value-geometry-only` signals so the owner reads the measurement Teul
+ * actually made ("Highest-chroma opaque color … Teul proposes it as Primary —
+ * confirm or change."). When several sources were measured for one role
+ * (Typography neutrals), the first statement is shown verbatim and the rest are
+ * counted so the text stays within the plan's bounded field lengths.
+ */
+function genericTentativeStatements(
+  proposal: GenericIntakeProposalV2
+): ReadonlyMap<GenericSectionRole, string> {
+  return new Map(
+    proposal.sections.filter(genericSectionIsTentative).map(section => {
+      const statements = proposal.signals
+        .filter(signal => signal.basis === 'geometry' && signal.role === section.role)
+        .map(signal => signal.statement);
+      const [first, ...rest] = statements;
+      const statement =
+        first === undefined
+          ? section.summary
+          : rest.length === 0
+            ? first
+            : `${first} ${
+                rest.length === 1 ? 'One more source was' : `${rest.length} more sources were`
+              } measured the same way and proposed for ${GENERIC_ROLE_LABELS[section.role]}.`;
+      return [section.role, statement] as const;
+    })
+  );
+}
+
 function genericUsageScope(
   sourceScope: AnalyzeGenericColorSystemV2Message['sourceScope']
 ): ColorSystemBuilderV2UsageScope {
@@ -346,6 +444,17 @@ function genericUiDisposition(
   return found ? 'extend' : 'propose';
 }
 
+/**
+ * p5-A: the plan's statement of what a Replace does not carry, with the count.
+ * `sentence` selects the verb form used inside a sentence ("22 recorded colors
+ * are not carried") over the card form ("22 recorded colors not carried").
+ */
+function genericNotCarried(count: number, sentence = true): string {
+  const noun = count === 1 ? 'color' : 'colors';
+  const verb = sentence ? (count === 1 ? ' is' : ' are') : '';
+  return `${count} recorded ${noun}${verb} not carried`;
+}
+
 function genericDomainDisposition(
   disposition: ColorSystemGenericPlanProposalV2['sections'][number]['decision']
 ): GenericIntakeProposalV2['sections'][number]['disposition'] {
@@ -355,7 +464,10 @@ function genericDomainDisposition(
   return 'derive';
 }
 
-function genericUiGap(gap: GenericSourceGapV2): ColorSystemGenericPlanGapV2 {
+function genericUiGap(
+  gap: GenericSourceGapV2,
+  tentativeStatements: ReadonlyMap<GenericSectionRole, string> = new Map()
+): ColorSystemGenericPlanGapV2 {
   const role = [
     'primary',
     'secondary',
@@ -365,6 +477,24 @@ function genericUiGap(gap: GenericSourceGapV2): ColorSystemGenericPlanGapV2 {
   ].find(candidate =>
     gap.consumerIds.includes(candidate)
   ) as ColorSystemGenericPlanGapV2['sectionRole'];
+  if (gap.gapId.startsWith(GENERIC_TENTATIVE_GAP_PREFIX) && role !== undefined) {
+    // A geometry-proposed role blocks confirmation until the owner decides it
+    // in Edit plan; the gap carries the policy's own plain-words statement.
+    const label = GENERIC_ROLE_LABELS[role];
+    return {
+      id: gap.gapId,
+      kind: 'other',
+      title: `${label} was proposed from color values only`,
+      message: tentativeStatements.get(role) ?? gap.summary,
+      remediation:
+        role === 'primary'
+          ? 'Open Edit plan and choose Keep to confirm this color as Primary, or analyze a source that names the intended Primary.'
+          : `Open Edit plan and confirm or change the proposed ${label}.`,
+      blocking: true,
+      sectionRole: role,
+      resolvableByEdit: true,
+    };
+  }
   const kind: ColorSystemGenericPlanGapV2['kind'] =
     gap.kind === 'unsupported-profile'
       ? 'unsupported-profile'
@@ -485,13 +615,14 @@ function genericDisplayedPlan(
 ): { state: ColorSystemGenericPlanStateV2; proposal: ColorSystemGenericPlanProposalV2 } {
   const sourceLabel = genericSourceLabel(snapshot, proposal);
   const refs = new Map(proposal.observedSourceRefs.map(ref => [ref.sourceRefId, ref]));
+  const tentativeStatements = genericTentativeStatements(proposal);
   const allGaps = [
     ...snapshot.unsupported,
     ...proposal.contradictions,
     ...proposal.insufficiencies,
   ];
   const gaps = [
-    ...new Map(allGaps.map(gap => [gap.gapId, genericUiGap(gap)])).values(),
+    ...new Map(allGaps.map(gap => [gap.gapId, genericUiGap(gap, tentativeStatements)])).values(),
     ...compilerGaps,
   ].sort((left, right) => compareText(left.id, right.id));
   const sections = proposal.sections.map(section => {
@@ -501,11 +632,16 @@ function genericDisplayedPlan(
     const found = section.sourceStatus === 'found';
     const hasObservedSource = section.sourceRefIds.length > 0;
     const conflicted = section.sourceStatus === 'conflicted';
+    // A geometry-proposed role starts with no decision: the owner must choose
+    // it in Edit plan, and confirmation fails closed until they do.
+    const tentative = genericSectionIsTentative(section);
     const decision = conflicted
       ? section.role === 'primary'
         ? ('preserve' as const)
         : null
-      : genericUiDisposition(section.disposition, found);
+      : tentative
+        ? null
+        : genericUiDisposition(section.disposition, found);
     const allowedDecisions: ColorSystemGenericPlanProposalV2['sections'][number]['allowedDecisions'] =
       section.role === 'primary'
         ? ['preserve']
@@ -516,11 +652,14 @@ function genericDisplayedPlan(
           : ['propose', 'exclude'];
     const basePlanSummary =
       decision === null
-        ? 'Choose how this conflicting source should be treated before Teul continues.'
+        ? tentative
+          ? (tentativeStatements.get(section.role) ?? section.summary)
+          : 'Choose how this conflicting source should be treated before Teul continues.'
         : decision === 'preserve'
           ? 'Keep these exact source colors fixed.'
           : decision === 'rebuild'
-            ? 'Use the source only as context and propose a replacement system.'
+            ? // p5-A: Replace replaces; the count of recorded colors it does not carry is stated.
+              `Propose a new system from your Primary and grays; ${genericNotCarried(section.sourceRefIds.length)}.`
             : decision === 'extend'
               ? 'Keep the useful source and add a complete supporting system.'
               : decision === 'propose'
@@ -540,7 +679,10 @@ function genericDisplayedPlan(
       basis: found ? ('inferred' as const) : ('inferred' as const),
       decision,
       allowedDecisions,
-      ...(section.role === 'primary' && found ? { locked: true } : {}),
+      // p5-A: how many recorded colors a Replace decision would not carry, so the plan
+      // screen can state the count for the owner's live choice.
+      recordedColorCount: section.sourceRefIds.length,
+      ...(section.role === 'primary' && found && !tentative ? { locked: true } : {}),
       ...(section.confidence === 'ambiguous'
         ? { limitation: 'The file does not provide two independent agreeing semantic signals.' }
         : {}),
@@ -549,12 +691,27 @@ function genericDisplayedPlan(
   const found = proposal.sections
     .filter(section => section.sourceStatus === 'found')
     .map(section => `${GENERIC_ROLE_LABELS[section.role]}: ${section.summary}`);
+  // Nothing a geometry-proposed role touches is fixed until the owner decides;
+  // those roles are listed as proposals with the policy's statement instead.
   const fixed = proposal.sections
-    .filter(section => section.disposition === 'preserve')
+    .filter(section => section.disposition === 'preserve' && !genericSectionIsTentative(section))
     .map(section => `${GENERIC_ROLE_LABELS[section.role]} stays exactly as observed.`);
-  const proposed = proposal.sections
-    .filter(section => section.disposition !== 'preserve' && section.disposition !== 'omit')
-    .map(section => `${GENERIC_ROLE_LABELS[section.role]}: ${section.summary}`);
+  const proposed = proposal.sections.flatMap(section =>
+    genericSectionIsTentative(section)
+      ? [
+          `${GENERIC_ROLE_LABELS[section.role]}: ${
+            tentativeStatements.get(section.role) ?? section.summary
+          }`,
+        ]
+      : section.disposition === 'rebuild'
+        ? // p5-A: a replaced section says so, with the count of recorded colors not carried.
+          [
+            `${GENERIC_ROLE_LABELS[section.role]}: replaced — ${genericNotCarried(section.sourceRefIds.length, false)}`,
+          ]
+        : section.disposition !== 'preserve' && section.disposition !== 'omit'
+          ? [`${GENERIC_ROLE_LABELS[section.role]}: ${section.summary}`]
+          : []
+  );
   const content = {
     sourceLabel,
     summary:
@@ -630,7 +787,7 @@ function genericBlockedGaps(
   result: ColorSystemGenericSourceInventoryV2Result
 ): ColorSystemGenericPlanGapV2[] {
   if (result.snapshot) {
-    const gaps = result.snapshot.unsupported.map(genericUiGap);
+    const gaps = result.snapshot.unsupported.map(gap => genericUiGap(gap));
     if (gaps.length > 0) {
       const expectedKind: ColorSystemGenericPlanGapV2['kind'] =
         result.status === 'unsupported-profile'
@@ -1086,6 +1243,20 @@ export function createColorSystemBuilderV2Controller(
         proposal,
         compilerPreflight.blockers.map(genericCompilerPreflightGap)
       );
+      if (message.brandConstraintRules !== undefined) {
+        const reviewedBrandConstraints = buildColorSystemBrandConstraintsV1({
+          schemaVersion: 'teul.brand-constraints.v1',
+          sourceSnapshotHash: inventory.snapshot.sourceSnapshotHash,
+          rules: message.brandConstraintRules,
+          decisions: [],
+        });
+        const { id: _previousId, ...content } = displayed.proposal;
+        const constrainedContent = { ...content, reviewedBrandConstraints };
+        displayed.proposal = {
+          ...constrainedContent,
+          id: deterministicContentHash(constrainedContent),
+        };
+      }
       if (displayed.proposal.gaps.length > COLOR_SYSTEM_BUILDER_V2_MAX_OWNER_FACING_GAPS) {
         const response = genericCapacityPlanResult(
           message.requestId,
@@ -1255,6 +1426,36 @@ export function createColorSystemBuilderV2Controller(
       const displayedByRole = new Map(
         pending.displayedProposal.sections.map(section => [section.role, section])
       );
+      const displayedConstraints = pending.displayedProposal.reviewedBrandConstraints;
+      const ruleDraft = message.draft.brandRuleDecisions;
+      if (
+        Boolean(displayedConstraints) !== Boolean(ruleDraft) ||
+        (displayedConstraints &&
+          (ruleDraft?.fragmentHash !== displayedConstraints.fragmentHash ||
+            canonicalJson(
+              ruleDraft.decisions.map(decision => decision.ruleId).sort(compareText)
+            ) !== canonicalJson(displayedConstraints.rules.map(rule => rule.id).sort(compareText))))
+      ) {
+        throw new Error(
+          'The confirmation must decide every unchanged displayed brand rule exactly once.'
+        );
+      }
+      const reviewedBrandConstraints =
+        displayedConstraints && ruleDraft
+          ? buildColorSystemBrandConstraintsV1({
+              schemaVersion: displayedConstraints.schemaVersion,
+              sourceSnapshotHash: displayedConstraints.sourceSnapshotHash,
+              rules: displayedConstraints.rules,
+              decisions: ruleDraft.decisions.map(decision => ({
+                ...decision,
+                ruleHash: deterministicContentHash(
+                  displayedConstraints.rules.find(rule => rule.id === decision.ruleId)
+                ),
+                actor: { kind: 'user', ref: 'local-plugin-user' },
+                authorityRef: message.requestId,
+              })),
+            })
+          : undefined;
       const draftByRole = new Map(
         message.draft.sectionDecisions.map(decision => [decision.role, decision])
       );
@@ -1298,7 +1499,7 @@ export function createColorSystemBuilderV2Controller(
           !displayed.allowedDecisions.includes(draft.decision)
         ) {
           throw new Error(
-            `The ${role} conflict requires an explicit, supported owner correction before confirmation.`
+            `The ${role} role requires an explicit, supported owner decision before confirmation.`
           );
         }
       }
@@ -1386,6 +1587,22 @@ export function createColorSystemBuilderV2Controller(
         {},
         false
       );
+      // The confirmation policy counts a role as owner-edited only when its
+      // disposition changed from the proposal or the section was conflicted.
+      // A tentative (geometry-proposed) role that the owner confirms at Teul's
+      // proposed disposition is an owner decision, acknowledged through its
+      // gap, but not a policy edit; the receipt below still echoes the owner's
+      // UI-level edits so the plugin UI can match it to the submitted draft.
+      const policyEditedRoles = pending.proposal.sections
+        .filter(section => {
+          const draft = draftByRole.get(section.role);
+          return (
+            section.sourceStatus === 'conflicted' ||
+            (draft !== undefined &&
+              genericDomainDisposition(draft.decision) !== section.disposition)
+          );
+        })
+        .map(section => section.role);
       const confirmation = buildColorSystemGenericOwnerConfirmationV2(
         freshInventory.snapshot,
         pending.proposal,
@@ -1394,7 +1611,8 @@ export function createColorSystemBuilderV2Controller(
           ...genericDisplayedPlanReceipt(pending.displayedProposal),
           sectionDecisions,
           generatedPolarity,
-          ownerEditedRoles: submittedEditedRoles,
+          ...(reviewedBrandConstraints ? { reviewedBrandConstraints } : {}),
+          ownerEditedRoles: policyEditedRoles,
           acknowledgedGapIds: message.draft.acknowledgedGapIds,
           confirmedAt: now().toISOString(),
         }
@@ -1405,7 +1623,10 @@ export function createColorSystemBuilderV2Controller(
         confirmation
       );
       if (handoff.readiness !== 'ready') {
-        const gaps = [...handoff.blockedConsumers, ...handoff.insufficiencies].map(genericUiGap);
+        const tentativeStatements = genericTentativeStatements(pending.proposal);
+        const gaps = [...handoff.blockedConsumers, ...handoff.insufficiencies].map(gap =>
+          genericUiGap(gap, tentativeStatements)
+        );
         const response = genericConfirmationFailure(
           message.requestId,
           pending.analysisId,
@@ -1450,8 +1671,11 @@ export function createColorSystemBuilderV2Controller(
           displayedPlanHash: confirmation.displayedPlanHash,
           displayedPlanJson: confirmation.displayedPlanJson,
           sectionDecisions: message.draft.sectionDecisions,
-          ownerEditedRoles: confirmation.ownerEditedRoles,
+          ownerEditedRoles: submittedEditedRoles,
           generatedPolarity: confirmation.generatedPolarity,
+          ...(confirmation.reviewedBrandConstraints
+            ? { reviewedBrandConstraints: confirmation.reviewedBrandConstraints }
+            : {}),
           acknowledgedGapIds: confirmation.acknowledgedGapIds,
           adapterVersion: confirmation.adapterVersion,
           inferencePolicyVersion: confirmation.inferencePolicyVersion,
@@ -1656,6 +1880,15 @@ export function createColorSystemBuilderV2Controller(
           currentFileAcknowledged: message.currentFileAcknowledged,
           collisionPolicy: message.collisionPolicy,
           copyName: derivedCopyName(freshDirection),
+          // p4-DE: owner-typed spot references, written into the Variable descriptions.
+          ...(message.ownerSpotColors
+            ? {
+                ownerSpotColors: rendererOwnerSpotColors(
+                  message.ownerSpotColors,
+                  authorizationAtIso
+                ),
+              }
+            : {}),
           finalMutationFence: async () => {
             const finalSource = await session.sourceAuthority.revalidate();
             assertSourceAuthorityUnchanged(finalSource, {
@@ -1712,6 +1945,29 @@ export function createColorSystemBuilderV2Controller(
       }
       consumedReceiptIds.add(authorization.receiptId);
       session.consumed = true;
+      // p3-C: the token exports are derived from the same blueprint the host
+      // rendered. An export failure never fails the Create; it becomes a warning.
+      let tokens: ColorSystemBuilderV2TokenExportMessage | undefined;
+      const exportWarnings: string[] = [];
+      try {
+        const exported = exportColorSystemTokensWithOwnerSpotColorsV2(
+          freshDirection.resource,
+          message.ownerSpotColors // p4-DE
+        );
+        tokens = {
+          format: exported.format,
+          defaultMode: exported.defaultMode,
+          modes: exported.modes,
+          tokenCount: exported.tokenCount,
+          aliasCount: exported.aliasCount,
+          dtcgJson: exported.dtcgJson,
+          cssText: exported.cssText,
+        };
+      } catch (error) {
+        exportWarnings.push(
+          `Token export was skipped: ${error instanceof Error ? error.message : 'unknown error'}`
+        );
+      }
       const responseBase = {
         type: 'intelligent-color-system-v2-create-result' as const,
         requestId: message.requestId,
@@ -1728,7 +1984,19 @@ export function createColorSystemBuilderV2Controller(
           receipt.status === 'verified-no-op'
             ? 'The verified resources remain local to this Figma file until an owner publishes them manually.'
             : 'Created resources remain local to this Figma file until an owner publishes them manually.',
+          ...exportWarnings,
         ],
+        ...(tokens ? { tokens } : {}),
+        // p4-DE: how many spot references arrived and how many descriptions the renderer wrote.
+        ...(message.ownerSpotColors
+          ? {
+              ownerSpotColors: {
+                supplied: Object.keys(message.ownerSpotColors).length,
+                descriptionsWritten:
+                  receipt.status === 'created' ? (receipt.spotDescriptionsWritten ?? 0) : 0,
+              },
+            }
+          : {}),
       };
       const response: ColorSystemBuilderV2CreateResultMessage =
         receipt.status === 'verified-no-op'

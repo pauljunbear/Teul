@@ -1,4 +1,8 @@
 import * as React from 'react';
+import { ColorSystemBrandRulesImportV1 } from './ColorSystemBrandRulesImportV1';
+import type { ColorSystemBrandTerritoryRuleV1 } from '../lib/colorSystemBrandConstraintsV1';
+import { buildColorSystemBrandConstraintsV1 } from '../lib/colorSystemBrandConstraintsV1';
+import { copyToClipboard } from '../lib/clipboard';
 import { validatePluginToUIMessage } from '../lib/messageValidation';
 import { consumeRequestId, createRequestId } from '../lib/requestId';
 import type { ColorSystemReviewModelV2 } from '../lib/colorSystemReviewModelV2';
@@ -8,15 +12,21 @@ import type {
   ColorSystemBuilderV2AnalysisResultMessage,
   ColorSystemBuilderV2CreateResultMessage,
   ColorSystemBuilderV2DataVisualizationRequest,
+  ColorSystemBuilderV2OwnerSpotColorsMessage, // p4-DE
   ColorSystemBuilderV2UsageScope,
   ColorSystemGenericV2ConfirmedReadyMessage,
   ColorSystemGenericV2PlanResultMessage,
   ConfirmGenericColorSystemPlanV2Message,
   CreateIntelligentColorSystemV2Message,
 } from '../types/colorSystemBuilderV2Messages';
-import { ColorSystemBuilderV2Review } from './ColorSystemBuilderV2Review';
+import {
+  ColorSystemBuilderV2Review,
+  themeFor as reviewThemeFor,
+  type ColorSystemBuilderV2CreateAcknowledgements,
+} from './ColorSystemBuilderV2Review';
 import {
   ColorSystemGenericPlanReviewV2,
+  splitErrorReference,
   type ColorSystemGenericPlanConfirmationDraftV2,
   type ColorSystemGenericPlanGapV2,
   type ColorSystemGenericPlanProposalV2,
@@ -33,25 +43,28 @@ export interface ColorSystemBuilderV2TabProps {
 type UsageScope = ColorSystemBuilderV2UsageScope;
 type SourceScopeChoice = 'auto' | UsageScope;
 type Stage =
-  | 'idle'
-  | 'analyzing'
-  | 'plan'
-  | 'confirming'
-  | 'review'
-  | 'creating'
-  | 'blocked'
-  | 'success';
+  'idle' | 'analyzing' | 'plan' | 'confirming' | 'review' | 'creating' | 'blocked' | 'success';
 type RecoveryAction = 'retry-analysis' | 'reanalyze' | 'return-to-review' | null;
 
 const DEFAULT_DATA_VISUALIZATION_REQUEST: ColorSystemBuilderV2DataVisualizationRequest = {
   mode: 'Light',
   surfaceContext: 'light',
-  categoricalMarkCount: 6,
+  categoricalMarkCount: 5,
   sequentialMarkCount: 5,
   divergingMarkCount: 3,
   adjacency: 'separated',
   midpointMeaning: 'Zero or neutral midpoint',
 };
+
+/** Longest silence Teul tolerates from the plugin sandbox before it stops waiting. */
+export const COLOR_SYSTEM_BUILDER_V2_RESPONSE_TIMEOUT_MS = 30_000;
+/** Analysis, cancel, and plan confirmation are read-only, so nothing changed. */
+export const RESPONSE_TIMEOUT_MESSAGE =
+  'Teul did not hear back from Figma in 30 seconds. Nothing was changed. Try again or start over.';
+/** Create mutates the file, so a silent host cannot be described as "nothing changed". */
+export const CREATE_RESPONSE_TIMEOUT_MESSAGE =
+  'Teul did not hear back from Figma in 30 seconds. Teul cannot confirm whether the system was created. Check the file, then analyze again or start over.';
+export const UNDO_NOTE = 'One native Undo (⌘Z) removes everything Teul just created.';
 
 const DATA_COUNT_CONTROLS = [
   {
@@ -76,6 +89,7 @@ const DATA_COUNT_CONTROLS = [
 
 interface PendingAnalyze {
   requestId: string;
+  brandConstraintRules?: readonly ColorSystemBrandTerritoryRuleV1[];
 }
 
 interface PendingCancel {
@@ -130,32 +144,21 @@ interface TabTheme {
   success: string;
 }
 
+/** Same palette as the review; only the key names differ. */
 function themeFor(isDark: boolean): TabTheme {
-  return isDark
-    ? {
-        background: '#191919',
-        panel: '#242424',
-        raised: '#303030',
-        text: '#FFFFFF',
-        muted: '#B8B8B8',
-        border: '#4A4A4A',
-        accent: '#8AB4FF',
-        accentText: '#102043',
-        danger: '#FF9A9A',
-        success: '#82D9A3',
-      }
-    : {
-        background: '#FFFFFF',
-        panel: '#F6F6F4',
-        raised: '#FFFFFF',
-        text: '#171717',
-        muted: '#616161',
-        border: '#D7D7D3',
-        accent: '#2458B3',
-        accentText: '#FFFFFF',
-        danger: '#B42318',
-        success: '#146C43',
-      };
+  const review = reviewThemeFor(isDark);
+  return {
+    background: review.canvas,
+    panel: review.panel,
+    raised: review.raised,
+    text: review.text,
+    muted: review.muted,
+    border: review.border,
+    accent: review.accent,
+    accentText: review.accentText,
+    danger: review.danger,
+    success: review.positive,
+  };
 }
 
 function postPluginMessage(message: unknown): void {
@@ -221,7 +224,28 @@ function receiptMatchesDraft(
 ): boolean {
   const sameMembers = (left: readonly string[], right: readonly string[]) =>
     left.length === right.length && left.every(value => right.includes(value));
+  const constraints = receipt.reviewedBrandConstraints;
+  const ruleDraft = draft.brandRuleDecisions;
+  const rulesMatch =
+    (!constraints && !ruleDraft) ||
+    Boolean(
+      constraints &&
+      ruleDraft &&
+      buildColorSystemBrandConstraintsV1({
+        schemaVersion: constraints.schemaVersion,
+        sourceSnapshotHash: constraints.sourceSnapshotHash,
+        rules: constraints.rules,
+        decisions: [],
+      }).fragmentHash === ruleDraft.fragmentHash &&
+      constraints.decisions.length === ruleDraft.decisions.length &&
+      constraints.decisions.every(decision =>
+        ruleDraft.decisions.some(
+          expected => expected.ruleId === decision.ruleId && expected.status === decision.status
+        )
+      )
+    );
   return (
+    rulesMatch &&
     JSON.stringify(receipt.sectionDecisions) === JSON.stringify(draft.sectionDecisions) &&
     sameMembers(receipt.ownerEditedRoles, draft.ownerEditedRoles) &&
     sameMembers(receipt.acknowledgedGapIds, draft.acknowledgedGapIds)
@@ -242,6 +266,35 @@ export function ColorSystemBuilderV2Tab({
     border: `1px solid ${theme.border}`,
     fontSize: 11,
   };
+  /** Bold bordered secondary action; `quiet` drops the raised fill. */
+  const actionButtonStyle = (
+    minHeight: number,
+    padding: string,
+    extra: React.CSSProperties = {},
+    quiet = false
+  ): React.CSSProperties => ({
+    minHeight,
+    padding,
+    borderRadius: 7,
+    color: theme.text,
+    background: quiet ? 'transparent' : theme.raised,
+    border: `1px solid ${theme.border}`,
+    fontWeight: 700,
+    ...extra,
+  });
+  const dotStyle: React.CSSProperties = {
+    width: 2,
+    height: 2,
+    borderRadius: '50%',
+    background: 'currentColor',
+  };
+  /** The two full-width actions shown while analysis runs. */
+  const analyzingButtonExtra: React.CSSProperties = {
+    width: '100%',
+    marginTop: 8,
+    borderRadius: 8,
+    fontSize: 12,
+  };
   const dataFieldStyle: React.CSSProperties = {
     margin: 0,
     padding: 9,
@@ -258,10 +311,10 @@ export function ColorSystemBuilderV2Tab({
     display: 'flex',
     alignItems: 'center',
     gap: 5,
-    fontSize: 10,
+    fontSize: 11,
     whiteSpace: 'nowrap',
   };
-  const dataCountLabelStyle: React.CSSProperties = { display: 'grid', gap: 5, fontSize: 10 };
+  const dataCountLabelStyle: React.CSSProperties = { display: 'grid', gap: 5, fontSize: 11 };
   const dataCountSelectStyle: React.CSSProperties = {
     minHeight: 34,
     color: theme.text,
@@ -271,6 +324,9 @@ export function ColorSystemBuilderV2Tab({
   };
   const [stage, setStage] = React.useState<Stage>('idle');
   const [sourceChoice, setSourceChoice] = React.useState<SourceScopeChoice>('auto');
+  const [brandConstraintRules, setBrandConstraintRules] =
+    React.useState<readonly ColorSystemBrandTerritoryRuleV1[]>();
+  const [brandRulesReady, setBrandRulesReady] = React.useState(true);
   const [dataVisualization, setDataVisualization] =
     React.useState<ColorSystemBuilderV2DataVisualizationRequest>(
       DEFAULT_DATA_VISUALIZATION_REQUEST
@@ -295,53 +351,130 @@ export function ColorSystemBuilderV2Tab({
   const reviewStageRef = React.useRef<HTMLDivElement | null>(null);
   const recoveryRef = React.useRef<HTMLDivElement | null>(null);
   const successRef = React.useRef<HTMLHeadingElement | null>(null);
+  const scrollRef = React.useRef<HTMLDivElement | null>(null);
+  const responseTimers = React.useRef<Record<string, number>>({});
 
-  const failPendingResponse = React.useCallback((requestId: string, message: string) => {
-    const analyze = pendingAnalyze.current;
-    const cancel = pendingCancel.current;
-    const confirmation = pendingConfirmation.current;
-    const create = pendingCreate.current;
-    if (
-      analyze?.requestId !== requestId &&
-      cancel?.requestId !== requestId &&
-      confirmation?.requestId !== requestId &&
-      create?.requestId !== requestId
-    ) {
-      return;
+  const clearResponseTimer = React.useCallback((requestId: string) => {
+    const timer = responseTimers.current[requestId];
+    if (timer !== undefined) {
+      window.clearTimeout(timer);
+      delete responseTimers.current[requestId];
     }
-    consumeRequestId(requestId);
-    if (confirmation?.requestId === requestId) {
-      pendingConfirmation.current = null;
-      setProgress('');
-      setGenericSubmitError(message);
-      setStage('plan');
-      return;
-    }
-    if (analyze?.requestId === requestId) pendingAnalyze.current = null;
-    if (cancel?.requestId === requestId) {
-      pendingCancel.current = null;
-      setCancelling(false);
-      if (pendingAnalyze.current?.requestId === cancel.targetRequestId) {
-        consumeRequestId(cancel.targetRequestId);
-        pendingAnalyze.current = null;
-      }
-    }
-    if (create?.requestId === requestId) pendingCreate.current = null;
-    setCancelling(false);
-    setProgress('');
-    setError(message);
-    setRecovery(
-      analyze?.requestId === requestId || cancel?.requestId === requestId
-        ? 'Retry analysis; no file changes were made.'
-        : 'Create could not be verified. Analyze again before creating.'
-    );
-    setRecoveryAction(
-      analyze?.requestId === requestId || cancel?.requestId === requestId
-        ? 'retry-analysis'
-        : 'reanalyze'
-    );
-    setStage('blocked');
   }, []);
+
+  const clearAllResponseTimers = React.useCallback(() => {
+    for (const requestId of Object.keys(responseTimers.current)) clearResponseTimer(requestId);
+  }, [clearResponseTimer]);
+
+  const timeoutPendingRequest = React.useCallback(
+    (requestId: string) => {
+      const analyze = pendingAnalyze.current;
+      const cancel = pendingCancel.current;
+      const confirmation = pendingConfirmation.current;
+      const create = pendingCreate.current;
+      if (confirmation?.requestId === requestId) {
+        consumeRequestId(requestId);
+        pendingConfirmation.current = null;
+        setProgress('');
+        setGenericSubmitError(RESPONSE_TIMEOUT_MESSAGE);
+        setStage('plan');
+        return;
+      }
+      if (analyze?.requestId === requestId || cancel?.requestId === requestId) {
+        if (analyze) {
+          consumeRequestId(analyze.requestId);
+          clearResponseTimer(analyze.requestId);
+        }
+        if (cancel) {
+          consumeRequestId(cancel.requestId);
+          clearResponseTimer(cancel.requestId);
+        }
+        pendingAnalyze.current = null;
+        pendingCancel.current = null;
+        setCancelling(false);
+        setProgress('');
+        setError(RESPONSE_TIMEOUT_MESSAGE);
+        setRecovery(null);
+        setRecoveryAction('retry-analysis');
+        setStage('blocked');
+        return;
+      }
+      if (create?.requestId === requestId) {
+        consumeRequestId(requestId);
+        pendingCreate.current = null;
+        setProgress('');
+        setError(CREATE_RESPONSE_TIMEOUT_MESSAGE);
+        setRecovery(null);
+        setRecoveryAction('reanalyze');
+        setStage('blocked');
+      }
+    },
+    [clearResponseTimer]
+  );
+
+  /** Progress replies re-arm the timer, so only real silence times out. */
+  const armResponseTimer = React.useCallback(
+    (requestId: string) => {
+      clearResponseTimer(requestId);
+      responseTimers.current[requestId] = window.setTimeout(() => {
+        delete responseTimers.current[requestId];
+        timeoutPendingRequest(requestId);
+      }, COLOR_SYSTEM_BUILDER_V2_RESPONSE_TIMEOUT_MS);
+    },
+    [clearResponseTimer, timeoutPendingRequest]
+  );
+
+  const failPendingResponse = React.useCallback(
+    (requestId: string, message: string) => {
+      const analyze = pendingAnalyze.current;
+      const cancel = pendingCancel.current;
+      const confirmation = pendingConfirmation.current;
+      const create = pendingCreate.current;
+      if (
+        analyze?.requestId !== requestId &&
+        cancel?.requestId !== requestId &&
+        confirmation?.requestId !== requestId &&
+        create?.requestId !== requestId
+      ) {
+        return;
+      }
+      consumeRequestId(requestId);
+      clearResponseTimer(requestId);
+      if (confirmation?.requestId === requestId) {
+        pendingConfirmation.current = null;
+        setProgress('');
+        setGenericSubmitError(message);
+        setStage('plan');
+        return;
+      }
+      if (analyze?.requestId === requestId) pendingAnalyze.current = null;
+      if (cancel?.requestId === requestId) {
+        pendingCancel.current = null;
+        setCancelling(false);
+        if (pendingAnalyze.current?.requestId === cancel.targetRequestId) {
+          consumeRequestId(cancel.targetRequestId);
+          clearResponseTimer(cancel.targetRequestId);
+          pendingAnalyze.current = null;
+        }
+      }
+      if (create?.requestId === requestId) pendingCreate.current = null;
+      setCancelling(false);
+      setProgress('');
+      setError(message);
+      setRecovery(
+        analyze?.requestId === requestId || cancel?.requestId === requestId
+          ? 'Retry analysis; no file changes were made.'
+          : 'Create could not be verified. Analyze again before creating.'
+      );
+      setRecoveryAction(
+        analyze?.requestId === requestId || cancel?.requestId === requestId
+          ? 'retry-analysis'
+          : 'reanalyze'
+      );
+      setStage('blocked');
+    },
+    [clearResponseTimer]
+  );
 
   React.useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -378,6 +511,7 @@ export function ColorSystemBuilderV2Tab({
         ) {
           return;
         }
+        armResponseTimer(message.requestId);
         setProgress(message.message);
         return;
       }
@@ -390,6 +524,7 @@ export function ColorSystemBuilderV2Tab({
         ) {
           return;
         }
+        armResponseTimer(message.requestId);
         setProgress(message.message);
         return;
       }
@@ -402,6 +537,27 @@ export function ColorSystemBuilderV2Tab({
           cancel?.requestId === message.requestId && analyze?.requestId === cancel.targetRequestId;
         if (!matchesAnalyze && !matchesCancel) return;
 
+        if (message.proposal && analyze) {
+          const returnedRules = message.proposal.reviewedBrandConstraints;
+          const expectedRules = analyze.brandConstraintRules;
+          const expectedFragment =
+            expectedRules === undefined
+              ? undefined
+              : buildColorSystemBrandConstraintsV1({
+                  schemaVersion: 'teul.brand-constraints.v1',
+                  sourceSnapshotHash: message.snapshotHash,
+                  rules: expectedRules,
+                  decisions: [],
+                });
+          if (expectedFragment?.fragmentHash !== returnedRules?.fragmentHash) {
+            failPendingResponse(
+              message.requestId,
+              'The plan changed or omitted the imported brand rules. Analyze again to review the exact rules.'
+            );
+            return;
+          }
+        }
+
         if (matchesCancel && cancel) {
           if (!consumeRequestId(cancel.requestId)) return;
           consumeRequestId(cancel.targetRequestId);
@@ -409,6 +565,8 @@ export function ColorSystemBuilderV2Tab({
           if (!consumeRequestId(analyze.requestId)) return;
           if (cancel?.targetRequestId === analyze.requestId) consumeRequestId(cancel.requestId);
         }
+        if (analyze) clearResponseTimer(analyze.requestId);
+        if (cancel) clearResponseTimer(cancel.requestId);
         pendingAnalyze.current = null;
         pendingCancel.current = null;
         setCancelling(false);
@@ -442,6 +600,7 @@ export function ColorSystemBuilderV2Tab({
           return;
         }
         pendingConfirmation.current = null;
+        clearResponseTimer(message.requestId);
         setProgress('');
 
         if (!message.success) {
@@ -487,10 +646,12 @@ export function ColorSystemBuilderV2Tab({
         }
         if (pendingCancel.current?.targetRequestId === message.requestId) {
           consumeRequestId(pendingCancel.current.requestId);
+          clearResponseTimer(pendingCancel.current.requestId);
           pendingCancel.current = null;
         }
         setCancelling(false);
         pendingAnalyze.current = null;
+        clearResponseTimer(message.requestId);
         setProgress('');
         if (!message.success) {
           setError(message.error);
@@ -516,6 +677,7 @@ export function ColorSystemBuilderV2Tab({
         return;
       }
       pendingCreate.current = null;
+      clearResponseTimer(message.requestId);
       setProgress('');
       if (!message.success) {
         const retryableFromReview =
@@ -552,16 +714,17 @@ export function ColorSystemBuilderV2Tab({
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [failPendingResponse]);
+  }, [armResponseTimer, clearResponseTimer, failPendingResponse]);
 
   React.useEffect(
     () => () => {
+      clearAllResponseTimers();
       if (pendingAnalyze.current) consumeRequestId(pendingAnalyze.current.requestId);
       if (pendingCancel.current) consumeRequestId(pendingCancel.current.requestId);
       if (pendingConfirmation.current) consumeRequestId(pendingConfirmation.current.requestId);
       if (pendingCreate.current) consumeRequestId(pendingCreate.current.requestId);
     },
-    []
+    [clearAllResponseTimers]
   );
 
   React.useEffect(() => {
@@ -583,6 +746,7 @@ export function ColorSystemBuilderV2Tab({
   }, [isActive, stage]);
 
   const reset = React.useCallback(() => {
+    clearAllResponseTimers();
     if (pendingAnalyze.current) consumeRequestId(pendingAnalyze.current.requestId);
     if (pendingCancel.current) consumeRequestId(pendingCancel.current.requestId);
     if (pendingConfirmation.current) consumeRequestId(pendingConfirmation.current.requestId);
@@ -602,11 +766,18 @@ export function ColorSystemBuilderV2Tab({
     setRecovery(null);
     setRecoveryAction(null);
     setStage('idle');
-  }, []);
+  }, [clearAllResponseTimers]);
 
   const startAnalysis = React.useCallback(
     (scopeOverride?: SourceScopeChoice) => {
-      if (stage === 'analyzing' || stage === 'confirming' || stage === 'creating') return;
+      if (
+        !brandRulesReady ||
+        stage === 'analyzing' ||
+        stage === 'confirming' ||
+        stage === 'creating'
+      )
+        return;
+      clearAllResponseTimers();
       if (pendingAnalyze.current) consumeRequestId(pendingAnalyze.current.requestId);
       if (pendingCancel.current) consumeRequestId(pendingCancel.current.requestId);
       if (pendingConfirmation.current) consumeRequestId(pendingConfirmation.current.requestId);
@@ -640,12 +811,25 @@ export function ColorSystemBuilderV2Tab({
         sourceScope: automaticScope ? 'automatic' : requestedSourceChoice,
         confirmWholeFile: automaticScope || requestedSourceChoice === 'whole-file',
         dataVisualization,
+        ...(brandConstraintRules !== undefined ? { brandConstraintRules } : {}),
       };
-      pendingAnalyze.current = { requestId };
+      pendingAnalyze.current = {
+        requestId,
+        ...(brandConstraintRules !== undefined ? { brandConstraintRules } : {}),
+      };
+      armResponseTimer(requestId);
       setStage('analyzing');
       postPluginMessage(message);
     },
-    [dataVisualization, sourceChoice, stage]
+    [
+      armResponseTimer,
+      clearAllResponseTimers,
+      dataVisualization,
+      sourceChoice,
+      stage,
+      brandConstraintRules,
+      brandRulesReady,
+    ]
   );
 
   const cancelAnalysis = React.useCallback(() => {
@@ -658,10 +842,11 @@ export function ColorSystemBuilderV2Tab({
       targetRequestId: analyze.requestId,
     };
     pendingCancel.current = { requestId, targetRequestId: analyze.requestId };
+    armResponseTimer(requestId);
     setCancelling(true);
     setProgress('Cancelling analysis…');
     postPluginMessage(message);
-  }, [stage]);
+  }, [armResponseTimer, stage]);
 
   const confirmGenericPlan = React.useCallback(
     (draft: ColorSystemGenericPlanConfirmationDraftV2) => {
@@ -691,12 +876,13 @@ export function ColorSystemBuilderV2Tab({
         proposalId: genericPlan.proposal.id,
         draft,
       };
+      armResponseTimer(requestId);
       setGenericSubmitError(null);
       setProgress('Confirming the plan against the current source…');
       setStage('confirming');
       postPluginMessage(message);
     },
-    [genericPlan, stage]
+    [armResponseTimer, genericPlan, stage]
   );
 
   const recoverGenericPlan = React.useCallback(
@@ -715,8 +901,18 @@ export function ColorSystemBuilderV2Tab({
   );
 
   const createSystem = React.useCallback(
-    (review: ColorSystemReviewModelV2) => {
+    (
+      review: ColorSystemReviewModelV2,
+      acknowledgements: ColorSystemBuilderV2CreateAcknowledgements,
+      ownerSpotColors?: ColorSystemBuilderV2OwnerSpotColorsMessage // p4-DE
+    ) => {
       if (!analysis || stage !== 'review' || review.directionId !== selectedDirectionId) return;
+      if (
+        !acknowledgements.currentFileAcknowledged ||
+        !acknowledgements.manualPublicationAcknowledged
+      ) {
+        return;
+      }
       const retained = analysis.reviews.find(
         candidate =>
           candidate.directionId === review.directionId &&
@@ -736,14 +932,17 @@ export function ColorSystemBuilderV2Tab({
         sessionId: analysis.sessionId,
         directionId: retained.directionId,
         collisionPolicy: 'create-copy',
-        currentFileAcknowledged: true,
-        manualPublicationAcknowledged: true,
+        currentFileAcknowledged: acknowledgements.currentFileAcknowledged,
+        manualPublicationAcknowledged: acknowledgements.manualPublicationAcknowledged,
+        // p4-DE: only when the owner typed at least one spot reference.
+        ...(ownerSpotColors && Object.keys(ownerSpotColors).length > 0 ? { ownerSpotColors } : {}),
       };
       pendingCreate.current = {
         requestId,
         sessionId: analysis.sessionId,
         directionId: retained.directionId,
       };
+      armResponseTimer(requestId);
       setError(null);
       setRecovery(null);
       setRecoveryAction(null);
@@ -751,11 +950,31 @@ export function ColorSystemBuilderV2Tab({
       setStage('creating');
       postPluginMessage(message);
     },
-    [analysis, selectedDirectionId, stage]
+    [analysis, armResponseTimer, selectedDirectionId, stage]
   );
 
   const midpointMeaningValid = dataVisualization.midpointMeaning.trim().length > 0;
-  const analysisDisabled = stage === 'analyzing' || !midpointMeaningValid;
+  const analysisDisabled = stage === 'analyzing' || !midpointMeaningValid || !brandRulesReady;
+  const errorView = error ? splitErrorReference(error) : null;
+
+  /**
+   * Which screen the stage renders. Scroll resets only when the screen changes
+   * (entry → plan → review → success), never on same-screen transitions such as
+   * review → creating → blocked, so a failed Create keeps the user in place.
+   */
+  const screen: 'entry' | 'plan' | 'review' | 'success' =
+    genericPlan && (stage === 'plan' || stage === 'confirming')
+      ? 'plan'
+      : stage === 'success' && created
+        ? 'success'
+        : analysis && (stage === 'review' || stage === 'creating' || stage === 'blocked')
+          ? 'review'
+          : 'entry';
+
+  React.useEffect(() => {
+    const container = scrollRef.current;
+    if (container) container.scrollTop = 0;
+  }, [screen]);
 
   if (!isActive) return null;
 
@@ -837,6 +1056,26 @@ export function ColorSystemBuilderV2Tab({
           <p style={{ margin: '8px 0 0', fontSize: 12, lineHeight: 1.5 }}>
             Publishing the library remains a separate manual step in Figma.
           </p>
+          {created.action === 'created' ? (
+            <p
+              data-teul-undo-note="true"
+              style={{ margin: '8px 0 0', fontSize: 12, lineHeight: 1.5 }}
+            >
+              {UNDO_NOTE}
+            </p>
+          ) : null}
+          {created.ownerSpotColors ? (
+            <p
+              data-teul-spot-echo="true"
+              style={{ margin: '8px 0 0', fontSize: 12, lineHeight: 1.5 }}
+            >
+              {`Spot colors: ${created.ownerSpotColors.supplied} owner-supplied reference${
+                created.ownerSpotColors.supplied === 1 ? '' : 's'
+              }; ${created.ownerSpotColors.descriptionsWritten} Variable description${
+                created.ownerSpotColors.descriptionsWritten === 1 ? '' : 's'
+              } written (each family’s anchor step and the exact source token it derives from).`}
+            </p>
+          ) : null}
           {created.warnings.length > 0 ? (
             <ul style={{ margin: '10px 0 0', paddingLeft: 18, fontSize: 11, lineHeight: 1.5 }}>
               {created.warnings.map(warning => (
@@ -845,19 +1084,35 @@ export function ColorSystemBuilderV2Tab({
             </ul>
           ) : null}
         </div>
+        {created.tokens ? (
+          <div data-teul-token-exports="true" style={{ marginTop: 14 }}>
+            <p style={{ margin: 0, color: theme.muted, fontSize: 11, lineHeight: 1.5 }}>
+              {`${created.tokens.tokenCount} tokens as W3C Design Tokens JSON (modes ride in “$extensions”) or as flat CSS custom properties.`}
+            </p>
+            <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={() =>
+                  copyToClipboard(created.tokens?.dtcgJson ?? '', 'design tokens (DTCG JSON)')
+                }
+                style={actionButtonStyle(36, '7px 11px')}
+              >
+                Copy tokens (DTCG JSON)
+              </button>
+              <button
+                type="button"
+                onClick={() => copyToClipboard(created.tokens?.cssText ?? '', 'CSS variables')}
+                style={actionButtonStyle(36, '7px 11px')}
+              >
+                Copy CSS variables
+              </button>
+            </div>
+          </div>
+        ) : null}
         <button
           type="button"
           onClick={reset}
-          style={{
-            marginTop: 14,
-            minHeight: 40,
-            padding: '9px 14px',
-            borderRadius: 8,
-            color: theme.text,
-            background: theme.raised,
-            border: `1px solid ${theme.border}`,
-            fontWeight: 700,
-          }}
+          style={actionButtonStyle(40, '9px 14px', { marginTop: 14, borderRadius: 8 })}
         >
           Start over
         </button>
@@ -888,16 +1143,10 @@ export function ColorSystemBuilderV2Tab({
             }}
           >
             <span>{analysis.sourceColorCount} colors</span>
-            <span
-              aria-hidden="true"
-              style={{ width: 2, height: 2, borderRadius: '50%', background: 'currentColor' }}
-            />
+            <span aria-hidden="true" style={dotStyle} />
             <span>{scopeLabel(analysis.resolvedUsageScope)}</span>
-            <span
-              aria-hidden="true"
-              style={{ width: 2, height: 2, borderRadius: '50%', background: 'currentColor' }}
-            />
-            <span>{analysis.scannedNodeCount} nodes</span>
+            <span aria-hidden="true" style={dotStyle} />
+            <span>{analysis.scannedNodeCount} layers</span>
           </span>
           <button
             type="button"
@@ -924,7 +1173,7 @@ export function ColorSystemBuilderV2Tab({
           <div
             ref={recoveryRef}
             tabIndex={-1}
-            aria-label={`${error ?? 'Create could not continue.'} ${recovery ?? ''}`}
+            aria-label={`${errorView?.headline ?? 'Create could not continue.'} ${recovery ?? ''}`.trim()}
             style={{ padding: '10px 18px 0' }}
           >
             <button
@@ -939,15 +1188,7 @@ export function ColorSystemBuilderV2Tab({
                 }
                 startAnalysis();
               }}
-              style={{
-                minHeight: 36,
-                padding: '7px 11px',
-                borderRadius: 7,
-                color: theme.text,
-                background: theme.raised,
-                border: `1px solid ${theme.border}`,
-                fontWeight: 700,
-              }}
+              style={actionButtonStyle(36, '7px 11px')}
             >
               {recoveryAction === 'return-to-review' ? 'Return to review' : 'Analyze again'}
             </button>
@@ -963,10 +1204,11 @@ export function ColorSystemBuilderV2Tab({
           onCreate={createSystem}
           creating={stage === 'creating'}
           blocker={
-            stage === 'blocked' && error
+            stage === 'blocked' && errorView
               ? {
                   title: 'Create could not continue',
-                  message: [error, recovery].filter(Boolean).join(' '),
+                  message: [errorView.headline, recovery].filter(Boolean).join(' '),
+                  reference: errorView.reference,
                 }
               : null
           }
@@ -988,30 +1230,21 @@ export function ColorSystemBuilderV2Tab({
           colorScheme: isDark ? 'dark' : 'light',
         }}
       >
-        <style>{`
-        .teul-v2-builder-tab * { box-sizing: border-box; }
-        .teul-v2-builder-tab button:focus-visible,
-        .teul-v2-builder-tab select:focus-visible,
-        .teul-v2-builder-tab input:focus-visible,
-        .teul-v2-builder-tab summary:focus-visible {
-          outline: 3px solid ${theme.accent};
-          outline-offset: 3px;
-        }
-      `}</style>
+        <style>{`.teul-v2-builder-tab *{box-sizing:border-box}.teul-v2-builder-tab button:focus-visible,.teul-v2-builder-tab select:focus-visible,.teul-v2-builder-tab input:focus-visible,.teul-v2-builder-tab summary:focus-visible{outline:3px solid ${theme.accent};outline-offset:3px}`}</style>
         <p
           style={{
             margin: 0,
             color: theme.muted,
-            fontSize: 10,
+            fontSize: 11,
             fontWeight: 800,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
           }}
         >
-          Intelligent color builder
+          Color system builder
         </p>
         <h2 id="teul-v2-builder-title" style={{ margin: '6px 0 0', fontSize: 23 }}>
-          Build a complete color system
+          Build a color system from your palette
         </h2>
         <p style={{ margin: '9px 0 0', color: theme.muted, fontSize: 13, lineHeight: 1.55 }}>
           Teul looks for supported local Figma color evidence, shows what can stay fixed, then
@@ -1064,20 +1297,18 @@ export function ColorSystemBuilderV2Tab({
               onClick={cancelAnalysis}
               disabled={cancelling}
               aria-describedby="teul-v2-analyze-status"
-              style={{
-                width: '100%',
-                minHeight: 38,
-                marginTop: 8,
-                padding: '8px 12px',
-                borderRadius: 8,
-                color: theme.text,
-                background: theme.raised,
-                border: `1px solid ${theme.border}`,
-                fontSize: 12,
-                fontWeight: 700,
-              }}
+              style={actionButtonStyle(38, '8px 12px', analyzingButtonExtra)}
             >
               {cancelling ? 'Cancelling…' : 'Cancel analysis'}
+            </button>
+          ) : null}
+          {stage === 'analyzing' ? (
+            <button
+              type="button"
+              onClick={reset}
+              style={actionButtonStyle(38, '8px 12px', analyzingButtonExtra, true)}
+            >
+              Start over
             </button>
           ) : null}
           <p
@@ -1107,6 +1338,12 @@ export function ColorSystemBuilderV2Tab({
         >
           <summary style={{ cursor: 'pointer', fontSize: 12, fontWeight: 700 }}>Advanced</summary>
           <div style={{ marginTop: 12 }}>
+            <ColorSystemBrandRulesImportV1
+              rules={brandConstraintRules}
+              onChange={setBrandConstraintRules}
+              onReadyChange={setBrandRulesReady}
+              disabled={stage === 'analyzing'}
+            />
             <label htmlFor="teul-v2-source-scope" style={{ display: 'block', fontSize: 11 }}>
               Source detection
             </label>
@@ -1141,8 +1378,10 @@ export function ColorSystemBuilderV2Tab({
             </select>
             <div style={{ marginTop: 16, paddingTop: 14, borderTop: `1px solid ${theme.border}` }}>
               <h3 style={{ margin: 0, fontSize: 12 }}>Data Visualization request</h3>
-              <p style={{ margin: '5px 0 0', color: theme.muted, fontSize: 10, lineHeight: 1.4 }}>
-                These settings shape the chart palettes shown in review.
+              <p style={{ margin: '5px 0 0', color: theme.muted, fontSize: 11, lineHeight: 1.4 }}>
+                These settings shape the chart palettes shown in review. The categorical count is a
+                request: Teul will report how many distinguishable series each direction can
+                actually support.
               </p>
 
               <div
@@ -1154,7 +1393,7 @@ export function ColorSystemBuilderV2Tab({
                 }}
               >
                 <fieldset style={dataFieldStyle}>
-                  <legend style={{ padding: '0 4px', fontSize: 10 }}>Mode</legend>
+                  <legend style={{ padding: '0 4px', fontSize: 11 }}>Mode</legend>
                   <div style={dataRadioRowStyle}>
                     {(['Light', 'Dark'] as const).map(mode => (
                       <label key={mode} style={dataRadioLabelStyle}>
@@ -1173,7 +1412,7 @@ export function ColorSystemBuilderV2Tab({
                 </fieldset>
 
                 <fieldset style={dataFieldStyle}>
-                  <legend style={{ padding: '0 4px', fontSize: 10 }}>Chart surface</legend>
+                  <legend style={{ padding: '0 4px', fontSize: 11 }}>Chart surface</legend>
                   <div style={dataRadioRowStyle}>
                     {(['light', 'dark'] as const).map(surfaceContext => (
                       <label key={surfaceContext} style={dataRadioLabelStyle}>
@@ -1221,12 +1460,12 @@ export function ColorSystemBuilderV2Tab({
                 ))}
 
                 <fieldset style={dataFieldStyle}>
-                  <legend style={{ padding: '0 4px', fontSize: 10 }}>Categorical adjacency</legend>
+                  <legend style={{ padding: '0 4px', fontSize: 11 }}>Categorical adjacency</legend>
                   <div style={{ display: 'grid', gap: 5 }}>
                     {(['separated', 'touching'] as const).map(adjacency => (
                       <label
                         key={adjacency}
-                        style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10 }}
+                        style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11 }}
                       >
                         <input
                           type="radio"
@@ -1247,7 +1486,7 @@ export function ColorSystemBuilderV2Tab({
 
               <label
                 htmlFor="teul-v2-midpoint-meaning"
-                style={{ display: 'grid', gap: 5, marginTop: 10, fontSize: 10 }}
+                style={{ display: 'grid', gap: 5, marginTop: 10, fontSize: 11 }}
               >
                 Diverging midpoint meaning
                 <input
@@ -1279,7 +1518,7 @@ export function ColorSystemBuilderV2Tab({
                 style={{
                   margin: '5px 0 0',
                   color: midpointMeaningValid ? theme.muted : theme.danger,
-                  fontSize: 10,
+                  fontSize: 11,
                   lineHeight: 1.4,
                 }}
               >
@@ -1291,12 +1530,12 @@ export function ColorSystemBuilderV2Tab({
           </div>
         </details>
 
-        {error ? (
+        {errorView ? (
           <div
             ref={recoveryRef}
             role="alert"
             tabIndex={-1}
-            aria-label={`${error} ${recovery ?? ''}`}
+            aria-label={`${errorView.headline} ${recovery ?? ''}`.trim()}
             style={{
               marginTop: 13,
               padding: 12,
@@ -1305,49 +1544,71 @@ export function ColorSystemBuilderV2Tab({
               border: `1px solid ${theme.danger}`,
             }}
           >
-            <strong style={{ display: 'block', fontSize: 12 }}>{error}</strong>
+            <strong style={{ display: 'block', fontSize: 12 }}>{errorView.headline}</strong>
             {recovery ? (
               <span style={{ display: 'block', marginTop: 4, fontSize: 11 }}>{recovery}</span>
             ) : null}
-            <button
-              type="button"
-              onClick={recoveryAction === 'retry-analysis' ? () => startAnalysis() : reset}
-              style={{
-                minHeight: 35,
-                marginTop: 9,
-                padding: '6px 10px',
-                borderRadius: 7,
-                color: theme.text,
-                background: theme.raised,
-                border: `1px solid ${theme.border}`,
-                fontWeight: 700,
-              }}
-            >
-              {recoveryAction === 'retry-analysis' ? 'Retry analysis' : 'Analyze again'}
-            </button>
+            {errorView.reference ? (
+              <span
+                data-teul-error-reference="true"
+                style={{ display: 'block', marginTop: 6, color: theme.muted, fontSize: 11 }}
+              >
+                Reference: {errorView.reference}
+              </span>
+            ) : null}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 9 }}>
+              {recoveryAction === 'retry-analysis' ? (
+                <button
+                  type="button"
+                  onClick={() => startAnalysis()}
+                  style={actionButtonStyle(35, '6px 10px')}
+                >
+                  Retry analysis
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={reset}
+                style={actionButtonStyle(35, '6px 10px', {}, true)}
+              >
+                Start over
+              </button>
+            </div>
           </div>
         ) : null}
       </section>
     );
   }
 
-  return releaseChannel === 'candidate' ? (
-    <div>
-      <aside
-        role="status"
-        style={{
-          margin: 14,
-          padding: '9px 11px',
-          borderRadius: 8,
-          border: `1px solid ${theme.accent}`,
-          fontSize: 11,
-        }}
-      >
-        Qualification build — testing only; not released.
-      </aside>
+  return (
+    <div
+      ref={scrollRef}
+      data-teul-builder-scroll="true"
+      style={{
+        height: '100%',
+        minHeight: 0,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        color: theme.text,
+        background: theme.background,
+        colorScheme: isDark ? 'dark' : 'light',
+      }}
+    >
+      {releaseChannel === 'candidate' ? (
+        <aside
+          role="status"
+          style={{
+            margin: 14,
+            padding: '9px 11px',
+            borderRadius: 8,
+            border: `1px solid ${theme.accent}`,
+            fontSize: 11,
+          }}
+        >
+          Qualification build — testing only; not released.
+        </aside>
+      ) : null}
       {content}
     </div>
-  ) : (
-    content
   );
 }

@@ -1,10 +1,12 @@
+import {
+  WADA_SOURCE_PROVENANCE_DISCLOSURE,
+  WERNER_SOURCE_PROVENANCE_DISCLOSURE,
+} from './sourceProvenanceDisclosureData';
+
 export type HistoricalCollectionId = 'wada' | 'werner';
 
 export type ProvenanceClassification =
-  | 'historical-source'
-  | 'publisher-derived'
-  | 'modern-recreation'
-  | 'digital-approximation';
+  'historical-source' | 'publisher-derived' | 'modern-recreation' | 'digital-approximation';
 
 export interface HistoricalSourceProvenance {
   readonly schemaVersion: 1;
@@ -203,7 +205,3 @@ export const WERNER_SOURCE_PROVENANCE = {
   },
   disclosure: WERNER_SOURCE_PROVENANCE_DISCLOSURE.disclosure,
 } as const satisfies HistoricalSourceProvenance;
-import {
-  WADA_SOURCE_PROVENANCE_DISCLOSURE,
-  WERNER_SOURCE_PROVENANCE_DISCLOSURE,
-} from './sourceProvenanceDisclosureData';

@@ -1,0 +1,283 @@
+{
+  "sourceHashes": {
+    "web/src/lib/guideline/reviewedValues.ts": "59c444570384d1b0d8e76b736c1dd2e9963aaa26d35c7d43548a09f2547e2528",
+    "web/src/lib/guideline/reviewV4.ts": "869d5513d8e9b10e152855ebe456f2c863389b7bf59853575c8ebd4981476469",
+    "web/src/lib/guideline/sourceInventory.ts": "324d3df360cb6454653d87ba03dfb14150f4959f01a1c4996ef809f2e31ae53d",
+    "web/src/lib/guideline/projectV4.ts": "43b2703faba77d75772baac30f1648b2d7131c27456f33f8878fd26eff7cce95",
+    "web/src/components/GuidelineWorkspace.tsx": "ff273721d9e5383734c2d0e22bb865e83daa6a88f42354e20a8fdca30fff11e4",
+    "web/src/components/GuidelineStructureEditor.tsx": "e5447cf7ae6b7c1eca3cf853df47081b488673c36699eb6eea3c0513c8213975"
+  },
+  "recordedAt": "2026-09-25T22:52:21.799Z",
+  "node": "v22.13.1",
+  "source": "Synthetic16-region in-memory fixture; no PDF or network/provider calls",
+  "method": "One run per path after module load; gc before each; heapDelta is not peak and excludes external buffers. trusted-repeat follows one inventory warmup.",
+  "baseline": {
+    "note": "Single Node22 runs before trusted overlay/witness cache and UI dependency fixes;16witnesses,16transcriptions,5620317-byte draft. Heap deltas are not peak memory and exclude external buffers.",
+    "parseReviewedValueDraft": {
+      "ms": 528.055166,
+      "decodes": 32,
+      "decodedMiB": 8.000061,
+      "heapDeltaMiB": 80.367836
+    },
+    "createGuidelineSourceInventory": {
+      "ms": 507.68275,
+      "decodes": 32,
+      "decodedMiB": 8.000061,
+      "heapDeltaMiB": 27.600006
+    },
+    "parseGuidelineDraftV4": {
+      "ms": 1091.242459,
+      "decodes": 64,
+      "decodedMiB": 16.000122,
+      "heapDeltaMiB": 57.890968
+    },
+    "compileGuidelineReviewV4": {
+      "ms": 1750.854667,
+      "decodes": 96,
+      "decodedMiB": 24.000183,
+      "heapDeltaMiB": 226.931099
+    },
+    "guidelineHashDraft": {
+      "ms": 85.496875,
+      "decodes": 0,
+      "heapDeltaMiB": 133.981598
+    }
+  },
+  "measurements": [
+    {
+      "scenario": {
+        "witnesses": 16,
+        "candidates": 16,
+        "draftBytes": 5620317
+      },
+      "name": "parseReviewedValueDraft-raw",
+      "ms": 142.57004199999994,
+      "decodes": 16,
+      "decodedMiB": 4.000030517578125,
+      "heapDeltaMiB": 43.04320526123047
+    },
+    {
+      "scenario": {
+        "witnesses": 16,
+        "candidates": 16,
+        "draftBytes": 5620317
+      },
+      "name": "createGuidelineSourceInventory-raw",
+      "ms": 145.60983299999998,
+      "decodes": 16,
+      "decodedMiB": 4.000030517578125,
+      "heapDeltaMiB": 43.137725830078125
+    },
+    {
+      "scenario": {
+        "witnesses": 16,
+        "candidates": 16,
+        "draftBytes": 5620317
+      },
+      "name": "createGuidelineSourceInventory-trusted-repeat",
+      "ms": 0.0524159999999938,
+      "decodes": 0,
+      "decodedMiB": 0,
+      "heapDeltaMiB": 0.00463104248046875
+    },
+    {
+      "scenario": {
+        "witnesses": 16,
+        "candidates": 16,
+        "draftBytes": 5620317
+      },
+      "name": "parseGuidelineDraftV4-raw",
+      "ms": 137.2817080000001,
+      "decodes": 16,
+      "decodedMiB": 4.000030517578125,
+      "heapDeltaMiB": 43.28618621826172
+    },
+    {
+      "scenario": {
+        "witnesses": 16,
+        "candidates": 16,
+        "draftBytes": 5620317
+      },
+      "name": "parseGuidelineDraftV4-edit-preserving-overlay",
+      "ms": 0.35924999999997453,
+      "decodes": 0,
+      "decodedMiB": 0,
+      "heapDeltaMiB": 0.314727783203125
+    },
+    {
+      "scenario": {
+        "witnesses": 16,
+        "candidates": 16,
+        "draftBytes": 5620317
+      },
+      "name": "createTranscribedValue-trusted-witness",
+      "ms": 0.11570900000003803,
+      "decodes": 0,
+      "decodedMiB": 0,
+      "heapDeltaMiB": 0.05658721923828125
+    },
+    {
+      "scenario": {
+        "witnesses": 16,
+        "candidates": 16,
+        "draftBytes": 5620317
+      },
+      "name": "compileGuidelineReviewV4-trusted-draft",
+      "ms": 203.76687500000003,
+      "decodes": 0,
+      "decodedMiB": 0,
+      "heapDeltaMiB": 184.0019989013672
+    },
+    {
+      "scenario": {
+        "witnesses": 16,
+        "candidates": 16,
+        "draftBytes": 5620317
+      },
+      "name": "buildGuidelineProjectV4",
+      "ms": 566.926459,
+      "decodes": 0,
+      "decodedMiB": 0,
+      "heapDeltaMiB": 271.89026641845703
+    },
+    {
+      "scenario": {
+        "witnesses": 16,
+        "candidates": 16,
+        "draftBytes": 5620317
+      },
+      "name": "readGuidelineProjectLatest-untrusted-json",
+      "ms": 741.0079579999999,
+      "decodes": 16,
+      "decodedMiB": 4.000030517578125,
+      "heapDeltaMiB": 433.225341796875
+    },
+    {
+      "scenario": {
+        "witnesses": 16,
+        "candidates": 256,
+        "draftBytes": 5892047
+      },
+      "name": "parseReviewedValueDraft-raw",
+      "ms": 142.4602920000002,
+      "decodes": 16,
+      "decodedMiB": 4.000030517578125,
+      "heapDeltaMiB": 10.808425903320312
+    },
+    {
+      "scenario": {
+        "witnesses": 16,
+        "candidates": 256,
+        "draftBytes": 5892047
+      },
+      "name": "createGuidelineSourceInventory-raw",
+      "ms": 147.58979099999988,
+      "decodes": 16,
+      "decodedMiB": 4.000030517578125,
+      "heapDeltaMiB": 11.546958923339844
+    },
+    {
+      "scenario": {
+        "witnesses": 16,
+        "candidates": 256,
+        "draftBytes": 5892047
+      },
+      "name": "createGuidelineSourceInventory-trusted-repeat",
+      "ms": 0.005250000000160071,
+      "decodes": 0,
+      "decodedMiB": 0,
+      "heapDeltaMiB": 0.00066375732421875
+    },
+    {
+      "scenario": {
+        "witnesses": 16,
+        "candidates": 256,
+        "draftBytes": 5892047
+      },
+      "name": "parseGuidelineDraftV4-raw",
+      "ms": 145.2524159999998,
+      "decodes": 16,
+      "decodedMiB": 4.000030517578125,
+      "heapDeltaMiB": 14.355087280273438
+    },
+    {
+      "scenario": {
+        "witnesses": 16,
+        "candidates": 256,
+        "draftBytes": 5892047
+      },
+      "name": "parseGuidelineDraftV4-edit-preserving-overlay",
+      "ms": 1.772457999999915,
+      "decodes": 0,
+      "decodedMiB": 0,
+      "heapDeltaMiB": 4.297080993652344
+    },
+    {
+      "scenario": {
+        "witnesses": 16,
+        "candidates": 256,
+        "draftBytes": 5892047
+      },
+      "name": "createTranscribedValue-trusted-witness",
+      "ms": 0.07995900000014444,
+      "decodes": 0,
+      "decodedMiB": 0,
+      "heapDeltaMiB": 0.04584503173828125
+    },
+    {
+      "scenario": {
+        "witnesses": 16,
+        "candidates": 256,
+        "draftBytes": 5892047
+      },
+      "name": "compileGuidelineReviewV4-trusted-draft",
+      "ms": 245.990542,
+      "decodes": 0,
+      "decodedMiB": 0,
+      "heapDeltaMiB": 221.3785629272461
+    },
+    {
+      "scenario": {
+        "witnesses": 16,
+        "candidates": 256,
+        "draftBytes": 5892047
+      },
+      "name": "buildGuidelineProjectV4",
+      "ms": 615.3614580000003,
+      "decodes": 0,
+      "decodedMiB": 0,
+      "heapDeltaMiB": 2.7446441650390625
+    },
+    {
+      "scenario": {
+        "witnesses": 16,
+        "candidates": 256,
+        "draftBytes": 5892047
+      },
+      "name": "readGuidelineProjectLatest-untrusted-json",
+      "ms": 810.6003340000002,
+      "decodes": 16,
+      "decodedMiB": 4.000030517578125,
+      "heapDeltaMiB": 454.31288146972656
+    }
+  ],
+  "sourceHashesVerifiedAfterRun": true,
+  "review": {
+    "scope": "Exact task diff against HEAD 949f540, including untracked modules; final follow-up verifies projectV4 validated-draft reuse.",
+    "remainingFindings": [],
+    "resolved": [
+      "Repeated witness/raster validation across immutable overlay and inventory calls",
+      "Full overlay hashing and inventory rebuilds on structure edits",
+      "Duplicate crop validation in project build and reopen"
+    ],
+    "safety": "readReview compares the inert saved decision draft to the validated outer draft before reference reuse, then still compares the complete recompiled review; local build performs the strict outer snapshot before descriptor access.",
+    "verification": {
+      "runtime": "Node 22",
+      "command": "vitest run src/lib/guideline/projectV4.test.ts src/lib/guideline/reviewV4.test.ts src/lib/guideline/reviewedValues.test.ts",
+      "filesPassed": 3,
+      "testsPassed": 34,
+      "note": "Targeted checks preceded final formatting-only changes; final performance rerun binds current source hashes."
+    },
+    "limits": "Synthetic bounded single-run timings are diagnostic, not a performance gate. Heap deltas are not peak memory and exclude external buffers. Cold JSON parsing/canonicalization/hash work remains synchronous."
+  }
+}

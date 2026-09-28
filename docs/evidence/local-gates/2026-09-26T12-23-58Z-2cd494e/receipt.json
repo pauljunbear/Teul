@@ -1,0 +1,794 @@
+{
+  "schemaVersion": "teul.local-verification.v1",
+  "status": "passed",
+  "command": "npm run verify:local -- --guidelines",
+  "environment": {
+    "node": "v24.19.0",
+    "npm": "10.9.2",
+    "platform": "darwin",
+    "arch": "arm64",
+    "commit": "2cd494e3adbd36b8ae72442d900e4f4d94cafbc5",
+    "shortCommit": "2cd494e",
+    "branch": "codex/brand-guideline-import",
+    "dirty": true,
+    "packageVersion": "1.0.0"
+  },
+  "startedAt": "2026-09-26T12:23:58.383Z",
+  "finishedAt": "2026-09-26T12:24:34.693Z",
+  "durationMs": 36310,
+  "steps": [
+    {
+      "scope": "plugin",
+      "script": "test:scripts",
+      "command": "npm run test:scripts",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 1903
+    },
+    {
+      "scope": "studio",
+      "script": "audit",
+      "command": "npm --prefix web run audit",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 743
+    },
+    {
+      "scope": "studio",
+      "script": "lint",
+      "command": "npm --prefix web run lint",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 264
+    },
+    {
+      "scope": "studio",
+      "script": "test",
+      "command": "npm --prefix web run test",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 10012
+    },
+    {
+      "scope": "studio",
+      "script": "build",
+      "command": "npm --prefix web run build",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 4462,
+      "candidateBuildId": "normal-1"
+    },
+    {
+      "scope": "studio",
+      "script": "test:browser",
+      "server": "preview",
+      "command": "npm --prefix web run test:browser",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 5966,
+      "candidateBuildId": "normal-1",
+      "evidence": "release/studio-gates/2026-09-26T12-23-58Z-2cd494e/test-browser",
+      "testedUrl": "http://127.0.0.1:62023"
+    },
+    {
+      "scope": "studio",
+      "script": "build",
+      "guidelines": true,
+      "command": "npm --prefix web run build",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 4260,
+      "candidateBuildId": "guidelines-2"
+    },
+    {
+      "scope": "studio",
+      "script": "test:guideline-accessibility",
+      "guidelines": true,
+      "command": "npm --prefix web run test:guideline-accessibility",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 8699,
+      "candidateBuildId": "guidelines-2"
+    }
+  ],
+  "builds": [
+    {
+      "id": "normal-1",
+      "profile": "normal",
+      "artifacts": [
+        {
+          "path": "web/dist/APCA_LICENSE.md",
+          "present": true,
+          "bytes": 9808,
+          "sha256": "45822a7b8120d9792a1233b602839b66184beca222d0771672d773eafe26a438"
+        },
+        {
+          "path": "web/dist/LICENSE",
+          "present": true,
+          "bytes": 1065,
+          "sha256": "6a6cd7dbd93f5795289a29771445d25bd12115530d5b9fb4175abf3c7b01e6a0"
+        },
+        {
+          "path": "web/dist/THIRD_PARTY_LICENSES.txt",
+          "present": true,
+          "bytes": 142313,
+          "sha256": "95497389b7c8c8f87ccac227d97bb47549f6c5da77a25a878cfd602624f3ae59"
+        },
+        {
+          "path": "web/dist/THIRD_PARTY_NOTICES.md",
+          "present": true,
+          "bytes": 5685,
+          "sha256": "0ff6af03ae96b7c3b5433f8317040d1d0e3b68d92e565af929e8063f29639275"
+        },
+        {
+          "path": "web/dist/assets/GuidelineWorkspace-BQYYCRG-.css",
+          "present": true,
+          "bytes": 29604,
+          "sha256": "d1cf4cfcf62a767dbcea2bdb53827f531fe151868f6d4ea98e857c613506439c"
+        },
+        {
+          "path": "web/dist/assets/GuidelineWorkspace-HcrbuYY4.js",
+          "present": true,
+          "bytes": 1195001,
+          "sha256": "a41124166ff239d4ad95d41ddcd0dbd2e48949df8766aa4c3e00a29832a6ef01"
+        },
+        {
+          "path": "web/dist/assets/ProductSystemView-DJMb3_3z.css",
+          "present": true,
+          "bytes": 5952,
+          "sha256": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764"
+        },
+        {
+          "path": "web/dist/assets/ProductSystemView-galAkscE.js",
+          "present": true,
+          "bytes": 10033,
+          "sha256": "1fc226a9cf6fa7e2187e58021a488f314dfdd61655a4dc7f7c8fc247fc77b83e"
+        },
+        {
+          "path": "web/dist/assets/authoring-Xq91fvkS.js",
+          "present": true,
+          "bytes": 23564,
+          "sha256": "4ef2b9dd365af8e5c5f818879e1ab07cf8357cb6fdf24844dafa644854e66b53"
+        },
+        {
+          "path": "web/dist/assets/authoringControlOutlinesV1-BrOksW9h.js",
+          "present": true,
+          "bytes": 44846,
+          "sha256": "cd9de9d0e5dc71ab32c52549d4b3a3da0cd4e209c25016ea01e9e2367e6b5af9"
+        },
+        {
+          "path": "web/dist/assets/colorSystemRecipeV1-Bbl6eiBS.js",
+          "present": true,
+          "bytes": 104319,
+          "sha256": "784d8a763d5f3edf1effe70beb8b6797790dc6661ab2e3f331a0774255786d6f"
+        },
+        {
+          "path": "web/dist/assets/download-Bic2EQq1.js",
+          "present": true,
+          "bytes": 45624,
+          "sha256": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6"
+        },
+        {
+          "path": "web/dist/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2",
+          "present": true,
+          "bytes": 7420,
+          "sha256": "2317fa4bb293c9c0b110e18315d529235c47a0ddd3338cea3d8c7955e927899e"
+        },
+        {
+          "path": "web/dist/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2",
+          "present": true,
+          "bytes": 15084,
+          "sha256": "6894439694946a589d157ece003086960a6a4013d74a813dab7602efdb3d8c09"
+        },
+        {
+          "path": "web/dist/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2",
+          "present": true,
+          "bytes": 16512,
+          "sha256": "824f485b5d26e2f2da3c2b236132ece1bc8e4e43373452950bb0e40548b4313f"
+        },
+        {
+          "path": "web/dist/assets/geist-latin-wght-normal-BgDaEnEv.woff2",
+          "present": true,
+          "bytes": 29400,
+          "sha256": "19f9c92546aa300c312235e3125af1b81394d8db9a4bc4a425cd5b641d2d54e1"
+        },
+        {
+          "path": "web/dist/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2",
+          "present": true,
+          "bytes": 8004,
+          "sha256": "8fa40e5d248247735eb97a0bd593b8852440430600d6ba01364c31fe0abc1fe1"
+        },
+        {
+          "path": "web/dist/assets/index-BYVlRKbN.js",
+          "present": true,
+          "bytes": 359248,
+          "sha256": "daaa2b18fca6a6e24ea059eae8f6bab33040a82e28753b05774ffc7f2c4f4541"
+        },
+        {
+          "path": "web/dist/assets/index-CmWmBKFd.css",
+          "present": true,
+          "bytes": 57581,
+          "sha256": "e7cc8392595df99b39d33040f9348105d04d68b80d01d83e7bf4e0e7115df33f"
+        },
+        {
+          "path": "web/dist/assets/pdf.worker.min-BmVo14Nb.mjs",
+          "present": true,
+          "bytes": 1317034,
+          "sha256": "a33cfe728c584fdba4fcc1fd54bcdc2f9f2f13889ddbb5b2bd1d0f8cbe49b84e"
+        },
+        {
+          "path": "web/dist/assets/sourceProvenanceDisclosureData-CxLfFIWs.js",
+          "present": true,
+          "bytes": 166308,
+          "sha256": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361"
+        },
+        {
+          "path": "web/dist/healthcheck",
+          "present": true,
+          "bytes": 36,
+          "sha256": "43a2a50c8f51e8b1118184d9ce279895c7cdbc66a0f04b9f153f66415fa3dcb7"
+        },
+        {
+          "path": "web/dist/index.html",
+          "present": true,
+          "bytes": 810,
+          "sha256": "d953e88b2acd4dd05e9473bfe28afdc544b1fa924e27077c1b820de95c3e40c0"
+        },
+        {
+          "path": "web/dist/mark.svg",
+          "present": true,
+          "bytes": 186,
+          "sha256": "b97988e0bfce860215e7b03be59c3ba5586efb8e640ba0bd22088b6a9eb37881"
+        },
+        {
+          "path": "web/dist/pdf-fonts/FoxitDingbats.pfb",
+          "present": true,
+          "bytes": 29513,
+          "sha256": "845c752392b6c914fb989c75a08b7792b88f542d2499042ef2889f8c814a16ed"
+        },
+        {
+          "path": "web/dist/pdf-fonts/FoxitFixed.pfb",
+          "present": true,
+          "bytes": 17597,
+          "sha256": "b6c8fe53f134b8b6d4578cd2d544df4cee9624c4efa8d51a560fb40ea296101b"
+        },
+        {
+          "path": "web/dist/pdf-fonts/FoxitFixedBold.pfb",
+          "present": true,
+          "bytes": 18055,
+          "sha256": "f1b7159702973f54fc86254ea38bcf3712b2a736eb3a0995751e9f4bb45ad603"
+        },
+        {
+          "path": "web/dist/pdf-fonts/FoxitFixedBoldItalic.pfb",
+          "present": true,
+          "bytes": 19151,
+          "sha256": "8a000945843bd31add06aee63bf9fd41b7578b4f3242a4b7cd46349ad9d24d4d"
+        },
+        {
+          "path": "web/dist/pdf-fonts/FoxitFixedItalic.pfb",
+          "present": true,
+          "bytes": 18746,
+          "sha256": "5007faf8320fa1fcc08b8894b356ad976f60b992ba29ee5272578bbdebaf3876"
+        },
+        {
+          "path": "web/dist/pdf-fonts/FoxitSerif.pfb",
+          "present": true,
+          "bytes": 19469,
+          "sha256": "4f57d2b9d884af8f907bf22df6019b52d86cbf6214fdbd02b1ae05472a543f35"
+        },
+        {
+          "path": "web/dist/pdf-fonts/FoxitSerifBold.pfb",
+          "present": true,
+          "bytes": 19395,
+          "sha256": "0bdf4b04e964139818d51eda03d566ba999fc3ba2421b1c6c51f9dc969022e80"
+        },
+        {
+          "path": "web/dist/pdf-fonts/FoxitSerifBoldItalic.pfb",
+          "present": true,
+          "bytes": 20733,
+          "sha256": "a406cac82583bf98175cb62c87ed5e95c45fbb34eece63a10b0a13e793cb2e10"
+        },
+        {
+          "path": "web/dist/pdf-fonts/FoxitSerifItalic.pfb",
+          "present": true,
+          "bytes": 21227,
+          "sha256": "610ae0687198045c4db5d1a6650fd5e92536631706382eb8b72e38df578d0ae9"
+        },
+        {
+          "path": "web/dist/pdf-fonts/FoxitSymbol.pfb",
+          "present": true,
+          "bytes": 16729,
+          "sha256": "47967d055530e7357088a08403115425643ec2cdfd6201ba8af0fbd7116c1539"
+        },
+        {
+          "path": "web/dist/pdf-fonts/LiberationSans-Bold.ttf",
+          "present": true,
+          "bytes": 137052,
+          "sha256": "361c61b82d575c5c35fd9157fda8b0194bcfcd0d88ea8521a4fb5dd53d33dddc"
+        },
+        {
+          "path": "web/dist/pdf-fonts/LiberationSans-BoldItalic.ttf",
+          "present": true,
+          "bytes": 135124,
+          "sha256": "a224075ac17495ad0a3af3bc0a419ac0704a8b3fd1095456201fb9b095fc281d"
+        },
+        {
+          "path": "web/dist/pdf-fonts/LiberationSans-Italic.ttf",
+          "present": true,
+          "bytes": 162036,
+          "sha256": "832b4406dbef23628800d3aaad21048534ac84d7e3ad955be83b8172ed8ef512"
+        },
+        {
+          "path": "web/dist/pdf-fonts/LiberationSans-Regular.ttf",
+          "present": true,
+          "bytes": 139512,
+          "sha256": "f8ace1f892b2bd9dc1792ba7f097fa7588f84fed48321480e04de5390828221f"
+        }
+      ]
+    },
+    {
+      "id": "guidelines-2",
+      "profile": "guidelines",
+      "artifacts": [
+        {
+          "path": "web/dist/APCA_LICENSE.md",
+          "present": true,
+          "bytes": 9808,
+          "sha256": "45822a7b8120d9792a1233b602839b66184beca222d0771672d773eafe26a438"
+        },
+        {
+          "path": "web/dist/LICENSE",
+          "present": true,
+          "bytes": 1065,
+          "sha256": "6a6cd7dbd93f5795289a29771445d25bd12115530d5b9fb4175abf3c7b01e6a0"
+        },
+        {
+          "path": "web/dist/THIRD_PARTY_LICENSES.txt",
+          "present": true,
+          "bytes": 142313,
+          "sha256": "95497389b7c8c8f87ccac227d97bb47549f6c5da77a25a878cfd602624f3ae59"
+        },
+        {
+          "path": "web/dist/THIRD_PARTY_NOTICES.md",
+          "present": true,
+          "bytes": 5685,
+          "sha256": "0ff6af03ae96b7c3b5433f8317040d1d0e3b68d92e565af929e8063f29639275"
+        },
+        {
+          "path": "web/dist/assets/GuidelineWorkspace-BQYYCRG-.css",
+          "present": true,
+          "bytes": 29604,
+          "sha256": "d1cf4cfcf62a767dbcea2bdb53827f531fe151868f6d4ea98e857c613506439c"
+        },
+        {
+          "path": "web/dist/assets/GuidelineWorkspace-DMkC5hzy.js",
+          "present": true,
+          "bytes": 1195001,
+          "sha256": "6d27ee5ce0eec6ba5da54b66e5a0b5b37b0e30aea4fa427842cf28447dff2290"
+        },
+        {
+          "path": "web/dist/assets/ProductSystemView-DJMb3_3z.css",
+          "present": true,
+          "bytes": 5952,
+          "sha256": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764"
+        },
+        {
+          "path": "web/dist/assets/ProductSystemView-hgAFoYY2.js",
+          "present": true,
+          "bytes": 10033,
+          "sha256": "fac85e572c000d024f6038edb30440c9b530230d3cea043f5907ce17f0122ad5"
+        },
+        {
+          "path": "web/dist/assets/authoring-bKQQsT9e.js",
+          "present": true,
+          "bytes": 23564,
+          "sha256": "48ea18e2126303afccfcafe7f95dc4951dd691ebbd9efd429bb278d4cd39d6b1"
+        },
+        {
+          "path": "web/dist/assets/authoringControlOutlinesV1-ClVfddzl.js",
+          "present": true,
+          "bytes": 44846,
+          "sha256": "6bcd5749a704b9bcaced083ac8ee872c4ab8d3f29adceab8dafcede4202f6324"
+        },
+        {
+          "path": "web/dist/assets/colorSystemRecipeV1-BXd2z5RH.js",
+          "present": true,
+          "bytes": 104319,
+          "sha256": "5ee03fe014c7554dc4f0fff12fa15217748203a8e3982dc7cd381a30a70c1fe4"
+        },
+        {
+          "path": "web/dist/assets/download-Bic2EQq1.js",
+          "present": true,
+          "bytes": 45624,
+          "sha256": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6"
+        },
+        {
+          "path": "web/dist/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2",
+          "present": true,
+          "bytes": 7420,
+          "sha256": "2317fa4bb293c9c0b110e18315d529235c47a0ddd3338cea3d8c7955e927899e"
+        },
+        {
+          "path": "web/dist/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2",
+          "present": true,
+          "bytes": 15084,
+          "sha256": "6894439694946a589d157ece003086960a6a4013d74a813dab7602efdb3d8c09"
+        },
+        {
+          "path": "web/dist/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2",
+          "present": true,
+          "bytes": 16512,
+          "sha256": "824f485b5d26e2f2da3c2b236132ece1bc8e4e43373452950bb0e40548b4313f"
+        },
+        {
+          "path": "web/dist/assets/geist-latin-wght-normal-BgDaEnEv.woff2",
+          "present": true,
+          "bytes": 29400,
+          "sha256": "19f9c92546aa300c312235e3125af1b81394d8db9a4bc4a425cd5b641d2d54e1"
+        },
+        {
+          "path": "web/dist/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2",
+          "present": true,
+          "bytes": 8004,
+          "sha256": "8fa40e5d248247735eb97a0bd593b8852440430600d6ba01364c31fe0abc1fe1"
+        },
+        {
+          "path": "web/dist/assets/index-B5UD1zmf.js",
+          "present": true,
+          "bytes": 359528,
+          "sha256": "596355607434deaf8ba0a740e58f42d720820cf510d03c79c03749795d2e947b"
+        },
+        {
+          "path": "web/dist/assets/index-CmWmBKFd.css",
+          "present": true,
+          "bytes": 57581,
+          "sha256": "e7cc8392595df99b39d33040f9348105d04d68b80d01d83e7bf4e0e7115df33f"
+        },
+        {
+          "path": "web/dist/assets/pdf.worker.min-BmVo14Nb.mjs",
+          "present": true,
+          "bytes": 1317034,
+          "sha256": "a33cfe728c584fdba4fcc1fd54bcdc2f9f2f13889ddbb5b2bd1d0f8cbe49b84e"
+        },
+        {
+          "path": "web/dist/assets/sourceProvenanceDisclosureData-CxLfFIWs.js",
+          "present": true,
+          "bytes": 166308,
+          "sha256": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361"
+        },
+        {
+          "path": "web/dist/healthcheck",
+          "present": true,
+          "bytes": 36,
+          "sha256": "43a2a50c8f51e8b1118184d9ce279895c7cdbc66a0f04b9f153f66415fa3dcb7"
+        },
+        {
+          "path": "web/dist/index.html",
+          "present": true,
+          "bytes": 810,
+          "sha256": "763bddd3a0d36836536c21ac4a4378e0c9bc7e999f835afc91608dca893f3990"
+        },
+        {
+          "path": "web/dist/mark.svg",
+          "present": true,
+          "bytes": 186,
+          "sha256": "b97988e0bfce860215e7b03be59c3ba5586efb8e640ba0bd22088b6a9eb37881"
+        },
+        {
+          "path": "web/dist/pdf-fonts/FoxitDingbats.pfb",
+          "present": true,
+          "bytes": 29513,
+          "sha256": "845c752392b6c914fb989c75a08b7792b88f542d2499042ef2889f8c814a16ed"
+        },
+        {
+          "path": "web/dist/pdf-fonts/FoxitFixed.pfb",
+          "present": true,
+          "bytes": 17597,
+          "sha256": "b6c8fe53f134b8b6d4578cd2d544df4cee9624c4efa8d51a560fb40ea296101b"
+        },
+        {
+          "path": "web/dist/pdf-fonts/FoxitFixedBold.pfb",
+          "present": true,
+          "bytes": 18055,
+          "sha256": "f1b7159702973f54fc86254ea38bcf3712b2a736eb3a0995751e9f4bb45ad603"
+        },
+        {
+          "path": "web/dist/pdf-fonts/FoxitFixedBoldItalic.pfb",
+          "present": true,
+          "bytes": 19151,
+          "sha256": "8a000945843bd31add06aee63bf9fd41b7578b4f3242a4b7cd46349ad9d24d4d"
+        },
+        {
+          "path": "web/dist/pdf-fonts/FoxitFixedItalic.pfb",
+          "present": true,
+          "bytes": 18746,
+          "sha256": "5007faf8320fa1fcc08b8894b356ad976f60b992ba29ee5272578bbdebaf3876"
+        },
+        {
+          "path": "web/dist/pdf-fonts/FoxitSerif.pfb",
+          "present": true,
+          "bytes": 19469,
+          "sha256": "4f57d2b9d884af8f907bf22df6019b52d86cbf6214fdbd02b1ae05472a543f35"
+        },
+        {
+          "path": "web/dist/pdf-fonts/FoxitSerifBold.pfb",
+          "present": true,
+          "bytes": 19395,
+          "sha256": "0bdf4b04e964139818d51eda03d566ba999fc3ba2421b1c6c51f9dc969022e80"
+        },
+        {
+          "path": "web/dist/pdf-fonts/FoxitSerifBoldItalic.pfb",
+          "present": true,
+          "bytes": 20733,
+          "sha256": "a406cac82583bf98175cb62c87ed5e95c45fbb34eece63a10b0a13e793cb2e10"
+        },
+        {
+          "path": "web/dist/pdf-fonts/FoxitSerifItalic.pfb",
+          "present": true,
+          "bytes": 21227,
+          "sha256": "610ae0687198045c4db5d1a6650fd5e92536631706382eb8b72e38df578d0ae9"
+        },
+        {
+          "path": "web/dist/pdf-fonts/FoxitSymbol.pfb",
+          "present": true,
+          "bytes": 16729,
+          "sha256": "47967d055530e7357088a08403115425643ec2cdfd6201ba8af0fbd7116c1539"
+        },
+        {
+          "path": "web/dist/pdf-fonts/LiberationSans-Bold.ttf",
+          "present": true,
+          "bytes": 137052,
+          "sha256": "361c61b82d575c5c35fd9157fda8b0194bcfcd0d88ea8521a4fb5dd53d33dddc"
+        },
+        {
+          "path": "web/dist/pdf-fonts/LiberationSans-BoldItalic.ttf",
+          "present": true,
+          "bytes": 135124,
+          "sha256": "a224075ac17495ad0a3af3bc0a419ac0704a8b3fd1095456201fb9b095fc281d"
+        },
+        {
+          "path": "web/dist/pdf-fonts/LiberationSans-Italic.ttf",
+          "present": true,
+          "bytes": 162036,
+          "sha256": "832b4406dbef23628800d3aaad21048534ac84d7e3ad955be83b8172ed8ef512"
+        },
+        {
+          "path": "web/dist/pdf-fonts/LiberationSans-Regular.ttf",
+          "present": true,
+          "bytes": 139512,
+          "sha256": "f8ace1f892b2bd9dc1792ba7f097fa7588f84fed48321480e04de5390828221f"
+        }
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "web/dist/APCA_LICENSE.md",
+      "present": true,
+      "bytes": 9808,
+      "sha256": "45822a7b8120d9792a1233b602839b66184beca222d0771672d773eafe26a438"
+    },
+    {
+      "path": "web/dist/LICENSE",
+      "present": true,
+      "bytes": 1065,
+      "sha256": "6a6cd7dbd93f5795289a29771445d25bd12115530d5b9fb4175abf3c7b01e6a0"
+    },
+    {
+      "path": "web/dist/THIRD_PARTY_LICENSES.txt",
+      "present": true,
+      "bytes": 142313,
+      "sha256": "95497389b7c8c8f87ccac227d97bb47549f6c5da77a25a878cfd602624f3ae59"
+    },
+    {
+      "path": "web/dist/THIRD_PARTY_NOTICES.md",
+      "present": true,
+      "bytes": 5685,
+      "sha256": "0ff6af03ae96b7c3b5433f8317040d1d0e3b68d92e565af929e8063f29639275"
+    },
+    {
+      "path": "web/dist/assets/GuidelineWorkspace-BQYYCRG-.css",
+      "present": true,
+      "bytes": 29604,
+      "sha256": "d1cf4cfcf62a767dbcea2bdb53827f531fe151868f6d4ea98e857c613506439c"
+    },
+    {
+      "path": "web/dist/assets/GuidelineWorkspace-DMkC5hzy.js",
+      "present": true,
+      "bytes": 1195001,
+      "sha256": "6d27ee5ce0eec6ba5da54b66e5a0b5b37b0e30aea4fa427842cf28447dff2290"
+    },
+    {
+      "path": "web/dist/assets/ProductSystemView-DJMb3_3z.css",
+      "present": true,
+      "bytes": 5952,
+      "sha256": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764"
+    },
+    {
+      "path": "web/dist/assets/ProductSystemView-hgAFoYY2.js",
+      "present": true,
+      "bytes": 10033,
+      "sha256": "fac85e572c000d024f6038edb30440c9b530230d3cea043f5907ce17f0122ad5"
+    },
+    {
+      "path": "web/dist/assets/authoring-bKQQsT9e.js",
+      "present": true,
+      "bytes": 23564,
+      "sha256": "48ea18e2126303afccfcafe7f95dc4951dd691ebbd9efd429bb278d4cd39d6b1"
+    },
+    {
+      "path": "web/dist/assets/authoringControlOutlinesV1-ClVfddzl.js",
+      "present": true,
+      "bytes": 44846,
+      "sha256": "6bcd5749a704b9bcaced083ac8ee872c4ab8d3f29adceab8dafcede4202f6324"
+    },
+    {
+      "path": "web/dist/assets/colorSystemRecipeV1-BXd2z5RH.js",
+      "present": true,
+      "bytes": 104319,
+      "sha256": "5ee03fe014c7554dc4f0fff12fa15217748203a8e3982dc7cd381a30a70c1fe4"
+    },
+    {
+      "path": "web/dist/assets/download-Bic2EQq1.js",
+      "present": true,
+      "bytes": 45624,
+      "sha256": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6"
+    },
+    {
+      "path": "web/dist/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2",
+      "present": true,
+      "bytes": 7420,
+      "sha256": "2317fa4bb293c9c0b110e18315d529235c47a0ddd3338cea3d8c7955e927899e"
+    },
+    {
+      "path": "web/dist/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2",
+      "present": true,
+      "bytes": 15084,
+      "sha256": "6894439694946a589d157ece003086960a6a4013d74a813dab7602efdb3d8c09"
+    },
+    {
+      "path": "web/dist/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2",
+      "present": true,
+      "bytes": 16512,
+      "sha256": "824f485b5d26e2f2da3c2b236132ece1bc8e4e43373452950bb0e40548b4313f"
+    },
+    {
+      "path": "web/dist/assets/geist-latin-wght-normal-BgDaEnEv.woff2",
+      "present": true,
+      "bytes": 29400,
+      "sha256": "19f9c92546aa300c312235e3125af1b81394d8db9a4bc4a425cd5b641d2d54e1"
+    },
+    {
+      "path": "web/dist/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2",
+      "present": true,
+      "bytes": 8004,
+      "sha256": "8fa40e5d248247735eb97a0bd593b8852440430600d6ba01364c31fe0abc1fe1"
+    },
+    {
+      "path": "web/dist/assets/index-B5UD1zmf.js",
+      "present": true,
+      "bytes": 359528,
+      "sha256": "596355607434deaf8ba0a740e58f42d720820cf510d03c79c03749795d2e947b"
+    },
+    {
+      "path": "web/dist/assets/index-CmWmBKFd.css",
+      "present": true,
+      "bytes": 57581,
+      "sha256": "e7cc8392595df99b39d33040f9348105d04d68b80d01d83e7bf4e0e7115df33f"
+    },
+    {
+      "path": "web/dist/assets/pdf.worker.min-BmVo14Nb.mjs",
+      "present": true,
+      "bytes": 1317034,
+      "sha256": "a33cfe728c584fdba4fcc1fd54bcdc2f9f2f13889ddbb5b2bd1d0f8cbe49b84e"
+    },
+    {
+      "path": "web/dist/assets/sourceProvenanceDisclosureData-CxLfFIWs.js",
+      "present": true,
+      "bytes": 166308,
+      "sha256": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361"
+    },
+    {
+      "path": "web/dist/healthcheck",
+      "present": true,
+      "bytes": 36,
+      "sha256": "43a2a50c8f51e8b1118184d9ce279895c7cdbc66a0f04b9f153f66415fa3dcb7"
+    },
+    {
+      "path": "web/dist/index.html",
+      "present": true,
+      "bytes": 810,
+      "sha256": "763bddd3a0d36836536c21ac4a4378e0c9bc7e999f835afc91608dca893f3990"
+    },
+    {
+      "path": "web/dist/mark.svg",
+      "present": true,
+      "bytes": 186,
+      "sha256": "b97988e0bfce860215e7b03be59c3ba5586efb8e640ba0bd22088b6a9eb37881"
+    },
+    {
+      "path": "web/dist/pdf-fonts/FoxitDingbats.pfb",
+      "present": true,
+      "bytes": 29513,
+      "sha256": "845c752392b6c914fb989c75a08b7792b88f542d2499042ef2889f8c814a16ed"
+    },
+    {
+      "path": "web/dist/pdf-fonts/FoxitFixed.pfb",
+      "present": true,
+      "bytes": 17597,
+      "sha256": "b6c8fe53f134b8b6d4578cd2d544df4cee9624c4efa8d51a560fb40ea296101b"
+    },
+    {
+      "path": "web/dist/pdf-fonts/FoxitFixedBold.pfb",
+      "present": true,
+      "bytes": 18055,
+      "sha256": "f1b7159702973f54fc86254ea38bcf3712b2a736eb3a0995751e9f4bb45ad603"
+    },
+    {
+      "path": "web/dist/pdf-fonts/FoxitFixedBoldItalic.pfb",
+      "present": true,
+      "bytes": 19151,
+      "sha256": "8a000945843bd31add06aee63bf9fd41b7578b4f3242a4b7cd46349ad9d24d4d"
+    },
+    {
+      "path": "web/dist/pdf-fonts/FoxitFixedItalic.pfb",
+      "present": true,
+      "bytes": 18746,
+      "sha256": "5007faf8320fa1fcc08b8894b356ad976f60b992ba29ee5272578bbdebaf3876"
+    },
+    {
+      "path": "web/dist/pdf-fonts/FoxitSerif.pfb",
+      "present": true,
+      "bytes": 19469,
+      "sha256": "4f57d2b9d884af8f907bf22df6019b52d86cbf6214fdbd02b1ae05472a543f35"
+    },
+    {
+      "path": "web/dist/pdf-fonts/FoxitSerifBold.pfb",
+      "present": true,
+      "bytes": 19395,
+      "sha256": "0bdf4b04e964139818d51eda03d566ba999fc3ba2421b1c6c51f9dc969022e80"
+    },
+    {
+      "path": "web/dist/pdf-fonts/FoxitSerifBoldItalic.pfb",
+      "present": true,
+      "bytes": 20733,
+      "sha256": "a406cac82583bf98175cb62c87ed5e95c45fbb34eece63a10b0a13e793cb2e10"
+    },
+    {
+      "path": "web/dist/pdf-fonts/FoxitSerifItalic.pfb",
+      "present": true,
+      "bytes": 21227,
+      "sha256": "610ae0687198045c4db5d1a6650fd5e92536631706382eb8b72e38df578d0ae9"
+    },
+    {
+      "path": "web/dist/pdf-fonts/FoxitSymbol.pfb",
+      "present": true,
+      "bytes": 16729,
+      "sha256": "47967d055530e7357088a08403115425643ec2cdfd6201ba8af0fbd7116c1539"
+    },
+    {
+      "path": "web/dist/pdf-fonts/LiberationSans-Bold.ttf",
+      "present": true,
+      "bytes": 137052,
+      "sha256": "361c61b82d575c5c35fd9157fda8b0194bcfcd0d88ea8521a4fb5dd53d33dddc"
+    },
+    {
+      "path": "web/dist/pdf-fonts/LiberationSans-BoldItalic.ttf",
+      "present": true,
+      "bytes": 135124,
+      "sha256": "a224075ac17495ad0a3af3bc0a419ac0704a8b3fd1095456201fb9b095fc281d"
+    },
+    {
+      "path": "web/dist/pdf-fonts/LiberationSans-Italic.ttf",
+      "present": true,
+      "bytes": 162036,
+      "sha256": "832b4406dbef23628800d3aaad21048534ac84d7e3ad955be83b8172ed8ef512"
+    },
+    {
+      "path": "web/dist/pdf-fonts/LiberationSans-Regular.ttf",
+      "present": true,
+      "bytes": 139512,
+      "sha256": "f8ace1f892b2bd9dc1792ba7f097fa7588f84fed48321480e04de5390828221f"
+    }
+  ]
+}

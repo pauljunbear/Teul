@@ -1,0 +1,80 @@
+{
+  "schemaVersion": "teul.development-source-cases.v1",
+  "candidate": "f79788896ca9599cb1b96ec6786e10d644ce7001",
+  "status": "development-gaps-recorded",
+  "productChanged": false,
+  "sourceCases": [
+    {
+      "id": "pdf-dev-crane-color",
+      "adapter": "pdf",
+      "split": "development",
+      "kind": "real-original",
+      "pages": [27, 28, 29, 30, 33],
+      "sourceSha256": "53a4ebbff846dbcce77d6a2e76ac010767307a7f5a142544d877568c5a176a43",
+      "annotationStatus": "agent-draft-not-reconciled",
+      "expectedDigitalStatementOccurrences": 34,
+      "capturedDigitalStatementOccurrences": 17,
+      "expectedDistinctNumericValues": 19,
+      "capturedDistinctNumericValues": 17,
+      "rgbHexConflictCount": 2,
+      "sourceRules": "Draft source prohibitions retained; no generated extension or gradient and no new rule-enforcement claim."
+    },
+    {
+      "id": "web-dev-govuk-functional",
+      "adapter": "website",
+      "split": "development",
+      "kind": "real-partial-offline",
+      "sourceUrl": "https://design-system.service.gov.uk/styles/colour/",
+      "sourceSha256": "bf365fa34092495ceded3f77c8c6d83861069647afe282fafc1b03a0c2b933d8",
+      "annotationStatus": "agent-draft-not-reconciled",
+      "expectedSwatchOccurrences": 20,
+      "matchingSwatchOccurrences": 20,
+      "customPropertyObservations": 2000,
+      "uniqueCustomPropertyNameValuePairs": 25,
+      "projectRoundTrip": "passed on Node 22.13.1; applied review and selection null",
+      "liveRendererQualified": false
+    }
+  ],
+  "humanReaders": [],
+  "designerRatings": [],
+  "qualified": false,
+  "metrics": null,
+  "privatePacketRoot": "/Users/paul.jun/Documents/private-jobs/teul-guideline-evaluation-2026-09-26",
+  "privateArtifacts": [
+    {
+      "path": "review-packet.md",
+      "bytes": 3992,
+      "sha256": "35394bfb6517ed0cfc0fb6cf3ce94d7813b9bae9a0eda1ed89dde37a2a3fa8e8"
+    },
+    {
+      "path": "crane-development/source-annotation.draft.json",
+      "bytes": 9829,
+      "sha256": "8c10ed5d8aed1a98ecb4967dca0c1c6c001c0797e34dd8398615a3d88266acca"
+    },
+    {
+      "path": "crane-development/comparison.json",
+      "bytes": 2819,
+      "sha256": "abbfb78b05defbe9510806d019c6ed1d0a7acec95b4983fd18be00552033f575"
+    },
+    {
+      "path": "crane-v2-capture.json",
+      "bytes": 104832,
+      "sha256": "c188ea0d74155958a15770e8c87848660f768258cbdad821fc497f7771355a6a"
+    },
+    {
+      "path": "web-source-candidates/web-dev-govuk-functional.receipt.json",
+      "bytes": 1644,
+      "sha256": "857dab6de56d88fd1cd2b69d0b22a04378cfaccbc9e9285d6dd9daa9d062ac02"
+    },
+    {
+      "path": "web-source-candidates/review-preparation.receipt.json",
+      "bytes": 1100,
+      "sha256": "3fdc178a5d326316b8090ce433fc055778220f596f2606e20c33b198ad46cbe7"
+    },
+    {
+      "path": "web-source-candidates/web-dev-govuk-functional.studio.json",
+      "bytes": 946171,
+      "sha256": "bb2aa3aab83f92180f387df81fb1b8bafc71089531164a70f71cdfae1b2c15c6"
+    }
+  ]
+}

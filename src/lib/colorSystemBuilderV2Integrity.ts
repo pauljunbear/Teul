@@ -1,50 +1,73 @@
-import { canonicalJson, deterministicContentHash } from './colorSystemAudit';
+import { canonicalJson, deterministicContentHash } from './colorSystemHashing';
 import {
   COLOR_SYSTEM_BUILDER_BRIEF_V2_SCHEMA_VERSION,
   COLOR_SYSTEM_BUILDER_V2_LIMITS,
   COLOR_SYSTEM_BUILDER_V2_POLICY_VERSION,
+  COLOR_SYSTEM_REPLACEABLE_SECTION_ROLES_V2,
+  COLOR_SYSTEM_SECONDARY_DIRECTION_IDS_V2,
+  COLOR_SYSTEM_SECONDARY_DIRECTION_OMISSION_CAUSES_V2,
   COLOR_SYSTEM_SECTION_ROLES_V2,
+  COLOR_SYSTEM_STATUS_RESERVE_CONTRIBUTION_PREFIX_V2,
+  COLOR_SYSTEM_STATUS_RESERVE_ROLES_V2,
   COLOR_SYSTEM_STRATEGY_CANDIDATE_V2_SCHEMA_VERSION,
   COLOR_SYSTEM_STRATEGY_SET_V2_SCHEMA_VERSION,
   type ColorSystemApprovedColorRefV2,
+  type ColorSystemAgentAdoptionV1,
   type ColorSystemBrandFitProfileV2,
   type ColorSystemBuilderBriefV2,
   type ColorSystemColorValueV2,
   type ColorSystemExactPrimaryLockV2,
   type ColorSystemFamilyMemberV2,
+  type ColorSystemFamilyPinSkipV2,
+  type ColorSystemFamilyPinnedMemberV2,
   type ColorSystemGeneratedDivergingPolarityV2,
   type ColorSystemJobV2,
+  type ColorSystemOmittedSecondaryDirectionV2,
   type ColorSystemPreservedColorV2,
+  type ColorSystemReplacedColorV2,
+  type ColorSystemSecondaryDirectionIdV2,
   type ColorSystemSecondaryFamilyV2,
   type ColorSystemSecondarySystemShapeV2,
   type ColorSystemSectionIntentV2,
   type ColorSystemSectionRatingDimensionV2,
+  type ColorSystemSkippedStatusReserveV2,
   type ColorSystemSourceReferenceColorV2,
   type ColorSystemStrategyCandidateV2,
   type ColorSystemStrategySetV2,
 } from './colorSystemBuilderV2Contracts';
-import { compareText, hexToOklch, hexToRgb } from './utils';
+import { compareText } from './utils';
+import {
+  colorSystemSrgbToOklchV1,
+  normalizeColorSystemSrgbValueV1,
+} from './colorSystemSrgbValueV1';
+import {
+  canonicalizeColorSystemOklchV1,
+  colorSystemTerritoryContainsOklchV1,
+} from './colorSystemPerceptualBoundsV1';
+import {
+  COLOR_SYSTEM_JOBS_V2 as JOBS,
+  normalizeColorSystemJobsV1,
+  normalizeColorSystemPerceptualBoundsV1,
+} from './colorSystemBrandGuardsV1';
 
 const HASH_PATTERN = /^sha256:[0-9a-f]{64}$/;
 const HEX_PATTERN = /^#[0-9a-f]{6}$/i;
-const JOBS = [
-  'brand-primary',
-  'marketing-accent',
-  'product-graphics',
-  'functional-iconography',
-  'product-ui-surface',
-  'product-semantics',
-  'categorical-data',
-  'sequential-data',
-  'diverging-data',
-  'rendered-text-pair',
-] as const;
 const DISPOSITIONS = ['preserve', 'rebuild', 'derive', 'omit'] as const;
-const CONFIRMATIONS = ['source-evidenced', 'owner-confirmed'] as const;
+/**
+ * p3-H, p3-J: sections whose recorded colors stay exact `source/<name>` tokens
+ * while Teul extends the section around them, so their preserved colors are
+ * admitted under `derive` (Extend) as well as `preserve` (Keep). p5-A: under
+ * `rebuild` (Replace) the same sections carry nothing; their recorded colors are
+ * listed in `replacedColors` instead, and a preserved color there fails closed.
+ */
+const SECTIONS_KEEPING_SOURCE_COLORS_WHEN_EXTENDED = COLOR_SYSTEM_REPLACEABLE_SECTION_ROLES_V2;
+const CONFIRMATIONS = ['source-evidenced', 'owner-confirmed', 'agent-adopted'] as const;
 const PROMINENCE = ['supporting', 'accent', 'leading'] as const;
 const TERRITORY_STATUSES = ['allowed', 'limited', 'excluded'] as const;
 const CANDIDATE_STATUSES = ['complete', 'underfilled'] as const;
 const STRATEGY_SET_STATUSES = ['ready', 'no-solution'] as const;
+const DIRECTION_IDS = COLOR_SYSTEM_SECONDARY_DIRECTION_IDS_V2;
+const OMISSION_CAUSES = COLOR_SYSTEM_SECONDARY_DIRECTION_OMISSION_CAUSES_V2;
 const SYSTEM_SHAPES = [
   'named-base-light-pairs',
   'full-light-dark-scales',
@@ -140,9 +163,7 @@ function sortedUniqueStrings(values: readonly string[], label: string): string[]
 }
 
 function sortedUniqueJobs(values: readonly ColorSystemJobV2[], label: string): ColorSystemJobV2[] {
-  const normalized = sortedUniqueStrings(values, label);
-  normalized.forEach((value, index) => requireOneOf(value, JOBS, `${label}[${index}]`));
-  return normalized as ColorSystemJobV2[];
+  return normalizeColorSystemJobsV1(values, label, fail);
 }
 
 function requireUniqueIds(values: readonly { readonly id: string }[], label: string): void {
@@ -166,25 +187,11 @@ function normalizeColorValue(
   value: ColorSystemColorValueV2,
   label: string
 ): ColorSystemColorValueV2 {
-  if (value.colorSpace !== 'srgb') fail(`${label}.colorSpace must be srgb in v2 release one.`);
-  if (!HEX_PATTERN.test(value.hex)) fail(`${label}.hex must be a six-digit sRGB hex color.`);
-  const expected = hexToRgb(value.hex);
-  const components = value.components;
-  if (!components) fail(`${label}.components must retain exact normalized sRGB channels.`);
-  (['r', 'g', 'b'] as const).forEach(channel => {
-    requireFiniteInRange(components[channel], 0, 1, `${label}.components.${channel}`);
-    const expectedComponent = expected[channel] / 255;
-    if (Math.abs(components[channel] - expectedComponent) > 1e-12) {
-      fail(`${label}.components.${channel} does not match the exact sRGB hex channel.`);
-    }
-  });
-  requireFiniteInRange(value.alpha, 0, 1, `${label}.alpha`);
-  return {
-    colorSpace: 'srgb',
-    hex: value.hex.toUpperCase(),
-    components,
-    alpha: value.alpha,
-  };
+  try {
+    return normalizeColorSystemSrgbValueV1(value);
+  } catch (error) {
+    fail(`${label}: ${error instanceof Error ? error.message : 'Invalid sRGB value.'}`);
+  }
 }
 
 function normalizeValuesByMode(
@@ -385,28 +392,11 @@ function normalizeBrandFitProfileContent(input: BrandFitProfileContent): BrandFi
       if (appliesToProminence.length === 0) {
         fail(`${territoryId} requires an explicit prominence scope.`);
       }
-      const hueRanges = territory.perceptualBounds.hueRanges.map((range, index) => {
-        requireFiniteInRange(range.minimum, 0, 360, `${territoryId} hue[${index}].minimum`);
-        requireFiniteInRange(range.maximum, 0, 360, `${territoryId} hue[${index}].maximum`);
-        if (range.minimum > range.maximum) fail(`${territoryId} hue range is reversed.`);
-        return { minimum: range.minimum, maximum: range.maximum };
-      });
-      if (hueRanges.length === 0) fail(`${territoryId} requires a hue range.`);
-      const normalizeRange = (
-        range: Readonly<{ minimum: number; maximum: number }>,
-        maximum: number,
-        name: string
-      ) => {
-        requireFiniteInRange(range.minimum, 0, maximum, `${territoryId} ${name}.minimum`);
-        requireFiniteInRange(range.maximum, 0, maximum, `${territoryId} ${name}.maximum`);
-        if (range.minimum > range.maximum) fail(`${territoryId} ${name} range is reversed.`);
-        return { minimum: range.minimum, maximum: range.maximum };
-      };
-      const perceptualBounds = {
-        hueRanges,
-        chroma: normalizeRange(territory.perceptualBounds.chroma, 0.5, 'chroma'),
-        lightness: normalizeRange(territory.perceptualBounds.lightness, 1, 'lightness'),
-      };
+      const perceptualBounds = normalizeColorSystemPerceptualBoundsV1(
+        territory.perceptualBounds,
+        territoryId,
+        fail
+      );
       const territoryEvidence = sortedUniqueStrings(
         territory.evidenceIds,
         `${territoryId} evidenceIds`
@@ -628,6 +618,46 @@ function normalizeGeneratedDivergingPolarity(
   };
 }
 
+export function normalizeColorSystemAgentAdoptionV1(value: unknown): ColorSystemAgentAdoptionV1 {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    fail('Agent adoption requires an explicit bounded authority record.');
+  }
+  requireKnownKeys(
+    value,
+    ['version', 'actor', 'authorizationRef', 'stage', 'ownerAcceptance', 'creationAuthorized'],
+    'agent adoption'
+  );
+  const input = value as ColorSystemAgentAdoptionV1;
+  if (
+    input.version !== 'teul-agent-plan-adoption/v1' ||
+    input.stage !== 'generation-review-export' ||
+    input.ownerAcceptance !== false ||
+    input.creationAuthorized !== false ||
+    !input.actor ||
+    typeof input.actor !== 'object' ||
+    Array.isArray(input.actor) ||
+    input.actor.kind !== 'agent'
+  ) {
+    fail(
+      'Agent adoption is limited to generation, review and export, without owner or creation authority.'
+    );
+  }
+  requireKnownKeys(input.actor, ['kind', 'ref'], 'agent adoption actor');
+  for (const text of [input.actor.ref, input.authorizationRef]) {
+    if (typeof text !== 'string' || !text.length || text.length > 500 || text.trim() !== text) {
+      fail('Agent adoption requires bounded actor and authorization references.');
+    }
+  }
+  return {
+    version: input.version,
+    actor: { kind: 'agent', ref: input.actor.ref },
+    authorizationRef: input.authorizationRef,
+    stage: input.stage,
+    ownerAcceptance: false,
+    creationAuthorized: false,
+  };
+}
+
 function normalizedBriefContent(input: BriefBuildInput): BriefContent {
   if (input.version !== COLOR_SYSTEM_BUILDER_BRIEF_V2_SCHEMA_VERSION) {
     fail('Builder brief is not the supported v2 schema.');
@@ -655,6 +685,20 @@ function normalizedBriefContent(input: BriefBuildInput): BriefContent {
   const sections = input.sections.map((section, index) =>
     normalizeSectionIntent(section, index + 1)
   ) as unknown as BriefContent['sections'];
+  const adoption =
+    input.adoption === undefined ? undefined : normalizeColorSystemAgentAdoptionV1(input.adoption);
+  if (
+    adoption
+      ? sections.some(section => section.confirmation !== 'agent-adopted')
+      : sections.some(section => section.confirmation === 'agent-adopted')
+  ) {
+    fail(
+      'Agent-adopted sections require one explicit adoption record and cannot mix owner authority.'
+    );
+  }
+  if (adoption && input.divergingPolarity) {
+    fail('Agent adoption cannot synthesize owner-confirmed diverging polarity.');
+  }
   const preservedColors = input.preservedColors
     .map(normalizePreservedColor)
     .sort(
@@ -671,7 +715,25 @@ function normalizedBriefContent(input: BriefBuildInput): BriefContent {
     sections.map(section => [section.role, section.disposition] as const)
   );
   preservedColors.forEach(color => {
-    if (dispositionBySection.get(color.section) !== 'preserve') {
+    // p3-H: an extended (`derive`) Secondary section keeps every recorded value as an
+    // exact source token while Teul extends the system around them, so Secondary
+    // preserved colors are admitted under that disposition too. p3-J: recorded
+    // product-graphics and data-visualization colors ride the same way, exact and in
+    // recorded order, for the composer to reproduce by value. p5-A: a replaced
+    // (`rebuild`) section carries none of its recorded colors; they belong in
+    // `replacedColors`. Every other section preserves colors only when it is itself
+    // preserved.
+    const disposition = dispositionBySection.get(color.section);
+    const replaceable = SECTIONS_KEEPING_SOURCE_COLORS_WHEN_EXTENDED.some(
+      section => section === color.section
+    );
+    if (replaceable && disposition === 'rebuild') {
+      fail(
+        `${color.stableColorId} cannot be preserved because its section is replaced; list it in replacedColors instead.`
+      );
+    }
+    const admitted = disposition === 'preserve' || (replaceable && disposition === 'derive');
+    if (!admitted) {
       fail(
         `${color.stableColorId} cannot be preserved because its section is not dispositioned preserve.`
       );
@@ -732,12 +794,31 @@ function normalizedBriefContent(input: BriefBuildInput): BriefContent {
       'secondaryTargetFamilyCount must be derived from retained source groups and per-job minima.'
     );
   }
+  const perDirection = normalizePerDirectionTargets(input);
   const divergingPolarity = normalizeGeneratedDivergingPolarity(
     input.divergingPolarity,
     targetPolicy.policy.assemblyContributionIds
   );
+  const {
+    skippedStatusReserves: rawSkippedStatusReserves,
+    secondaryOmittedDirections: rawOmittedDirections,
+    replacedColors: rawReplacedColors,
+    ...rest
+  } = input;
+  const skippedStatusReserves = normalizeSkippedStatusReserves(
+    rawSkippedStatusReserves,
+    targetPolicy.policy.assemblyContributionIds,
+    'brief.skippedStatusReserves'
+  );
+  const secondaryOmittedDirections = normalizeOmittedDirections(rawOmittedDirections, perDirection);
+  // p5-A: recorded colors of Replace sections, evidence only; disjoint from every source id.
+  const replacedColors = normalizeReplacedColors(rawReplacedColors, dispositionBySection, [
+    ...preservedIds,
+    ...sourceReferenceIds,
+  ]);
   return {
-    ...input,
+    ...rest,
+    ...(adoption ? { adoption } : {}),
     brandFitProfile,
     sections,
     preservedColors,
@@ -745,9 +826,284 @@ function normalizedBriefContent(input: BriefBuildInput): BriefContent {
     primaryLocks,
     primaryLockIds,
     secondaryTargetPolicy: targetPolicy.policy,
+    ...perDirection,
     requiredSecondaryJobs,
     ...(divergingPolarity ? { divergingPolarity } : {}),
+    ...(skippedStatusReserves ? { skippedStatusReserves } : {}),
+    ...(secondaryOmittedDirections ? { secondaryOmittedDirections } : {}),
+    ...(replacedColors ? { replacedColors } : {}),
   };
+}
+
+/**
+ * p5-A. Recorded colors of a section the owner chose to Replace. Each names a
+ * replaceable section whose confirmed disposition is `rebuild`, carries at least
+ * one exact hex per mode, and shares no identity with a preserved or source
+ * reference color (it is evidence, never a source). Absent when empty, so briefs
+ * without a Replace section hash exactly as before.
+ */
+function normalizeReplacedColors(
+  value: readonly ColorSystemReplacedColorV2[] | undefined,
+  dispositionBySection: ReadonlyMap<string, string>,
+  sourceIds: readonly string[]
+): ColorSystemReplacedColorV2[] | undefined {
+  if (value === undefined || value.length === 0) return undefined;
+  const label = 'brief.replacedColors';
+  const normalized = value.map((entry, index) => {
+    const entryLabel = `${label}[${index}]`;
+    requireKnownKeys(entry, ['stableColorId', 'displayName', 'section', 'hexByMode'], entryLabel);
+    const stableColorId = requireNonEmpty(entry.stableColorId, `${entryLabel}.stableColorId`);
+    const displayName = requireNonEmpty(entry.displayName, `${entryLabel}.displayName`);
+    const section = requireOneOf(
+      entry.section,
+      COLOR_SYSTEM_REPLACEABLE_SECTION_ROLES_V2,
+      `${entryLabel}.section`
+    );
+    if (dispositionBySection.get(section) !== 'rebuild') {
+      fail(`${entryLabel} names section ${section}, which is not dispositioned rebuild.`);
+    }
+    if (sourceIds.includes(stableColorId)) {
+      fail(`${entryLabel} shares identity ${stableColorId} with a preserved or source color.`);
+    }
+    const modes = Object.keys(entry.hexByMode ?? {});
+    if (modes.length === 0) fail(`${entryLabel}.hexByMode must carry at least one mode.`);
+    const hexByMode = Object.fromEntries(
+      modes.sort(compareText).map(mode => {
+        const hex = entry.hexByMode[mode];
+        if (typeof hex !== 'string' || !HEX_PATTERN.test(hex)) {
+          fail(`${entryLabel}.hexByMode.${mode} must be six-digit hex.`);
+        }
+        return [requireNonEmpty(mode, `${entryLabel}.hexByMode mode`), hex.toUpperCase()];
+      })
+    );
+    return { stableColorId, displayName, section, hexByMode };
+  });
+  if (new Set(normalized.map(entry => entry.stableColorId)).size !== normalized.length) {
+    fail(`${label} must have unique stable identities.`);
+  }
+  return normalized.sort(
+    (left, right) =>
+      sectionRank(left.section) - sectionRank(right.section) ||
+      compareText(left.displayName, right.displayName) ||
+      compareText(left.stableColorId, right.stableColorId)
+  );
+}
+
+/**
+ * p3-H. Skipped status reserves are evidence, not families: each names a status
+ * role, its reserve contribution (which must not be among the assembly
+ * contributions, since it was not added), the anchor it collided with, and a
+ * cause. An empty list canonicalizes to absence so briefs without skips hash as
+ * before.
+ */
+function normalizeSkippedStatusReserves(
+  value: readonly ColorSystemSkippedStatusReserveV2[] | undefined,
+  assemblyContributionIds: readonly string[],
+  label: string
+): ColorSystemSkippedStatusReserveV2[] | undefined {
+  if (value === undefined || value.length === 0) return undefined;
+  const normalized = value.map((entry, index) => {
+    const entryLabel = `${label}[${index}]`;
+    requireKnownKeys(
+      entry,
+      [
+        'role',
+        'contributionId',
+        'hue',
+        'realizedHex',
+        'nearestHex',
+        'nearestDisplayName',
+        'deltaEOK',
+        'cause',
+        'reason',
+      ],
+      entryLabel
+    );
+    requireOneOf(entry.role, COLOR_SYSTEM_STATUS_RESERVE_ROLES_V2, `${entryLabel}.role`);
+    const contributionId = requireNonEmpty(entry.contributionId, `${entryLabel}.contributionId`);
+    if (contributionId !== `${COLOR_SYSTEM_STATUS_RESERVE_CONTRIBUTION_PREFIX_V2}${entry.role}`) {
+      fail(`${entryLabel}.contributionId must be the reserve contribution for ${entry.role}.`);
+    }
+    if (assemblyContributionIds.includes(contributionId)) {
+      fail(`${entryLabel} names a reserve that the assembly contributions still include.`);
+    }
+    requireFiniteInRange(entry.hue, 0, 360, `${entryLabel}.hue`);
+    if (!HEX_PATTERN.test(entry.realizedHex))
+      fail(`${entryLabel}.realizedHex must be six-digit hex.`);
+    if (!HEX_PATTERN.test(entry.nearestHex))
+      fail(`${entryLabel}.nearestHex must be six-digit hex.`);
+    requireNonEmpty(entry.nearestDisplayName, `${entryLabel}.nearestDisplayName`);
+    requireFiniteInRange(entry.deltaEOK, 0, 2, `${entryLabel}.deltaEOK`);
+    requireOneOf(entry.cause, ['separation', 'family-limit'], `${entryLabel}.cause`);
+    requireNonEmpty(entry.reason, `${entryLabel}.reason`);
+    return {
+      role: entry.role,
+      contributionId,
+      hue: entry.hue,
+      realizedHex: entry.realizedHex.toUpperCase(),
+      nearestHex: entry.nearestHex.toUpperCase(),
+      nearestDisplayName: entry.nearestDisplayName,
+      deltaEOK: entry.deltaEOK,
+      cause: entry.cause,
+      reason: entry.reason,
+    };
+  });
+  if (new Set(normalized.map(entry => entry.role)).size !== normalized.length) {
+    fail(`${label} must name each status role at most once.`);
+  }
+  return normalized;
+}
+
+/**
+ * Per-direction family targets are optional and travel together with their
+ * band. Each target lies inside the bounded limits and inside the band; the band
+ * is exactly the spread of the targets; its maximum is the brief's largest
+ * target, which the assembly contributions already equal. Reasons, when present,
+ * name every direction with non-empty measured copy.
+ */
+function normalizePerDirectionTargets(
+  input: BriefBuildInput
+): Pick<
+  BriefContent,
+  | 'secondaryTargetFamilyCountByDirection'
+  | 'secondaryTargetFamilyCountBand'
+  | 'secondaryTargetFamilyCountReasonByDirection'
+> {
+  const byDirection = input.secondaryTargetFamilyCountByDirection;
+  const band = input.secondaryTargetFamilyCountBand;
+  const reasons = input.secondaryTargetFamilyCountReasonByDirection;
+  if (byDirection === undefined && band === undefined) {
+    if (reasons !== undefined) {
+      fail('Per-direction family-count reasons require per-direction targets.');
+    }
+    return {};
+  }
+  if (byDirection === undefined || band === undefined) {
+    fail('Per-direction family targets and their band must be present together.');
+  }
+  requireKnownKeys(byDirection, DIRECTION_IDS, 'secondaryTargetFamilyCountByDirection');
+  requireKnownKeys(band, ['minimum', 'maximum'], 'secondaryTargetFamilyCountBand');
+  const targets = DIRECTION_IDS.map(direction => {
+    const value = byDirection[direction];
+    if (value === undefined) {
+      fail(`secondaryTargetFamilyCountByDirection is missing ${direction}.`);
+    }
+    requireIntegerInRange(
+      value,
+      COLOR_SYSTEM_BUILDER_V2_LIMITS.minimumSecondaryFamilyTarget,
+      COLOR_SYSTEM_BUILDER_V2_LIMITS.maximumSecondaryFamilyTarget,
+      `secondaryTargetFamilyCountByDirection.${direction}`
+    );
+    return value;
+  });
+  requireIntegerInRange(
+    band.minimum,
+    COLOR_SYSTEM_BUILDER_V2_LIMITS.minimumSecondaryFamilyTarget,
+    COLOR_SYSTEM_BUILDER_V2_LIMITS.maximumSecondaryFamilyTarget,
+    'secondaryTargetFamilyCountBand.minimum'
+  );
+  requireIntegerInRange(
+    band.maximum,
+    COLOR_SYSTEM_BUILDER_V2_LIMITS.minimumSecondaryFamilyTarget,
+    COLOR_SYSTEM_BUILDER_V2_LIMITS.maximumSecondaryFamilyTarget,
+    'secondaryTargetFamilyCountBand.maximum'
+  );
+  if (band.minimum !== Math.min(...targets) || band.maximum !== Math.max(...targets)) {
+    fail('secondaryTargetFamilyCountBand must span exactly the per-direction targets.');
+  }
+  if (band.maximum !== input.secondaryTargetFamilyCount) {
+    fail(
+      'secondaryTargetFamilyCount must equal the largest per-direction target, which the assembly contributions realize.'
+    );
+  }
+  let normalizedReasons: Record<ColorSystemSecondaryDirectionIdV2, string> | undefined;
+  if (reasons !== undefined) {
+    requireKnownKeys(reasons, DIRECTION_IDS, 'secondaryTargetFamilyCountReasonByDirection');
+    normalizedReasons = Object.fromEntries(
+      DIRECTION_IDS.map(direction => {
+        const reason = reasons[direction];
+        if (reason === undefined) {
+          fail(`secondaryTargetFamilyCountReasonByDirection is missing ${direction}.`);
+        }
+        return [
+          direction,
+          requireNonEmpty(reason, `secondaryTargetFamilyCountReasonByDirection.${direction}`),
+        ];
+      })
+    ) as Record<ColorSystemSecondaryDirectionIdV2, string>;
+  }
+  return {
+    secondaryTargetFamilyCountByDirection: Object.fromEntries(
+      DIRECTION_IDS.map(direction => [direction, byDirection[direction]])
+    ) as Record<ColorSystemSecondaryDirectionIdV2, number>,
+    secondaryTargetFamilyCountBand: { minimum: band.minimum, maximum: band.maximum },
+    ...(normalizedReasons
+      ? { secondaryTargetFamilyCountReasonByDirection: normalizedReasons }
+      : {}),
+  };
+}
+
+/**
+ * p4-A. Directions the planner does not offer. Each is a known direction other than
+ * Derived, named at most once, with a known cause and a non-empty measured reason.
+ * The list requires per-direction targets; an omitted direction adds no family, so
+ * its target equals Derived's, and its per-direction reason is the omission
+ * statement itself, so the review reads one sentence wherever it looks. An empty
+ * list canonicalizes to absence.
+ */
+function normalizeOmittedDirections(
+  input: readonly ColorSystemOmittedSecondaryDirectionV2[] | undefined,
+  perDirection: ReturnType<typeof normalizePerDirectionTargets>
+): readonly ColorSystemOmittedSecondaryDirectionV2[] | undefined {
+  if (input === undefined) return undefined;
+  if (!Array.isArray(input)) fail('brief.secondaryOmittedDirections must be a list.');
+  if (input.length === 0) return undefined;
+  const byDirection = perDirection.secondaryTargetFamilyCountByDirection;
+  if (!byDirection) fail('Omitted directions require per-direction family targets.');
+  const reasons = perDirection.secondaryTargetFamilyCountReasonByDirection;
+  const normalized = input.map((entry, index) => {
+    const label = `brief.secondaryOmittedDirections[${index}]`;
+    requireKnownKeys(entry, ['direction', 'cause', 'reason'], label);
+    const direction = requireOneOf(entry.direction, DIRECTION_IDS, `${label}.direction`);
+    if (direction === 'close-harmony') {
+      fail('The Derived direction (close-harmony) is the baseline and cannot be omitted.');
+    }
+    const cause = requireOneOf(entry.cause, OMISSION_CAUSES, `${label}.cause`);
+    const reason = requireNonEmpty(entry.reason, `${label}.reason`);
+    if (byDirection[direction] !== byDirection['close-harmony']) {
+      fail(
+        `An omitted direction adds no family beyond Derived, so ${direction} must carry Derived's target.`
+      );
+    }
+    if (reasons && reasons[direction] !== reason) {
+      fail(`The per-direction reason for omitted ${direction} must be its omission statement.`);
+    }
+    return { direction, cause, reason };
+  });
+  if (new Set(normalized.map(entry => entry.direction)).size !== normalized.length) {
+    fail('brief.secondaryOmittedDirections must name each direction at most once.');
+  }
+  return [...normalized].sort(
+    (left, right) => DIRECTION_IDS.indexOf(left.direction) - DIRECTION_IDS.indexOf(right.direction)
+  );
+}
+
+/** The reviewed target for a candidate: its own direction's when the brief carries per-direction targets. */
+export function colorSystemBriefTargetFamilyCountV2(
+  brief: Pick<
+    ColorSystemBuilderBriefV2,
+    'secondaryTargetFamilyCount' | 'secondaryTargetFamilyCountByDirection'
+  >,
+  direction: ColorSystemSecondaryDirectionIdV2 | undefined
+): number {
+  const byDirection = brief.secondaryTargetFamilyCountByDirection;
+  if (!byDirection) return brief.secondaryTargetFamilyCount;
+  if (direction === undefined) {
+    fail(
+      'A candidate must declare its review direction when the brief carries per-direction targets.'
+    );
+  }
+  return byDirection[direction];
 }
 
 export function buildColorSystemBuilderBriefV2(input: BriefBuildInput): ColorSystemBuilderBriefV2 {
@@ -870,7 +1226,7 @@ function normalizeFamilyMember(
     }
     Object.entries(valuesByMode).forEach(([mode, value]) => {
       if (value.alpha !== 1) fail(`${provenanceLabel} generated colors must be opaque.`);
-      const observed = hexToOklch(value.hex);
+      const observed = colorSystemSrgbToOklchV1(value);
       const mapped = generatedProvenance.mappedOklchByMode[mode];
       const hueDifference = Math.min(
         Math.abs(observed.h - mapped.h),
@@ -915,13 +1271,135 @@ function normalizeFamilyMember(
   };
 }
 
+/**
+ * p3-H. A pinned member is a generated-scale member whose value in one mode is
+ * byte-identical to a preserved color; the record must agree with the member,
+ * the step, and the preserved color it names, and the member's provenance must
+ * cite that color. A pin skip names a preserved color whose value matches and
+ * states why it was not pinned. Empty lists canonicalize to absence.
+ */
+function normalizeFamilyPins(
+  family: ColorSystemSecondaryFamilyV2,
+  members: readonly ColorSystemFamilyMemberV2[],
+  familyId: string,
+  brief: ColorSystemBuilderBriefV2
+): {
+  pinnedMembers?: ColorSystemFamilyPinnedMemberV2[];
+  pinSkips?: ColorSystemFamilyPinSkipV2[];
+} {
+  const preservedById = new Map(brief.preservedColors.map(color => [color.stableColorId, color]));
+  const preservedValue = (
+    sourceColorId: string,
+    mode: string,
+    label: string
+  ): ColorSystemColorValueV2 => {
+    const preserved = preservedById.get(sourceColorId);
+    const value = preserved?.valuesByMode[mode];
+    if (!preserved || !value) {
+      fail(`${label} does not resolve to a preserved color and mode.`);
+    }
+    return value;
+  };
+  let pinnedMembers: ColorSystemFamilyPinnedMemberV2[] | undefined;
+  if (family.pinnedMembers !== undefined && family.pinnedMembers.length > 0) {
+    pinnedMembers = family.pinnedMembers.map((pin, index) => {
+      const label = `${familyId} pinnedMembers[${index}]`;
+      requireKnownKeys(
+        pin,
+        ['stableMemberId', 'step', 'mode', 'sourceColorId', 'sourceDisplayName', 'hex'],
+        label
+      );
+      const member = members.find(candidate => candidate.stableMemberId === pin.stableMemberId);
+      if (!member) fail(`${label} names a member this family does not contain.`);
+      requireIntegerInRange(pin.step, 1, 12, `${label}.step`);
+      if (pin.step === 9 || member.order !== pin.step) {
+        fail(`${label} must name a non-anchor step equal to its member's order.`);
+      }
+      const mode = requireNonEmpty(pin.mode, `${label}.mode`);
+      const memberValue = member.valuesByMode[mode];
+      if (!memberValue) fail(`${label} names a mode its member does not carry.`);
+      if (!HEX_PATTERN.test(pin.hex)) fail(`${label}.hex must be six-digit hex.`);
+      const hex = pin.hex.toUpperCase();
+      const sourceColorId = requireNonEmpty(pin.sourceColorId, `${label}.sourceColorId`);
+      if (
+        memberValue.hex.toUpperCase() !== hex ||
+        canonicalJson(preservedValue(sourceColorId, mode, label)) !== canonicalJson(memberValue)
+      ) {
+        fail(`${label} is not byte-identical to its member value and preserved source.`);
+      }
+      if (!member.provenance.sourceColorIds.includes(sourceColorId)) {
+        fail(`${label} member provenance does not cite the pinned source color.`);
+      }
+      return {
+        stableMemberId: member.stableMemberId,
+        step: pin.step,
+        mode,
+        sourceColorId,
+        sourceDisplayName: requireNonEmpty(pin.sourceDisplayName, `${label}.sourceDisplayName`),
+        hex,
+      };
+    });
+    pinnedMembers.sort((left, right) => left.step - right.step);
+    if (new Set(pinnedMembers.map(pin => pin.step)).size !== pinnedMembers.length) {
+      fail(`${familyId} pins one step twice.`);
+    }
+  }
+  let pinSkips: ColorSystemFamilyPinSkipV2[] | undefined;
+  if (family.pinSkips !== undefined && family.pinSkips.length > 0) {
+    pinSkips = family.pinSkips.map((skip, index) => {
+      const label = `${familyId} pinSkips[${index}]`;
+      requireKnownKeys(
+        skip,
+        ['sourceColorId', 'sourceDisplayName', 'hex', 'mode', 'nearestStep', 'reason'],
+        label
+      );
+      const sourceColorId = requireNonEmpty(skip.sourceColorId, `${label}.sourceColorId`);
+      const mode = requireNonEmpty(skip.mode, `${label}.mode`);
+      if (!HEX_PATTERN.test(skip.hex)) fail(`${label}.hex must be six-digit hex.`);
+      const hex = skip.hex.toUpperCase();
+      if (preservedValue(sourceColorId, mode, label).hex.toUpperCase() !== hex) {
+        fail(`${label} hex is not the preserved source value.`);
+      }
+      if (skip.nearestStep !== null) {
+        requireIntegerInRange(skip.nearestStep, 1, 12, `${label}.nearestStep`);
+      }
+      return {
+        sourceColorId,
+        sourceDisplayName: requireNonEmpty(skip.sourceDisplayName, `${label}.sourceDisplayName`),
+        hex,
+        mode,
+        nearestStep: skip.nearestStep,
+        reason: requireNonEmpty(skip.reason, `${label}.reason`),
+      };
+    });
+    pinSkips.sort(
+      (left, right) =>
+        compareText(left.sourceColorId, right.sourceColorId) || compareText(left.mode, right.mode)
+    );
+  }
+  return {
+    ...(pinnedMembers ? { pinnedMembers } : {}),
+    ...(pinSkips ? { pinSkips } : {}),
+  };
+}
+
 function normalizeFamily(
   family: ColorSystemSecondaryFamilyV2,
   brief: ColorSystemBuilderBriefV2
 ): ColorSystemSecondaryFamilyV2 {
   requireKnownKeys(
     family,
-    ['stableFamilyId', 'displayName', 'order', 'contributionId', 'shape', 'brandFit', 'members'],
+    [
+      'stableFamilyId',
+      'displayName',
+      'order',
+      'contributionId',
+      'shape',
+      'brandFit',
+      'members',
+      'pinnedMembers', // p3-H
+      'pinSkips', // p3-H
+    ],
     'Secondary family'
   );
   const familyId = requireNonEmpty(family.stableFamilyId, 'Family id');
@@ -930,7 +1408,13 @@ function normalizeFamily(
   if (!brief.secondaryTargetPolicy.assemblyContributionIds.includes(contributionId)) {
     fail(`${familyId} contribution is not declared by the target policy.`);
   }
-  requireIntegerInRange(family.order, 1, 12, `${familyId} order`);
+  // p3-H: family order runs to the family ceiling; member steps stay 1 through 12.
+  requireIntegerInRange(
+    family.order,
+    1,
+    COLOR_SYSTEM_BUILDER_V2_LIMITS.maximumSecondaryFamilyTarget,
+    `${familyId} order`
+  );
   requireOneOf(
     family.shape.kind,
     ['named-base-light-pair', 'full-light-dark-scale'],
@@ -1016,18 +1500,24 @@ function normalizeFamily(
       : members.find(member => member.stableMemberId === representativeId);
   if (!representative) fail(`${familyId} has no representative brand-fit member.`);
   const representativeMode = Object.keys(representative.valuesByMode).sort(compareText)[0];
-  const representativeOklch = hexToOklch(representative.valuesByMode[representativeMode].hex);
-  if (!territoryContainsColor(territory, representativeOklch)) {
+  if (
+    !colorSystemTerritoryContainsOklchV1(
+      territory,
+      canonicalizeColorSystemOklchV1(
+        colorSystemSrgbToOklchV1(representative.valuesByMode[representativeMode])
+      )
+    )
+  ) {
     fail(`${familyId} exact representative color is outside its claimed brand territory.`);
   }
   for (const member of members) {
     for (const [mode, value] of Object.entries(member.valuesByMode)) {
-      const exactOklch = hexToOklch(value.hex);
+      const exactOklch = canonicalizeColorSystemOklchV1(colorSystemSrgbToOklchV1(value));
       const excludedMatch = brief.brandFitProfile.territories.find(
         item =>
           item.status === 'excluded' &&
           item.appliesToProminence.includes(family.brandFit.prominence) &&
-          territoryContainsColor(item, exactOklch)
+          colorSystemTerritoryContainsOklchV1(item, exactOklch)
       );
       if (excludedMatch) {
         fail(
@@ -1036,8 +1526,9 @@ function normalizeFamily(
       }
     }
   }
+  const { pinnedMembers: _rawPinnedMembers, pinSkips: _rawPinSkips, ...rest } = family;
   return {
-    ...family,
+    ...rest,
     contributionId,
     brandFit: {
       territoryId,
@@ -1045,6 +1536,7 @@ function normalizeFamily(
       evidenceIds: brandEvidenceIds,
     },
     members,
+    ...normalizeFamilyPins(family, members, familyId, brief),
   };
 }
 
@@ -1064,6 +1556,7 @@ function actualFamilyHash(family: ColorSystemSecondaryFamilyV2): string {
         hex: value.hex,
         components: value.components,
         alpha: value.alpha,
+        ...(value.representation ? { representation: value.representation } : {}),
       }))
     )
     .sort((left, right) => compareText(canonicalJson(left), canonicalJson(right)));
@@ -1072,20 +1565,6 @@ function actualFamilyHash(family: ColorSystemSecondaryFamilyV2): string {
 
 function actualSystemHash(families: readonly ColorSystemSecondaryFamilyV2[]): string {
   return deterministicContentHash([...families.map(actualFamilyHash)].sort(compareText));
-}
-
-function territoryContainsColor(
-  territory: ColorSystemBrandFitProfileV2['territories'][number],
-  color: ReturnType<typeof hexToOklch>
-): boolean {
-  const bounds = territory.perceptualBounds;
-  return (
-    bounds.hueRanges.some(range => color.h >= range.minimum && color.h <= range.maximum) &&
-    color.c >= bounds.chroma.minimum &&
-    color.c <= bounds.chroma.maximum &&
-    color.l >= bounds.lightness.minimum &&
-    color.l <= bounds.lightness.maximum
-  );
 }
 
 function approvedRefIdentity(ref: ColorSystemApprovedColorRefV2): string {
@@ -1204,6 +1683,7 @@ function normalizedCandidateContent(
       'id',
       'label',
       'status',
+      'direction',
       'targetFamilyCount',
       'actualFamilyCount',
       'systemShape',
@@ -1214,9 +1694,18 @@ function normalizedCandidateContent(
       'measures',
       'explanation',
       'blockers',
+      'skippedStatusReserves', // p3-H
     ],
     'Strategy candidate'
   );
+  // p3-H: a candidate carries exactly the brief's skipped reserves or none; it cannot
+  // invent, drop, or reword them.
+  if (
+    canonicalJson(input.skippedStatusReserves ?? null) !==
+    canonicalJson(brief.skippedStatusReserves ?? null)
+  ) {
+    fail('Candidate skipped status reserves must equal the reviewed builder brief.');
+  }
   if (input.version !== COLOR_SYSTEM_STRATEGY_CANDIDATE_V2_SCHEMA_VERSION) {
     fail('Strategy candidate is not the supported v2 schema.');
   }
@@ -1227,8 +1716,25 @@ function normalizedCandidateContent(
   requireNonEmpty(input.label, `${input.id} label`);
   requireOneOf(input.status, CANDIDATE_STATUSES, `${input.id} status`);
   requireOneOf(input.systemShape, SYSTEM_SHAPES, `${input.id} systemShape`);
-  if (input.targetFamilyCount !== brief.secondaryTargetFamilyCount) {
-    fail('Candidate target family count must equal the reviewed builder brief.');
+  if (input.direction !== undefined) {
+    requireOneOf(input.direction, DIRECTION_IDS, `${input.id} direction`);
+    // p4-A: an omitted direction has no candidate; one that claims it would present a
+    // family set the brief says is not offered.
+    if (
+      (brief.secondaryOmittedDirections ?? []).some(entry => entry.direction === input.direction)
+    ) {
+      fail(
+        `${input.id} realizes ${input.direction}, a direction the reviewed brief does not offer.`
+      );
+    }
+  }
+  const reviewedTarget = colorSystemBriefTargetFamilyCountV2(brief, input.direction);
+  if (input.targetFamilyCount !== reviewedTarget) {
+    fail(
+      brief.secondaryTargetFamilyCountByDirection
+        ? `Candidate target family count must equal the reviewed builder brief target for ${input.direction}.`
+        : 'Candidate target family count must equal the reviewed builder brief.'
+    );
   }
   requireIntegerInRange(
     input.targetFamilyCount,
@@ -1288,20 +1794,21 @@ function normalizedCandidateContent(
   if ((input.status === 'complete') !== shouldBeComplete) {
     fail('Candidate complete status does not match target, jobs, and blockers.');
   }
+  const band = brief.secondaryTargetFamilyCountBand;
+  if (
+    shouldBeComplete &&
+    band &&
+    (input.actualFamilyCount < band.minimum || input.actualFamilyCount > band.maximum)
+  ) {
+    fail('A complete candidate must hold a family count inside the reviewed per-direction band.');
+  }
+  // p3-H: the token cap counts Variables the way the resource blueprint creates them:
+  // one primitive per preserved color and one per family member, each carrying every
+  // mode. Counting mode values double-counted every two-mode primitive and would have
+  // refused 24 families (24 × 12 × 2 = 576) that the real ceiling admits (288 primitives).
   const tokenCount =
-    brief.preservedColors.reduce(
-      (count, color) => count + Object.keys(color.valuesByMode).length,
-      0
-    ) +
-    families.reduce(
-      (count, family) =>
-        count +
-        family.members.reduce(
-          (memberCount, member) => memberCount + Object.keys(member.valuesByMode).length,
-          0
-        ),
-      0
-    );
+    brief.preservedColors.length +
+    families.reduce((count, family) => count + family.members.length, 0);
   const familyModeVariantCount = families.reduce((count, family) => {
     const modes = new Set(family.members.flatMap(member => Object.keys(member.valuesByMode)));
     return count + modes.size;

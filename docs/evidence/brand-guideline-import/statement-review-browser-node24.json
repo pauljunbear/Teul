@@ -1,0 +1,48 @@
+{
+  "status": "passed",
+  "node": "v24.19.0",
+  "scope": "Authored PDF observations and synthetic native capture; no real-source accuracy or designer qualification.",
+  "checks": [
+    "PDF grouped decisions: no automated accessibility violations in statement groups",
+    "PDF 390px: no automated accessibility violations in statement groups",
+    "PDF grouping leaves initial project unchanged; explicit keyboard exclusion updates two unresolved copies, invalidates an applied review, preserves other decisions and evidence, and reopens byte-exactly offline",
+    "Native grouped decisions: no automated accessibility violations in statement groups",
+    "Shared native grouping preserves source statements, existing differing decisions and mode scope; long text remains bounded and scrolls with the keyboard"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "artifacts": [
+    {
+      "file": "pdf-desktop-node24.png",
+      "sha256": "860884e4f0f858a7c380e70411760e51210b7b7065806d40201f66adffdbf06f"
+    },
+    {
+      "file": "pdf-mobile-node24.png",
+      "sha256": "65741cefacd7bfc4f2339e210fd7d74d00c5bb6dfa4db159e38ff2140fd90692"
+    },
+    {
+      "file": "native-desktop-node24.png",
+      "sha256": "aaa56a8805a7d26a3d18116dd423c0e1a76da8100f637a2dccbc4a45faf4448c"
+    }
+  ],
+  "fixtureHashes": {
+    "pdfProject": "9ff7f2d0149319b60ee196bcb80b75a8e3a7e9357254561aa78fb4cf81fed754",
+    "nativeProject": "9f1d5b5a927367faca6b6920161b1a768d4ac48ea643390ab912c03ba857e4e9",
+    "fixtureModule": "e17b21228f4cf846387b8065b04345f72d68f84b48f0e944c0abe3c444b91e9b"
+  },
+  "buildHashes": {
+    "assets/GuidelineWorkspace-CPdLX7-N.js": "b7aee68ec3ab00d898805300251c40ca3777df883577888e53b7f11294dd1af5",
+    "assets/GuidelineWorkspace-Cmt5gytF.css": "6f58fead3396bb6c80af7ac9adbb4f499924748fb93151970b9fc2b8641eb437",
+    "assets/ProductSystemView-DJMb3_3z.css": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764",
+    "assets/ProductSystemView-DzI0umDG.js": "b0fc5ef3d378489727674405c879508bc9960807a2d96272a4ab7af6588bb770",
+    "assets/authoring-3LDseHzy.js": "908ac08d5feef2f8f088d0d40e735d9eeaebe3585a2d9cdfd5adf546ededd2dd",
+    "assets/authoringControlOutlinesV1-BJVUcn6l.js": "48acc0fec5e110c0a743c57e3b4652b30b49dc225a9f2aaaab0e41f88975851a",
+    "assets/colorSystemRecipeV1-DlDsEMFd.js": "dea72784afa900c1c60edffcda87f01408d68a60209f514598fa5e71d780c34e",
+    "assets/download-Bic2EQq1.js": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6",
+    "assets/index-CLaIDJAT.js": "ab51d642d6b01e5a96595144b46538be1956aea0ecc8f62c9d1949bb57a2d904",
+    "assets/index-CmWmBKFd.css": "e7cc8392595df99b39d33040f9348105d04d68b80d01d83e7bf4e0e7115df33f",
+    "assets/sourceProvenanceDisclosureData-CxLfFIWs.js": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361",
+    "index.html": "faed515e0819f21d92527dd97fe47d2949313b59bc4c8fa9e4272ab4e1ecac44"
+  },
+  "browser": "153.0.8010.12"
+}

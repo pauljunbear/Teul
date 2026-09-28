@@ -2,7 +2,9 @@
 
 **Color gives work a voice. A grid gives it structure.**
 
-<img width="1600" height="1000" alt="Teul's Sanzo Wada and Werner historical color libraries" src="docs/screenshots/teul-color-libraries.jpg" />
+<img width="1600" height="1000" alt="Two Teul plugin windows side by side: the Sanzo Wada library with Raw Sienna selected, showing its RGB, CMYK and Lab values, the Use as fill, Use as stroke, Create style and Copy value actions, and its 19 documented pairings; and the Werner’s Nomenclature library of 110 sampled colors with its group filters." src="docs/screenshots/teul-color-libraries.jpg" />
+
+_Screenshots captured on 2026-09-08 from commit `6555f2f`._
 
 Teul (틀) is Korean for _frame_, _mold_, or _pattern_. It is a Figma plugin for
 designers who want stronger starting points for color and layout.
@@ -58,7 +60,7 @@ swatch, or historical pigment.
 Passing color-pair tests does not make an entire product accessible. Teul names
 the guarantee it can prove and stops there.
 
-<img width="1600" height="1000" alt="Teul color-system methods, Figma variables, styles, and exports" src="docs/screenshots/teul-color-system-builder.jpg" />
+<img width="1600" height="1000" alt="Two views of the Color system tab in Teul’s qualification build: the Review your color system step, with the Primary stays locked and Teul proposes summaries and the recommended Wide Spectrum direction; and the Also considered table listing the Close Harmony and Balanced Contrast directions side by side with their six-family swatches, hex values, and separation measures." src="docs/screenshots/teul-color-system-builder.jpg" />
 
 The accessibility checker can read one opaque text/background pair from a
 confirmed sRGB Figma document, including a bound color variable. It rejects
@@ -88,7 +90,7 @@ the captured numeric values when moving between files. Saved grids move between
 files through a versioned JSON format and live in Figma's plugin storage; v1
 records migrate without changing their supported geometry.
 
-<img width="1600" height="1000" alt="Teul's documented grid library and application controls" src="docs/screenshots/teul-grid-library.jpg" />
+<img width="1600" height="1000" alt="Two views of Teul’s Grid library of 65 documented presets against a selected 1440 × 1024 frame: All Grids, with preset cards showing column previews, tags, aspect ratios, and fit badges; and the Web/UI filter, where Bootstrap, UI, and mobile grids fit while the Carbon Condensed Dashboard preset explains why it cannot apply." src="docs/screenshots/teul-grid-library.jpg" />
 
 ## Why Teul Exists
 
@@ -127,7 +129,14 @@ To apply a grid:
 
 ## Development
 
-Teul requires Node.js 22 or 24 and npm 10.9.8.
+Teul requires Node.js 22.13 or newer on the Node 22 line, or Node.js 24, with npm 10.9.9.
+`.nvmrc` pins the Node 22 line (`nvm use` or `fnm use` selects it) and `.npmrc`
+sets `engine-strict=true`, so npm refuses to install on an unsupported Node or
+npm.
+
+The shipping line is `main` on the owner’s private repository (moved there on 2026-09-08). The
+public `github.com/pauljunbear/Teul` is the Community-facing mirror; it is fast-forwarded from the
+shipping line when the owner publishes a release.
 
 ```bash
 git clone https://github.com/pauljunbear/Teul.git
@@ -145,12 +154,25 @@ Before committing:
 npm run lint
 npm run typecheck
 npm run test:run
+npm run test:scripts
 npm run build
 npm run assert:artifacts
 npm run check:ui-bundle
 npm run test:production-ui
 npm run verify:color-foundations
 ```
+
+Before release, run the full local gate once on Node 22 and once on Node 24,
+then commit both receipts from `docs/evidence/gates/`:
+
+```bash
+npm run release-gate
+```
+
+There is no hosted CI on this repository; verification is local and the
+committed receipts are the record. `npm run release-gate -- --dry-run` lists
+the steps, and `npm run status` regenerates `STATUS.md` from the newest receipt
+and the built channel files.
 
 ## Sources And Credits
 

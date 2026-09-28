@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { canonicalJson, deterministicContentHash } from '../colorSystemAudit';
+import { canonicalJson, deterministicContentHash } from '../colorSystemHashing';
+import {
+  buildColorSystemBrandConstraintsV1,
+  hashColorSystemBrandTerritoryRuleV1,
+} from '../colorSystemBrandConstraintsV1';
 import {
   buildColorSystemGenericSourceSnapshotV2,
   type ColorSystemGenericSourceSnapshotV2,
@@ -10,14 +14,18 @@ import {
 } from '../colorSystemGenericSourceAdapterV2';
 import {
   COLOR_SYSTEM_GENERIC_CONFIRMATION_POLICY_V2_VERSION,
-  COLOR_SYSTEM_GENERIC_INTENT_POLICY_V2_VERSION,
   COLOR_SYSTEM_GENERIC_MAX_DISPLAYED_PLAN_JSON_V2,
   ColorSystemGenericIntentPolicyV2Error,
   assertColorSystemGenericIntentProposalV2Integrity,
   assertColorSystemGenericOwnerConfirmationV2Integrity,
+  assertColorSystemGenericPolicyDecisionV2Integrity,
+  buildColorSystemGenericAgentAdoptionV1,
   buildColorSystemGenericIntentProposalV2,
   buildColorSystemGenericOwnerConfirmationV2,
   type BuildGenericOwnerConfirmationV2Input,
+  type BuildGenericAgentAdoptionV1Input,
+  type GenericAgentAdoptionV1,
+  type GenericOwnerConfirmationV2,
   type GenericConfirmedSectionDecisionV2,
   type GenericIntakeProposalV2,
 } from '../colorSystemGenericIntentPolicyV2';
@@ -367,7 +375,235 @@ function ready(kind: FixtureKind = 'hybrid') {
   return { snapshot, proposal, confirmation, handoff };
 }
 
+function adoptionInput(proposal: GenericIntakeProposalV2): BuildGenericAgentAdoptionV1Input {
+  const { ownerEditedRoles, confirmedAt, sectionDecisions, ...common } =
+    confirmationInput(proposal);
+  return {
+    ...common,
+    adoption: {
+      version: 'teul-agent-plan-adoption/v1',
+      actor: { kind: 'agent', ref: 'agent:test' },
+      authorizationRef: 'task:test-local-review',
+      stage: 'generation-review-export',
+      ownerAcceptance: false,
+      creationAuthorized: false,
+    },
+    sectionDecisions: sectionDecisions.map(decision => ({ ...decision, status: 'agent-adopted' })),
+    editedRoles: ownerEditedRoles,
+    adoptedAt: confirmedAt,
+    generatedPolarity: null,
+  };
+}
+
 describe('generic color-system intent policy and handoff', () => {
+  it('preserves the legacy owner confirmation and handoff hashes', () => {
+    const { confirmation, handoff } = ready('canvas-only');
+    expect([confirmation.confirmationHash, handoff.handoffHash]).toEqual([
+      'sha256:85b9fb59fa555f74b65e81cb8102f800870748175877d955a628c97358315d4a',
+      'sha256:1926fa73bf7b122e6643f091d9805a8d1e2c5334e607695beea3a450491590e3',
+    ]);
+  });
+  it('carries exact agent authority through a separate versioned generation, review, and export stage', () => {
+    const { snapshot, proposal } = ready('canvas-only');
+    const decision = buildColorSystemGenericAgentAdoptionV1(
+      snapshot,
+      proposal,
+      adoptionInput(proposal)
+    );
+    const handoff = compileColorSystemGenericPolicyHandoffV2(snapshot, proposal, decision);
+    expect(() =>
+      assertColorSystemGenericPolicyDecisionV2Integrity(snapshot, proposal, decision)
+    ).not.toThrow();
+    expect(() =>
+      assertColorSystemGenericPolicyHandoffV2Integrity(snapshot, proposal, decision, handoff)
+    ).not.toThrow();
+    expect(handoff.adoption).toEqual(decision.adoption);
+    expect(handoff.handoffPolicyVersion).toBe('teul-color-system-generic-agent-policy-handoff/v1');
+    expect(handoff.sectionIntents.every(section => section.status === 'agent-adopted')).toBe(true);
+    expect(
+      handoff.brandConstraints.every(
+        rule =>
+          rule.authority === 'agent-adopted' &&
+          canonicalJson(rule.adoption) === canonicalJson(decision.adoption)
+      )
+    ).toBe(true);
+    expect(
+      handoff.sourceLocks.every(
+        lock =>
+          lock.authority === 'observed' && lock.policyDecisionRuleId && !lock.ownerDecisionRuleId
+      )
+    ).toBe(true);
+    expect(
+      handoff.governingRules
+        .filter(rule => rule.status !== 'observed')
+        .every(
+          rule =>
+            rule.status === 'agent-adopted' &&
+            canonicalJson(rule.adoption) === canonicalJson(decision.adoption)
+        )
+    ).toBe(true);
+    expect(() =>
+      assertColorSystemGenericOwnerConfirmationV2Integrity(
+        snapshot,
+        proposal,
+        decision as unknown as GenericOwnerConfirmationV2
+      )
+    ).toThrow();
+    expect(JSON.stringify(decision)).not.toContain('owner-confirmed');
+  });
+
+  it('rejects stripped, changed, mixed, and privilege-expanded agent decisions and handoffs', () => {
+    const { snapshot, proposal } = ready('canvas-only');
+    const decision = buildColorSystemGenericAgentAdoptionV1(
+      snapshot,
+      proposal,
+      adoptionInput(proposal)
+    );
+    const assertDecision = (value: unknown) =>
+      assertColorSystemGenericPolicyDecisionV2Integrity(
+        snapshot,
+        proposal,
+        value as GenericAgentAdoptionV1
+      );
+    for (const mutation of [
+      (value: GenericAgentAdoptionV1) => {
+        Reflect.deleteProperty(value, 'adoption');
+      },
+      (value: GenericAgentAdoptionV1) => {
+        value.adoption.actor.ref = 'agent:other';
+      },
+      (value: GenericAgentAdoptionV1) => {
+        value.adoption.authorizationRef = 'task:other';
+      },
+      (value: GenericAgentAdoptionV1) => {
+        Object.assign(value.adoption, { ownerAcceptance: true });
+      },
+      (value: GenericAgentAdoptionV1) => {
+        Object.assign(value.adoption, { creationAuthorized: true });
+      },
+      (value: GenericAgentAdoptionV1) => {
+        Object.assign(value.adoption, { stage: 'create' });
+      },
+      (value: GenericAgentAdoptionV1) => {
+        Object.assign(value.sectionDecisions[0], { status: 'owner-confirmed' });
+      },
+      (value: GenericAgentAdoptionV1) => {
+        Object.assign(value, { schemaVersion: 'teul.color-system.generic-owner-confirmation.v2' });
+      },
+    ]) {
+      const changed = structuredClone(decision);
+      mutation(changed);
+      expect(() => assertDecision(changed)).toThrow();
+    }
+    const ownerInput = confirmationInput(proposal);
+    Object.assign(ownerInput.sectionDecisions[0], { status: 'agent-adopted' });
+    expect(() =>
+      buildColorSystemGenericOwnerConfirmationV2(snapshot, proposal, ownerInput)
+    ).toThrow();
+    const handoff = compileColorSystemGenericPolicyHandoffV2(snapshot, proposal, decision);
+    const stripped = structuredClone(handoff);
+    delete stripped.adoption;
+    expect(() =>
+      assertColorSystemGenericPolicyHandoffV2Integrity(snapshot, proposal, decision, stripped)
+    ).toThrow();
+    const mixed = structuredClone(handoff);
+    const rule = mixed.governingRules.find(item => item.status === 'agent-adopted')!;
+    Object.assign(rule, { status: 'owner-confirmed' });
+    expect(() =>
+      assertColorSystemGenericPolicyHandoffV2Integrity(snapshot, proposal, decision, mixed)
+    ).toThrow();
+  });
+
+  it('retains a brand rule origin while requiring the same adopted actor and authorization for its decision', () => {
+    const { snapshot, proposal } = ready('canvas-only');
+    const input = adoptionInput(proposal);
+    const rules = [
+      {
+        id: 'local-supporting-policy',
+        label: 'Proposed supporting territory',
+        kind: 'brand-territory',
+        scope: {
+          kind: 'generated-families',
+          prominence: ['supporting'],
+          modes: 'all',
+          jobs: 'all',
+        },
+        bounds: {
+          hueRanges: [{ minimum: 0, maximum: 360 }],
+          chroma: { minimum: 0, maximum: 0.5 },
+          lightness: { minimum: 0, maximum: 1 },
+        },
+        origin: 'proposal',
+        evidenceRefs: ['task:local-policy'],
+        effect: 'restrict-to',
+        allowedJobs: ['product-graphics'],
+      },
+    ];
+    const draft = buildColorSystemBrandConstraintsV1({
+      schemaVersion: 'teul.brand-constraints.v1',
+      sourceSnapshotHash: snapshot.sourceSnapshotHash,
+      rules,
+      decisions: [],
+    });
+    const plan = { sections: proposal.sections, reviewedBrandConstraints: draft };
+    const reviewed = (actor: { kind: string; ref: string }, authorityRef: string) =>
+      buildColorSystemBrandConstraintsV1({
+        schemaVersion: draft.schemaVersion,
+        sourceSnapshotHash: draft.sourceSnapshotHash,
+        rules: draft.rules,
+        decisions: [
+          {
+            ruleId: rules[0].id,
+            ruleHash: hashColorSystemBrandTerritoryRuleV1(rules[0]),
+            status: 'accepted',
+            actor,
+            authorityRef,
+          },
+        ],
+      });
+    const withRules = {
+      ...input,
+      displayedPlanJson: canonicalJson(plan),
+      displayedPlanHash: deterministicContentHash(plan),
+      reviewedBrandConstraints: reviewed(input.adoption.actor, input.adoption.authorizationRef),
+    };
+    const decision = buildColorSystemGenericAgentAdoptionV1(snapshot, proposal, withRules);
+    expect(decision.reviewedBrandConstraints?.rules[0].origin).toBe('proposal');
+    for (const constraints of [
+      reviewed({ kind: 'user', ref: 'owner' }, input.adoption.authorizationRef),
+      reviewed({ kind: 'agent', ref: 'agent:other' }, input.adoption.authorizationRef),
+      reviewed(input.adoption.actor, 'task:other'),
+    ]) {
+      expect(() =>
+        buildColorSystemGenericAgentAdoptionV1(snapshot, proposal, {
+          ...withRules,
+          reviewedBrandConstraints: constraints,
+        })
+      ).toThrow(/same authorization/);
+    }
+  });
+
+  it('keeps conflicting source authority and unsupported compiler consumers blocked for agents', () => {
+    const conflict = fixture('hybrid', { conflictingPrimary: true });
+    const conflictProposal = buildColorSystemGenericIntentProposalV2(conflict);
+    expect(() =>
+      buildColorSystemGenericAgentAdoptionV1(
+        conflict,
+        conflictProposal,
+        adoptionInput(conflictProposal)
+      )
+    ).toThrow(/Conflicting Primary/);
+    const snapshot = fixture('canvas-only', { unsupportedSourceCompiler: true });
+    const proposal = buildColorSystemGenericIntentProposalV2(snapshot);
+    const decision = buildColorSystemGenericAgentAdoptionV1(
+      snapshot,
+      proposal,
+      adoptionInput(proposal)
+    );
+    expect(compileColorSystemGenericPolicyHandoffV2(snapshot, proposal, decision).readiness).toBe(
+      'blocked'
+    );
+  });
   it.each([
     ['variable-first', 'tentative'],
     ['style-first', 'tentative'],
@@ -467,7 +703,7 @@ describe('generic color-system intent policy and handoff', () => {
         };
       })
     );
-    expect(unchanged.inferencePolicyVersion).toBe(COLOR_SYSTEM_GENERIC_INTENT_POLICY_V2_VERSION);
+    expect(unchanged.inferencePolicyVersion).toBe(proposal.inferencePolicyVersion);
     expect(unchanged.confirmationPolicyVersion).toBe(
       COLOR_SYSTEM_GENERIC_CONFIRMATION_POLICY_V2_VERSION
     );
@@ -554,7 +790,7 @@ describe('generic color-system intent policy and handoff', () => {
     ).toThrow(ColorSystemGenericIntentPolicyV2Error);
     const mutated = {
       ...proposal,
-      proposalHash: proposal.proposalHash.replace(/.$/, '0'),
+      proposalHash: proposal.proposalHash.replace(/.$/, digit => (digit === '0' ? '1' : '0')),
     };
     expect(() => assertColorSystemGenericIntentProposalV2Integrity(snapshot, mutated)).toThrow(
       ColorSystemGenericIntentPolicyV2Error

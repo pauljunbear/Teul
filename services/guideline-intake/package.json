@@ -1,0 +1,23 @@
+{
+  "name": "teul-guideline-intake",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": "^22.13.0 || ^24.0.0",
+    "npm": "10.x"
+  },
+  "scripts": {
+    "start": "node dist/start.js",
+    "operator": "node dist/operatorCli.js",
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test dist/*.test.js"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "typescript": "~6.0.2"
+  },
+  "dependencies": {
+    "playwright-core": "1.63.0"
+  }
+}

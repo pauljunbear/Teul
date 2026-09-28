@@ -1,0 +1,16 @@
+{
+  "url": "http://127.0.0.1:52381",
+  "checkedAt": "2026-09-25T19:01:43.767Z",
+  "checks": [
+    "Initial authored system preserves source step 9 in both modes",
+    "Invalid inputs preserve prior result; valid brand seed regenerates exactly",
+    "CSS, JSON and Tailwind downloads include source metadata",
+    "Saved recipe survives reload and regenerates",
+    "Named Radix neutral loads exactly and retains identity through saved recipe",
+    "Werner search and Wada palette selection work",
+    "Contrast passes white/black and fails identical colors",
+    "390px views have no overflow; tabs support keyboard navigation",
+    "Corrupt saved data does not crash startup"
+  ],
+  "pageErrors": []
+}

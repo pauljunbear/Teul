@@ -395,67 +395,83 @@ describe('inventoryFigmaColorSystem structured source sections', () => {
         }),
       ]
     );
-    const secondary = structuredSection('generic-secondary', 'Studio Palette - Colors (Secondary)', [
-      structuredColorCard({
-        id: 'secondary-sky',
-        name: 'Sky',
-        hex: '#B2C7EB',
-        components: [178 / 255, 199 / 255, 235 / 255],
-        x: 100,
-        y: 0,
-      }),
-    ]);
-    const productGraphics = structuredSection('generic-product-graphics', 'Studio Palette - Colors (Product Graphics)', [
-      structuredColorCard({
-        id: 'graphics-sky',
-        name: 'Sky',
-        hex: '#B2C7EB',
-        components: [178 / 255, 199 / 255, 235 / 255],
-        x: 200,
-        y: 0,
-      }),
-    ]);
-    const dataVisualization = structuredSection('generic-data-visualization', 'Studio Palette - Colors (Data Vis)', [
-      structuredColorCard({
-        id: 'datavis-blaze',
-        name: 'Blaze',
-        hex: '#E96516',
-        components: [233 / 255, 101 / 255, 22 / 255],
-        x: 300,
-        y: 0,
-      }),
-      structuredColorCard({
-        id: 'datavis-green',
-        name: 'Green',
-        hex: '#5AB570',
-        components: [90 / 255, 181 / 255, 112 / 255],
-        x: 200,
-        y: 0,
-      }),
-    ]);
-    const typography = structuredSection('generic-typography', 'Studio Palette - Colors (Typography)', [
-      ...(includeUnrelatedVariable
-        ? [
-            structuredColorCard({
-              id: 'typography-ink',
-              name: 'Ink',
-              hex: '#0C0A08',
-              components: [12 / 255, 10 / 255, 8 / 255],
-              x: 300,
-              y: 0,
-            }),
-          ]
-        : []),
-      structuredColorCard({
-        id: 'typography-hushed',
-        name: 'Hushed',
-        hex: '#0C0A08',
-        components: [12 / 255, 10 / 255, 8 / 255],
-        x: 400,
-        y: 0,
-        alphaPercent: 50,
-      }),
-    ]);
+    const secondary = structuredSection(
+      'generic-secondary',
+      'Studio Palette - Colors (Secondary)',
+      [
+        structuredColorCard({
+          id: 'secondary-sky',
+          name: 'Sky',
+          hex: '#B2C7EB',
+          components: [178 / 255, 199 / 255, 235 / 255],
+          x: 100,
+          y: 0,
+        }),
+      ]
+    );
+    const productGraphics = structuredSection(
+      'generic-product-graphics',
+      'Studio Palette - Colors (Product Graphics)',
+      [
+        structuredColorCard({
+          id: 'graphics-sky',
+          name: 'Sky',
+          hex: '#B2C7EB',
+          components: [178 / 255, 199 / 255, 235 / 255],
+          x: 200,
+          y: 0,
+        }),
+      ]
+    );
+    const dataVisualization = structuredSection(
+      'generic-data-visualization',
+      'Studio Palette - Colors (Data Vis)',
+      [
+        structuredColorCard({
+          id: 'datavis-blaze',
+          name: 'Blaze',
+          hex: '#E96516',
+          components: [233 / 255, 101 / 255, 22 / 255],
+          x: 300,
+          y: 0,
+        }),
+        structuredColorCard({
+          id: 'datavis-green',
+          name: 'Green',
+          hex: '#5AB570',
+          components: [90 / 255, 181 / 255, 112 / 255],
+          x: 200,
+          y: 0,
+        }),
+      ]
+    );
+    const typography = structuredSection(
+      'generic-typography',
+      'Studio Palette - Colors (Typography)',
+      [
+        ...(includeUnrelatedVariable
+          ? [
+              structuredColorCard({
+                id: 'typography-ink',
+                name: 'Ink',
+                hex: '#0C0A08',
+                components: [12 / 255, 10 / 255, 8 / 255],
+                x: 300,
+                y: 0,
+              }),
+            ]
+          : []),
+        structuredColorCard({
+          id: 'typography-hushed',
+          name: 'Hushed',
+          hex: '#0C0A08',
+          components: [12 / 255, 10 / 255, 8 / 255],
+          x: 400,
+          y: 0,
+          alphaPercent: 50,
+        }),
+      ]
+    );
     const allSections = [primary, secondary, productGraphics, dataVisualization, typography];
     const wrapper = sceneNode({ id: 'brand-color-system', children: allSections });
     const currentPage = page('page-generic-palette', 'Studio Palette', [wrapper]);
@@ -585,9 +601,11 @@ describe('inventoryFigmaColorSystem structured source sections', () => {
       auditOptions({ sourceLocator: 'figma-file:open-document' })
     );
 
-    expect(result.snapshotInput.sourceSections?.every(
-      section => section.extractionMethod === 'explicit-heading'
-    )).toBe(true);
+    expect(
+      result.snapshotInput.sourceSections?.every(
+        section => section.extractionMethod === 'explicit-heading'
+      )
+    ).toBe(true);
     expect(result.snapshotInput.sourceSections?.map(section => section.kind)).toEqual([
       'secondary',
       'product-graphics',
@@ -682,7 +700,9 @@ describe('inventoryFigmaColorSystem structured source sections', () => {
         sceneNode({ id: 'duplicate-black-rgb', type: 'TEXT', characters: 'RGB: 0, 0, 0' }),
       ],
     });
-    const primary = structuredSection('generic-primary', 'Studio Palette - Colors (Primary)', [duplicateCard]);
+    const primary = structuredSection('generic-primary', 'Studio Palette - Colors (Primary)', [
+      duplicateCard,
+    ]);
     const currentPage = page('page-rgb-duplicate', 'Studio Palette', [primary]);
     currentPage.selection = [primary];
     const { host } = hostFixture({ pages: [currentPage], currentPage });
@@ -759,7 +779,12 @@ describe('inventoryFigmaColorSystem structured source sections', () => {
     expect(result.snapshotInput.sourceSections?.map(section => section.kind)).toEqual(['primary']);
     expect(
       spies.getNodeByIdAsync.mock.calls.some(([id]) =>
-        ['generic-secondary', 'generic-product-graphics', 'generic-data-visualization', 'generic-typography'].includes(id)
+        [
+          'generic-secondary',
+          'generic-product-graphics',
+          'generic-data-visualization',
+          'generic-typography',
+        ].includes(id)
       )
     ).toBe(false);
   });
@@ -2365,6 +2390,8 @@ describe('inventoryFigmaColorSystem enabled-library boundary', () => {
         'remote-collection': [
           { key: 'remote-color', name: 'Remote/Blue', resolvedType: 'COLOR' },
           { key: 'remote-string', name: 'Remote/Label', resolvedType: 'STRING' },
+          { key: 'remote-easing', name: 'Remote/Motion', resolvedType: 'EASING' },
+          { key: 'remote-timing', name: 'Remote/Duration', resolvedType: 'TIMING' },
         ] as LibraryVariable[],
       },
     });
@@ -2382,6 +2409,8 @@ describe('inventoryFigmaColorSystem enabled-library boundary', () => {
         variables: [
           { key: 'remote-color', name: 'Remote/Blue', resolvedType: 'COLOR' },
           { key: 'remote-string', name: 'Remote/Label', resolvedType: 'STRING' },
+          { key: 'remote-easing', name: 'Remote/Motion', resolvedType: 'EASING' },
+          { key: 'remote-timing', name: 'Remote/Duration', resolvedType: 'TIMING' },
         ],
       },
     ]);

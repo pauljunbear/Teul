@@ -1,7 +1,8 @@
 import { getRelativeLuminance } from './accessibility';
-import { canonicalJson, deterministicContentHash } from './colorSystemAudit';
+import { canonicalJson, deterministicContentHash } from './colorSystemHashing';
 import {
   COLOR_SYSTEM_BUILDER_BRIEF_V2_SCHEMA_VERSION,
+  COLOR_SYSTEM_BUILDER_V2_LIMITS,
   COLOR_SYSTEM_BUILDER_V2_POLICY_VERSION,
   COLOR_SYSTEM_SECTION_ROLES_V2,
   type ColorSystemBrandTerritoryV2,
@@ -10,9 +11,12 @@ import {
   type ColorSystemFamilyProminenceV2,
   type ColorSystemJobV2,
   type ColorSystemPolicyEvidenceAuthorityV2,
+  type ColorSystemReplaceableSectionRoleV2,
+  type ColorSystemReplacedColorV2,
   type ColorSystemSectionDispositionV2,
   type ColorSystemSectionIntentV2,
   type ColorSystemSectionRoleV2,
+  type ColorSystemSkippedStatusReserveV2,
 } from './colorSystemBuilderV2Contracts';
 import {
   assertColorSystemBuilderBriefV2Integrity,
@@ -27,6 +31,14 @@ import {
   type ColorSystemSecondaryScaleModeV2,
 } from './colorSystemSecondaryEngineV2';
 import {
+  COLOR_SYSTEM_SECONDARY_CHROMATIC_MINIMUM_CHROMA_V3,
+  ColorSystemSecondaryStrategyV3Error,
+  measureColorSystemSecondaryPaletteV3,
+  planColorSystemSecondaryStrategiesV3,
+  type ColorSystemSecondaryDirectionV3,
+  type ColorSystemSecondaryStrategyPlanV3,
+} from './colorSystemSecondaryStrategyV3';
+import {
   assertColorSystemGenericSourceSnapshotV2Integrity,
   type ColorSystemGenericSourceSnapshotV2,
   type GenericColorValueV2,
@@ -36,20 +48,26 @@ import {
   COLOR_SYSTEM_GENERIC_SECONDARY_CONTRIBUTION_IDS_V2,
   COLOR_SYSTEM_GENERIC_SECONDARY_GENERATION_POLICY_V2_VERSION,
   assertColorSystemGenericIntentProposalV2Integrity,
-  assertColorSystemGenericOwnerConfirmationV2Integrity,
+  assertColorSystemGenericPolicyDecisionV2Integrity,
   type GenericIntakeProposalV2,
-  type GenericOwnerConfirmationV2,
+  type GenericPolicyDecisionV2,
 } from './colorSystemGenericIntentPolicyV2';
 import {
   assertColorSystemGenericPolicyHandoffV2Integrity,
   type ColorSystemGenericPolicyHandoffV2,
 } from './colorSystemGenericPolicyHandoffV2';
+import { paletteOrderClaimV3 } from './colorSystemPaletteAnalysisV3';
 import {
   COLOR_SYSTEM_PRESENTATION_PROFILE_V2_SCHEMA_VERSION,
   assertColorSystemPresentationProfileV2ContentIntegrity,
   type ColorSystemPresentationProfileV2,
 } from './colorSystemPresentationProfileV2';
-import { compareText, hexToOklch, hexToRgb, rgbToHex } from './utils';
+import {
+  buildColorSystemSrgbValueV1,
+  colorSystemSrgbToOklchV1,
+  colorSystemSrgbToRgbV1,
+} from './colorSystemSrgbValueV1';
+import { compareText, hexToRgb } from './utils';
 
 export const COLOR_SYSTEM_SOURCE_COMPILER_V2_SCHEMA_VERSION =
   'teul-color-system-source-compiler/v2' as const;
@@ -104,7 +122,8 @@ export type ColorSystemSourceCompilerV2ErrorCode =
   | 'GENERIC_NEUTRALS_INSUFFICIENT'
   | 'GENERIC_NEUTRAL_SURFACE_POLARITY_REQUIRED'
   | 'GENERIC_POLARITY_ANCHORS_REQUIRED'
-  | 'GENERIC_MODE_SUPPORT_INSUFFICIENT';
+  | 'GENERIC_MODE_SUPPORT_INSUFFICIENT'
+  | 'GENERIC_SECONDARY_PLAN_INFEASIBLE';
 
 export class ColorSystemSourceCompilerV2Error extends Error {
   constructor(
@@ -242,6 +261,7 @@ export interface ColorSystemSourceCompilerV2GenericConstraintReceipt {
   };
   evidenceIds: readonly string[];
   limitation: string;
+  reviewedBrandConstraintsHash?: string;
   constraintHash: string;
 }
 
@@ -252,7 +272,7 @@ export type ColorSystemSourceCompilerV2ConstraintReceipt =
 export interface CompileColorSystemGenericPolicyHandoffSourceV2Input {
   snapshot: ColorSystemGenericSourceSnapshotV2;
   proposal: GenericIntakeProposalV2;
-  confirmation: GenericOwnerConfirmationV2;
+  confirmation: GenericPolicyDecisionV2;
   handoff: ColorSystemGenericPolicyHandoffV2;
 }
 
@@ -1539,62 +1559,31 @@ export interface PreflightColorSystemGenericSourceV2Input {
   proposal: GenericIntakeProposalV2;
 }
 
-interface GenericSecondaryContributionRecipeV2 {
-  contributionId: (typeof COLOR_SYSTEM_GENERIC_SECONDARY_CONTRIBUTION_IDS_V2)[number];
-  displayName: string;
-  baseHueOffsetDegrees: number;
-  baseChromaScale: number;
-  prominence: ColorSystemFamilyProminenceV2;
-}
-
-const GENERIC_SECONDARY_CONTRIBUTION_RECIPES_V2: readonly GenericSecondaryContributionRecipeV2[] = [
-  {
-    contributionId: 'generic-secondary-contribution-01',
-    displayName: 'Teul Secondary A',
-    baseHueOffsetDegrees: 0,
-    baseChromaScale: 1,
-    prominence: 'leading',
-  },
-  {
-    contributionId: 'generic-secondary-contribution-02',
-    displayName: 'Teul Secondary B',
-    baseHueOffsetDegrees: 55,
-    baseChromaScale: 0.96,
-    prominence: 'accent',
-  },
-  {
-    contributionId: 'generic-secondary-contribution-03',
-    displayName: 'Teul Secondary C',
-    baseHueOffsetDegrees: 115,
-    baseChromaScale: 0.92,
-    prominence: 'accent',
-  },
-  {
-    contributionId: 'generic-secondary-contribution-04',
-    displayName: 'Teul Secondary D',
-    baseHueOffsetDegrees: 175,
-    baseChromaScale: 0.9,
-    prominence: 'supporting',
-  },
-  {
-    contributionId: 'generic-secondary-contribution-05',
-    displayName: 'Teul Secondary E',
-    baseHueOffsetDegrees: 235,
-    baseChromaScale: 0.94,
-    prominence: 'supporting',
-  },
-  {
-    contributionId: 'generic-secondary-contribution-06',
-    displayName: 'Teul Secondary F',
-    baseHueOffsetDegrees: 295,
-    baseChromaScale: 0.98,
-    prominence: 'supporting',
-  },
-] as const;
-
-const GENERIC_SECONDARY_POLICY_EVIDENCE_ID =
-  'teul-policy:generic-secondary-systematic-hue-coverage-v1';
-const GENERIC_CHROMATIC_PRIMARY_MINIMUM_OKLCH_CHROMA = 0.04;
+const GENERIC_SECONDARY_POLICY_EVIDENCE_ID = 'teul-policy:generic-secondary-measured-strategies-v3';
+const GENERIC_CHROMATIC_PRIMARY_MINIMUM_OKLCH_CHROMA =
+  COLOR_SYSTEM_SECONDARY_CHROMATIC_MINIMUM_CHROMA_V3;
+/** The single neutral ramp; downstream composers detect it by this prefix plus the measured chroma rule. */
+const GENERIC_NEUTRAL_CONTRIBUTION_ID = 'generic-neutral-contribution-01';
+/**
+ * Chromatic slot identities in planning order: the six policy slots an owner
+ * saw in the displayed plan (and may have bound to diverging polarity), then
+ * compiler-minted slots up to the bounded family maximum minus the neutral.
+ */
+const GENERIC_CHROMATIC_CONTRIBUTION_POOL: readonly string[] = [
+  ...COLOR_SYSTEM_GENERIC_SECONDARY_CONTRIBUTION_IDS_V2,
+  ...Array.from(
+    {
+      length:
+        COLOR_SYSTEM_BUILDER_V2_LIMITS.maximumSecondaryFamilyTarget -
+        1 -
+        COLOR_SYSTEM_GENERIC_SECONDARY_CONTRIBUTION_IDS_V2.length,
+    },
+    (_, index) =>
+      `generic-secondary-contribution-${String(
+        COLOR_SYSTEM_GENERIC_SECONDARY_CONTRIBUTION_IDS_V2.length + index + 1
+      ).padStart(2, '0')}`
+  ),
+];
 
 function genericSourceAuthorityHash(handoff: ColorSystemGenericPolicyHandoffV2): string {
   return deterministicContentHash({
@@ -1637,13 +1626,16 @@ export function buildColorSystemGenericPresentationProfileV2(
   const sourceAuthorityHash = genericSourceAuthorityHash(input.handoff);
   const sourcePackageHash = input.handoff.handoffHash;
   const sectionGuidance: Readonly<Record<ColorSystemSectionRoleV2, string>> = {
-    primary: 'Preserve the exact owner-confirmed Primary colors and source modes.',
+    primary: input.handoff.adoption
+      ? 'Preserve exact recorded Primary values. Agent adoption is a working policy, not owner acceptance.'
+      : 'Preserve the exact owner-confirmed Primary colors and source modes.',
     secondary:
-      'Review six systematic Teul-proposed Secondary families derived from the protected Primary anchor. These are proposals, not observed brand colors.',
+      'Review the Teul-proposed Secondary families: exact scales derived from confirmed brand colors, one tinted neutral ramp, and new accents whose hue and lightness are measured against the Primary. Generated values are proposals, not observed brand colors.',
     'product-graphics':
       'Use only measured job-eligible Secondary members for product graphics, functional iconography, and product UI surfaces.',
-    'data-visualization':
-      'Use measured categorical, sequential, and owner-confirmed diverging selections with non-color cues.',
+    'data-visualization': input.handoff.adoption
+      ? 'Keep recorded chart colors where requested. Generated applications remain provisional and use non-color cues.'
+      : 'Use measured categorical, sequential, and owner-confirmed diverging selections with non-color cues.',
     typography:
       'Preserve exact observed neutral colors and show accessibility only for rendered foreground/background pairs.',
   };
@@ -1774,37 +1766,17 @@ export function buildColorSystemGenericPresentationProfileV2(
 }
 
 /**
- * The generic adapter retains arbitrary normalized sRGB components, but the
- * existing v2 brief/lock graph defines exactness as six-digit hex plus matching
- * byte channels. Rejecting here preserves source fidelity; rounding here would
- * silently change the owner source before hashing and mutation.
+ * Native channels remain authoritative. Their six-digit hex is a display
+ * approximation, bound to the exact source numbers by explicit value metadata.
  */
 function exactGenericSrgbColor(value: GenericColorValueV2, label: string): ColorSystemColorValueV2 {
   if (value.colorSpace !== 'srgb') {
     fail('GENERIC_EXACT_SRGB_VALUE_UNSUPPORTED', `${label} is not an exact supported sRGB value.`);
   }
-  const channels = value.components.map(component => {
-    const channel = component * 255;
-    const rounded = Math.round(channel);
-    if (Math.abs(channel - rounded) > 1e-9) {
-      fail(
-        'GENERIC_EXACT_SRGB_VALUE_UNSUPPORTED',
-        `${label} cannot enter the current v2 builder: its normalized sRGB channels do not exactly equal six-digit sRGB byte channels. The generic adapter preserves the source components, but v2 brief, lock, integrity, and mutation contracts require hex-matched byte components and must not silently quantize them.`
-      );
-    }
-    return rounded;
-  }) as [number, number, number];
-  const hex = rgbToHex(channels[0], channels[1], channels[2]).toUpperCase();
-  return {
-    colorSpace: 'srgb',
-    hex,
-    components: {
-      r: channels[0] / 255,
-      g: channels[1] / 255,
-      b: channels[2] / 255,
-    },
-    alpha: value.alpha,
-  };
+  return buildColorSystemSrgbValueV1(
+    { r: value.components[0], g: value.components[1], b: value.components[2] },
+    value.alpha
+  );
 }
 
 function resolveGenericStaticColor(
@@ -1820,9 +1792,11 @@ function resolveGenericStaticColor(
     stableColorId: `generic-source-color:${role}:${sourceRefId}`,
     displayName,
     role,
-    valuesByMode: { Light: exact, Dark: exact },
+    // A swatch has no authored modes. Bind it once to the default application
+    // context; a generated Dark scale is not evidence of a Dark source value.
+    valuesByMode: { Light: exact },
     aliasTargetByMode: {},
-    evidenceIds: mergeEvidence(evidenceIds),
+    evidenceIds: mergeEvidence(evidenceIds, ['teul-policy:mode-independent-source:Light']),
   };
 }
 
@@ -1894,6 +1868,7 @@ function resolveGenericSourceLocks(
     role: ColorSystemSectionRoleV2;
     evidenceIds: readonly string[];
     ownerDecisionRuleId?: string;
+    policyDecisionRuleId?: string;
   }[]
 ): GenericResolvedVariableColorV2[] {
   const refs = new Map(proposal.observedSourceRefs.map(ref => [ref.sourceRefId, ref]));
@@ -1915,6 +1890,7 @@ function resolveGenericSourceLocks(
       const authorityEvidenceIds = [
         ...lock.evidenceIds,
         ...(lock.ownerDecisionRuleId ? [lock.ownerDecisionRuleId] : []),
+        ...(lock.policyDecisionRuleId ? [lock.policyDecisionRuleId] : []),
       ];
       if (ref.sourceKind === 'variable') {
         const variable = variables.get(ref.localId);
@@ -2002,7 +1978,20 @@ function genericNeutralSupportBlockers(
   colors: readonly GenericResolvedVariableColorV2[]
 ): ColorSystemGenericCompilerPreflightBlockerV2[] {
   const blockers: ColorSystemGenericCompilerPreflightBlockerV2[] = [];
-  for (const mode of MODES) {
+  const observedModes = [...new Set(colors.flatMap(color => Object.keys(color.valuesByMode)))]
+    .filter(mode => colors.every(color => color.valuesByMode[mode] !== undefined))
+    .sort(compareText);
+  if (observedModes.length === 0) {
+    return [
+      {
+        code: 'GENERIC_MODE_SUPPORT_INSUFFICIENT',
+        message:
+          'Recorded colors share no complete application mode. Missing source modes are never synthesized.',
+        sourceRefIds: colors.map(color => color.sourceRefId).sort(compareText),
+      },
+    ];
+  }
+  for (const mode of observedModes) {
     const values = colors
       .filter(color => color.role === 'primary' || color.role === 'typography')
       .flatMap(color => {
@@ -2011,7 +2000,14 @@ function genericNeutralSupportBlockers(
           ? [{ stableColorId: color.stableColorId, sourceRefId: color.sourceRefId, value }]
           : [];
       });
-    if (new Set(values.map(entry => `${entry.stableColorId}\u0000${entry.value.hex}`)).size < 2) {
+    if (
+      new Set(
+        values.map(
+          entry =>
+            `${entry.stableColorId}\u0000${entry.value.representation?.exactValueHash ?? entry.value.hex}`
+        )
+      ).size < 2
+    ) {
       blockers.push({
         code: 'GENERIC_NEUTRALS_INSUFFICIENT',
         message: `Generic compilation requires at least two distinct exact opaque observed neutrals in ${mode} mode.`,
@@ -2023,7 +2019,7 @@ function genericNeutralSupportBlockers(
       continue;
     }
     const luminances = values.map(entry => {
-      const rgbValue = hexToRgb(entry.value.hex);
+      const rgbValue = colorSystemSrgbToRgbV1(entry.value);
       return getRelativeLuminance(rgbValue.r, rgbValue.g, rgbValue.b);
     });
     if (!luminances.some(value => value >= 0.5) || !luminances.some(value => value < 0.5)) {
@@ -2046,12 +2042,12 @@ function genericChromaticAnchors(colors: readonly GenericResolvedVariableColorV2
   return colors
     .filter(color => color.role === 'primary')
     .flatMap(color =>
-      Object.entries(color.valuesByMode).flatMap(([mode, value]) =>
-        value.alpha === 1 &&
-        hexToOklch(value.hex).c >= GENERIC_CHROMATIC_PRIMARY_MINIMUM_OKLCH_CHROMA
-          ? [{ color, mode, value, chroma: hexToOklch(value.hex).c }]
-          : []
-      )
+      Object.entries(color.valuesByMode).flatMap(([mode, value]) => {
+        const chroma = colorSystemSrgbToOklchV1(value).c;
+        return value.alpha === 1 && chroma >= GENERIC_CHROMATIC_PRIMARY_MINIMUM_OKLCH_CHROMA
+          ? [{ color, mode, value, chroma }]
+          : [];
+      })
     )
     .sort(
       (left, right) =>
@@ -2175,35 +2171,82 @@ function genericRequiredSecondaryJobs(
   return normalized;
 }
 
-function genericDirectionRecipes(
-  contributionId: string
-): readonly ColorSystemSecondaryDirectionRecipeV2[] {
-  return [
-    {
-      direction: 'close-harmony',
-      hueOffsetDegrees: 0,
-      chromaScale: 0.92,
-      lightnessShift: 0,
-      authority: 'teul-proposal',
-      evidenceIds: [`teul-proposal:${contributionId}:close-harmony`],
-    },
-    {
-      direction: 'balanced-contrast',
-      hueOffsetDegrees: 16,
-      chromaScale: 0.86,
-      lightnessShift: 0,
-      authority: 'teul-proposal',
-      evidenceIds: [`teul-proposal:${contributionId}:balanced-contrast`],
-    },
-    {
-      direction: 'wide-spectrum',
-      hueOffsetDegrees: 36,
-      chromaScale: 0.78,
-      lightnessShift: 0,
-      authority: 'teul-proposal',
-      evidenceIds: [`teul-proposal:${contributionId}:wide-spectrum`],
-    },
-  ];
+/** p3-J, p5-A: the sections whose observed colors ride into the brief as exact preserved values (Extend) or as replaced evidence (Replace). */
+type GenericObservedSectionRoleV2 = ColorSystemReplaceableSectionRoleV2;
+
+/**
+ * p3-H, p3-J: the owner-confirmed observed colors of an extended (`derive`)
+ * section (Secondary, product graphics or data visualization) that no source
+ * lock already carries, each resolved as an exact preserved color of that
+ * section, so every recorded value ships byte-identical as a `source/<name>`
+ * token. Secondary colors also measure into the plan, which derives exact
+ * scales from the chromatic ones and pins the recorded tints into those scales;
+ * chart and graphics colors are reproduced by value where a family carries
+ * them. None of them is ever a Primary lock. A reference that cannot resolve to
+ * an exact solid is skipped, not fatal: the section is extended around it.
+ *
+ * p5-A: the same resolution under `rebuild` (Replace) yields the section's
+ * recorded colors as evidence only. The caller records them as `replacedColors`
+ * and never measures, preserves, or orders by them: the four plan choices mean
+ * what they say, and Replace replaces. `disposition` selects which reading the
+ * caller wants; a section under any other disposition resolves to nothing here
+ * (Keep rides on source locks, Exclude carries no section).
+ */
+function resolveGenericObservedSectionColors(
+  input: CompileColorSystemGenericPolicyHandoffSourceV2Input,
+  role: GenericObservedSectionRoleV2,
+  disposition: 'derive' | 'rebuild'
+): GenericResolvedVariableColorV2[] {
+  const intent = input.handoff.sectionIntents.find(candidate => candidate.role === role);
+  if (!intent || intent.disposition !== disposition) return [];
+  const locked = new Set(input.handoff.sourceLocks.map(lock => lock.sourceRefId));
+  const resolved: GenericResolvedVariableColorV2[] = [];
+  [...intent.sourceRefIds]
+    .filter(sourceRefId => !locked.has(sourceRefId))
+    .sort(compareText)
+    .forEach(sourceRefId => {
+      try {
+        resolved.push(
+          ...resolveGenericSourceLocks(input.snapshot, input.proposal, [
+            { sourceRefId, role, evidenceIds: intent.evidenceIds },
+          ])
+        );
+      } catch (error) {
+        if (!(error instanceof ColorSystemSourceCompilerV2Error)) throw error;
+      }
+    });
+  return resolved;
+}
+
+/**
+ * p3-J: the recorded chart order. Names that carry an order (`Data Viz / 01 …`,
+ * `Chart / Series 3`) sort by that claim; the rest follow by source reference.
+ * The brief's `order` then agrees with the composer's own reading of the names
+ * about which recorded color comes first.
+ */
+function compareRecordedChartOrder(
+  left: GenericResolvedVariableColorV2,
+  right: GenericResolvedVariableColorV2
+): number {
+  return (
+    (paletteOrderClaimV3(left.displayName) ?? Number.POSITIVE_INFINITY) -
+      (paletteOrderClaimV3(right.displayName) ?? Number.POSITIVE_INFINITY) ||
+    compareText(left.sourceRefId, right.sourceRefId)
+  );
+}
+
+function genericMeasurementInputs(
+  colors: readonly GenericResolvedVariableColorV2[],
+  retention: 'preserved' | 'evidence-only'
+) {
+  return colors.map(color => ({
+    stableColorId: color.stableColorId,
+    displayName: color.displayName,
+    section: color.role,
+    valuesByMode: color.valuesByMode,
+    retention,
+    evidenceIds: color.evidenceIds,
+  }));
 }
 
 /**
@@ -2215,7 +2258,7 @@ export function compileColorSystemGenericPolicyHandoffSourceV2(
 ): Extract<ColorSystemSourceCompilerV2Result, { status: 'ready' }> {
   assertColorSystemGenericSourceSnapshotV2Integrity(input.snapshot);
   assertColorSystemGenericIntentProposalV2Integrity(input.snapshot, input.proposal);
-  assertColorSystemGenericOwnerConfirmationV2Integrity(
+  assertColorSystemGenericPolicyDecisionV2Integrity(
     input.snapshot,
     input.proposal,
     input.confirmation
@@ -2249,7 +2292,7 @@ export function compileColorSystemGenericPolicyHandoffSourceV2(
   if (primaryColors.length === 0) {
     fail(
       'GENERIC_PRIMARY_INSUFFICIENT',
-      'Generic compilation requires at least one exact owner-confirmed Primary Variable.'
+      'Generic compilation requires at least one exact recorded Primary color.'
     );
   }
   assertGenericNeutralSupport(resolvedColors);
@@ -2258,7 +2301,7 @@ export function compileColorSystemGenericPolicyHandoffSourceV2(
   if (chromaticAnchors.length === 0) {
     fail(
       'GENERIC_PRIMARY_CHROMATIC_ANCHOR_REQUIRED',
-      `Generic Secondary generation requires an opaque owner-confirmed Primary anchor with OKLCH chroma at least ${GENERIC_CHROMATIC_PRIMARY_MINIMUM_OKLCH_CHROMA}.`
+      `Generic Secondary generation requires an opaque recorded Primary anchor with OKLCH chroma at least ${GENERIC_CHROMATIC_PRIMARY_MINIMUM_OKLCH_CHROMA}.`
     );
   }
 
@@ -2270,15 +2313,10 @@ export function compileColorSystemGenericPolicyHandoffSourceV2(
       'Diverging data requires distinct owner-confirmed generated Secondary contribution IDs.'
     );
   }
-  const contributionIds = [...COLOR_SYSTEM_GENERIC_SECONDARY_CONTRIBUTION_IDS_V2];
   if (
     generatedPolarity &&
-    (!contributionIds.includes(
-      generatedPolarity.negativeContributionId as (typeof contributionIds)[number]
-    ) ||
-      !contributionIds.includes(
-        generatedPolarity.positiveContributionId as (typeof contributionIds)[number]
-      ) ||
+    (!GENERIC_CHROMATIC_CONTRIBUTION_POOL.includes(generatedPolarity.negativeContributionId) ||
+      !GENERIC_CHROMATIC_CONTRIBUTION_POOL.includes(generatedPolarity.positiveContributionId) ||
       generatedPolarity.negativeContributionId === generatedPolarity.positiveContributionId)
   ) {
     fail(
@@ -2287,7 +2325,88 @@ export function compileColorSystemGenericPolicyHandoffSourceV2(
     );
   }
 
-  const preservedColors = resolvedColors.map((color, index) => ({
+  // Measure the confirmed palette, then plan the three directions from it. Observed
+  // Secondary colors of an extended section are preserved values too (p3-H), so they
+  // measure as preserved. p5-A: under Replace the recorded Secondary is evidence only;
+  // the planner sees the Primary and the neutrals, exactly as for a brand that owns
+  // only a primary, and the recorded colors are listed as `replacedColors` below.
+  const observedSecondaryColors = resolveGenericObservedSectionColors(input, 'secondary', 'derive');
+  const measurement = measureColorSystemSecondaryPaletteV3([
+    ...genericMeasurementInputs(resolvedColors, 'preserved'),
+    ...genericMeasurementInputs(observedSecondaryColors, 'preserved'),
+  ]);
+  const secondaryIntent = input.handoff.sectionIntents.find(intent => intent.role === 'secondary');
+  let plan: ColorSystemSecondaryStrategyPlanV3;
+  try {
+    plan = planColorSystemSecondaryStrategiesV3({
+      measurement,
+      requiredJobs: requiredSecondaryJobs,
+      secondaryDisposition: secondaryIntent?.disposition ?? 'omit',
+      chromaticContributionIds: GENERIC_CHROMATIC_CONTRIBUTION_POOL,
+      neutralContributionId: GENERIC_NEUTRAL_CONTRIBUTION_ID,
+      polarityContributionIds: generatedPolarity
+        ? [generatedPolarity.negativeContributionId, generatedPolarity.positiveContributionId]
+        : [],
+      policyEvidenceId: GENERIC_SECONDARY_POLICY_EVIDENCE_ID,
+      ...(input.handoff.reviewedBrandConstraints
+        ? { reviewedBrandConstraints: input.handoff.reviewedBrandConstraints }
+        : {}),
+    });
+  } catch (error) {
+    if (error instanceof ColorSystemSecondaryStrategyV3Error) {
+      fail('GENERIC_SECONDARY_PLAN_INFEASIBLE', error.message);
+    }
+    throw error;
+  }
+  const contributionIds = plan.families.map(family => family.contributionId);
+  // p3-H: the generic path admits no evidence-only colors; every observed value is
+  // preserved. The field stays on the brief for the governed path's contract.
+  const sourceReferenceColors: ColorSystemBuilderBriefV2['sourceReferenceColors'] = [];
+
+  // p3-J: recorded product-graphics and chart colors are preserved values too: exact
+  // `source/<name>` tokens the composer reproduces by value, the chart set in its
+  // recorded order. They are not measured into the Secondary plan, which sizes the hue
+  // families from the Primary and Secondary boards; the categorical selection follows
+  // the recorded order through the members that reproduce it exactly and names any
+  // recorded color no family carries.
+  const observedProductGraphicsColors = resolveGenericObservedSectionColors(
+    input,
+    'product-graphics',
+    'derive'
+  );
+  // The recorded chart order is honoured only under Keep (locks) and Extend (observed);
+  // under Replace (p5-A) no recorded chart color is carried and charts are generated.
+  const recordedChartColors = [
+    ...resolvedColors.filter(color => color.role === 'data-visualization'),
+    ...resolveGenericObservedSectionColors(input, 'data-visualization', 'derive'),
+  ].sort(compareRecordedChartOrder);
+  // p5-A: the recorded colors of every Replace section, evidence the review lists.
+  const replacedColors: ColorSystemReplacedColorV2[] = (
+    ['secondary', 'product-graphics', 'data-visualization'] as const
+  )
+    .flatMap(role => resolveGenericObservedSectionColors(input, role, 'rebuild'))
+    .map(color => ({
+      stableColorId: color.stableColorId,
+      displayName: color.displayName,
+      section: color.role as ColorSystemReplaceableSectionRoleV2,
+      hexByMode: Object.fromEntries(
+        Object.entries(color.valuesByMode).map(([mode, value]) => [mode, value.hex])
+      ),
+    }));
+  const replacedCount = (role: GenericObservedSectionRoleV2): number =>
+    replacedColors.filter(color => color.section === role).length;
+  const notCarried = (role: GenericObservedSectionRoleV2): string => {
+    const count = replacedCount(role);
+    return `${count} recorded ${count === 1 ? 'color is' : 'colors are'} not carried into the new system`;
+  };
+  // `order` is the position in this concatenation. The brief re-sorts by section, so each
+  // section keeps its own order, and the chart section's order is the recorded one.
+  const preservedColors = [
+    ...resolvedColors.filter(color => color.role !== 'data-visualization'),
+    ...observedSecondaryColors,
+    ...observedProductGraphicsColors,
+    ...recordedChartColors,
+  ].map((color, index) => ({
     stableColorId: color.stableColorId,
     displayName: color.displayName,
     section: color.role,
@@ -2295,6 +2414,19 @@ export function compileColorSystemGenericPolicyHandoffSourceV2(
     valuesByMode: color.valuesByMode,
     evidenceIds: color.evidenceIds,
   }));
+  const skippedStatusReserves: ColorSystemSkippedStatusReserveV2[] = plan.skippedReserves.map(
+    skipped => ({
+      role: skipped.role,
+      contributionId: skipped.contributionId,
+      hue: skipped.hue,
+      realizedHex: skipped.realizedHex,
+      nearestHex: skipped.nearestHex,
+      nearestDisplayName: skipped.nearestDisplayName,
+      deltaEOK: skipped.deltaEOK,
+      cause: skipped.cause,
+      reason: skipped.reason,
+    })
+  );
   const primaryLocks = primaryColors.flatMap(color =>
     Object.entries(color.valuesByMode).map(([mode, expectedValue]) =>
       buildColorSystemExactPrimaryLockV2({
@@ -2314,40 +2446,52 @@ export function compileColorSystemGenericPolicyHandoffSourceV2(
     order: index + 1,
     disposition: intent.disposition,
     jobs: intent.jobs,
+    // p5-A: guidance follows the owner's choice. Extend (`derive`) keeps the p3-H/p3-J
+    // wording byte-identical; Replace (`rebuild`) states the new system and the count
+    // of recorded colors it does not carry.
     guidance:
       intent.role === 'primary'
-        ? 'Preserve exact owner-confirmed Primary values and modes.'
+        ? input.handoff.adoption
+          ? 'Preserve exact recorded Primary values and available application modes. Agent adoption does not establish owner acceptance.'
+          : 'Preserve exact owner-confirmed Primary values and modes.'
         : intent.role === 'secondary'
-          ? 'Generate and review a new Secondary system from the protected Primary anchor.'
+          ? intent.disposition === 'rebuild'
+            ? `Replace the recorded Secondary: ${notCarried('secondary')} (not anchors, not source tokens). Derive full Light and Dark scales from the confirmed Primary and neutrals, add one tinted neutral ramp and conventional status reserves where the Primary owns no hue in range, and review measured new accents per direction.`
+            : 'Keep every recorded Secondary value as an exact source token, derive full Light and Dark scales from the confirmed brand colors with recorded tints pinned to their steps, add one tinted neutral ramp, and review measured new accents per direction.'
           : intent.role === 'product-graphics'
-            ? 'Derive product graphics, functional iconography, and product UI surfaces from measured eligible Secondary members.'
+            ? intent.disposition === 'rebuild'
+              ? `Replace the recorded Product Graphics colors: ${notCarried('product-graphics')}. Derive product graphics, functional iconography, and product UI surfaces from measured eligible Secondary members.`
+              : 'Derive product graphics, functional iconography, and product UI surfaces from measured eligible Secondary members.'
             : intent.role === 'data-visualization'
-              ? 'Derive categorical, sequential, and owner-confirmed diverging selections from measured eligible Secondary members.'
+              ? input.handoff.adoption
+                ? intent.disposition === 'preserve'
+                  ? 'Keep the recorded chart palette under the adopted working policy; no generated polarity is inferred.'
+                  : 'Follow the requested chart scope under the adopted working policy; agent adoption does not grant owner-confirmed generated polarity.'
+                : intent.disposition === 'rebuild'
+                  ? `Replace the recorded chart colors: ${notCarried('data-visualization')} and no recorded chart order is honoured. Derive categorical, sequential, and owner-confirmed diverging selections from measured eligible Secondary members.`
+                  : 'Derive categorical, sequential, and owner-confirmed diverging selections from measured eligible Secondary members.'
               : 'Preserve exact observed neutrals and assess only rendered typography pairs.',
     evidenceIds: mergeEvidence(intent.evidenceIds, [input.confirmation.confirmationHash]),
-    confirmation: 'owner-confirmed' as const,
+    confirmation: intent.status,
   })) as unknown as ColorSystemBuilderBriefV2['sections'];
   const brandFitProfile = buildColorSystemBrandFitProfileV2({
     version: 'teul-brand-fit-profile/v2',
-    territories: [
-      {
-        territoryId: 'teul-generic-secondary-proposal-space',
-        label: 'Teul-proposed systematic Secondary search space',
-        status: 'allowed',
-        allowedJobs: requiredSecondaryJobs,
-        allowedProminence: ['supporting', 'accent', 'leading'],
-        appliesToProminence: ['supporting', 'accent', 'leading'],
-        perceptualBounds: {
-          hueRanges: [{ minimum: 0, maximum: 360 }],
-          chroma: { minimum: 0, maximum: 0.5 },
-          lightness: { minimum: 0, maximum: 1 },
-        },
-        evidenceIds: [GENERIC_SECONDARY_POLICY_EVIDENCE_ID],
-      },
-    ],
+    territories: plan.territories.map(territory => ({
+      territoryId: territory.territoryId,
+      label: territory.label,
+      status: territory.status,
+      allowedJobs: territory.allowedJobs,
+      allowedProminence: territory.allowedProminence,
+      appliesToProminence: territory.appliesToProminence,
+      perceptualBounds: territory.perceptualBounds,
+      evidenceIds: territory.evidenceIds,
+    })),
     evidenceIds: [
       GENERIC_SECONDARY_POLICY_EVIDENCE_ID,
       `generic-handoff:${input.handoff.handoffHash}`,
+      ...(input.handoff.reviewedBrandConstraints
+        ? [input.handoff.reviewedBrandConstraints.fragmentHash]
+        : []),
     ],
   });
   const jobMinimums = requiredSecondaryJobs.map(job => ({
@@ -2365,8 +2509,9 @@ export function compileColorSystemGenericPolicyHandoffSourceV2(
     brandFitProfile,
     presentationProfileHash: bindings.presentationProfileHash,
     sections: sectionIntents,
+    ...(input.handoff.adoption ? { adoption: input.handoff.adoption } : {}),
     preservedColors,
-    sourceReferenceColors: [],
+    sourceReferenceColors,
     primaryLocks,
     primaryLockIds: primaryLocks.map(lock => lock.lockId),
     secondaryTargetPolicy: {
@@ -2381,6 +2526,11 @@ export function compileColorSystemGenericPolicyHandoffSourceV2(
       ],
     },
     secondaryTargetFamilyCount: contributionIds.length,
+    secondaryTargetFamilyCountByDirection: plan.familyCountByDirection,
+    secondaryTargetFamilyCountBand: plan.familyCountBand,
+    secondaryTargetFamilyCountReasonByDirection: Object.fromEntries(
+      plan.directions.map(direction => [direction.direction, direction.reason])
+    ) as Record<ColorSystemSecondaryDirectionV3, string>,
     requiredSecondaryJobs,
     ...(generatedPolarity
       ? {
@@ -2395,38 +2545,68 @@ export function compileColorSystemGenericPolicyHandoffSourceV2(
           },
         }
       : {}),
+    ...(skippedStatusReserves.length > 0 ? { skippedStatusReserves } : {}),
+    // p5-A: the recorded colors of every Replace section, for the review to list.
+    ...(replacedColors.length > 0 ? { replacedColors } : {}),
+    // p4-A: a direction that would repeat Derived's family set is not offered; the brief
+    // names it with the planner's reason so the engine builds no candidate for it.
+    ...(plan.omittedDirections.length > 0
+      ? {
+          secondaryOmittedDirections: plan.omittedDirections.map(omitted => ({
+            direction: omitted.direction,
+            cause: omitted.cause,
+            reason: omitted.reason,
+          })),
+        }
+      : {}),
   });
   assertColorSystemBuilderBriefV2Integrity(brief);
 
-  const seeds = GENERIC_SECONDARY_CONTRIBUTION_RECIPES_V2.map((recipe, index) => {
-    const anchor = chromaticAnchors[index % chromaticAnchors.length];
+  const seeds = plan.families.map(family => {
+    // p3-H: recorded tints ride on their family's seed; the engine pins each into the
+    // Light scale at the nearest step when the pinned scale still validates.
+    const pinnedSources = (family.tints ?? []).map(tint => ({
+      sourceColorId: tint.stableColorId,
+      sourceMode: tint.value.mode,
+    }));
     return {
       version: 'teul-secondary-family-seed/v2' as const,
       authority: 'teul-proposal' as const,
-      seedId: `generic-secondary-seed:${recipe.contributionId}`,
-      displayName: recipe.displayName,
-      contributionId: recipe.contributionId,
-      sourceColorId: anchor.color.stableColorId,
-      sourceMode: anchor.mode,
-      baseHueOffsetDegrees: recipe.baseHueOffsetDegrees,
-      baseChromaScale: recipe.baseChromaScale,
-      baseLightnessShift: 0,
-      territoryId: 'teul-generic-secondary-proposal-space',
-      prominence: recipe.prominence,
-      directionRecipes: genericDirectionRecipes(recipe.contributionId),
+      seedId: `generic-secondary-seed:${family.contributionId}`,
+      displayName: family.displayName,
+      contributionId: family.contributionId,
+      sourceColorId: family.anchor.stableColorId,
+      sourceMode: family.anchor.mode,
+      baseHueOffsetDegrees: family.base.hueOffsetDegrees,
+      baseChromaScale: family.base.chromaScale,
+      baseLightnessShift: family.base.lightnessShift,
+      territoryId: family.territoryId,
+      prominence: family.prominence,
+      ...(pinnedSources.length > 0 ? { pinnedSources } : {}),
+      directionRecipes: family.recipes.map(recipe => ({
+        direction: recipe.direction,
+        hueOffsetDegrees: recipe.hueOffsetDegrees,
+        chromaScale: recipe.chromaScale,
+        lightnessShift: recipe.lightnessShift,
+        ...(recipe.displayName === null ? {} : { displayName: recipe.displayName }),
+        authority: 'teul-proposal' as const,
+        evidenceIds: [`teul-proposal:${family.contributionId}:${recipe.direction}`],
+      })),
       eligibilityEvidence: [
         {
           modes: ['Light', 'Dark'] as const,
           steps: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-          jobs: requiredSecondaryJobs,
+          jobs: family.jobs,
           authority: 'teul-policy-evidence' as const,
-          evidenceIds: [`teul-policy:generic-job-eligibility:${recipe.contributionId}`],
+          evidenceIds: [`teul-policy:generic-job-eligibility:${family.contributionId}`],
         },
       ],
       evidenceIds: [
-        `teul-proposal:${recipe.contributionId}`,
-        GENERIC_SECONDARY_POLICY_EVIDENCE_ID,
-        ...anchor.color.evidenceIds,
+        ...new Set([
+          `teul-proposal:${family.contributionId}`,
+          GENERIC_SECONDARY_POLICY_EVIDENCE_ID,
+          ...family.anchor.evidenceIds,
+        ]),
       ].sort(compareText),
     } satisfies ColorSystemSecondaryFamilySeedV2;
   });
@@ -2448,8 +2628,12 @@ export function compileColorSystemGenericPolicyHandoffSourceV2(
       GENERIC_SECONDARY_POLICY_EVIDENCE_ID,
       `generic-handoff:${input.handoff.handoffHash}`,
     ],
-    limitation:
-      'No company-specific hue meaning, gradient permission, or aesthetic restriction is inferred from the generic source.',
+    ...(input.handoff.reviewedBrandConstraints
+      ? { reviewedBrandConstraintsHash: input.handoff.reviewedBrandConstraints.fragmentHash }
+      : {}),
+    limitation: input.handoff.reviewedBrandConstraints
+      ? 'Adopted generated-family territory and job restrictions are enforced. Unsupported application scope, hue meaning, and gradient permission are not inferred.'
+      : 'No company-specific hue meaning, gradient permission, or aesthetic restriction is inferred from the generic source.',
   };
   const constraints: ColorSystemSourceCompilerV2GenericConstraintReceipt = {
     ...constraintsWithoutHash,

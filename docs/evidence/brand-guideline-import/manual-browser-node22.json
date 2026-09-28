@@ -1,0 +1,60 @@
+{
+  "startedAt": "2026-09-25T22:50:29.927Z",
+  "node": "v22.13.1",
+  "fixtureHashes": {
+    "harbor-scanned.pdf": "16d34e044eae78d05115054ad8b2350c04ff818018b2768d39a80053aaac38d6",
+    "harbor-native.pdf": "4a6b3f600697dbd46bed4988a07224fc8ed894da2429a0b57294712745dfec35"
+  },
+  "status": "passed",
+  "finishedAt": "2026-09-25T22:50:36.802Z",
+  "url": "http://127.0.0.1:50674/",
+  "checks": [
+    "A real scanned PDF has zero extracted text/color observations and an explicit coverage gap; adding user evidence is a separate action.",
+    "Invalid values and values lacking retained source evidence cannot be confirmed. A user-confirmed transcription retains its crop and literal without rewriting the native capture.",
+    "Preparing a sample does not accept it. Escape declines the sample, restores keyboard focus, and leaves the saved project byte-for-byte unchanged.",
+    "Explicit sample acceptance records the exact retained center pixel as an opaque, approximate rendered sRGB value. Bounds validation, 44px controls and keyboard acceptance work at 390px without overflow.",
+    "Both accepted methods feed the shared review and gradient compiler; the review and CSS export preserve their distinct provenance notices.",
+    "V4 project, selected gradient and provenance exports reopen byte-for-byte offline without the PDF. Recorded crops remain inspectable; preparing new regions is unavailable.",
+    "Canceling a correction preserves all work. Confirming a wrong-digit correction works from the saved crop offline, appends a replacement, revokes/excludes its predecessor, and clears reviewed/generated results.",
+    "Revocation clears a selected design and excludes the sample from the next compiled review while keeping its evidence and acceptance history.",
+    "Moving to an unselected page discards the pending form and disables adding source evidence. Returning to a selected page re-enables preparation without committing the discarded value.",
+    "Corrected and revoked history survives a later project reopen with exact source and acceptance state."
+  ],
+  "failures": [],
+  "diagnostics": [],
+  "externalRequests": [],
+  "artifacts": [
+    {
+      "file": "node22-manual-mobile-keyboard.png",
+      "sha256": "34110e34b2d846c35e329293c9b975eb11ef104c6f806296de8a0481b7ddaacd"
+    },
+    {
+      "file": "node22-manual-mobile-sample.png",
+      "sha256": "b5b006f76188b858250cf0ad6c46e86fab2a989c95bad08a15bffed39623ce9b"
+    },
+    {
+      "file": "node22-accepted-source-review.json",
+      "sha256": "300b043a2b4943e6b5e585d26935020aed70fa6acfc09c3cd21d6569e9a8a4a7"
+    },
+    {
+      "file": "node22-accepted-project.json",
+      "sha256": "7f26a03076450271697f97c789148b7c74e36bcdbfe9f36a7c67fe982e806490"
+    },
+    {
+      "file": "node22-accepted-gradient.css",
+      "sha256": "2157492723a5556331ca30626f102cdf65c2799ee8dd466d252029fc778247eb"
+    },
+    {
+      "file": "node22-manual-desktop.png",
+      "sha256": "42560be47355b8bc84665e7b5f29833e182dd4387fb3579ba154d8402ff7a73b"
+    },
+    {
+      "file": "node22-manual-offline-crop.png",
+      "sha256": "449a052451077ad56b0d104987e55cb05b3874eeda2d9ceb87b3fe010fc45d80"
+    },
+    {
+      "file": "node22-corrected-project.json",
+      "sha256": "3645ca8a0900732d1e0ea4bf779355d158b000386d4e71f5e4300d3cd97a5812"
+    }
+  ]
+}

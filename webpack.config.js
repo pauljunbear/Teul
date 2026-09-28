@@ -10,6 +10,78 @@ function genericColorBuilderChannel(env) {
     : 'disabled';
 }
 
+// Module boundaries per generic channel: the disabled channel must not bundle
+// the V2 builder runtime, and the candidate channel must bundle it and not the
+// disabled stubs. The V2 builder keeps one dependency on the former V1 audit
+// program, colorSystemAuditInventory.ts, through
+// colorSystemGenericSourceInventoryV2.ts; the rest of that program was removed
+// from the tree on 2026-09-08 and remains in git history.
+const GENERIC_CHANNEL_MODULE_BOUNDARIES = {
+  disabled: {
+    required: [
+      'src/backend/colorSystemBuilderDisabledRuntime.ts',
+      'src/components/ColorSystemReleaseDisabledTab.tsx',
+    ],
+    forbidden: [
+      'src/backend/colorSystemBuilderCandidateRuntime.ts',
+      'src/backend/colorSystemBuilderV2Controller.ts',
+      'src/backend/colorSystemModelControllerV1.ts',
+      'src/lib/colorSystemModelV1.ts',
+      'src/components/ColorSystemModelIntakeV1.tsx',
+      'src/backend/colorSystemCreateJournalV2.ts',
+      'src/backend/colorSystemFigmaHostV2.ts',
+      'src/backend/colorSystemResourceRendererV2.ts',
+      'src/components/ColorSystemReleaseTab.tsx',
+    ],
+  },
+  candidate: {
+    required: [
+      'src/backend/colorSystemBuilderCandidateRuntime.ts',
+      'src/backend/colorSystemBuilderV2Controller.ts',
+      'src/backend/colorSystemModelControllerV1.ts',
+      'src/lib/colorSystemModelV1.ts',
+      'src/components/ColorSystemModelIntakeV1.tsx',
+      'src/backend/colorSystemCreateJournalV2.ts',
+      'src/backend/colorSystemFigmaHostV2.ts',
+      'src/backend/colorSystemResourceRendererV2.ts',
+      'src/components/ColorSystemReleaseTab.tsx',
+    ],
+    forbidden: [
+      'src/backend/colorSystemBuilderDisabledRuntime.ts',
+      'src/components/ColorSystemReleaseDisabledTab.tsx',
+    ],
+  },
+};
+
+class EnforceGenericChannelIsolationPlugin {
+  constructor(genericChannel) {
+    this.genericChannel = genericChannel;
+  }
+
+  apply(compiler) {
+    compiler.hooks.thisCompilation.tap('EnforceGenericChannelIsolationPlugin', compilation => {
+      compilation.hooks.finishModules.tap('EnforceGenericChannelIsolationPlugin', modules => {
+        const resources = new Set(
+          [...modules]
+            .map(module => module.resource)
+            .filter(Boolean)
+            .map(resource => path.relative(__dirname, resource).split(path.sep).join('/'))
+        );
+        const boundary = GENERIC_CHANNEL_MODULE_BOUNDARIES[this.genericChannel];
+        const missing = boundary.required.filter(resource => !resources.has(resource));
+        const leaked = boundary.forbidden.filter(resource => resources.has(resource));
+        if (missing.length > 0 || leaked.length > 0) {
+          throw new Error(
+            `Generic ${this.genericChannel} build isolation failed; missing ${JSON.stringify(
+              missing
+            )}; leaked ${JSON.stringify(leaked)}.`
+          );
+        }
+      });
+    });
+  }
+}
+
 class InlineUiChunkHtmlPlugin {
   apply(compiler) {
     const pluginName = 'InlineUiChunkHtmlPlugin';
@@ -152,12 +224,6 @@ module.exports = (env, argv) => ({
           ? 'src/backend/colorSystemBuilderCandidateRuntime.ts'
           : 'src/backend/colorSystemBuilderDisabledRuntime.ts'
       ),
-      './backend/colorSystemAuditReleaseRuntime$': path.resolve(
-        __dirname,
-        genericColorBuilderChannel(env) === 'candidate'
-          ? 'src/backend/colorSystemAuditCandidateRuntime.ts'
-          : 'src/backend/colorSystemAuditDisabledRuntime.ts'
-      ),
       './components/ColorSystemReleaseTab$': path.resolve(
         __dirname,
         genericColorBuilderChannel(env) === 'candidate'
@@ -166,7 +232,7 @@ module.exports = (env, argv) => ({
       ),
       ...(argv.mode === 'production'
         ? {
-            'react$': 'preact/compat',
+            react$: 'preact/compat',
             'react-dom$': 'preact/compat',
             'react-dom/client$': 'preact/compat/client',
           }
@@ -209,10 +275,9 @@ module.exports = (env, argv) => ({
   },
 
   plugins: [
+    new EnforceGenericChannelIsolationPlugin(genericColorBuilderChannel(env)),
     new webpack.DefinePlugin({
-      __TEUL_GENERIC_COLOR_BUILDER_V2_CHANNEL__: JSON.stringify(
-        genericColorBuilderChannel(env)
-      ),
+      __TEUL_GENERIC_COLOR_BUILDER_V2_CHANNEL__: JSON.stringify(genericColorBuilderChannel(env)),
     }),
     new HtmlWebpackPlugin({
       template: './src/ui.html',
@@ -226,3 +291,6 @@ module.exports = (env, argv) => ({
     new EmitLegalArtifactsPlugin(genericColorBuilderChannel(env)),
   ],
 });
+
+// Exposed so tests can assert the channel boundaries without running a build.
+module.exports.GENERIC_CHANNEL_MODULE_BOUNDARIES = GENERIC_CHANNEL_MODULE_BOUNDARIES;

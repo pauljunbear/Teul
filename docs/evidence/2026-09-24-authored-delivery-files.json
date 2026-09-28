@@ -1,0 +1,245 @@
+{
+  "schemaVersion": "teul.task007.implementation-files.v1",
+  "baseCommit": "09187350a2565354ef74975375a19fe1f9159cf1",
+  "capturedAt": "2026-09-25T02:55:14.352275+00:00",
+  "scope": "TASK007 implementation/test/artwork files, excluding this receipt and product-contract/evidence prose. Candidate-only; no host or owner qualification.",
+  "files": [
+    {
+      "path": ".prettierignore",
+      "bytes": 344,
+      "sha256": "280e251eff851ec9c02c9dd2b00afd1b0a557e3e6b3f85b49cca704fb8f664bd"
+    },
+    {
+      "path": "scripts/generate-authoring-outlines.py",
+      "bytes": 5651,
+      "sha256": "ba78865ca4f7f1a9e7e3fd2c477661f202bcfcf3cbd53267d64621bd33f2f107"
+    },
+    {
+      "path": "scripts/smoke-production-ui.js",
+      "bytes": 100927,
+      "sha256": "63126110c5c31bf57ed7699005bcf18ea476f1fcdb87820626a96aac69ba88a6"
+    },
+    {
+      "path": "src/backend/__tests__/colorSystemAuthoredDeliverySessionV1.test.ts",
+      "bytes": 19049,
+      "sha256": "5dd348bb0d389ef1ed2be11da2be288818686c4b50526bd98f937d3675bd00da"
+    },
+    {
+      "path": "src/backend/__tests__/colorSystemAuthoredFigmaHostV1.test.ts",
+      "bytes": 29657,
+      "sha256": "cd65ae5aa5ce6dd186b4e21c0e394911a7f0b554f228dc6337e8f497761f0b49"
+    },
+    {
+      "path": "src/backend/__tests__/colorSystemAuthoredRendererV1.test.ts",
+      "bytes": 19623,
+      "sha256": "f85595c6a409502695e16bf803c84e21ccfda3196fdf1b2b905d77cd5963a050"
+    },
+    {
+      "path": "src/backend/__tests__/colorSystemAuthoringDeliveryControllerV1.test.ts",
+      "bytes": 25316,
+      "sha256": "ed8d7c2581e89eb51904a0555ea9dcb85a674f6bfcb700278aadaf55215d2f82"
+    },
+    {
+      "path": "src/backend/__tests__/colorSystemAuthoringRefinementControllerV1.test.ts",
+      "bytes": 16875,
+      "sha256": "ea19fa152b4d925a037a93ed8948f637256a1f07ea75fb8e6f207f526d4a9b18"
+    },
+    {
+      "path": "src/backend/__tests__/colorSystemAuthoringSourceDeliveryInterlockV1.test.ts",
+      "bytes": 8498,
+      "sha256": "2f8fbb15df84cf8eddbde13c026025585a7ab0a0767006c28ded4400eb702156"
+    },
+    {
+      "path": "src/backend/__tests__/colorSystemCreateJournalV2.test.ts",
+      "bytes": 35961,
+      "sha256": "386a278e249b0065a07d5509cac43d72ba3d940ab9f9514b89ade4fd6b712384"
+    },
+    {
+      "path": "src/backend/__tests__/colorSystemNativeOperationsV1.test.ts",
+      "bytes": 4674,
+      "sha256": "ae8f96bd4bf6b9d7fed15f41fd07ed5977890a1feafce724fd10f5ef83c734fc"
+    },
+    {
+      "path": "src/backend/__tests__/colorSystemResourceTransactionV1.test.ts",
+      "bytes": 23560,
+      "sha256": "670f66e4dbc20c75ad2e81cabb5b377e4f44582a3c20695577079bae3dec5b50"
+    },
+    {
+      "path": "src/backend/__tests__/helpers/inMemoryAuthoredFigmaPluginApiV1.ts",
+      "bytes": 2852,
+      "sha256": "b91c72f8a870237edb7066e93f0206d09bd2fb3e63e68d35e11c764981f6418a"
+    },
+    {
+      "path": "src/backend/colorSystemAuthoredDeliverySessionV1.ts",
+      "bytes": 10982,
+      "sha256": "5034175cec5c2be560b5131a33f558d0aa28b2c3ab3e4dc7b8f44b8f82faa1ee"
+    },
+    {
+      "path": "src/backend/colorSystemAuthoredFigmaHostV1.ts",
+      "bytes": 35830,
+      "sha256": "34bdd59065979bbe541c6a6b27d543929b761ed83f568eeb4ad2442d4c0d36eb"
+    },
+    {
+      "path": "src/backend/colorSystemAuthoredRendererV1.ts",
+      "bytes": 12952,
+      "sha256": "6aa783af60055137b736b27a6bc988aa5047d16263b91e1da918c39c7d05a87c"
+    },
+    {
+      "path": "src/backend/colorSystemAuthoringControllerV1.ts",
+      "bytes": 35030,
+      "sha256": "b0fc4b2da20d191a7c41db3718da2dd569b5b260bb46eb356b582633a7d96ed3"
+    },
+    {
+      "path": "src/backend/colorSystemAuthoringSessionV1.ts",
+      "bytes": 22130,
+      "sha256": "9f0244bfca5a990ab42a45e7651ca75aaaec00c0f37f10993e861660a3ad6d5c"
+    },
+    {
+      "path": "src/backend/colorSystemBuilderCandidateRuntime.ts",
+      "bytes": 9706,
+      "sha256": "d5e681511545ed238b1e90c0f8415541208c02a50a90bb24ee91d97ff4724289"
+    },
+    {
+      "path": "src/backend/colorSystemCreateJournalV2.ts",
+      "bytes": 71792,
+      "sha256": "6006945a9e4b41db71c81d21c565090871498b9ef611b5ccfff63726425b8455"
+    },
+    {
+      "path": "src/backend/colorSystemFigmaHostV2.ts",
+      "bytes": 47098,
+      "sha256": "1a9320fecc58cd321f692b300eb62bea4086d04b7eae343986b7903bf11fcbdb"
+    },
+    {
+      "path": "src/backend/colorSystemNativeOperationsV1.ts",
+      "bytes": 5026,
+      "sha256": "72d57836c91e28eb8ba9bfe8164e725032dcba0cccc53af411c8c2727f30f1d2"
+    },
+    {
+      "path": "src/backend/colorSystemResourceOwnershipV2.ts",
+      "bytes": 2131,
+      "sha256": "d01d7217367bc128d66e426d1dd178887726532b8b133a343da6e82c79c5a886"
+    },
+    {
+      "path": "src/backend/colorSystemResourceRendererV2.ts",
+      "bytes": 43581,
+      "sha256": "c8ba31503a8bf24147a2713725920b8f9be189a95a4f62462d6523fe476ab2b0"
+    },
+    {
+      "path": "src/backend/colorSystemResourceTransactionV1.ts",
+      "bytes": 13649,
+      "sha256": "ac23a7517b903749ba12c8a0b30b0a17c01010f905a16a73044aba4655997f9d"
+    },
+    {
+      "path": "src/components/ColorSystemAuthoringDeliveryV1.tsx",
+      "bytes": 7595,
+      "sha256": "2ff0ae7dc6c814da874cb4ee8e1fc7bd19525be995c5c2ac650ea63701350a6f"
+    },
+    {
+      "path": "src/components/ColorSystemAuthoringV1.tsx",
+      "bytes": 30690,
+      "sha256": "5080d86ab71364e9e90b9af3e6d677b31407326cff727df90fe01a74b41a3cb5"
+    },
+    {
+      "path": "src/data/authoringControlOutlinesV1.json",
+      "bytes": 20898,
+      "sha256": "68f84eaba7a44c24fbb6c4d10ee13c47420ed62de412fd6e1bc4ea36263fbad2"
+    },
+    {
+      "path": "src/lib/__tests__/colorSystemApplicationGeometryV1.test.ts",
+      "bytes": 30045,
+      "sha256": "4b2558b62e10cecd9ee43aeea523f3075be8cb59554e65b15932b3dcd4462777"
+    },
+    {
+      "path": "src/lib/__tests__/colorSystemAuthoredSvgV1.test.ts",
+      "bytes": 13661,
+      "sha256": "6bc99e48fb901358932514b570bccba0690425bd8c90b6838a11da93937973a7"
+    },
+    {
+      "path": "src/lib/__tests__/colorSystemAuthoringDeliveryV1.test.ts",
+      "bytes": 27013,
+      "sha256": "babbf5c6628a33427c90861372b062c21d1fe8dcf950cd0f3fd168b1260ab6a9"
+    },
+    {
+      "path": "src/lib/__tests__/colorSystemDesignerGeometryV1.test.ts",
+      "bytes": 22366,
+      "sha256": "64dae3d88eac70ec6035fcb55b46c779f49f278f375154a8a8c70c5bbf6c0e7c"
+    },
+    {
+      "path": "src/lib/__tests__/colorSystemDesignerScaleV1.test.ts",
+      "bytes": 20239,
+      "sha256": "291697213dd1f878613ffc46230478ce22e0df8cd03850f0f2f2bde009d2ac41"
+    },
+    {
+      "path": "src/lib/__tests__/fixtures/colorSystemAuthoringDeliveryV1Fixture.ts",
+      "bytes": 11745,
+      "sha256": "9e1bb0d18f5cad321298b072f69c3e04116771c28fd269d20c23321d923d6693"
+    },
+    {
+      "path": "src/lib/__tests__/fixtures/legacyDesignerScaleV1.recipe.json",
+      "bytes": 77903,
+      "sha256": "b71fbe4a7472315061bdd3ca4a5d504009d953d5b9af431a66f94987ceb11f29"
+    },
+    {
+      "path": "src/lib/colorSystemApplicationGeometryV1.ts",
+      "bytes": 27119,
+      "sha256": "4dfb27b3546b8f2314d311f07dadd2bcce2336257afc66dbae4b921a3577e4f7"
+    },
+    {
+      "path": "src/lib/colorSystemAuthoredNamingV1.ts",
+      "bytes": 739,
+      "sha256": "fdaab7036caeee4ee64ec2dae504faff28231e3717902ea2dd151ca16410e74b"
+    },
+    {
+      "path": "src/lib/colorSystemAuthoredSvgV1.ts",
+      "bytes": 3764,
+      "sha256": "754fb06d206370c3273fc76392a80e791f9837b2344a40ad81179a6ef3e86040"
+    },
+    {
+      "path": "src/lib/colorSystemAuthoringBridgeV1.ts",
+      "bytes": 3745,
+      "sha256": "d54585bca346e0601450bdf19b3892acd04b5fcab907c8949493dcf6a3d87330"
+    },
+    {
+      "path": "src/lib/colorSystemAuthoringDeliveryV1.ts",
+      "bytes": 22401,
+      "sha256": "cabd2dc1190948a47683c3b48d843be0b089ab7cb1cf32b17db1f8bed5f41be0"
+    },
+    {
+      "path": "src/lib/colorSystemAuthoringViewV1.ts",
+      "bytes": 9889,
+      "sha256": "e6fc25747c3121603761ccc772e6857db76502a9091b50d347737f0981e6cf55"
+    },
+    {
+      "path": "src/lib/colorSystemDesignerGeometryV1.ts",
+      "bytes": 11229,
+      "sha256": "17a129bc2b88178655009193cdfd6feb67db717653779c32959d930c914d634f"
+    },
+    {
+      "path": "src/lib/colorSystemDesignerScaleV1.ts",
+      "bytes": 18517,
+      "sha256": "32ec863a639c723ec98b32e987abef086cb888461fc062501b9b6f465fbd65f0"
+    },
+    {
+      "path": "src/types/colorSystemAuthoringMessagesV1.ts",
+      "bytes": 1776,
+      "sha256": "64e7fc0b54776cfdc35157e4536e2fd9da49545cbce0c9e22aca23b92ff3ac6c"
+    },
+    {
+      "path": "src/types/colorSystemAuthoringViewV1.ts",
+      "bytes": 3985,
+      "sha256": "5d050397178b5a8833b8611bc2e554f5f18c1a808440da292a9e419b56e83fe0"
+    }
+  ],
+  "candidateArtifacts": [
+    {
+      "path": "figma-candidate/dist/code.js",
+      "bytes": 1521361,
+      "sha256": "e177a8b0018875f030a244f16254064d8a0fbb1a19e97119c64c502243e96b9e"
+    },
+    {
+      "path": "figma-candidate/dist/ui.html",
+      "bytes": 425147,
+      "sha256": "70ceca67e0ead75fcceafb79ce0a08777a16a5c86da6aa47388fe5d4892762cc"
+    }
+  ]
+}

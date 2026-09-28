@@ -1,0 +1,167 @@
+{
+  "schemaVersion": "teul.statement-review-verification.v1",
+  "status": "passed-local-verification",
+  "candidateBase": "7f394e50b1233d5acb31058beed49ebc9938fe16",
+  "qualified": false,
+  "requirements": [
+    "TASK-004",
+    "TASK-005",
+    "TASK-006",
+    "REQ-004",
+    "REQ-005",
+    "AC-005",
+    "AC-013",
+    "AC-018",
+    "EVAL-002",
+    "DEC-025"
+  ],
+  "sourceHashes": {
+    "web/src/lib/guideline/statementReview.ts": "3e7d7101fb0c8bbcdb8f0cd5b14a534f3f346434d5709e078c55cecb7e399f3a",
+    "web/src/lib/guideline/statementReview.test.ts": "31e10cdccc8bc144c7d723aff51f8dc337a86d0f3e93a7ebad03a3d7293ee318",
+    "web/src/components/GuidelineStatementGroup.tsx": "1aa74120ab135c84cb3c417fd3f2924b043e6225ef8d710ee40c893a1c7e9437",
+    "web/src/components/GuidelineStatementGroup.css": "13bb74d41f34c78e4abec511630f7b64702083d0ec6263a8a23fe5fcdc720b7c",
+    "web/src/components/GuidelineWorkspace.tsx": "96b2f533b481bb8d4b2e21599d612e3af0246cdf44aeb817e38573a59a8728c7",
+    "web/src/components/GuidelineWorkspace.css": "559e2eb548c2f2a47f177363feb1001e356d53db6d2cadcd7e8175602a49a00e",
+    "web/src/components/GuidelineSourceReview.tsx": "152813c4397c929b188ab32f8ee10da15ee730dfbb7850baf087e2d02a46db94",
+    "web/src/components/GuidelineFigmaReview.css": "cda7eb9bac5cc417c0ec8a7c3372217c84e9d4fc2e09a9e43ba7ff8fcb361811",
+    "web/fixtures/guidelines/statement-review.ts": "e17b21228f4cf846387b8065b04345f72d68f84b48f0e944c0abe3c444b91e9b",
+    "web/fixtures/guidelines/README.md": "5af28b10c58493812b5ebc224adc24fc99bb6c459cae6b1f5152b21d5e7cf4db",
+    "web/scripts/guideline-statement-review-smoke.mjs": "8551825d30bf0ed615f9e5c29894e8b841f11d54e442fedae7e4eae706819c6e",
+    "web/scripts/guideline-smoke.mjs": "b2c7df7d4ed4a7e3b1d851f6a78ceeae81a8c3af9f0dc437da1c6877ebc18608",
+    "web/scripts/guideline-website-smoke.mjs": "b7e51c63f22c0e43149c00846699a1de71e9d6868ca5cd557d79b7a90d2c4d0d",
+    "web/scripts/guideline-native-refresh-smoke.mjs": "d915ae23400465987ba2e81035c550fcd45478273fc91c9e69732dfa6ce4126b",
+    "web/package.json": "caf1b5b9ade47b53bfd0cd7fd5b38d0b15ef30204e2187846f8b0d787016e60f",
+    "scripts/verify-local.mjs": "8da8baa9756dc725bfd0ee64636d2b9595317cab1ac40feaf1b37e7790ec1117"
+  },
+  "runtimes": [
+    {
+      "node": "v22.13.1",
+      "gate": {
+        "path": "docs/evidence/local-gates/2026-09-26T13-29-47Z-7f394e5/receipt.json",
+        "bytes": 28905,
+        "sha256": "7b2ee8e7d94a81840ceac80e5d42c2e4c00dec2c6a5f61bdec613f661f57d387"
+      },
+      "steps": 13,
+      "studioTests": 658,
+      "testFiles": 53,
+      "browser": {
+        "path": "docs/evidence/brand-guideline-import/statement-review-browser-node22.json",
+        "bytes": 2939,
+        "sha256": "472bc30ae2aaf6583866b740734f1aa3b2d487c44d1ace01ac1961360b0f6896"
+      },
+      "focusedAxeScans": 3,
+      "fullPageAxeScans": 12,
+      "fullPageAxeViolations": 0,
+      "unresolvedMobileContrastChecks": 1,
+      "focusedNode22Rerun": "Final harness rerun after adding applied-review invalidation and keyboard-scroll assertions. Product build unchanged."
+    },
+    {
+      "node": "v24.19.0",
+      "gate": {
+        "path": "docs/evidence/local-gates/2026-09-26T13-32-13Z-7f394e5/receipt.json",
+        "bytes": 28904,
+        "sha256": "9a13acfd8add0dfa944362c215aaae052fe06bba30e6a97c382eecb33ddf6cf8"
+      },
+      "steps": 13,
+      "studioTests": 658,
+      "testFiles": 53,
+      "browser": {
+        "path": "docs/evidence/brand-guideline-import/statement-review-browser-node24.json",
+        "bytes": 2939,
+        "sha256": "612d21e70846921c2330df7cc0da45ae99bde9ba6b3b0e2e63028d8af0e4cd7c"
+      },
+      "focusedAxeScans": 3,
+      "fullPageAxeScans": 12,
+      "fullPageAxeViolations": 0,
+      "unresolvedMobileContrastChecks": 1,
+      "focusedNode22Rerun": null
+    }
+  ],
+  "runnerTests": {
+    "command": "node --test scripts/verify-local.test.mjs",
+    "node": "v22.13.1",
+    "passed": 11
+  },
+  "openweb": {
+    "runtime": "v22.13.1",
+    "sourceSha256": "f89cb0215fb4ec788a863d66b8027b82fd19bdd5263d2b3ca525a8723e0402cc",
+    "selectedPages": [34, 40, 41, 42, 43, 98],
+    "numericStatements": 16,
+    "ruleStatements": 16,
+    "displayGroups": 7,
+    "noticeOccurrences": 10,
+    "agentExclusions": 10,
+    "remainingUninterpretedStatements": 6,
+    "sourceUnchanged": true,
+    "initialDraftUnchanged": true,
+    "existingDecisionsPreserved": true,
+    "desktopSourceRemainsVisible": true,
+    "qualifyingContinuationVisible": true,
+    "offlineReplay": "byte-exact",
+    "appliedReview": null,
+    "selection": null,
+    "projectSha256": "8965423f9a0f5b02aa27898230d20002229403da95ca4ee7146d7c7e81042f4f",
+    "humanCorrectionTime": null,
+    "humanReaders": [],
+    "designerRatings": [],
+    "heldOut": false
+  },
+  "privateRoot": "/Users/paul.jun/Documents/private-jobs/teul-guideline-evaluation-2026-09-26",
+  "privateArtifacts": [
+    {
+      "path": "openweb-development/after-statement-review-node22-desktop-full.png",
+      "bytes": 638368,
+      "sha256": "19533b02ad1494f3394cfb49b88325692a71559c440edba3ecfb7f0eb90691a5"
+    },
+    {
+      "path": "openweb-development/after-statement-review-node22-desktop.png",
+      "bytes": 183511,
+      "sha256": "d6a73b53d786e98811c10d9f3a7375f1c5e106d99808979c529b3430662b3caf"
+    },
+    {
+      "path": "openweb-development/after-statement-review-node22-mobile.png",
+      "bytes": 54824,
+      "sha256": "7f4a6ad29e90bae91d273eaa188b9f0049195072f3b5a115151aa4510a61cb2f"
+    },
+    {
+      "path": "openweb-development/after-statement-review-node22.json",
+      "bytes": 2459,
+      "sha256": "84be65fc5ecbcd66d74896c99c9df93b884f9881173c40769142c901a1f99791"
+    },
+    {
+      "path": "openweb-development/after-statement-review-node22.studio.json",
+      "bytes": 53101,
+      "sha256": "8965423f9a0f5b02aa27898230d20002229403da95ca4ee7146d7c7e81042f4f"
+    },
+    {
+      "path": "openweb-development/after-statement-review.mjs",
+      "bytes": 7419,
+      "sha256": "8617b2438088a819a3b9c05555ee1b236c1da1bdf703ab1134464f725cc01455"
+    }
+  ],
+  "previousPrivateArtifactsUnchanged": 38,
+  "reviews": {
+    "reuse": "No material findings; existing numeric association utilities have a different evidence contract.",
+    "quality": "Resolved false completion labels; final incremental review confirms applied-review invalidation and actual keyboard scrolling are tested.",
+    "efficiency": "Restored bounded quotation scrolling; no remaining material finding in incremental review."
+  },
+  "preservedHarnessFailures": [
+    {
+      "path": "release/guideline-statement-review/browser-node22-failed-1.json",
+      "bytes": 8087,
+      "sha256": "bb4e0deed38244fe58365223e7f409998963b8823141dfa85452b998d6496e71"
+    },
+    {
+      "path": "release/guideline-statement-review/browser-node22-failed-2.json",
+      "bytes": 2732,
+      "sha256": "7fd7b7f565fc7d23666c4768ba1c3b3fa5c3b06e5c38f7f4c6aa9d20fb4546ad"
+    }
+  ],
+  "limitations": [
+    "Affected 13-step local profile, not a rerun of the complete plugin/service qualification.",
+    "Fictional observations test UI contracts; OpenWeb is one previously exposed development source.",
+    "No measured human correction time, full corpus score, reconciled source annotation or independent design acceptance.",
+    "No actual screen-reader walkthrough; one existing mobile-table contrast check remains incomplete.",
+    "No push, merge, deployment, live remote intake or beta qualification."
+  ]
+}

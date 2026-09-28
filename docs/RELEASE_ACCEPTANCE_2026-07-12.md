@@ -16,7 +16,7 @@ The release candidate must pass all of the following from a clean install:
 - `npm audit --audit-level=moderate`
 - `git diff --check`
 
-The final run for follow-up commit `186e79a` produced 39 passing test files and 651 passing tests. Coverage includes every production TypeScript and TSX file: 82.07% statements, 73.51% branches, 77.37% functions, and 82.93% lines. The production UI artifact is 431,833 bytes against a 450,560-byte ceiling, leaving 18,727 bytes of headroom; the plugin-main artifact is 89,050 bytes. The pinned Wada corpus matches upstream commit `c142bd0bc8049ea48db4da5eb397981f047e8ef4` and semantic digest `a24e7b0101c5f1e7eed104d84b27a7c9bba147017589302d78c2992c37c2d853`. The dependency audit reports zero vulnerabilities.
+The final run for follow-up commit `186e79a` [2026-09-07 note: this commit is not in this repository's history (`git cat-file -t 186e79a` fails); the record below stands as written] produced 39 passing test files and 651 passing tests. Coverage includes every production TypeScript and TSX file: 82.07% statements, 73.51% branches, 77.37% functions, and 82.93% lines. The production UI artifact is 431,833 bytes against a 450,560-byte ceiling, leaving 18,727 bytes of headroom; the plugin-main artifact is 89,050 bytes. The pinned Wada corpus matches upstream commit `c142bd0bc8049ea48db4da5eb397981f047e8ef4` and semantic digest `a24e7b0101c5f1e7eed104d84b27a7c9bba147017589302d78c2992c37c2d853`. The dependency audit reports zero vulnerabilities.
 
 ## Figma desktop acceptance
 

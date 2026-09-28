@@ -1,0 +1,358 @@
+{
+  "schemaVersion": "teul.local-verification.v1",
+  "scope": "TASK-009, REQ-011/NFR-003 and AC-010/AC-013: combined source-set device library, exact recovery, history and operation isolation",
+  "recordedAt": "2026-09-26T10:49:12.099664+00:00",
+  "baselineCommit": "f9d4546f0f364e46124649279711445a0cb89297",
+  "lifecycle": "locally verified; not integrated, pushed, deployed or visually accepted",
+  "sourceHashes": {
+    "docs/evidence/brand-guideline-import/source-set-storage.md": "619edff03a0ed52b1f00756543f6257cdafaf141df50d12d5ccf51daed9d98c3",
+    "docs/plans/2026-09-25-brand-guideline-import-plan.md": "9648d91d86a7389863b5027502c13eb002e33f823a2ed2b82d68b28a5a1b7456",
+    "docs/prds/2026-09-25-brand-guideline-import.md": "7aaf1835ea87ceb33cea7d2f429bf8761878c39b400c71f1881710ad06e16498",
+    "web/README.md": "497b7b98049f2471b9c9b7b51adee965e432d162252d00e8946f2e8c30fb9a8a",
+    "web/fixtures/guidelines/source-set-fixture.ts": "11c097770276d7041c09185da3ad2af073d6b6d4748baae985cb7127d01b0f7f",
+    "web/package.json": "89f82d64ef35ca1f7cca0899af1ce491ab7cc4d6817da0d834770410406229aa",
+    "web/scripts/guideline-source-set-smoke.mjs": "e031c8ee52343b78b037122f4d9a9352eb444caa53fc8f8b1963b8edd697805a",
+    "web/scripts/guideline-source-set-storage-smoke.mjs": "d708016da6651372e9809108f60dc81430bb9706a6bfd1eaa8e5d41d3d8e01aa",
+    "web/src/components/GuidelineDesignWorkspace.tsx": "381682f0bf9a9dbb00af15dd8ff7328c1e563abb544e36b00ed5dd626b25065d",
+    "web/src/components/GuidelineExtensionPreview.tsx": "4072649ea4d6622e7e0edd7c7c3e8affe320d66eaa4cb1df485c6a5dfcbb48a2",
+    "web/src/components/GuidelineLocalProjects.tsx": "8316c1a8d74720270385145b5df52f742a733336c43f820e9fa96f91181041db",
+    "web/src/components/GuidelineSourceSet.tsx": "f881838d3fb9657457373844f72c2617bef3eade5372adc6b76bacaa35f2aa61",
+    "web/src/lib/guideline/libraryProjectCodec.test.ts": "bed79736b8527aacb5bb5bcddef830e834667483e4ae5146a8418e65a8ad0e1f",
+    "web/src/lib/guideline/libraryProjectCodec.ts": "8b9735f80eb0d1d37dbbf9bd1695dde256f7d7eecfa33b067e4f9a436525c46a",
+    "web/src/lib/guideline/projectRecord.test.ts": "a517411c360a8b3d9c6500fa8fd655d132366ad91124cf4b2847ae71d3775b1e",
+    "web/src/lib/guideline/projectRecord.ts": "c96d1047ef30d8af1f1c411da183e32716dcdb443f360b68c727f2b12ec844f2",
+    "web/src/lib/guideline/projectStore.ts": "d62971ad6701eba6118ecc3ac269792ecee611916a87f0112c76aa555535487a",
+    "web/src/lib/guideline/sourceSet.ts": "b0ed370f02a5122b0d494fccd2f821e041492a8a01f5f149c1f5849ce1d5b8f0",
+    "web/src/lib/guideline/sourceSetProject.ts": "8bf07c597a5be167d67c876cca88fd1bb59c12746b634ec9d2cfcee10529e73c",
+    "web/src/lib/guideline/useLocalProject.ts": "3e01d1d60d20455715d9b8a9c60839edfd0ffdef212dd4b193060cc3bd4f18c6"
+  },
+  "runtimes": [
+    {
+      "node": "v22.13.1",
+      "npm": "10.9.2",
+      "checks": [
+        {
+          "command": "npm --prefix web test",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test\n> vitest run\n\n\n RUN  v5.0.1 /Users/paul.jun/Downloads/Projects/Teul/web\n\n(node:13905) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n\n Test Files  49 passed (49)\n      Tests  594 passed (594)\n   Start at  06:46:11\n   Duration  9.50s (tests 85%, transform 9%, import 6%)\n\n"
+        },
+        {
+          "command": "npm --prefix web run lint",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 lint\n> oxlint src --deny-warnings\n\n"
+        },
+        {
+          "command": "VITE_GUIDELINE_IMPORT=true npm --prefix web run build",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 build\n> tsc -b && vite build && node scripts/notices.mjs\n\nvite v8.3.0 building client environment for production...\ntransforming...\n\u2713 2177 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                                                0.81 kB \u2502 gzip:   0.45 kB\ndist/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2      7.42 kB\ndist/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2        8.00 kB\ndist/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2         15.08 kB\ndist/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2        16.51 kB\ndist/pdf-fonts/FoxitSymbol.pfb                                16.72 kB\ndist/pdf-fonts/FoxitFixed.pfb                                 17.59 kB\ndist/pdf-fonts/FoxitFixedBold.pfb                             18.05 kB\ndist/pdf-fonts/FoxitFixedItalic.pfb                           18.74 kB\ndist/pdf-fonts/FoxitFixedBoldItalic.pfb                       19.15 kB\ndist/pdf-fonts/FoxitSerifBold.pfb                             19.39 kB\ndist/pdf-fonts/FoxitSerif.pfb                                 19.46 kB\ndist/pdf-fonts/FoxitSerifBoldItalic.pfb                       20.73 kB\ndist/pdf-fonts/FoxitSerifItalic.pfb                           21.22 kB\ndist/assets/geist-latin-wght-normal-BgDaEnEv.woff2            29.40 kB\ndist/pdf-fonts/FoxitDingbats.pfb                              29.51 kB\ndist/pdf-fonts/LiberationSans-BoldItalic.ttf                 135.12 kB\ndist/pdf-fonts/LiberationSans-Bold.ttf                       137.05 kB\ndist/pdf-fonts/LiberationSans-Regular.ttf                    139.51 kB\ndist/pdf-fonts/LiberationSans-Italic.ttf                     162.03 kB\ndist/assets/pdf.worker.min-BmVo14Nb.mjs                    1,317.03 kB\ndist/assets/ProductSystemView-DJMb3_3z.css                     5.95 kB \u2502 gzip:   1.57 kB\ndist/assets/GuidelineWorkspace-BQYYCRG-.css                   29.60 kB \u2502 gzip:   5.10 kB\ndist/assets/index-BMMiDOxd.css                                57.48 kB \u2502 gzip:  11.28 kB\ndist/assets/ProductSystemView-DQXCebmr.js                     10.03 kB \u2502 gzip:   3.32 kB\ndist/assets/authoring-Cf8Q3xZ7.js                             23.56 kB \u2502 gzip:   8.81 kB\ndist/assets/authoringControlOutlinesV1-Drz71Oet.js            44.84 kB \u2502 gzip:  13.74 kB\ndist/assets/download-Bic2EQq1.js                              45.62 kB \u2502 gzip:  18.29 kB\ndist/assets/colorSystemRecipeV1-CFQjSqfd.js                  104.31 kB \u2502 gzip:  31.85 kB\ndist/assets/sourceProvenanceDisclosureData-CxLfFIWs.js       166.30 kB \u2502 gzip:  52.12 kB\ndist/assets/index-D28IvVtJ.js                                359.52 kB \u2502 gzip: 113.15 kB\ndist/assets/GuidelineWorkspace-DBGWA7TY.js                 1,179.33 kB \u2502 gzip: 353.77 kB\n\n[plugin builtin:vite-reporter] \n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n\u2713 built in 321ms\nIncluded 86 web dependency notices plus Teul source and APCA notices.\n"
+        },
+        {
+          "command": "npm --prefix web run test:guideline-source-set",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test:guideline-source-set\n> node scripts/guideline-source-set-smoke.mjs\n\n6:46:30 AM [vite] (client) Re-optimizing dependencies because vite config has changed\n{\n  \"node\": \"v22.13.1\",\n  \"scriptSha256\": \"e031c8ee52343b78b037122f4d9a9352eb444caa53fc8f8b1963b8edd697805a\",\n  \"buildHashes\": {\n    \"index.html\": \"c0e1dc8d82414d0242e7433a0bf5ab22f3b2561180ae07319b4aa97a8cd613ae\",\n    \"assets/GuidelineWorkspace-BQYYCRG-.css\": \"d1cf4cfcf62a767dbcea2bdb53827f531fe151868f6d4ea98e857c613506439c\",\n    \"assets/GuidelineWorkspace-DBGWA7TY.js\": \"a31d0c3d45449cc2dddb17d75b37832fc84f63af364da826e901abd6122df50d\",\n    \"assets/ProductSystemView-DJMb3_3z.css\": \"85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764\",\n    \"assets/ProductSystemView-DQXCebmr.js\": \"c5f4aa44dc9cd8641bb58f1c7b33f515eb765bdd6b5c4579fbd5a4258e222a6e\",\n    \"assets/authoring-Cf8Q3xZ7.js\": \"b944eb0107fef53389d8d0fd570f05a573ad86677bd71f4f19feec67e0294212\",\n    \"assets/authoringControlOutlinesV1-Drz71Oet.js\": \"10a4ebd8430518c5e7a4d31c89cb246f71b90aa4b9cf3a65a013ae99b708b23a\",\n    \"assets/colorSystemRecipeV1-CFQjSqfd.js\": \"cd744682a3bb2318333f72d7997541aa6c44c9a37f301e059f26132f39bfb540\",\n    \"assets/download-Bic2EQq1.js\": \"8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6\",\n    \"assets/index-BMMiDOxd.css\": \"0e359a3aeb7a2eb5c56422a31f451bda24c50d30c7ed62fc035c16ad0765f85e\",\n    \"assets/index-D28IvVtJ.js\": \"4018535a34fd73461493fce0196517047e106b475de02f936377b65fb0abaf80\",\n    \"assets/sourceProvenanceDisclosureData-CxLfFIWs.js\": \"241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361\"\n  },\n  \"checks\": [\n    \"Reviewed PDFs add directly; unresolved conflict survives download/reopen; explicit choice preserves both original projects and drives extension and gradient engines\",\n    \"Browser/Node strict replay preserves exact generated shades and gradient SVG\",\n    \"Malformed and future imports retain current selected work and leave it exportable\",\n    \"Cancelled delayed file completion cannot replace a newer reviewed source set or invalidate its gradient\",\n    \"Changing use clears resolutions, approvals and outputs; authoring controls start in the only declared use\",\n    \"Reviewed source-set recovery and bundled gradient replay work offline after Studio is loaded\",\n    \"Native Figma reviewed source adds directly through the shared source review action\",\n    \"Production save/reload reopens exact selected shades and SVG; edit/save and historical restoration append revisions, copy creates a separate record, and file-open detaches device identity\",\n    \"Combined review remains within the mobile viewport\"\n  ],\n  \"errors\": [],\n  \"requests\": [],\n  \"browser\": \"153.0.8010.12\",\n  \"passed\": true\n}\n"
+        },
+        {
+          "command": "npm --prefix web run test:guideline-source-set-storage",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test:guideline-source-set-storage\n> node scripts/guideline-source-set-storage-smoke.mjs\n\n6:46:03 AM [vite] (client) Re-optimizing dependencies because vite config has changed\n{\n  \"node\": \"v22.13.1\",\n  \"scriptSha256\": \"d708016da6651372e9809108f60dc81430bb9706a6bfd1eaa8e5d41d3d8e01aa\",\n  \"checks\": [\n    \"Combined projects save/reopen exact pending and selected JSON, history and embedded original source strings without borrowing PDF assets\",\n    \"Stale, cancelled, future and corrupt replacements preserve the prior saved selected design\",\n    \"Concurrent update during historical validation cannot publish an obsolete open\",\n    \"Pinned pre-change client keeps combined records read-only and downloadable; it cannot overwrite their history\",\n    \"Injected IndexedDB quota and shared-byte capacity failures preserve every saved record and revision\",\n    \"The 32-revision limit blocks new writes without eviction and retains the original selected design\",\n    \"Delayed device open and save disable edits; cancellation and a replacement file prevent late publication or an abandoned revision write\",\n    \"An extension finishing after device opening starts cannot cancel that open or publish results against its old workspace\",\n    \"Opening a saved pending source set clears unsaved value/reason fields even when the source member hashes match\"\n  ],\n  \"errors\": [],\n  \"network\": [],\n  \"browser\": \"153.0.8010.12\",\n  \"passed\": true\n}\n"
+        },
+        {
+          "command": "npm --prefix web run test:guideline-storage",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test:guideline-storage\n> node scripts/guideline-storage-smoke.mjs\n\n6:46:39 AM [vite] (client) Re-optimizing dependencies because vite config has changed\n{\n  \"checks\": [\n    \"Concurrent first access migrates once and preserves exact legacy/future bytes\",\n    \"Deleted legacy rows cannot return through a stale save or repeated migration\",\n    \"Concurrent tab inserts preserve both palettes and broadcast a refresh\",\n    \"Concurrent updates and update/delete races reject stale revisions without resurrection\",\n    \"Two tabs racing for the final slot enforce the 24-palette limit atomically\",\n    \"Unknown envelopes remain recoverable and aggregate byte limits fail without eviction\",\n    \"Aborted transactions and unavailable IndexedDB return failure without claiming a save\",\n    \"Full selected recipe survives exact-byte save/replay; malformed, mismatched and future inputs never replace valid work\",\n    \"A full library of product recipes validates in responsive batches and local subscribers receive the committed snapshot\"\n  ],\n  \"errors\": [],\n  \"evidence\": \"/Users/paul.jun/Downloads/Projects/Teul/release/guideline-storage/node22-palette-regression\"\n}\n{\n  \"status\": \"passed\",\n  \"checks\": [\n    \"PDF V1/V2/V3 and Figma projects retain exact JSON bytes, selected values and stable workspace identity\",\n    \"Website capture and draft save through their existing strict project codec\",\n    \"Concurrent updates and deleted records reject stale saves across real IndexedDB tabs\",\n    \"Future records remain visible and recoverable; writes cannot silently overwrite them\",\n    \"A failed transaction preserves the exact previous record and does not report success\",\n    \"Record-count race and aggregate byte capacity preserve existing records\",\n    \"Aborted database creation can be retried without touching the legacy palette database\",\n    \"Corrupt optional PDFs cannot hide healthy projects or block project-only saves/recovery; retained future dependencies block source deletion\",\n    \"Optional PDF identity is verified, deduplicated and deleted separately; missing originals retain the reviewed design\",\n    \"100 MiB source-asset budget rejects an additional PDF atomically while allowing a project-only save\",\n    \"Actual V1 client creates revision 7; V2 update retains its exact record and starts history at 7. The pinned old client lists V2 read-only and cannot overwrite it.\",\n    \"Opening history leaves the head untouched; restoration appends a new head and every revision downloads byte-exact original project JSON.\",\n    \"An update in another tab during historical validation rejects the stale open before returning editor data.\",\n    \"A failure after the combined head/history put rolls back the entire record, preserving exact preceding history.\",\n    \"Corrupt or future history retains the entire envelope for download and cannot be overwritten, including when its current project is healthy.\",\n    \"32-revision and combined 8 MiB limits preserve the oldest snapshot and reject another append without silent eviction.\",\n    \"Historical PDF dependencies remain visible after a new source replaces the head; restoration reuses the original association, and explicit asset deletion preserves every reviewed snapshot.\",\n    \"Actual PDF save, reload, local reopen and download preserve selected gradient and evidence\",\n    \"Slow reopen disables editing, source replacement cancels publication, and stale delete confirmation preserves another tab\u2019s newer revision\",\n    \"Opt-in original PDF survives reload and restores full page previews\",\n    \"Actual history controls preview/download without changing the saved head, then restore by append. Deleting an unrelated project preserves the historical PDF association; history controls fit 390px.\",\n    \"Figma project saves and reopens through actual controls without connection or plugin\",\n    \"Website project saves and reopens through actual controls without fetching the source\",\n    \"Existing saved-palette real-browser migration, conflicts and failure regression passes\",\n    \"No source or intake-service requests occurred while saving and reopening local projects\"\n  ]\n}\n"
+        },
+        {
+          "command": "npm --prefix web run test:guideline-output-recovery",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test:guideline-output-recovery\n> node scripts/guideline-output-recovery-smoke.mjs\n\n6:46:55 AM [vite] (client) Re-optimizing dependencies because vite config has changed\n{\n  \"status\": \"passed\",\n  \"checks\": [\n    \"Browser/Node bundle replay preserves extension, gradient and exact component SVG\",\n    \"Actual IndexedDB save, reload and reopen restores selected controls and checked exports\",\n    \"Corrupt and future bundles leave the selected application and source intact\",\n    \"Completed failed paint assessment restores visibly and remains nonexportable\",\n    \"Re-applying source review and editing extension controls invalidate visible and retained results\",\n    \"Cancelling replay prevents the subsequent local write\",\n    \"Desktop and 390px restored composition render without page errors or source/provider requests\"\n  ]\n}\n"
+        }
+      ]
+    },
+    {
+      "node": "v24.19.0",
+      "npm": "10.9.2",
+      "checks": [
+        {
+          "command": "npm --prefix web test",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test\n> vitest run\n\n\n RUN  v5.0.1 /Users/paul.jun/Downloads/Projects/Teul/web\n\n\n Test Files  49 passed (49)\n      Tests  594 passed (594)\n   Start at  06:47:24\n   Duration  9.19s (tests 84%, transform 8%, import 8%)\n\n"
+        },
+        {
+          "command": "npm --prefix web run lint",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 lint\n> oxlint src --deny-warnings\n\n"
+        },
+        {
+          "command": "VITE_GUIDELINE_IMPORT=true npm --prefix web run build",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 build\n> tsc -b && vite build && node scripts/notices.mjs\n\nvite v8.3.0 building client environment for production...\ntransforming...\n\u2713 2177 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                                                0.81 kB \u2502 gzip:   0.45 kB\ndist/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2      7.42 kB\ndist/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2        8.00 kB\ndist/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2         15.08 kB\ndist/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2        16.51 kB\ndist/pdf-fonts/FoxitSymbol.pfb                                16.72 kB\ndist/pdf-fonts/FoxitFixed.pfb                                 17.59 kB\ndist/pdf-fonts/FoxitFixedBold.pfb                             18.05 kB\ndist/pdf-fonts/FoxitFixedItalic.pfb                           18.74 kB\ndist/pdf-fonts/FoxitFixedBoldItalic.pfb                       19.15 kB\ndist/pdf-fonts/FoxitSerifBold.pfb                             19.39 kB\ndist/pdf-fonts/FoxitSerif.pfb                                 19.46 kB\ndist/pdf-fonts/FoxitSerifBoldItalic.pfb                       20.73 kB\ndist/pdf-fonts/FoxitSerifItalic.pfb                           21.22 kB\ndist/assets/geist-latin-wght-normal-BgDaEnEv.woff2            29.40 kB\ndist/pdf-fonts/FoxitDingbats.pfb                              29.51 kB\ndist/pdf-fonts/LiberationSans-BoldItalic.ttf                 135.12 kB\ndist/pdf-fonts/LiberationSans-Bold.ttf                       137.05 kB\ndist/pdf-fonts/LiberationSans-Regular.ttf                    139.51 kB\ndist/pdf-fonts/LiberationSans-Italic.ttf                     162.03 kB\ndist/assets/pdf.worker.min-BmVo14Nb.mjs                    1,317.03 kB\ndist/assets/ProductSystemView-DJMb3_3z.css                     5.95 kB \u2502 gzip:   1.57 kB\ndist/assets/GuidelineWorkspace-BQYYCRG-.css                   29.60 kB \u2502 gzip:   5.10 kB\ndist/assets/index-BMMiDOxd.css                                57.48 kB \u2502 gzip:  11.28 kB\ndist/assets/ProductSystemView-DQXCebmr.js                     10.03 kB \u2502 gzip:   3.32 kB\ndist/assets/authoring-Cf8Q3xZ7.js                             23.56 kB \u2502 gzip:   8.81 kB\ndist/assets/authoringControlOutlinesV1-Drz71Oet.js            44.84 kB \u2502 gzip:  13.74 kB\ndist/assets/download-Bic2EQq1.js                              45.62 kB \u2502 gzip:  18.29 kB\ndist/assets/colorSystemRecipeV1-CFQjSqfd.js                  104.31 kB \u2502 gzip:  31.85 kB\ndist/assets/sourceProvenanceDisclosureData-CxLfFIWs.js       166.30 kB \u2502 gzip:  52.12 kB\ndist/assets/index-D28IvVtJ.js                                359.52 kB \u2502 gzip: 113.15 kB\ndist/assets/GuidelineWorkspace-DBGWA7TY.js                 1,179.33 kB \u2502 gzip: 353.77 kB\n\n[plugin builtin:vite-reporter] \n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n\u2713 built in 316ms\nIncluded 86 web dependency notices plus Teul source and APCA notices.\n"
+        },
+        {
+          "command": "npm --prefix web run test:guideline-source-set",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test:guideline-source-set\n> node scripts/guideline-source-set-smoke.mjs\n\n6:47:38 AM [vite] (client) Re-optimizing dependencies because vite config has changed\n{\n  \"node\": \"v24.19.0\",\n  \"scriptSha256\": \"e031c8ee52343b78b037122f4d9a9352eb444caa53fc8f8b1963b8edd697805a\",\n  \"buildHashes\": {\n    \"index.html\": \"c0e1dc8d82414d0242e7433a0bf5ab22f3b2561180ae07319b4aa97a8cd613ae\",\n    \"assets/GuidelineWorkspace-BQYYCRG-.css\": \"d1cf4cfcf62a767dbcea2bdb53827f531fe151868f6d4ea98e857c613506439c\",\n    \"assets/GuidelineWorkspace-DBGWA7TY.js\": \"a31d0c3d45449cc2dddb17d75b37832fc84f63af364da826e901abd6122df50d\",\n    \"assets/ProductSystemView-DJMb3_3z.css\": \"85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764\",\n    \"assets/ProductSystemView-DQXCebmr.js\": \"c5f4aa44dc9cd8641bb58f1c7b33f515eb765bdd6b5c4579fbd5a4258e222a6e\",\n    \"assets/authoring-Cf8Q3xZ7.js\": \"b944eb0107fef53389d8d0fd570f05a573ad86677bd71f4f19feec67e0294212\",\n    \"assets/authoringControlOutlinesV1-Drz71Oet.js\": \"10a4ebd8430518c5e7a4d31c89cb246f71b90aa4b9cf3a65a013ae99b708b23a\",\n    \"assets/colorSystemRecipeV1-CFQjSqfd.js\": \"cd744682a3bb2318333f72d7997541aa6c44c9a37f301e059f26132f39bfb540\",\n    \"assets/download-Bic2EQq1.js\": \"8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6\",\n    \"assets/index-BMMiDOxd.css\": \"0e359a3aeb7a2eb5c56422a31f451bda24c50d30c7ed62fc035c16ad0765f85e\",\n    \"assets/index-D28IvVtJ.js\": \"4018535a34fd73461493fce0196517047e106b475de02f936377b65fb0abaf80\",\n    \"assets/sourceProvenanceDisclosureData-CxLfFIWs.js\": \"241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361\"\n  },\n  \"checks\": [\n    \"Reviewed PDFs add directly; unresolved conflict survives download/reopen; explicit choice preserves both original projects and drives extension and gradient engines\",\n    \"Browser/Node strict replay preserves exact generated shades and gradient SVG\",\n    \"Malformed and future imports retain current selected work and leave it exportable\",\n    \"Cancelled delayed file completion cannot replace a newer reviewed source set or invalidate its gradient\",\n    \"Changing use clears resolutions, approvals and outputs; authoring controls start in the only declared use\",\n    \"Reviewed source-set recovery and bundled gradient replay work offline after Studio is loaded\",\n    \"Native Figma reviewed source adds directly through the shared source review action\",\n    \"Production save/reload reopens exact selected shades and SVG; edit/save and historical restoration append revisions, copy creates a separate record, and file-open detaches device identity\",\n    \"Combined review remains within the mobile viewport\"\n  ],\n  \"errors\": [],\n  \"requests\": [],\n  \"browser\": \"153.0.8010.12\",\n  \"passed\": true\n}\n"
+        },
+        {
+          "command": "npm --prefix web run test:guideline-source-set-storage",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test:guideline-source-set-storage\n> node scripts/guideline-source-set-storage-smoke.mjs\n\n6:47:47 AM [vite] (client) Re-optimizing dependencies because vite config has changed\n{\n  \"node\": \"v24.19.0\",\n  \"scriptSha256\": \"d708016da6651372e9809108f60dc81430bb9706a6bfd1eaa8e5d41d3d8e01aa\",\n  \"checks\": [\n    \"Combined projects save/reopen exact pending and selected JSON, history and embedded original source strings without borrowing PDF assets\",\n    \"Stale, cancelled, future and corrupt replacements preserve the prior saved selected design\",\n    \"Concurrent update during historical validation cannot publish an obsolete open\",\n    \"Pinned pre-change client keeps combined records read-only and downloadable; it cannot overwrite their history\",\n    \"Injected IndexedDB quota and shared-byte capacity failures preserve every saved record and revision\",\n    \"The 32-revision limit blocks new writes without eviction and retains the original selected design\",\n    \"Delayed device open and save disable edits; cancellation and a replacement file prevent late publication or an abandoned revision write\",\n    \"An extension finishing after device opening starts cannot cancel that open or publish results against its old workspace\",\n    \"Opening a saved pending source set clears unsaved value/reason fields even when the source member hashes match\"\n  ],\n  \"errors\": [],\n  \"network\": [],\n  \"browser\": \"153.0.8010.12\",\n  \"passed\": true\n}\n"
+        },
+        {
+          "command": "npm --prefix web run test:guideline-storage",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test:guideline-storage\n> node scripts/guideline-storage-smoke.mjs\n\n6:47:53 AM [vite] (client) Re-optimizing dependencies because vite config has changed\n{\n  \"checks\": [\n    \"Concurrent first access migrates once and preserves exact legacy/future bytes\",\n    \"Deleted legacy rows cannot return through a stale save or repeated migration\",\n    \"Concurrent tab inserts preserve both palettes and broadcast a refresh\",\n    \"Concurrent updates and update/delete races reject stale revisions without resurrection\",\n    \"Two tabs racing for the final slot enforce the 24-palette limit atomically\",\n    \"Unknown envelopes remain recoverable and aggregate byte limits fail without eviction\",\n    \"Aborted transactions and unavailable IndexedDB return failure without claiming a save\",\n    \"Full selected recipe survives exact-byte save/replay; malformed, mismatched and future inputs never replace valid work\",\n    \"A full library of product recipes validates in responsive batches and local subscribers receive the committed snapshot\"\n  ],\n  \"errors\": [],\n  \"evidence\": \"/Users/paul.jun/Downloads/Projects/Teul/release/guideline-storage/node24-palette-regression\"\n}\n{\n  \"status\": \"passed\",\n  \"checks\": [\n    \"PDF V1/V2/V3 and Figma projects retain exact JSON bytes, selected values and stable workspace identity\",\n    \"Website capture and draft save through their existing strict project codec\",\n    \"Concurrent updates and deleted records reject stale saves across real IndexedDB tabs\",\n    \"Future records remain visible and recoverable; writes cannot silently overwrite them\",\n    \"A failed transaction preserves the exact previous record and does not report success\",\n    \"Record-count race and aggregate byte capacity preserve existing records\",\n    \"Aborted database creation can be retried without touching the legacy palette database\",\n    \"Corrupt optional PDFs cannot hide healthy projects or block project-only saves/recovery; retained future dependencies block source deletion\",\n    \"Optional PDF identity is verified, deduplicated and deleted separately; missing originals retain the reviewed design\",\n    \"100 MiB source-asset budget rejects an additional PDF atomically while allowing a project-only save\",\n    \"Actual V1 client creates revision 7; V2 update retains its exact record and starts history at 7. The pinned old client lists V2 read-only and cannot overwrite it.\",\n    \"Opening history leaves the head untouched; restoration appends a new head and every revision downloads byte-exact original project JSON.\",\n    \"An update in another tab during historical validation rejects the stale open before returning editor data.\",\n    \"A failure after the combined head/history put rolls back the entire record, preserving exact preceding history.\",\n    \"Corrupt or future history retains the entire envelope for download and cannot be overwritten, including when its current project is healthy.\",\n    \"32-revision and combined 8 MiB limits preserve the oldest snapshot and reject another append without silent eviction.\",\n    \"Historical PDF dependencies remain visible after a new source replaces the head; restoration reuses the original association, and explicit asset deletion preserves every reviewed snapshot.\",\n    \"Actual PDF save, reload, local reopen and download preserve selected gradient and evidence\",\n    \"Slow reopen disables editing, source replacement cancels publication, and stale delete confirmation preserves another tab\u2019s newer revision\",\n    \"Opt-in original PDF survives reload and restores full page previews\",\n    \"Actual history controls preview/download without changing the saved head, then restore by append. Deleting an unrelated project preserves the historical PDF association; history controls fit 390px.\",\n    \"Figma project saves and reopens through actual controls without connection or plugin\",\n    \"Website project saves and reopens through actual controls without fetching the source\",\n    \"Existing saved-palette real-browser migration, conflicts and failure regression passes\",\n    \"No source or intake-service requests occurred while saving and reopening local projects\"\n  ]\n}\n"
+        },
+        {
+          "command": "npm --prefix web run test:guideline-output-recovery",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test:guideline-output-recovery\n> node scripts/guideline-output-recovery-smoke.mjs\n\n6:48:09 AM [vite] (client) Re-optimizing dependencies because vite config has changed\n{\n  \"status\": \"passed\",\n  \"checks\": [\n    \"Browser/Node bundle replay preserves extension, gradient and exact component SVG\",\n    \"Actual IndexedDB save, reload and reopen restores selected controls and checked exports\",\n    \"Corrupt and future bundles leave the selected application and source intact\",\n    \"Completed failed paint assessment restores visibly and remains nonexportable\",\n    \"Re-applying source review and editing extension controls invalidate visible and retained results\",\n    \"Cancelling replay prevents the subsequent local write\",\n    \"Desktop and 390px restored composition render without page errors or source/provider requests\"\n  ]\n}\n"
+        }
+      ]
+    }
+  ],
+  "browserReports": [
+    {
+      "path": "release/guideline-source-set/node22-receipt.json",
+      "report": {
+        "node": "v22.13.1",
+        "scriptSha256": "e031c8ee52343b78b037122f4d9a9352eb444caa53fc8f8b1963b8edd697805a",
+        "buildHashes": {
+          "index.html": "c0e1dc8d82414d0242e7433a0bf5ab22f3b2561180ae07319b4aa97a8cd613ae",
+          "assets/GuidelineWorkspace-BQYYCRG-.css": "d1cf4cfcf62a767dbcea2bdb53827f531fe151868f6d4ea98e857c613506439c",
+          "assets/GuidelineWorkspace-DBGWA7TY.js": "a31d0c3d45449cc2dddb17d75b37832fc84f63af364da826e901abd6122df50d",
+          "assets/ProductSystemView-DJMb3_3z.css": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764",
+          "assets/ProductSystemView-DQXCebmr.js": "c5f4aa44dc9cd8641bb58f1c7b33f515eb765bdd6b5c4579fbd5a4258e222a6e",
+          "assets/authoring-Cf8Q3xZ7.js": "b944eb0107fef53389d8d0fd570f05a573ad86677bd71f4f19feec67e0294212",
+          "assets/authoringControlOutlinesV1-Drz71Oet.js": "10a4ebd8430518c5e7a4d31c89cb246f71b90aa4b9cf3a65a013ae99b708b23a",
+          "assets/colorSystemRecipeV1-CFQjSqfd.js": "cd744682a3bb2318333f72d7997541aa6c44c9a37f301e059f26132f39bfb540",
+          "assets/download-Bic2EQq1.js": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6",
+          "assets/index-BMMiDOxd.css": "0e359a3aeb7a2eb5c56422a31f451bda24c50d30c7ed62fc035c16ad0765f85e",
+          "assets/index-D28IvVtJ.js": "4018535a34fd73461493fce0196517047e106b475de02f936377b65fb0abaf80",
+          "assets/sourceProvenanceDisclosureData-CxLfFIWs.js": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361"
+        },
+        "checks": [
+          "Reviewed PDFs add directly; unresolved conflict survives download/reopen; explicit choice preserves both original projects and drives extension and gradient engines",
+          "Browser/Node strict replay preserves exact generated shades and gradient SVG",
+          "Malformed and future imports retain current selected work and leave it exportable",
+          "Cancelled delayed file completion cannot replace a newer reviewed source set or invalidate its gradient",
+          "Changing use clears resolutions, approvals and outputs; authoring controls start in the only declared use",
+          "Reviewed source-set recovery and bundled gradient replay work offline after Studio is loaded",
+          "Native Figma reviewed source adds directly through the shared source review action",
+          "Production save/reload reopens exact selected shades and SVG; edit/save and historical restoration append revisions, copy creates a separate record, and file-open detaches device identity",
+          "Combined review remains within the mobile viewport"
+        ],
+        "errors": [],
+        "requests": [],
+        "browser": "153.0.8010.12",
+        "passed": true
+      }
+    },
+    {
+      "path": "release/guideline-source-set-storage/node22-receipt.json",
+      "report": {
+        "node": "v22.13.1",
+        "scriptSha256": "d708016da6651372e9809108f60dc81430bb9706a6bfd1eaa8e5d41d3d8e01aa",
+        "checks": [
+          "Combined projects save/reopen exact pending and selected JSON, history and embedded original source strings without borrowing PDF assets",
+          "Stale, cancelled, future and corrupt replacements preserve the prior saved selected design",
+          "Concurrent update during historical validation cannot publish an obsolete open",
+          "Pinned pre-change client keeps combined records read-only and downloadable; it cannot overwrite their history",
+          "Injected IndexedDB quota and shared-byte capacity failures preserve every saved record and revision",
+          "The 32-revision limit blocks new writes without eviction and retains the original selected design",
+          "Delayed device open and save disable edits; cancellation and a replacement file prevent late publication or an abandoned revision write",
+          "An extension finishing after device opening starts cannot cancel that open or publish results against its old workspace",
+          "Opening a saved pending source set clears unsaved value/reason fields even when the source member hashes match"
+        ],
+        "errors": [],
+        "network": [],
+        "browser": "153.0.8010.12",
+        "passed": true
+      }
+    },
+    {
+      "path": "release/guideline-storage/node22-receipt.json",
+      "report": {
+        "status": "passed",
+        "node": "v22.13.1",
+        "checks": [
+          "PDF V1/V2/V3 and Figma projects retain exact JSON bytes, selected values and stable workspace identity",
+          "Website capture and draft save through their existing strict project codec",
+          "Concurrent updates and deleted records reject stale saves across real IndexedDB tabs",
+          "Future records remain visible and recoverable; writes cannot silently overwrite them",
+          "A failed transaction preserves the exact previous record and does not report success",
+          "Record-count race and aggregate byte capacity preserve existing records",
+          "Aborted database creation can be retried without touching the legacy palette database",
+          "Corrupt optional PDFs cannot hide healthy projects or block project-only saves/recovery; retained future dependencies block source deletion",
+          "Optional PDF identity is verified, deduplicated and deleted separately; missing originals retain the reviewed design",
+          "100 MiB source-asset budget rejects an additional PDF atomically while allowing a project-only save",
+          "Actual V1 client creates revision 7; V2 update retains its exact record and starts history at 7. The pinned old client lists V2 read-only and cannot overwrite it.",
+          "Opening history leaves the head untouched; restoration appends a new head and every revision downloads byte-exact original project JSON.",
+          "An update in another tab during historical validation rejects the stale open before returning editor data.",
+          "A failure after the combined head/history put rolls back the entire record, preserving exact preceding history.",
+          "Corrupt or future history retains the entire envelope for download and cannot be overwritten, including when its current project is healthy.",
+          "32-revision and combined 8 MiB limits preserve the oldest snapshot and reject another append without silent eviction.",
+          "Historical PDF dependencies remain visible after a new source replaces the head; restoration reuses the original association, and explicit asset deletion preserves every reviewed snapshot.",
+          "Actual PDF save, reload, local reopen and download preserve selected gradient and evidence",
+          "Slow reopen disables editing, source replacement cancels publication, and stale delete confirmation preserves another tab\u2019s newer revision",
+          "Opt-in original PDF survives reload and restores full page previews",
+          "Actual history controls preview/download without changing the saved head, then restore by append. Deleting an unrelated project preserves the historical PDF association; history controls fit 390px.",
+          "Figma project saves and reopens through actual controls without connection or plugin",
+          "Website project saves and reopens through actual controls without fetching the source",
+          "Existing saved-palette real-browser migration, conflicts and failure regression passes",
+          "No source or intake-service requests occurred while saving and reopening local projects"
+        ],
+        "errors": []
+      }
+    },
+    {
+      "path": "release/guideline-output-recovery/node22-checks.json",
+      "report": {
+        "status": "passed",
+        "node": "v22.13.1",
+        "checks": [
+          "Browser/Node bundle replay preserves extension, gradient and exact component SVG",
+          "Actual IndexedDB save, reload and reopen restores selected controls and checked exports",
+          "Corrupt and future bundles leave the selected application and source intact",
+          "Completed failed paint assessment restores visibly and remains nonexportable",
+          "Re-applying source review and editing extension controls invalidate visible and retained results",
+          "Cancelling replay prevents the subsequent local write",
+          "Desktop and 390px restored composition render without page errors or source/provider requests"
+        ]
+      }
+    },
+    {
+      "path": "release/guideline-source-set/node24-receipt.json",
+      "report": {
+        "node": "v24.19.0",
+        "scriptSha256": "e031c8ee52343b78b037122f4d9a9352eb444caa53fc8f8b1963b8edd697805a",
+        "buildHashes": {
+          "index.html": "c0e1dc8d82414d0242e7433a0bf5ab22f3b2561180ae07319b4aa97a8cd613ae",
+          "assets/GuidelineWorkspace-BQYYCRG-.css": "d1cf4cfcf62a767dbcea2bdb53827f531fe151868f6d4ea98e857c613506439c",
+          "assets/GuidelineWorkspace-DBGWA7TY.js": "a31d0c3d45449cc2dddb17d75b37832fc84f63af364da826e901abd6122df50d",
+          "assets/ProductSystemView-DJMb3_3z.css": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764",
+          "assets/ProductSystemView-DQXCebmr.js": "c5f4aa44dc9cd8641bb58f1c7b33f515eb765bdd6b5c4579fbd5a4258e222a6e",
+          "assets/authoring-Cf8Q3xZ7.js": "b944eb0107fef53389d8d0fd570f05a573ad86677bd71f4f19feec67e0294212",
+          "assets/authoringControlOutlinesV1-Drz71Oet.js": "10a4ebd8430518c5e7a4d31c89cb246f71b90aa4b9cf3a65a013ae99b708b23a",
+          "assets/colorSystemRecipeV1-CFQjSqfd.js": "cd744682a3bb2318333f72d7997541aa6c44c9a37f301e059f26132f39bfb540",
+          "assets/download-Bic2EQq1.js": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6",
+          "assets/index-BMMiDOxd.css": "0e359a3aeb7a2eb5c56422a31f451bda24c50d30c7ed62fc035c16ad0765f85e",
+          "assets/index-D28IvVtJ.js": "4018535a34fd73461493fce0196517047e106b475de02f936377b65fb0abaf80",
+          "assets/sourceProvenanceDisclosureData-CxLfFIWs.js": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361"
+        },
+        "checks": [
+          "Reviewed PDFs add directly; unresolved conflict survives download/reopen; explicit choice preserves both original projects and drives extension and gradient engines",
+          "Browser/Node strict replay preserves exact generated shades and gradient SVG",
+          "Malformed and future imports retain current selected work and leave it exportable",
+          "Cancelled delayed file completion cannot replace a newer reviewed source set or invalidate its gradient",
+          "Changing use clears resolutions, approvals and outputs; authoring controls start in the only declared use",
+          "Reviewed source-set recovery and bundled gradient replay work offline after Studio is loaded",
+          "Native Figma reviewed source adds directly through the shared source review action",
+          "Production save/reload reopens exact selected shades and SVG; edit/save and historical restoration append revisions, copy creates a separate record, and file-open detaches device identity",
+          "Combined review remains within the mobile viewport"
+        ],
+        "errors": [],
+        "requests": [],
+        "browser": "153.0.8010.12",
+        "passed": true
+      }
+    },
+    {
+      "path": "release/guideline-source-set-storage/node24-receipt.json",
+      "report": {
+        "node": "v24.19.0",
+        "scriptSha256": "d708016da6651372e9809108f60dc81430bb9706a6bfd1eaa8e5d41d3d8e01aa",
+        "checks": [
+          "Combined projects save/reopen exact pending and selected JSON, history and embedded original source strings without borrowing PDF assets",
+          "Stale, cancelled, future and corrupt replacements preserve the prior saved selected design",
+          "Concurrent update during historical validation cannot publish an obsolete open",
+          "Pinned pre-change client keeps combined records read-only and downloadable; it cannot overwrite their history",
+          "Injected IndexedDB quota and shared-byte capacity failures preserve every saved record and revision",
+          "The 32-revision limit blocks new writes without eviction and retains the original selected design",
+          "Delayed device open and save disable edits; cancellation and a replacement file prevent late publication or an abandoned revision write",
+          "An extension finishing after device opening starts cannot cancel that open or publish results against its old workspace",
+          "Opening a saved pending source set clears unsaved value/reason fields even when the source member hashes match"
+        ],
+        "errors": [],
+        "network": [],
+        "browser": "153.0.8010.12",
+        "passed": true
+      }
+    },
+    {
+      "path": "release/guideline-storage/node24-receipt.json",
+      "report": {
+        "status": "passed",
+        "node": "v24.19.0",
+        "checks": [
+          "PDF V1/V2/V3 and Figma projects retain exact JSON bytes, selected values and stable workspace identity",
+          "Website capture and draft save through their existing strict project codec",
+          "Concurrent updates and deleted records reject stale saves across real IndexedDB tabs",
+          "Future records remain visible and recoverable; writes cannot silently overwrite them",
+          "A failed transaction preserves the exact previous record and does not report success",
+          "Record-count race and aggregate byte capacity preserve existing records",
+          "Aborted database creation can be retried without touching the legacy palette database",
+          "Corrupt optional PDFs cannot hide healthy projects or block project-only saves/recovery; retained future dependencies block source deletion",
+          "Optional PDF identity is verified, deduplicated and deleted separately; missing originals retain the reviewed design",
+          "100 MiB source-asset budget rejects an additional PDF atomically while allowing a project-only save",
+          "Actual V1 client creates revision 7; V2 update retains its exact record and starts history at 7. The pinned old client lists V2 read-only and cannot overwrite it.",
+          "Opening history leaves the head untouched; restoration appends a new head and every revision downloads byte-exact original project JSON.",
+          "An update in another tab during historical validation rejects the stale open before returning editor data.",
+          "A failure after the combined head/history put rolls back the entire record, preserving exact preceding history.",
+          "Corrupt or future history retains the entire envelope for download and cannot be overwritten, including when its current project is healthy.",
+          "32-revision and combined 8 MiB limits preserve the oldest snapshot and reject another append without silent eviction.",
+          "Historical PDF dependencies remain visible after a new source replaces the head; restoration reuses the original association, and explicit asset deletion preserves every reviewed snapshot.",
+          "Actual PDF save, reload, local reopen and download preserve selected gradient and evidence",
+          "Slow reopen disables editing, source replacement cancels publication, and stale delete confirmation preserves another tab\u2019s newer revision",
+          "Opt-in original PDF survives reload and restores full page previews",
+          "Actual history controls preview/download without changing the saved head, then restore by append. Deleting an unrelated project preserves the historical PDF association; history controls fit 390px.",
+          "Figma project saves and reopens through actual controls without connection or plugin",
+          "Website project saves and reopens through actual controls without fetching the source",
+          "Existing saved-palette real-browser migration, conflicts and failure regression passes",
+          "No source or intake-service requests occurred while saving and reopening local projects"
+        ],
+        "errors": []
+      }
+    },
+    {
+      "path": "release/guideline-output-recovery/node24-checks.json",
+      "report": {
+        "status": "passed",
+        "node": "v24.19.0",
+        "checks": [
+          "Browser/Node bundle replay preserves extension, gradient and exact component SVG",
+          "Actual IndexedDB save, reload and reopen restores selected controls and checked exports",
+          "Corrupt and future bundles leave the selected application and source intact",
+          "Completed failed paint assessment restores visibly and remains nonexportable",
+          "Re-applying source review and editing extension controls invalidate visible and retained results",
+          "Cancelling replay prevents the subsequent local write",
+          "Desktop and 390px restored composition render without page errors or source/provider requests"
+        ]
+      }
+    }
+  ],
+  "otherChecks": [
+    {
+      "command": "Full + AI + Refactor PRD/plan ready-stage validator",
+      "exitCode": 0,
+      "output": "PRD profile: full + ai, refactor\nValidation stage: ready\nPASS: no structural or traceability issues found\n"
+    },
+    {
+      "command": "npm run typecheck (repository root, Node 22)",
+      "exitCode": 0,
+      "output": "\n> teul@1.0.0 typecheck\n> tsc --noEmit\n\n"
+    }
+  ],
+  "review": {
+    "scope": "working-tree changes against f9d4546, including new source-set storage files",
+    "reuse": "No unresolved findings",
+    "efficiency": "No unresolved findings",
+    "quality": "Fixed late extension publication overriding a newer local operation and unsaved conflict fields surviving device reopen; browser checks and follow-up review pass"
+  },
+  "limits": [
+    "Full PRD acceptance and selective multi-source refresh remain open.",
+    "Original PDF assets are not borrowed by combined projects.",
+    "Plugin/shared-core release gates were not rerun; this slice changes Studio only.",
+    "Large lazy Guidelines chunk warning remains; no performance qualification claimed.",
+    "Synthetic palette tests do not establish brand authority or visual acceptance."
+  ]
+}

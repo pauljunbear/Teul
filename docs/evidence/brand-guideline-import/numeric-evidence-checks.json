@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "teul.guideline-numeric-evidence-checks.v1",
+  "status": "passed",
+  "checkedAt": "2026-09-25T22:34:44.921201+00:00",
+  "baseCommit": "edbac863b6ae267a7d4d2c3afd30d46c263718f6",
+  "scope": "Partial local TASK-002/TASK-004 numeric PDF evidence and portable replay; not full PRD acceptance or release",
+  "sourceHashes": {
+    "docs/evidence/brand-guideline-import/numeric-browser-node22.json": "sha256:7b2e8a14d2014e1370bc627e711ed9b11c1a1d5b8a3101f8165cd951dbad551a",
+    "docs/evidence/brand-guideline-import/numeric-browser-node24.json": "sha256:935ac25bbbf4d6250e73c991d89de137b743cd3473bd5e1ba0a661d5f5c382fe",
+    "docs/evidence/brand-guideline-import/numeric-context-review.json": "sha256:5c7ed2318bc78bdf738d0bb8eed9fef917eed6d65d775f214b4c1f639304a633",
+    "docs/evidence/brand-guideline-import/numeric-evidence-desktop.png": "sha256:5737e2ba4a2754d1a0ca9889a7e1ae4a084996b2f871f3a3d67e08739cda709e",
+    "docs/evidence/brand-guideline-import/numeric-evidence-mobile.png": "sha256:926c2cff1a58cf9d5e9b6df86f5df173e49f450f745da881bc98f3cf20a18afd",
+    "docs/evidence/brand-guideline-import/numeric-evidence.md": "sha256:66239471f8d75fa897a22e4aaa2af62e3276f6e22497dd38c96702dbcfc5e0bf",
+    "docs/plans/2026-09-25-brand-guideline-import-plan.md": "sha256:2d64a88537fb61a744e799eb0ee23cd887df18d75f56e95b01779db4be076aed",
+    "docs/prds/2026-09-25-brand-guideline-import.md": "sha256:e148732c9b877b7c08bb86fb6f5b58fcb5a1a4aa6bae4dd79546caae57ce65df",
+    "web/fixtures/guidelines/README-numeric.md": "sha256:fcba070251b04fb0dcf0c58160bb2e40cc982da614d2a3b890666cce675d46e7",
+    "web/fixtures/guidelines/generate-numeric.py": "sha256:ba49bf8e79a21600823b2be7f739fd01eade1e4f51f2ebc5d603f974e6285aa1",
+    "web/fixtures/guidelines/harbor-encrypted.pdf": "sha256:45f96f8c2eea91adc51f2bcf6ecdfb086025b1942f541d4a20fec464466da828",
+    "web/fixtures/guidelines/harbor-numeric.pdf": "sha256:b583664ade57f7a03a825a97f0d68e148eba2d5b25cb7c2aebcee6e925465925",
+    "web/fixtures/guidelines/legacy-projects.json": "sha256:3a2fa202362b35e6776a0c67361ee73c91d0883542b430bd58aa0923ee5e8276",
+    "web/package.json": "sha256:3dcc261f900fd8fffc0640485b1129ce9518f4e5f3069fc943f25746f967aa90",
+    "web/scripts/guideline-numeric-smoke.mjs": "sha256:01f093dd021f8de4cd2e397d684d1cc326a8b24616119729c276ca19ae1baa7e",
+    "web/scripts/guideline-smoke.mjs": "sha256:75499609fab76f10ea7652ccf8125c2737252d5c284222b96301c969200c82b9",
+    "web/src/components/GuidelineAssistancePanel.tsx": "sha256:8c0764cc768cd7cc04eae379976f2c746560a03505799c5a92ca55cba2b31796",
+    "web/src/components/GuidelineStructureEditor.tsx": "sha256:f5e4540a45d6b8dd08e4ded579b4578d7f76aa8df2bca6851b8f411a638ff647",
+    "web/src/components/GuidelineWorkspace.css": "sha256:f97d5b2584ba55279570db34fee723ebed90057b641713f71ae31b4f55faa66c",
+    "web/src/components/GuidelineWorkspace.tsx": "sha256:34f7bd90b606b8435321b10be46006fe7277c3b98efd37add9fb54fe5b34dac5",
+    "web/src/lib/guideline/assistance.ts": "sha256:fe69fd9abaca796c8dafc17f85012349b2b7a8fab6116641d0909f3b1039a563",
+    "web/src/lib/guideline/assistanceNumeric.test.ts": "sha256:e6228d83c8e0279d0f76d6d1893badd823a97d306e1c78bc4a74513d9dc782bf",
+    "web/src/lib/guideline/evidence.ts": "sha256:070bc1cb4715c3b81a924220f3b5c4249423f438e392bcfc98fb2d34a3deff1e",
+    "web/src/lib/guideline/evidenceV2.test.ts": "sha256:bf327a6cc8415b114af59ef406564b5f6edcca1453140fa654d29596ca92f127",
+    "web/src/lib/guideline/evidenceV2.ts": "sha256:d7e7f2b4eaefd896bbb73c3b0c1671b46149bdd701228aede966a1bea7863745",
+    "web/src/lib/guideline/numericEvidence.test.ts": "sha256:0796f7fa2f853b5975d90569b50320f7c31ec7073ad1ba3bc8dd8a046a6e69b8",
+    "web/src/lib/guideline/numericEvidence.ts": "sha256:4128b96bdc54ac4fd08a27feaf14f5ff8a7db38e1290838ba17022f132084ad9",
+    "web/src/lib/guideline/pdfV2.test.ts": "sha256:2572b938e71dd148f4de74363859fa28dc8bc21f2155724a21d4a67a7575c761",
+    "web/src/lib/guideline/pdfV2.ts": "sha256:f65382cd3081762dd87bb3695e65d11441b58dceaf7c09f8cf6679d64ff67d1a",
+    "web/src/lib/guideline/projectV3.test.ts": "sha256:f311db71b99d3a316fc57d3a4e897a7e28b7e6d74ff0a92408dbef0788e50215",
+    "web/src/lib/guideline/projectV3.ts": "sha256:c418adb2f5bda0707ca964d186d06997790c81755cb3ccdfd62af07210400dcb",
+    "web/src/lib/guideline/review.ts": "sha256:8695fe29a29e04ce475e185c4be21e17492267bbac43619368720408cea4fb76",
+    "web/src/lib/guideline/reviewV2.ts": "sha256:7af78a4f4ff8c8b4f13fb1467d2a096e2186ba5807f2b8adc317d3cc64ee9e89",
+    "web/src/lib/guideline/reviewV3.ts": "sha256:7da520eb2ff7ad028135601d407bbed839b047252d3ffa003a07fc961b888edb"
+  },
+  "checks": [
+    {
+      "command": "npm --prefix web test",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "20 files / 280 tests passed on each"
+    },
+    {
+      "command": "npm --prefix web run test:guideline-numeric",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "8 actual browser scenario groups passed on each; zero diagnostics and external requests",
+      "receipts": ["numeric-browser-node22.json", "numeric-browser-node24.json"]
+    },
+    {
+      "command": "npm --prefix web run test:guideline-assistance",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "11 browser/service scenarios passed on each; synthetic provider only"
+    },
+    {
+      "command": "npm --prefix web run test:guidelines",
+      "runtimes": ["22.13.1"],
+      "result": "24 existing browser scenarios passed; zero remote requests; intentional capture cancellation reports PDF.js worker-destroyed warning"
+    },
+    {
+      "command": "npm --prefix web run build",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "passed on each; lazy guideline chunk 657.65 kB / gzip 197.44 kB; existing size advisory retained"
+    },
+    {
+      "command": "npm --prefix web run lint",
+      "runtimes": ["22.13.1"],
+      "result": "Studio oxlint passed; root ESLint does not cover Studio files"
+    },
+    {
+      "command": "validate_prd.py --profile full --extension ai --extension refactor --stage ready --strict",
+      "result": "passed; completion not claimed"
+    },
+    {
+      "command": "Independent simplify reuse, quality and efficiency reviews plus finding verification",
+      "result": "Two source-admission findings resolved; no remaining substantive findings",
+      "receipt": "numeric-context-review.json"
+    }
+  ],
+  "limitations": [
+    "Native numeric channels use JavaScript numbers; original literal remains intact.",
+    "Scanned/manual and rendered-appearance value methods, source conflict resolution and multiple sources remain pending.",
+    "No live model, private upload, Figma mutation, push, deployment or full release gate was performed."
+  ]
+}

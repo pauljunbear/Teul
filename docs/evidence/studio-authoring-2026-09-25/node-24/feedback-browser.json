@@ -1,0 +1,16 @@
+{
+  "url": "http://127.0.0.1:52381",
+  "checkedAt": "2026-09-25T19:01:56.796Z",
+  "passed": 6,
+  "checks": [
+    "picker: exact additions, replacement, cancellation, focus and capacity",
+    "suggestions: invalid and no-close states keep manual and library choices available",
+    "radix: recorded Gold match and exact-source alternative are explicit",
+    "workflow: actual preview pair and direct saved-palette destination survive reload",
+    "library: scrolling loads the next batch and searching resets the visible set",
+    "mobile: all views and the keyboard-dismissable picker fit at 390px"
+  ],
+  "failures": [],
+  "pageErrors": [],
+  "evidence": "/Users/paul.jun/Downloads/Projects/Teul/release/studio-gates/2026-09-25T18-58-06Z-8689261/test-feedback"
+}

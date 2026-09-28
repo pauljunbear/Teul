@@ -94,1215 +94,217 @@ export interface RadixFamilyMatch {
 export const RADIX_FAMILY_MATCH_METHOD =
   'Delta E OK nearest exact published sRGB solid-scale step (light and dark, steps 1-12)';
 
-// ============================================
-// Light Mode Scales
-// ============================================
-
-const grayLight: RadixScale = {
-  1: '#fcfcfc',
-  2: '#f9f9f9',
-  3: '#f0f0f0',
-  4: '#e8e8e8',
-  5: '#e0e0e0',
-  6: '#d9d9d9',
-  7: '#cecece',
-  8: '#bbbbbb',
-  9: '#8d8d8d',
-  10: '#838383',
-  11: '#646464',
-  12: '#202020',
+/** Pinned source rows: paired neutral, matching hue, 12 light values, 12 dark values. */
+const sourceRows: Record<RadixColorName, readonly [NeutralName, number, string, string]> = {
+  gray: [
+    'gray',
+    0,
+    'fcfcfcf9f9f9f0f0f0e8e8e8e0e0e0d9d9d9cececebbbbbb8d8d8d838383646464202020',
+    '1111111919192222222a2a2a3131313a3a3a4848486060606e6e6e7b7b7bb4b4b4eeeeee',
+  ],
+  mauve: [
+    'mauve',
+    280,
+    'fdfcfdfaf9fbf2eff3eae7ece3dfe6dbd8e0d0cdd7bcbac78e8c9984828e65636d211f26',
+    '1211131a191b2322252b292d3230353c393f49474e625f696f6d787c7a85b5b2bceeeef0',
+  ],
+  slate: [
+    'slate',
+    220,
+    'fcfcfdf9f9fbf0f0f3e8e8ece0e1e6d9d9e0cdced6b9bbc68b8d9880838d60646c1c2024',
+    '11111318191b212225272a2d2e3135363a3f43484e5a6169696e77777b84b0b4baedeef0',
+  ],
+  sage: [
+    'sage',
+    150,
+    'fbfdfcf7f9f8eef1f0e6e9e8dfe2e0d7dad9cbcfcdb8bcba868e8b7c84815f65631a211e',
+    '101211171918202221272a292e3130373b394449475b625f63706b717d79adb5b2eceeed',
+  ],
+  olive: [
+    'olive',
+    90,
+    'fcfdfcf8faf8eff1efe7e9e7dfe2dfd7dad7cccfccb9bcb8898e877f847d60655f1d211c',
+    '111210181917212220282a272f312e383a364548435c625b687066767d74afb5adeceeec',
+  ],
+  sand: [
+    'sand',
+    45,
+    'fdfdfcf9f9f8f1f0efe9e8e6e2e1dedad9d6cfcecabcbbb58d8d8682827c63635e21201c',
+    '1111101919182222212a2a2831312e3b3a3749484462605b6f6d667c7b74b5b3adeeeeec',
+  ],
+  tomato: [
+    'mauve',
+    10,
+    'fffcfcfff8f7feebe7ffdcd3ffcdc2fdbdaff5a898ec8e7be54d2edd4425d134155c271f',
+    '1811111f15133917144e15115e1c166e2920853a2dac4d39e54d2eec6142ff977dfbd3cb',
+  ],
+  red: [
+    'mauve',
+    358,
+    'fffcfcfff7f7feebecffdbdcffcdcefdbdbef4a9aaeb8e90e5484ddc3e42ce2c31641723',
+    '1911112013143b1219500f1c61162372232d8c333ab54548e5484dec5d5eff9592ffd1d9',
+  ],
+  ruby: [
+    'mauve',
+    348,
+    'fffcfdfff7f8feeaedffdce1ffced6f8bfc8efacb8e592a3e54666dc3b5dca244d64172b',
+    '1911131e15173a141e4e13255e1a2e6f2539883447b3445ae54666ec5a72ff949dfed2e1',
+  ],
+  crimson: [
+    'mauve',
+    336,
+    'fffcfdfef7f9ffe9f0fedce7faceddf3bed1eaacc3e093b2e93d82df3478cb1d63621639',
+    '1911142013183815254d122f5c18396d2545873356b0436ee93d82ee518aff92adfdd3e8',
+  ],
+  pink: [
+    'mauve',
+    322,
+    'fffcfefef7fbfee9f5fbdceff6cee7efbfdde7acd0dd93c2d6409fcf3897c2298a651249',
+    '19111721121d37172f4b143d591c47692955833869a84885d6409fde51a8ff8dccfdd1ea',
+  ],
+  plum: [
+    'mauve',
+    292,
+    'fefcfffdf7fdfbebfbf7def8f2d1f3e9c2ecdeade3cf91d8ab4abaa144af953ea353195d',
+    '181118201320351a35451d475124545e306173407992549cab4abab658c4e796f3f4d4f4',
+  ],
+  purple: [
+    'mauve',
+    272,
+    'fefcfefbf7fef7edfef2e2fcead5f9e0c4f4d1afecbe93e48e4ec68347b98145b5402060',
+    '18111b1e1523301c3b3d224e48295c54346b6642828457aa8e4ec69a5cd0d19dffecd9fa',
+  ],
+  violet: [
+    'mauve',
+    252,
+    'fdfcfefaf8fff4f0feebe4ffe1d9ffd4cafec2b5f5aa99ec6e56cf654dc46550b92f265f',
+    '14121f1b1525291f4333255b3c2e6947387656468b6958ad6e56cf7d66d9baa7ffe2ddfe',
+  ],
+  iris: [
+    'slate',
+    240,
+    'fdfdfff8f8fff0f1fee6e7ffdadcffcbcdffb8baf89b9ef05b5bd65151cd5753c6272962',
+    '13131e171625202248262a653033743d3e824a4a955958b15b5bd66e6adeb1a9ffe0dffe',
+  ],
+  indigo: [
+    'slate',
+    226,
+    'fdfdfef7f9ffedf2fee1e9ffd2deffc1d0ffabbdf98da4ef3e63dd3358d43a5bc71f2d5c',
+    '11131f1417261824491d2e622539743043843a4f97435db13e63dd5472e49eb1ffd6e1ff',
+  ],
+  blue: [
+    'slate',
+    206,
+    'fbfdfff4faffe6f4fed5efffc2e5ffacd8fc8ec8f65eb1ef0090ff0588f00d74ce113264',
+    '0d15201119270d2847003362004074104d87205d9e2870bd0090ff3b9eff70b8ffc2e6ff',
+  ],
+  cyan: [
+    'slate',
+    190,
+    'fafdfef2fafbdef7f9caf1f6b5e9f09ddde77dcedc3db9cf00a2c70797b9107d980d3c48',
+    '0b161a101b20082c3600384800455804546812677e11809c00a2c723afd04ccce6b6ecf7',
+  ],
+  sky: [
+    'slate',
+    193,
+    'f9fefff1fafde1f6fdd1f0fabee7f5a9daed8dcae360b3d77ce2fe74daf800749e1d3e56',
+    '0d141f111a271128401135551544671b537b1f6692197cae7ce2fea8eeff75c7f0c2f3ff',
+  ],
+  teal: [
+    'sage',
+    170,
+    'fafefdf3fbf9e0f8f3ccf3eab8eae0a1ded283cdc153b9ab12a5940d9b8a0085730d3d38',
+    '0d1514111c1b0d2d2a023b370848431457501c6961207e7312a5940eb39e0bd8b6adf0dd',
+  ],
+  jade: [
+    'sage',
+    158,
+    'fbfefdf4fbf7e6f7edd6f1e3c3e9d7acdec88bceb656ba9f29a38326997b2083681d3b31',
+    '0d1512121c180f2e220b3b2c1148371b57452468542a7e6829a38327b08b1fd8a4adf0d4',
+  ],
+  green: [
+    'sage',
+    145,
+    'fbfefcf4fbf6e6f6ebd6f1dfc4e8d1adddc08eceaa5bb98b30a46c2b9a66218358193b2d',
+    '0e1512121b17132d21113b2917493320573e28684a2f7c5730a46c33b0743dd68cb1f1cb',
+  ],
+  grass: [
+    'olive',
+    131,
+    'fbfefbf5fbf5e9f6e9daf1dbc9e8cab2ddb594ce9a65ba7446a7583e9b4f2a7e3b203c25',
+    '0e1511141a151b2a1e1d3a2425482d2d57363667403e794946a75853b36571d083c2f0c2',
+  ],
+  mint: [
+    'sage',
+    167,
+    'f9fefdf2fbf9ddf9f2c8f4e9b3ecde9ce0d07ecfbd4cbba586ead47de0cb02786416433c',
+    '0e15150f1b1b092c2b003a380047441056501e685f277f7086ead4a8f5e558d5bac4f5e1',
+  ],
+  lime: [
+    'olive',
+    85,
+    'fcfdfaf8faf3eef6d6e2f0bdd3e7a6c2da91abc9788db654bdee63b0e64c5c7c2f37401c',
+    '11130c151a101f291729371d3344233d522a496231577538bdee63d4ff70bde56ce3f7ba',
+  ],
+  yellow: [
+    'sand',
+    55,
+    'fdfdf9fefce9fffab8fff394ffe770f3d768e4c767d5ae39ffe629ffdc009e6c00473b1f',
+    '14120b1b180f2d2305362b00433500524202665417836a21ffe629ffff57f5e147f6eeb4',
+  ],
+  amber: [
+    'sand',
+    42,
+    'fefdfbfefbe9fff7c2ffee9cfbe577f3d673e9c162e2a336ffc53dffba18ab64004f3422',
+    '16120c1d180f3020083f27004d30005c3d05714f198f6424ffc53dffd60affca16ffe7b3',
+  ],
+  orange: [
+    'sand',
+    24,
+    'fefcfbfff7edffefd6ffdfb5ffd19affc182f5ae73ec9455f76b15ef5f00cc4e00582d1d',
+    '17120e1e160f331e0b46210056280066350c7e451da35829f76b15ff801fffa057ffe0c2',
+  ],
+  brown: [
+    'sand',
+    28,
+    'fefdfcfcf9f6f6eee7f0e4d9ebdacae4cdb7dcbc9fcea37ead7f58a07553815e463e332e',
+    '12110f1c181628211d3229223e31284d3c2f614a397c5f46ad7f58b88c67dbb594f2e1ca',
+  ],
+  bronze: [
+    'sand',
+    18,
+    'fdfcfcfdf7f5f6edeaefe4dfe7d9d3dfcdc5d3bcb3c2a499a180729574687d5e5443302b',
+    '1411101c1917262220302a273b3330493e3a5a4c476f5f58a18072ae8c7ed4b3a5ede0d9',
+  ],
+  gold: [
+    'sand',
+    36,
+    'fdfdfcfaf9f2f2f0e7eae6dbe1dccfd8d0bfcbc0aab9a88d9783658c7a5e71624b3b352b',
+    '1212111b1a1724231f2d2b2638352e444039544f46696256978365a39073cbb99fe8e2d9',
+  ],
 };
 
-const mauveLight: RadixScale = {
-  1: '#fdfcfd',
-  2: '#faf9fb',
-  3: '#f2eff3',
-  4: '#eae7ec',
-  5: '#e3dfe6',
-  6: '#dbd8e0',
-  7: '#d0cdd7',
-  8: '#bcbac7',
-  9: '#8e8c99',
-  10: '#84828e',
-  11: '#65636d',
-  12: '#211f26',
-};
+/** Lossless source storage: 12 consecutive six-digit sRGB values in published order. */
+function unpackRadixScale(packed: string): RadixScale {
+  return Object.fromEntries(
+    Array.from({ length: 12 }, (_, i) => [i + 1, '#' + packed.slice(i * 6, (i + 1) * 6)])
+  ) as unknown as RadixScale;
+}
+
+export const radixColors: Record<RadixColorName, RadixColorFamily> = Object.fromEntries(
+  Object.entries(sourceRows).map(([name, [pairedNeutral, hue, light, dark]]) => [
+    name,
+    {
+      name,
+      displayName: name[0].toUpperCase() + name.slice(1),
+      light: unpackRadixScale(light),
+      dark: unpackRadixScale(dark),
+      pairedNeutral,
+      hue,
+    },
+  ])
+) as Record<RadixColorName, RadixColorFamily>;
 
-const slateLight: RadixScale = {
-  1: '#fcfcfd',
-  2: '#f9f9fb',
-  3: '#f0f0f3',
-  4: '#e8e8ec',
-  5: '#e0e1e6',
-  6: '#d9d9e0',
-  7: '#cdced6',
-  8: '#b9bbc6',
-  9: '#8b8d98',
-  10: '#80838d',
-  11: '#60646c',
-  12: '#1c2024',
-};
-
-const sageLight: RadixScale = {
-  1: '#fbfdfc',
-  2: '#f7f9f8',
-  3: '#eef1f0',
-  4: '#e6e9e8',
-  5: '#dfe2e0',
-  6: '#d7dad9',
-  7: '#cbcfcd',
-  8: '#b8bcba',
-  9: '#868e8b',
-  10: '#7c8481',
-  11: '#5f6563',
-  12: '#1a211e',
-};
-
-const oliveLight: RadixScale = {
-  1: '#fcfdfc',
-  2: '#f8faf8',
-  3: '#eff1ef',
-  4: '#e7e9e7',
-  5: '#dfe2df',
-  6: '#d7dad7',
-  7: '#cccfcc',
-  8: '#b9bcb8',
-  9: '#898e87',
-  10: '#7f847d',
-  11: '#60655f',
-  12: '#1d211c',
-};
-
-const sandLight: RadixScale = {
-  1: '#fdfdfc',
-  2: '#f9f9f8',
-  3: '#f1f0ef',
-  4: '#e9e8e6',
-  5: '#e2e1de',
-  6: '#dad9d6',
-  7: '#cfceca',
-  8: '#bcbbb5',
-  9: '#8d8d86',
-  10: '#82827c',
-  11: '#63635e',
-  12: '#21201c',
-};
-
-const tomatoLight: RadixScale = {
-  1: '#fffcfc',
-  2: '#fff8f7',
-  3: '#feebe7',
-  4: '#ffdcd3',
-  5: '#ffcdc2',
-  6: '#fdbdaf',
-  7: '#f5a898',
-  8: '#ec8e7b',
-  9: '#e54d2e',
-  10: '#dd4425',
-  11: '#d13415',
-  12: '#5c271f',
-};
-
-const redLight: RadixScale = {
-  1: '#fffcfc',
-  2: '#fff7f7',
-  3: '#feebec',
-  4: '#ffdbdc',
-  5: '#ffcdce',
-  6: '#fdbdbe',
-  7: '#f4a9aa',
-  8: '#eb8e90',
-  9: '#e5484d',
-  10: '#dc3e42',
-  11: '#ce2c31',
-  12: '#641723',
-};
-
-const rubyLight: RadixScale = {
-  1: '#fffcfd',
-  2: '#fff7f8',
-  3: '#feeaed',
-  4: '#ffdce1',
-  5: '#ffced6',
-  6: '#f8bfc8',
-  7: '#efacb8',
-  8: '#e592a3',
-  9: '#e54666',
-  10: '#dc3b5d',
-  11: '#ca244d',
-  12: '#64172b',
-};
-
-const crimsonLight: RadixScale = {
-  1: '#fffcfd',
-  2: '#fef7f9',
-  3: '#ffe9f0',
-  4: '#fedce7',
-  5: '#facedd',
-  6: '#f3bed1',
-  7: '#eaacc3',
-  8: '#e093b2',
-  9: '#e93d82',
-  10: '#df3478',
-  11: '#cb1d63',
-  12: '#621639',
-};
-
-const pinkLight: RadixScale = {
-  1: '#fffcfe',
-  2: '#fef7fb',
-  3: '#fee9f5',
-  4: '#fbdcef',
-  5: '#f6cee7',
-  6: '#efbfdd',
-  7: '#e7acd0',
-  8: '#dd93c2',
-  9: '#d6409f',
-  10: '#cf3897',
-  11: '#c2298a',
-  12: '#651249',
-};
-
-const plumLight: RadixScale = {
-  1: '#fefcff',
-  2: '#fdf7fd',
-  3: '#fbebfb',
-  4: '#f7def8',
-  5: '#f2d1f3',
-  6: '#e9c2ec',
-  7: '#deade3',
-  8: '#cf91d8',
-  9: '#ab4aba',
-  10: '#a144af',
-  11: '#953ea3',
-  12: '#53195d',
-};
-
-const purpleLight: RadixScale = {
-  1: '#fefcfe',
-  2: '#fbf7fe',
-  3: '#f7edfe',
-  4: '#f2e2fc',
-  5: '#ead5f9',
-  6: '#e0c4f4',
-  7: '#d1afec',
-  8: '#be93e4',
-  9: '#8e4ec6',
-  10: '#8347b9',
-  11: '#8145b5',
-  12: '#402060',
-};
-
-const violetLight: RadixScale = {
-  1: '#fdfcfe',
-  2: '#faf8ff',
-  3: '#f4f0fe',
-  4: '#ebe4ff',
-  5: '#e1d9ff',
-  6: '#d4cafe',
-  7: '#c2b5f5',
-  8: '#aa99ec',
-  9: '#6e56cf',
-  10: '#654dc4',
-  11: '#6550b9',
-  12: '#2f265f',
-};
-
-const irisLight: RadixScale = {
-  1: '#fdfdff',
-  2: '#f8f8ff',
-  3: '#f0f1fe',
-  4: '#e6e7ff',
-  5: '#dadcff',
-  6: '#cbcdff',
-  7: '#b8baf8',
-  8: '#9b9ef0',
-  9: '#5b5bd6',
-  10: '#5151cd',
-  11: '#5753c6',
-  12: '#272962',
-};
-
-const indigoLight: RadixScale = {
-  1: '#fdfdfe',
-  2: '#f7f9ff',
-  3: '#edf2fe',
-  4: '#e1e9ff',
-  5: '#d2deff',
-  6: '#c1d0ff',
-  7: '#abbdf9',
-  8: '#8da4ef',
-  9: '#3e63dd',
-  10: '#3358d4',
-  11: '#3a5bc7',
-  12: '#1f2d5c',
-};
-
-const blueLight: RadixScale = {
-  1: '#fbfdff',
-  2: '#f4faff',
-  3: '#e6f4fe',
-  4: '#d5efff',
-  5: '#c2e5ff',
-  6: '#acd8fc',
-  7: '#8ec8f6',
-  8: '#5eb1ef',
-  9: '#0090ff',
-  10: '#0588f0',
-  11: '#0d74ce',
-  12: '#113264',
-};
-
-const cyanLight: RadixScale = {
-  1: '#fafdfe',
-  2: '#f2fafb',
-  3: '#def7f9',
-  4: '#caf1f6',
-  5: '#b5e9f0',
-  6: '#9ddde7',
-  7: '#7dcedc',
-  8: '#3db9cf',
-  9: '#00a2c7',
-  10: '#0797b9',
-  11: '#107d98',
-  12: '#0d3c48',
-};
-
-const tealLight: RadixScale = {
-  1: '#fafefd',
-  2: '#f3fbf9',
-  3: '#e0f8f3',
-  4: '#ccf3ea',
-  5: '#b8eae0',
-  6: '#a1ded2',
-  7: '#83cdc1',
-  8: '#53b9ab',
-  9: '#12a594',
-  10: '#0d9b8a',
-  11: '#008573',
-  12: '#0d3d38',
-};
-
-const jadeLight: RadixScale = {
-  1: '#fbfefd',
-  2: '#f4fbf7',
-  3: '#e6f7ed',
-  4: '#d6f1e3',
-  5: '#c3e9d7',
-  6: '#acdec8',
-  7: '#8bceb6',
-  8: '#56ba9f',
-  9: '#29a383',
-  10: '#26997b',
-  11: '#208368',
-  12: '#1d3b31',
-};
-
-const greenLight: RadixScale = {
-  1: '#fbfefc',
-  2: '#f4fbf6',
-  3: '#e6f6eb',
-  4: '#d6f1df',
-  5: '#c4e8d1',
-  6: '#adddc0',
-  7: '#8eceaa',
-  8: '#5bb98b',
-  9: '#30a46c',
-  10: '#2b9a66',
-  11: '#218358',
-  12: '#193b2d',
-};
-
-const grassLight: RadixScale = {
-  1: '#fbfefb',
-  2: '#f5fbf5',
-  3: '#e9f6e9',
-  4: '#daf1db',
-  5: '#c9e8ca',
-  6: '#b2ddb5',
-  7: '#94ce9a',
-  8: '#65ba74',
-  9: '#46a758',
-  10: '#3e9b4f',
-  11: '#2a7e3b',
-  12: '#203c25',
-};
-
-const bronzeLight: RadixScale = {
-  1: '#fdfcfc',
-  2: '#fdf7f5',
-  3: '#f6edea',
-  4: '#efe4df',
-  5: '#e7d9d3',
-  6: '#dfcdc5',
-  7: '#d3bcb3',
-  8: '#c2a499',
-  9: '#a18072',
-  10: '#957468',
-  11: '#7d5e54',
-  12: '#43302b',
-};
-
-const goldLight: RadixScale = {
-  1: '#fdfdfc',
-  2: '#faf9f2',
-  3: '#f2f0e7',
-  4: '#eae6db',
-  5: '#e1dccf',
-  6: '#d8d0bf',
-  7: '#cbc0aa',
-  8: '#b9a88d',
-  9: '#978365',
-  10: '#8c7a5e',
-  11: '#71624b',
-  12: '#3b352b',
-};
-
-const brownLight: RadixScale = {
-  1: '#fefdfc',
-  2: '#fcf9f6',
-  3: '#f6eee7',
-  4: '#f0e4d9',
-  5: '#ebdaca',
-  6: '#e4cdb7',
-  7: '#dcbc9f',
-  8: '#cea37e',
-  9: '#ad7f58',
-  10: '#a07553',
-  11: '#815e46',
-  12: '#3e332e',
-};
-
-const orangeLight: RadixScale = {
-  1: '#fefcfb',
-  2: '#fff7ed',
-  3: '#ffefd6',
-  4: '#ffdfb5',
-  5: '#ffd19a',
-  6: '#ffc182',
-  7: '#f5ae73',
-  8: '#ec9455',
-  9: '#f76b15',
-  10: '#ef5f00',
-  11: '#cc4e00',
-  12: '#582d1d',
-};
-
-const amberLight: RadixScale = {
-  1: '#fefdfb',
-  2: '#fefbe9',
-  3: '#fff7c2',
-  4: '#ffee9c',
-  5: '#fbe577',
-  6: '#f3d673',
-  7: '#e9c162',
-  8: '#e2a336',
-  9: '#ffc53d',
-  10: '#ffba18',
-  11: '#ab6400',
-  12: '#4f3422',
-};
-
-const yellowLight: RadixScale = {
-  1: '#fdfdf9',
-  2: '#fefce9',
-  3: '#fffab8',
-  4: '#fff394',
-  5: '#ffe770',
-  6: '#f3d768',
-  7: '#e4c767',
-  8: '#d5ae39',
-  9: '#ffe629',
-  10: '#ffdc00',
-  11: '#9e6c00',
-  12: '#473b1f',
-};
-
-const limeLight: RadixScale = {
-  1: '#fcfdfa',
-  2: '#f8faf3',
-  3: '#eef6d6',
-  4: '#e2f0bd',
-  5: '#d3e7a6',
-  6: '#c2da91',
-  7: '#abc978',
-  8: '#8db654',
-  9: '#bdee63',
-  10: '#b0e64c',
-  11: '#5c7c2f',
-  12: '#37401c',
-};
-
-const mintLight: RadixScale = {
-  1: '#f9fefd',
-  2: '#f2fbf9',
-  3: '#ddf9f2',
-  4: '#c8f4e9',
-  5: '#b3ecde',
-  6: '#9ce0d0',
-  7: '#7ecfbd',
-  8: '#4cbba5',
-  9: '#86ead4',
-  10: '#7de0cb',
-  11: '#027864',
-  12: '#16433c',
-};
-
-const skyLight: RadixScale = {
-  1: '#f9feff',
-  2: '#f1fafd',
-  3: '#e1f6fd',
-  4: '#d1f0fa',
-  5: '#bee7f5',
-  6: '#a9daed',
-  7: '#8dcae3',
-  8: '#60b3d7',
-  9: '#7ce2fe',
-  10: '#74daf8',
-  11: '#00749e',
-  12: '#1d3e56',
-};
-
-// ============================================
-// Dark Mode Scales
-// ============================================
-
-const grayDark: RadixScale = {
-  1: '#111111',
-  2: '#191919',
-  3: '#222222',
-  4: '#2a2a2a',
-  5: '#313131',
-  6: '#3a3a3a',
-  7: '#484848',
-  8: '#606060',
-  9: '#6e6e6e',
-  10: '#7b7b7b',
-  11: '#b4b4b4',
-  12: '#eeeeee',
-};
-
-const mauveDark: RadixScale = {
-  1: '#121113',
-  2: '#1a191b',
-  3: '#232225',
-  4: '#2b292d',
-  5: '#323035',
-  6: '#3c393f',
-  7: '#49474e',
-  8: '#625f69',
-  9: '#6f6d78',
-  10: '#7c7a85',
-  11: '#b5b2bc',
-  12: '#eeeef0',
-};
-
-const slateDark: RadixScale = {
-  1: '#111113',
-  2: '#18191b',
-  3: '#212225',
-  4: '#272a2d',
-  5: '#2e3135',
-  6: '#363a3f',
-  7: '#43484e',
-  8: '#5a6169',
-  9: '#696e77',
-  10: '#777b84',
-  11: '#b0b4ba',
-  12: '#edeef0',
-};
-
-const sageDark: RadixScale = {
-  1: '#101211',
-  2: '#171918',
-  3: '#202221',
-  4: '#272a29',
-  5: '#2e3130',
-  6: '#373b39',
-  7: '#444947',
-  8: '#5b625f',
-  9: '#63706b',
-  10: '#717d79',
-  11: '#adb5b2',
-  12: '#eceeed',
-};
-
-const oliveDark: RadixScale = {
-  1: '#111210',
-  2: '#181917',
-  3: '#212220',
-  4: '#282a27',
-  5: '#2f312e',
-  6: '#383a36',
-  7: '#454843',
-  8: '#5c625b',
-  9: '#687066',
-  10: '#767d74',
-  11: '#afb5ad',
-  12: '#eceeec',
-};
-
-const sandDark: RadixScale = {
-  1: '#111110',
-  2: '#191918',
-  3: '#222221',
-  4: '#2a2a28',
-  5: '#31312e',
-  6: '#3b3a37',
-  7: '#494844',
-  8: '#62605b',
-  9: '#6f6d66',
-  10: '#7c7b74',
-  11: '#b5b3ad',
-  12: '#eeeeec',
-};
-
-const tomatoDark: RadixScale = {
-  1: '#181111',
-  2: '#1f1513',
-  3: '#391714',
-  4: '#4e1511',
-  5: '#5e1c16',
-  6: '#6e2920',
-  7: '#853a2d',
-  8: '#ac4d39',
-  9: '#e54d2e',
-  10: '#ec6142',
-  11: '#ff977d',
-  12: '#fbd3cb',
-};
-
-const redDark: RadixScale = {
-  1: '#191111',
-  2: '#201314',
-  3: '#3b1219',
-  4: '#500f1c',
-  5: '#611623',
-  6: '#72232d',
-  7: '#8c333a',
-  8: '#b54548',
-  9: '#e5484d',
-  10: '#ec5d5e',
-  11: '#ff9592',
-  12: '#ffd1d9',
-};
-
-const rubyDark: RadixScale = {
-  1: '#191113',
-  2: '#1e1517',
-  3: '#3a141e',
-  4: '#4e1325',
-  5: '#5e1a2e',
-  6: '#6f2539',
-  7: '#883447',
-  8: '#b3445a',
-  9: '#e54666',
-  10: '#ec5a72',
-  11: '#ff949d',
-  12: '#fed2e1',
-};
-
-const crimsonDark: RadixScale = {
-  1: '#191114',
-  2: '#201318',
-  3: '#381525',
-  4: '#4d122f',
-  5: '#5c1839',
-  6: '#6d2545',
-  7: '#873356',
-  8: '#b0436e',
-  9: '#e93d82',
-  10: '#ee518a',
-  11: '#ff92ad',
-  12: '#fdd3e8',
-};
-
-const pinkDark: RadixScale = {
-  1: '#191117',
-  2: '#21121d',
-  3: '#37172f',
-  4: '#4b143d',
-  5: '#591c47',
-  6: '#692955',
-  7: '#833869',
-  8: '#a84885',
-  9: '#d6409f',
-  10: '#de51a8',
-  11: '#ff8dcc',
-  12: '#fdd1ea',
-};
-
-const plumDark: RadixScale = {
-  1: '#181118',
-  2: '#201320',
-  3: '#351a35',
-  4: '#451d47',
-  5: '#512454',
-  6: '#5e3061',
-  7: '#734079',
-  8: '#92549c',
-  9: '#ab4aba',
-  10: '#b658c4',
-  11: '#e796f3',
-  12: '#f4d4f4',
-};
-
-const purpleDark: RadixScale = {
-  1: '#18111b',
-  2: '#1e1523',
-  3: '#301c3b',
-  4: '#3d224e',
-  5: '#48295c',
-  6: '#54346b',
-  7: '#664282',
-  8: '#8457aa',
-  9: '#8e4ec6',
-  10: '#9a5cd0',
-  11: '#d19dff',
-  12: '#ecd9fa',
-};
-
-const violetDark: RadixScale = {
-  1: '#14121f',
-  2: '#1b1525',
-  3: '#291f43',
-  4: '#33255b',
-  5: '#3c2e69',
-  6: '#473876',
-  7: '#56468b',
-  8: '#6958ad',
-  9: '#6e56cf',
-  10: '#7d66d9',
-  11: '#baa7ff',
-  12: '#e2ddfe',
-};
-
-const irisDark: RadixScale = {
-  1: '#13131e',
-  2: '#171625',
-  3: '#202248',
-  4: '#262a65',
-  5: '#303374',
-  6: '#3d3e82',
-  7: '#4a4a95',
-  8: '#5958b1',
-  9: '#5b5bd6',
-  10: '#6e6ade',
-  11: '#b1a9ff',
-  12: '#e0dffe',
-};
-
-const indigoDark: RadixScale = {
-  1: '#11131f',
-  2: '#141726',
-  3: '#182449',
-  4: '#1d2e62',
-  5: '#253974',
-  6: '#304384',
-  7: '#3a4f97',
-  8: '#435db1',
-  9: '#3e63dd',
-  10: '#5472e4',
-  11: '#9eb1ff',
-  12: '#d6e1ff',
-};
-
-const blueDark: RadixScale = {
-  1: '#0d1520',
-  2: '#111927',
-  3: '#0d2847',
-  4: '#003362',
-  5: '#004074',
-  6: '#104d87',
-  7: '#205d9e',
-  8: '#2870bd',
-  9: '#0090ff',
-  10: '#3b9eff',
-  11: '#70b8ff',
-  12: '#c2e6ff',
-};
-
-const cyanDark: RadixScale = {
-  1: '#0b161a',
-  2: '#101b20',
-  3: '#082c36',
-  4: '#003848',
-  5: '#004558',
-  6: '#045468',
-  7: '#12677e',
-  8: '#11809c',
-  9: '#00a2c7',
-  10: '#23afd0',
-  11: '#4ccce6',
-  12: '#b6ecf7',
-};
-
-const tealDark: RadixScale = {
-  1: '#0d1514',
-  2: '#111c1b',
-  3: '#0d2d2a',
-  4: '#023b37',
-  5: '#084843',
-  6: '#145750',
-  7: '#1c6961',
-  8: '#207e73',
-  9: '#12a594',
-  10: '#0eb39e',
-  11: '#0bd8b6',
-  12: '#adf0dd',
-};
-
-const jadeDark: RadixScale = {
-  1: '#0d1512',
-  2: '#121c18',
-  3: '#0f2e22',
-  4: '#0b3b2c',
-  5: '#114837',
-  6: '#1b5745',
-  7: '#246854',
-  8: '#2a7e68',
-  9: '#29a383',
-  10: '#27b08b',
-  11: '#1fd8a4',
-  12: '#adf0d4',
-};
-
-const greenDark: RadixScale = {
-  1: '#0e1512',
-  2: '#121b17',
-  3: '#132d21',
-  4: '#113b29',
-  5: '#174933',
-  6: '#20573e',
-  7: '#28684a',
-  8: '#2f7c57',
-  9: '#30a46c',
-  10: '#33b074',
-  11: '#3dd68c',
-  12: '#b1f1cb',
-};
-
-const grassDark: RadixScale = {
-  1: '#0e1511',
-  2: '#141a15',
-  3: '#1b2a1e',
-  4: '#1d3a24',
-  5: '#25482d',
-  6: '#2d5736',
-  7: '#366740',
-  8: '#3e7949',
-  9: '#46a758',
-  10: '#53b365',
-  11: '#71d083',
-  12: '#c2f0c2',
-};
-
-const bronzeDark: RadixScale = {
-  1: '#141110',
-  2: '#1c1917',
-  3: '#262220',
-  4: '#302a27',
-  5: '#3b3330',
-  6: '#493e3a',
-  7: '#5a4c47',
-  8: '#6f5f58',
-  9: '#a18072',
-  10: '#ae8c7e',
-  11: '#d4b3a5',
-  12: '#ede0d9',
-};
-
-const goldDark: RadixScale = {
-  1: '#121211',
-  2: '#1b1a17',
-  3: '#24231f',
-  4: '#2d2b26',
-  5: '#38352e',
-  6: '#444039',
-  7: '#544f46',
-  8: '#696256',
-  9: '#978365',
-  10: '#a39073',
-  11: '#cbb99f',
-  12: '#e8e2d9',
-};
-
-const brownDark: RadixScale = {
-  1: '#12110f',
-  2: '#1c1816',
-  3: '#28211d',
-  4: '#322922',
-  5: '#3e3128',
-  6: '#4d3c2f',
-  7: '#614a39',
-  8: '#7c5f46',
-  9: '#ad7f58',
-  10: '#b88c67',
-  11: '#dbb594',
-  12: '#f2e1ca',
-};
-
-const orangeDark: RadixScale = {
-  1: '#17120e',
-  2: '#1e160f',
-  3: '#331e0b',
-  4: '#462100',
-  5: '#562800',
-  6: '#66350c',
-  7: '#7e451d',
-  8: '#a35829',
-  9: '#f76b15',
-  10: '#ff801f',
-  11: '#ffa057',
-  12: '#ffe0c2',
-};
-
-const amberDark: RadixScale = {
-  1: '#16120c',
-  2: '#1d180f',
-  3: '#302008',
-  4: '#3f2700',
-  5: '#4d3000',
-  6: '#5c3d05',
-  7: '#714f19',
-  8: '#8f6424',
-  9: '#ffc53d',
-  10: '#ffd60a',
-  11: '#ffca16',
-  12: '#ffe7b3',
-};
-
-const yellowDark: RadixScale = {
-  1: '#14120b',
-  2: '#1b180f',
-  3: '#2d2305',
-  4: '#362b00',
-  5: '#433500',
-  6: '#524202',
-  7: '#665417',
-  8: '#836a21',
-  9: '#ffe629',
-  10: '#ffff57',
-  11: '#f5e147',
-  12: '#f6eeb4',
-};
-
-const limeDark: RadixScale = {
-  1: '#11130c',
-  2: '#151a10',
-  3: '#1f2917',
-  4: '#29371d',
-  5: '#334423',
-  6: '#3d522a',
-  7: '#496231',
-  8: '#577538',
-  9: '#bdee63',
-  10: '#d4ff70',
-  11: '#bde56c',
-  12: '#e3f7ba',
-};
-
-const mintDark: RadixScale = {
-  1: '#0e1515',
-  2: '#0f1b1b',
-  3: '#092c2b',
-  4: '#003a38',
-  5: '#004744',
-  6: '#105650',
-  7: '#1e685f',
-  8: '#277f70',
-  9: '#86ead4',
-  10: '#a8f5e5',
-  11: '#58d5ba',
-  12: '#c4f5e1',
-};
-
-const skyDark: RadixScale = {
-  1: '#0d141f',
-  2: '#111a27',
-  3: '#112840',
-  4: '#113555',
-  5: '#154467',
-  6: '#1b537b',
-  7: '#1f6692',
-  8: '#197cae',
-  9: '#7ce2fe',
-  10: '#a8eeff',
-  11: '#75c7f0',
-  12: '#c2f3ff',
-};
-
-// ============================================
-// Complete Color Families
-// ============================================
-
-export const radixColors: Record<RadixColorName, RadixColorFamily> = {
-  // Neutrals
-  gray: {
-    name: 'gray',
-    displayName: 'Gray',
-    light: grayLight,
-    dark: grayDark,
-    pairedNeutral: 'gray',
-    hue: 0,
-  },
-  mauve: {
-    name: 'mauve',
-    displayName: 'Mauve',
-    light: mauveLight,
-    dark: mauveDark,
-    pairedNeutral: 'mauve',
-    hue: 280,
-  },
-  slate: {
-    name: 'slate',
-    displayName: 'Slate',
-    light: slateLight,
-    dark: slateDark,
-    pairedNeutral: 'slate',
-    hue: 220,
-  },
-  sage: {
-    name: 'sage',
-    displayName: 'Sage',
-    light: sageLight,
-    dark: sageDark,
-    pairedNeutral: 'sage',
-    hue: 150,
-  },
-  olive: {
-    name: 'olive',
-    displayName: 'Olive',
-    light: oliveLight,
-    dark: oliveDark,
-    pairedNeutral: 'olive',
-    hue: 90,
-  },
-  sand: {
-    name: 'sand',
-    displayName: 'Sand',
-    light: sandLight,
-    dark: sandDark,
-    pairedNeutral: 'sand',
-    hue: 45,
-  },
-
-  // Reds
-  tomato: {
-    name: 'tomato',
-    displayName: 'Tomato',
-    light: tomatoLight,
-    dark: tomatoDark,
-    pairedNeutral: 'mauve',
-    hue: 10,
-  },
-  red: {
-    name: 'red',
-    displayName: 'Red',
-    light: redLight,
-    dark: redDark,
-    pairedNeutral: 'mauve',
-    hue: 358,
-  },
-  ruby: {
-    name: 'ruby',
-    displayName: 'Ruby',
-    light: rubyLight,
-    dark: rubyDark,
-    pairedNeutral: 'mauve',
-    hue: 348,
-  },
-  crimson: {
-    name: 'crimson',
-    displayName: 'Crimson',
-    light: crimsonLight,
-    dark: crimsonDark,
-    pairedNeutral: 'mauve',
-    hue: 336,
-  },
-
-  // Pinks & Purples
-  pink: {
-    name: 'pink',
-    displayName: 'Pink',
-    light: pinkLight,
-    dark: pinkDark,
-    pairedNeutral: 'mauve',
-    hue: 322,
-  },
-  plum: {
-    name: 'plum',
-    displayName: 'Plum',
-    light: plumLight,
-    dark: plumDark,
-    pairedNeutral: 'mauve',
-    hue: 292,
-  },
-  purple: {
-    name: 'purple',
-    displayName: 'Purple',
-    light: purpleLight,
-    dark: purpleDark,
-    pairedNeutral: 'mauve',
-    hue: 272,
-  },
-  violet: {
-    name: 'violet',
-    displayName: 'Violet',
-    light: violetLight,
-    dark: violetDark,
-    pairedNeutral: 'mauve',
-    hue: 252,
-  },
-
-  // Blues
-  iris: {
-    name: 'iris',
-    displayName: 'Iris',
-    light: irisLight,
-    dark: irisDark,
-    pairedNeutral: 'slate',
-    hue: 240,
-  },
-  indigo: {
-    name: 'indigo',
-    displayName: 'Indigo',
-    light: indigoLight,
-    dark: indigoDark,
-    pairedNeutral: 'slate',
-    hue: 226,
-  },
-  blue: {
-    name: 'blue',
-    displayName: 'Blue',
-    light: blueLight,
-    dark: blueDark,
-    pairedNeutral: 'slate',
-    hue: 206,
-  },
-  cyan: {
-    name: 'cyan',
-    displayName: 'Cyan',
-    light: cyanLight,
-    dark: cyanDark,
-    pairedNeutral: 'slate',
-    hue: 190,
-  },
-  sky: {
-    name: 'sky',
-    displayName: 'Sky',
-    light: skyLight,
-    dark: skyDark,
-    pairedNeutral: 'slate',
-    hue: 193,
-  },
-
-  // Greens
-  teal: {
-    name: 'teal',
-    displayName: 'Teal',
-    light: tealLight,
-    dark: tealDark,
-    pairedNeutral: 'sage',
-    hue: 170,
-  },
-  jade: {
-    name: 'jade',
-    displayName: 'Jade',
-    light: jadeLight,
-    dark: jadeDark,
-    pairedNeutral: 'sage',
-    hue: 158,
-  },
-  green: {
-    name: 'green',
-    displayName: 'Green',
-    light: greenLight,
-    dark: greenDark,
-    pairedNeutral: 'sage',
-    hue: 145,
-  },
-  grass: {
-    name: 'grass',
-    displayName: 'Grass',
-    light: grassLight,
-    dark: grassDark,
-    pairedNeutral: 'sage',
-    hue: 131,
-  },
-  mint: {
-    name: 'mint',
-    displayName: 'Mint',
-    light: mintLight,
-    dark: mintDark,
-    pairedNeutral: 'sage',
-    hue: 167,
-  },
-
-  // Yellow-Green
-  lime: {
-    name: 'lime',
-    displayName: 'Lime',
-    light: limeLight,
-    dark: limeDark,
-    pairedNeutral: 'olive',
-    hue: 85,
-  },
-
-  // Yellows & Oranges
-  yellow: {
-    name: 'yellow',
-    displayName: 'Yellow',
-    light: yellowLight,
-    dark: yellowDark,
-    pairedNeutral: 'sand',
-    hue: 55,
-  },
-  amber: {
-    name: 'amber',
-    displayName: 'Amber',
-    light: amberLight,
-    dark: amberDark,
-    pairedNeutral: 'sand',
-    hue: 42,
-  },
-  orange: {
-    name: 'orange',
-    displayName: 'Orange',
-    light: orangeLight,
-    dark: orangeDark,
-    pairedNeutral: 'sand',
-    hue: 24,
-  },
-
-  // Earth tones
-  brown: {
-    name: 'brown',
-    displayName: 'Brown',
-    light: brownLight,
-    dark: brownDark,
-    pairedNeutral: 'sand',
-    hue: 28,
-  },
-  bronze: {
-    name: 'bronze',
-    displayName: 'Bronze',
-    light: bronzeLight,
-    dark: bronzeDark,
-    pairedNeutral: 'sand',
-    hue: 18,
-  },
-  gold: {
-    name: 'gold',
-    displayName: 'Gold',
-    light: goldLight,
-    dark: goldDark,
-    pairedNeutral: 'sand',
-    hue: 36,
-  },
-};
-
-// Neutral families only
 export const neutralFamilies: NeutralName[] = ['gray', 'mauve', 'slate', 'sage', 'olive', 'sand'];
 
 // Accent colors (non-neutral)
@@ -1504,43 +506,50 @@ export function findClosestRadixFamily(hex: string): RadixColorFamily {
 }
 
 /**
- * Get the recommended neutral family for an accent color
- * Based on hue relationships
+ * Get the recommended neutral family for an accent color.
+ *
+ * Follows the natural pairings documented on Radix's "Composing a palette"
+ * page (https://www.radix-ui.com/colors/docs/palette-composition/composing-a-palette):
+ * tomato, red, ruby, crimson, pink, plum, purple, violet → mauve;
+ * iris, indigo, blue, sky, cyan → slate; mint, teal, jade, green → sage;
+ * grass, lime → olive; yellow, amber, orange, brown → sand. Near-neutral input
+ * (saturation below 10%) pairs with gray. Bronze and gold are not on the Radix
+ * chart; their hues fall in the sand band, matching their `pairedNeutral` data.
+ *
+ * Each hue boundary sits midway between the step-9 hues of the neighbouring
+ * documented families: tomato 10° | orange 23° → 16°; yellow 53° | lime 81°
+ * → 67°; grass 131° | green 151° → 141°; teal 173° | cyan 191° → 182°;
+ * iris 240° | violet 252° → 246°.
  */
 export function getNeutralForAccent(hex: string): NeutralName {
   const hsl = hexToHsl(hex);
-  const hue = hsl.h;
+  const hue = ((hsl.h % 360) + 360) % 360;
 
   // Very low saturation = use gray
   if (hsl.s < 10) {
     return 'gray';
   }
 
-  // Map hue ranges to neutral families
-  // Red/Pink/Purple/Violet → Mauve
-  if ((hue >= 280 && hue <= 360) || (hue >= 0 && hue <= 20) || (hue >= 320 && hue < 360)) {
+  // Violet through tomato (wrapping past 0°) → Mauve
+  if (hue >= 246 || hue < 16) {
     return 'mauve';
   }
 
-  // Blue/Indigo/Cyan → Slate
-  if (hue >= 180 && hue < 280) {
+  // Cyan, sky, blue, indigo, iris → Slate
+  if (hue >= 182) {
     return 'slate';
   }
 
-  // Green/Teal → Sage
-  if (hue >= 130 && hue < 180) {
+  // Green, jade, mint, teal → Sage
+  if (hue >= 141) {
     return 'sage';
   }
 
-  // Yellow-Green/Lime → Olive
-  if (hue >= 70 && hue < 130) {
+  // Lime, grass → Olive
+  if (hue >= 67) {
     return 'olive';
   }
 
-  // Yellow/Orange/Brown/Amber → Sand
-  if (hue >= 20 && hue < 70) {
-    return 'sand';
-  }
-
-  return 'gray';
+  // Orange, brown, gold, amber, yellow (and bronze) → Sand
+  return 'sand';
 }

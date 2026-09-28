@@ -1,0 +1,197 @@
+{
+  "schemaVersion": "teul.release-gate.receipt.v1",
+  "status": "passed",
+  "command": "npm run release-gate",
+  "startedAt": "2026-09-25T08:53:30.367Z",
+  "finishedAt": "2026-09-25T08:56:46.519Z",
+  "durationMs": 196152,
+  "environment": {
+    "node": "v24.19.0",
+    "npm": "10.9.2",
+    "platform": "darwin",
+    "arch": "arm64",
+    "commit": "7c7cabce4c7a4d6dbecfe9ee34ccd37b8f6f43ef",
+    "shortCommit": "7c7cabc",
+    "branch": "codex/brand-color-system-authoring",
+    "dirty": true,
+    "packageVersion": "1.0.0"
+  },
+  "steps": [
+    {
+      "script": "audit",
+      "purpose": "Fail-closed dependency policy for the root and prototype graphs",
+      "command": "npm run audit",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 1819
+    },
+    {
+      "script": "lint",
+      "purpose": "ESLint with zero warnings allowed",
+      "command": "npm run lint",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 8060
+    },
+    {
+      "script": "typecheck",
+      "purpose": "TypeScript without emit",
+      "command": "npm run typecheck",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 5318
+    },
+    {
+      "script": "test:coverage",
+      "purpose": "Vitest suite with coverage thresholds",
+      "command": "npm run test:coverage",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 126773
+    },
+    {
+      "script": "build",
+      "purpose": "Production plugin bundle (generic channel disabled)",
+      "command": "npm run build",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 9283
+    },
+    {
+      "script": "check:ui-bundle",
+      "purpose": "Inline UI bundle budget",
+      "command": "npm run check:ui-bundle",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 200
+    },
+    {
+      "script": "test:production-ui",
+      "purpose": "Production UI smoke test against dist/",
+      "command": "npm run test:production-ui",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 2610
+    },
+    {
+      "script": "report:dead-code",
+      "purpose": "Exports without a production reference",
+      "command": "npm run report:dead-code",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 5965
+    },
+    {
+      "script": "verify:wada",
+      "purpose": "Pinned Wada corpus matches upstream",
+      "command": "npm run verify:wada",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 420
+    },
+    {
+      "script": "verify:color-foundations",
+      "purpose": "Color-foundation evidence ledger is current",
+      "command": "npm run verify:color-foundations",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 315
+    },
+    {
+      "script": "assert:artifacts",
+      "purpose": "Production artifacts, manifests, and licenses",
+      "command": "npm run assert:artifacts",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 403
+    },
+    {
+      "script": "verify:generic-sanitization",
+      "purpose": "No rejected private identifier in the tree",
+      "command": "npm run verify:generic-sanitization",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 3749
+    },
+    {
+      "script": "build:generic-candidate",
+      "purpose": "Candidate bundle (generic channel candidate)",
+      "command": "npm run build:generic-candidate",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 11000
+    },
+    {
+      "script": "check:generic-candidate-ui-bundle",
+      "purpose": "Candidate UI bundle budget",
+      "command": "npm run check:generic-candidate-ui-bundle",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 212
+    },
+    {
+      "script": "test:generic-candidate-ui",
+      "purpose": "Candidate UI smoke test",
+      "command": "npm run test:generic-candidate-ui",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 6178
+    },
+    {
+      "script": "assert:generic-candidate-artifacts",
+      "purpose": "Candidate artifacts and manifest",
+      "command": "npm run assert:generic-candidate-artifacts",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 428
+    },
+    {
+      "script": "verify:generic-source-benchmark",
+      "purpose": "Bounded generic source benchmark",
+      "command": "npm run verify:generic-source-benchmark",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 13417
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "dist/code.js",
+      "present": true,
+      "bytes": 236883,
+      "sha256": "9ac3fe34ff9b6f01d904d8cbaa94264580c8474006605f222314b1cf9d45e8bf"
+    },
+    {
+      "path": "dist/ui.html",
+      "present": true,
+      "bytes": 306972,
+      "sha256": "5870df4d9ee8d323f1e1d147f22aef07f08aa15615f1e3e263dd17380733ae32"
+    },
+    {
+      "path": "figma-candidate/dist/code.js",
+      "present": true,
+      "bytes": 1563855,
+      "sha256": "f63760648ab72664b16bfdd45486da3a4e755bcd68ce33ef7f79b5d8f0752bd7"
+    },
+    {
+      "path": "figma-candidate/dist/ui.html",
+      "present": true,
+      "bytes": 429908,
+      "sha256": "ffbab1f75b1346de4da7aac1e3d9b6ffee0cd005cb73518bae26d62c47b12d6d"
+    }
+  ],
+  "channels": [
+    {
+      "path": "dist/GENERIC_COLOR_BUILDER_CHANNEL.json",
+      "present": true,
+      "channel": "disabled",
+      "qualified": false
+    },
+    {
+      "path": "figma-candidate/dist/GENERIC_COLOR_BUILDER_CHANNEL.json",
+      "present": true,
+      "channel": "candidate",
+      "qualified": false
+    }
+  ]
+}

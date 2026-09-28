@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "teul.local-check-receipt.v1",
+  "createdAt": "2026-09-25T23:04:31.455823+00:00",
+  "baseCommit": "477869b5b8cc617296e5c833590d78826c37f556",
+  "scope": "TASK-005 bounded Figma REST reader and authenticated job integration; partial implementation",
+  "commands": [
+    {
+      "command": "npm --prefix services/guideline-intake test",
+      "node": "22.13.1",
+      "result": "105 pass, 0 fail; includes build and 25 Figma tests"
+    },
+    {
+      "command": "npm --prefix services/guideline-intake test",
+      "node": "24.19.0",
+      "result": "105 pass, 0 fail; includes build"
+    },
+    {
+      "command": "npm run lint:intake",
+      "node": "22.13.1",
+      "result": "pass, zero warnings"
+    },
+    {
+      "command": "validate_prd.py --profile full --extension ai --extension refactor --stage ready --strict",
+      "result": "pass"
+    },
+    {
+      "command": "git diff --check",
+      "result": "pass"
+    }
+  ],
+  "reviews": {
+    "reuse": "bounded fixed buffer substituted for chunk accumulation",
+    "quality": "nested instance IDs, source binding and output shape fixed; reviewer confirmed",
+    "efficiency": "non-settling cleanup cannot retain worker; reviewer confirmed"
+  },
+  "boundaries": {
+    "realFigmaRequests": false,
+    "realModelRequests": false,
+    "oauthConfigured": false,
+    "studioFigmaImportEnabled": false,
+    "sourceMutation": false,
+    "pushed": false,
+    "deployed": false,
+    "fullAcceptanceComplete": false
+  },
+  "sourceHashes": {
+    "services/guideline-intake/src/figmaRead.ts": "sha256:80c09a6d05c0030197a16b0b449843215a332e7dded4af14c47679b8cfe60df0",
+    "services/guideline-intake/src/figmaRead.test.ts": "sha256:cdc3f331cb5a0b85d69370f31e6bdbb52a85c21861fb9206018a91e3eb07d2c5",
+    "services/guideline-intake/src/service.ts": "sha256:0b31be37afe58b8311aeea25566770c25de0cdedd26591cd0f52dbed68328bdb",
+    "services/guideline-intake/src/openaiInterpretation.test.ts": "sha256:7df83c653c6b29008caddc54493b2c2789a27854c4dd8d5753e64f44a0a2a00c",
+    "services/guideline-intake/README.md": "sha256:1935b5809780fa92a48be7d1bc6984340bcf8e8de89afbdb5bb6cbac0351a842",
+    "docs/prds/2026-09-25-brand-guideline-import.md": "sha256:e8f3d907cabedc36d7158bc63047ab9242693950af1801ccf07dd946c6ee5935",
+    "docs/plans/2026-09-25-brand-guideline-import-plan.md": "sha256:fb28c17139c99b96900724b08d647711f7880b5abac569814e928237a93bd230",
+    "docs/evidence/brand-guideline-import/figma-rest-reader.md": "sha256:a019bb832e21d03b87ff320b8c8819b839119578359b6cd3129b892660e2f15c"
+  }
+}

@@ -1,0 +1,273 @@
+{
+  "schemaVersion": "teul.local-verification.v1",
+  "scope": "TASK-009 / REQ-012 / AC-011: pending embedded composition restoration, explicit renewal and exact source/paint recovery",
+  "recordedAt": "2026-09-26T09:07:48.227384+00:00",
+  "baselineCommit": "63821fb8f38f28b09556b8bc56b801a1d210af8e",
+  "lifecycle": "locally verified; not integrated, pushed, deployed or visually accepted",
+  "sourceHashes": {
+    "docs/evidence/brand-guideline-import/composition-refresh-desktop.png": "d8f58aaa996774ce9029fef9655beba6209942db72b0fda48a0cffb757cbc27a",
+    "docs/evidence/brand-guideline-import/composition-refresh-mobile.png": "14d831d84120833e29d5548e6fa927111038161832e742faa4030979a1f45962",
+    "docs/evidence/brand-guideline-import/composition-refresh.md": "5637f3dc24fa00d224ac55e31ab883a82c3e45442393fe273bf81cd7a80475b5",
+    "docs/evidence/brand-guideline-import/refresh-replay.md": "9f1f9b7f59d962a951a68c4f5feadd1f9cc371e24cc8077c046252c8a9f971cb",
+    "docs/plans/2026-09-25-brand-guideline-import-plan.md": "1112a26061ce6297b0a5a250cd3381d3c4f52a480115561e0e3a6e909e570b8e",
+    "docs/prds/2026-09-25-brand-guideline-import.md": "26b4ff3350e06b0cc9efa91ab5f870ec7efa4f3ac28551fa9861054e297be8ff",
+    "web/README.md": "20d155bdd4fdbc3d4acc39335f50cf2a22ba3ad20c8054754f12c2b88357cfb3",
+    "web/package.json": "341a6548de1b9bb2343a53d1d55a75631343efd1b7629042a02f94e219e0071f",
+    "web/scripts/guideline-composition-refresh-smoke.mjs": "84e7fae39c9e20cd9fed8e7a6096c92db96588423902ade815678c44abdb7e8b",
+    "web/scripts/guideline-refresh-smoke.mjs": "25435631679514af4068fd9a96db92f25e1a1132d2f8e233c58a6ed9d0499e76",
+    "web/src/components/GuidelineApplicationStudio.tsx": "ecbb5986a4107e303bed0cd16d4b0a32875ccf68243d514ef7d8d1d93ae17b57",
+    "web/src/components/GuidelineDesignWorkspace.tsx": "763590b2a44dbc2f9c63feb8c15366bef15285d01a17a4fd12128dee57540f21",
+    "web/src/components/GuidelineExtensionPreview.tsx": "de8c820af5d78892a85dbf9f0efe2d034fafaf0bb3ed2d1ddb3b9147465b76ae",
+    "web/src/components/GuidelineExtensionRuleReview.tsx": "07fbb5d5244329ce45f3005640f500db3267620870ac04d5ffa800b18287623a",
+    "web/src/components/GuidelineWorkspace.css": "e70b1b5709a75535d703fd4a3cea184d630813cc522d52e4c9377515f08c2b5c",
+    "web/src/lib/guideline/extensionRuleReview.ts": "5239be5d9eb315e268123aec7738663f29362d68b6ecc5d5af91a6da1e5b96db",
+    "web/src/lib/guideline/refreshLineage.ts": "5f5fdf18869c93564dbfe8366be32ecc5e12c162227b4b3a9e585de8bcd797d8",
+    "web/src/lib/guideline/refreshReplay.test.ts": "c913d693d312bfa4e2371ac46f771a8b4dc79fd183213de75322db5329239794",
+    "web/src/lib/guideline/refreshReplay.ts": "e901c2ae877f2cb844d819e2268eda4f8feebab5a1712c01acf017eaccc24c98"
+  },
+  "runtimes": [
+    {
+      "node": "v22.13.1",
+      "npm": "10.9.2",
+      "checks": [
+        {
+          "command": "npm --prefix web test",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test\n> vitest run\n\n\n RUN  v5.0.1 /Users/paul.jun/Downloads/Projects/Teul/web\n\n(node:83870) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n\n Test Files  46 passed (46)\n      Tests  549 passed (549)\n   Start at  05:03:25\n   Duration  11.01s (tests 87%, transform 7%, import 7%)\n\n"
+        },
+        {
+          "command": "npm --prefix web run lint",
+          "exitCode": 0
+        },
+        {
+          "command": "VITE_GUIDELINE_IMPORT=true npm --prefix web run build",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 build\n> tsc -b && vite build && node scripts/notices.mjs\n\nvite v8.3.0 building client environment for production...\ntransforming...\n\u2713 2171 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                                                0.81 kB \u2502 gzip:   0.45 kB\ndist/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2      7.42 kB\ndist/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2        8.00 kB\ndist/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2         15.08 kB\ndist/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2        16.51 kB\ndist/pdf-fonts/FoxitSymbol.pfb                                16.72 kB\ndist/pdf-fonts/FoxitFixed.pfb                                 17.59 kB\ndist/pdf-fonts/FoxitFixedBold.pfb                             18.05 kB\ndist/pdf-fonts/FoxitFixedItalic.pfb                           18.74 kB\ndist/pdf-fonts/FoxitFixedBoldItalic.pfb                       19.15 kB\ndist/pdf-fonts/FoxitSerifBold.pfb                             19.39 kB\ndist/pdf-fonts/FoxitSerif.pfb                                 19.46 kB\ndist/pdf-fonts/FoxitSerifBoldItalic.pfb                       20.73 kB\ndist/pdf-fonts/FoxitSerifItalic.pfb                           21.22 kB\ndist/assets/geist-latin-wght-normal-BgDaEnEv.woff2            29.40 kB\ndist/pdf-fonts/FoxitDingbats.pfb                              29.51 kB\ndist/pdf-fonts/LiberationSans-BoldItalic.ttf                 135.12 kB\ndist/pdf-fonts/LiberationSans-Bold.ttf                       137.05 kB\ndist/pdf-fonts/LiberationSans-Regular.ttf                    139.51 kB\ndist/pdf-fonts/LiberationSans-Italic.ttf                     162.03 kB\ndist/assets/pdf.worker.min-BmVo14Nb.mjs                    1,317.03 kB\ndist/assets/ProductSystemView-DJMb3_3z.css                     5.95 kB \u2502 gzip:   1.57 kB\ndist/assets/GuidelineWorkspace-pv6HtDMK.css                   28.06 kB \u2502 gzip:   4.89 kB\ndist/assets/index-DqZwDzbM.css                                57.43 kB \u2502 gzip:  11.26 kB\ndist/assets/ProductSystemView-CPK5ZsO9.js                     10.03 kB \u2502 gzip:   3.32 kB\ndist/assets/authoring-DweR34lc.js                             23.56 kB \u2502 gzip:   8.82 kB\ndist/assets/authoringControlOutlinesV1-B4y9IvTz.js            44.84 kB \u2502 gzip:  13.74 kB\ndist/assets/download-Bic2EQq1.js                              45.62 kB \u2502 gzip:  18.29 kB\ndist/assets/colorSystemRecipeV1-CapuqGof.js                  104.31 kB \u2502 gzip:  31.85 kB\ndist/assets/sourceProvenanceDisclosureData-CxLfFIWs.js       166.30 kB \u2502 gzip:  52.12 kB\ndist/assets/index-CEcjgIQV.js                                359.52 kB \u2502 gzip: 113.15 kB\ndist/assets/GuidelineWorkspace-F78PBlTX.js                 1,141.26 kB \u2502 gzip: 341.40 kB\n\n\u2713 built in 252ms\nIncluded 86 web dependency notices plus Teul source and APCA notices.\n"
+        }
+      ],
+      "browser": {
+        "composition": {
+          "scope": "Production Studio UI, synthetic Figma source, shared composition restoration and rule renewal. No live source or visual acceptance claimed.",
+          "node": "v22.13.1",
+          "scriptSha256": "84e7fae39c9e20cd9fed8e7a6096c92db96588423902ade815678c44abdb7e8b",
+          "checks": [
+            "Real source comparison, acceptance, renewed source review and restore retain exact paint and distinct embedded extension, with no old approval.",
+            "Pending work reopens exactly; missing and rejected decisions cannot enable renewal or export.",
+            "Saving during renewal preserves pending work, suppresses late approval and clears the checking status.",
+            "Cancelling renewal preserves pending composition; opening another project prevents late publication.",
+            "Explicit decisions target current proposal; full reassessment enables exact original SVG, leaves standalone extension intact, and reopens across browser/Node.",
+            "Pending rules, controls and retained composition fit desktop and 390px viewport."
+          ],
+          "errors": [],
+          "requests": [],
+          "buildHashes": {
+            "index.html": "ad87d8b81d223f8b5516cf904ab3657fa0f3750b16e52ef33e11588c4ff9c34b",
+            "assets/GuidelineWorkspace-F78PBlTX.js": "039ceb6cb5967c0676a037b553bf70d0c75d1149b19eb8d8b08ab1961be915c8",
+            "assets/GuidelineWorkspace-pv6HtDMK.css": "ecf811dfe4d1f6341fef82b5470b65f8797494db4b415ee152ac1e5377db88c9",
+            "assets/ProductSystemView-CPK5ZsO9.js": "92f3c03c0e77d6358a49c0535e515cb216809a7f0f3c99db2bbd64999a06fd10",
+            "assets/ProductSystemView-DJMb3_3z.css": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764",
+            "assets/authoring-DweR34lc.js": "2128764e42cbec6d424a92653b6ff1a867f49d45ae0d1e3b18c8b27679a81fd0",
+            "assets/authoringControlOutlinesV1-B4y9IvTz.js": "bed77c8bdc469f3e4a363841a9d62cb802c0c3ae4c297db7081320c3bcc83178",
+            "assets/colorSystemRecipeV1-CapuqGof.js": "7ea03325f7dbf50faaedcd86192cf355954e94c9457798f42fad6cb6497a3ea8",
+            "assets/download-Bic2EQq1.js": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6",
+            "assets/index-CEcjgIQV.js": "970b0bf603c2050721fb526c8e544cb4cf33f67aae9d0bf44eee483ccab2d3bb",
+            "assets/index-DqZwDzbM.css": "b390d285db969f0ef874b31cd0d191b798ad63ec29ebc6faaac63b7aa9378bde",
+            "assets/sourceProvenanceDisclosureData-CxLfFIWs.js": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361"
+          },
+          "browser": "153.0.8010.12",
+          "status": "passed"
+        },
+        "output": {
+          "status": "passed",
+          "node": "v22.13.1",
+          "checks": [
+            "Browser/Node bundle replay preserves extension, gradient and exact component SVG",
+            "Actual IndexedDB save, reload and reopen restores selected controls and checked exports",
+            "Corrupt and future bundles leave the selected application and source intact",
+            "Completed failed paint assessment restores visibly and remains nonexportable",
+            "Re-applying source review and editing extension controls invalidate visible and retained results",
+            "Cancelling replay prevents the subsequent local write",
+            "Desktop and 390px restored composition render without page errors or source/provider requests"
+          ]
+        },
+        "pdf": {
+          "status": "passed",
+          "node": "v22.13.1",
+          "checks": [
+            "Recapturing the same PDF/pages is a no-op even with a fresh capture timestamp; no revision or design reset occurs.",
+            "An unrelated selected-page edit retains both color decisions; rejecting preserves byte-exact project and gradient.",
+            "Editing the current review discards its staged proposal, preventing acceptance against a stale draft.",
+            "A real IndexedDB save failure prevents source replacement and preserves the exact selected design.",
+            "Acceptance preserves the exact prior design first, resets changed-color inclusion and applied results, and subsequent save appends the new source alongside the old revision.",
+            "A changed PDF anchor makes its previous gradient stale; restoration cannot silently substitute a new paint.",
+            "An added restriction enters the proposed draft unresolved; rejecting retains the preceding approved local review and gradient.",
+            "Malformed updated input preserves the current source, review and output.",
+            "Cancelling a delayed real File read prevents its late completion from publishing a comparison or changing the project.",
+            "Opening another project while acceptance waits on storage cancels the stale save and prevents late source replacement.",
+            "An unrelated PDF change preserves exact gradient paint under the renewed review, survives portable reopen, and a later review edit invalidates restoration.",
+            "390px comparison fits, no browser errors and no source or service network requests."
+          ],
+          "errors": [],
+          "requests": []
+        },
+        "native": {
+          "status": "passed",
+          "node": "v22.13.1",
+          "checks": [
+            "Figma: capture-time-only recapture is a no-op and rejection preserves exact reviewed project bytes.",
+            "Figma: changed evidence can be inspected and rejected while the current source and applied review remain exact.",
+            "Figma: editing the current review invalidates its staged proposal.",
+            "Figma: replacing the editor during a delayed acceptance save prevents late source publication.",
+            "Figma: failed IndexedDB save blocks replacement and preserves exact old work.",
+            "Figma: acceptance saves the complete old project, installs the compared draft without applied authority, and fits 390px.",
+            "Figma: saving the new review appends to the existing project history and retains the exact old revision.",
+            "Figma: unchanged gradient paint is restored under fresh review, survives portable reopen, fits 390px, and editing invalidates the restoration check.",
+            "Website: capture-time-only recapture is a no-op and rejection preserves exact reviewed project bytes.",
+            "Website: changed evidence can be inspected and rejected while the current source and applied review remain exact.",
+            "Website: editing the current review invalidates its staged proposal.",
+            "Website: replacing the editor during a delayed acceptance save prevents late source publication.",
+            "Website: failed IndexedDB save blocks replacement and preserves exact old work.",
+            "Website: acceptance saves the complete old project, installs the compared draft without applied authority, and fits 390px.",
+            "Website: saving the new review appends to the existing project history and retains the exact old revision.",
+            "Website: unchanged gradient paint is restored under fresh review, survives portable reopen, fits 390px, and editing invalidates the restoration check."
+          ],
+          "errors": [],
+          "requests": []
+        }
+      }
+    },
+    {
+      "node": "v24.19.0",
+      "npm": "10.9.2",
+      "checks": [
+        {
+          "command": "npm --prefix web test",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 test\n> vitest run\n\n\n RUN  v5.0.1 /Users/paul.jun/Downloads/Projects/Teul/web\n\n\n Test Files  46 passed (46)\n      Tests  549 passed (549)\n   Start at  05:05:11\n   Duration  11.88s (tests 87%, import 6%, transform 6%)\n\n"
+        },
+        {
+          "command": "npm --prefix web run lint",
+          "exitCode": 0
+        },
+        {
+          "command": "VITE_GUIDELINE_IMPORT=true npm --prefix web run build",
+          "exitCode": 0,
+          "output": "\n> teul-studio@0.1.0 build\n> tsc -b && vite build && node scripts/notices.mjs\n\nvite v8.3.0 building client environment for production...\ntransforming...\n\u2713 2171 modules transformed.\nrendering chunks...\ncomputing gzip size...\ndist/index.html                                                0.81 kB \u2502 gzip:   0.45 kB\ndist/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2      7.42 kB\ndist/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2        8.00 kB\ndist/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2         15.08 kB\ndist/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2        16.51 kB\ndist/pdf-fonts/FoxitSymbol.pfb                                16.72 kB\ndist/pdf-fonts/FoxitFixed.pfb                                 17.59 kB\ndist/pdf-fonts/FoxitFixedBold.pfb                             18.05 kB\ndist/pdf-fonts/FoxitFixedItalic.pfb                           18.74 kB\ndist/pdf-fonts/FoxitFixedBoldItalic.pfb                       19.15 kB\ndist/pdf-fonts/FoxitSerifBold.pfb                             19.39 kB\ndist/pdf-fonts/FoxitSerif.pfb                                 19.46 kB\ndist/pdf-fonts/FoxitSerifBoldItalic.pfb                       20.73 kB\ndist/pdf-fonts/FoxitSerifItalic.pfb                           21.22 kB\ndist/assets/geist-latin-wght-normal-BgDaEnEv.woff2            29.40 kB\ndist/pdf-fonts/FoxitDingbats.pfb                              29.51 kB\ndist/pdf-fonts/LiberationSans-BoldItalic.ttf                 135.12 kB\ndist/pdf-fonts/LiberationSans-Bold.ttf                       137.05 kB\ndist/pdf-fonts/LiberationSans-Regular.ttf                    139.51 kB\ndist/pdf-fonts/LiberationSans-Italic.ttf                     162.03 kB\ndist/assets/pdf.worker.min-BmVo14Nb.mjs                    1,317.03 kB\ndist/assets/ProductSystemView-DJMb3_3z.css                     5.95 kB \u2502 gzip:   1.57 kB\ndist/assets/GuidelineWorkspace-pv6HtDMK.css                   28.06 kB \u2502 gzip:   4.89 kB\ndist/assets/index-DqZwDzbM.css                                57.43 kB \u2502 gzip:  11.26 kB\ndist/assets/ProductSystemView-CPK5ZsO9.js                     10.03 kB \u2502 gzip:   3.32 kB\ndist/assets/authoring-DweR34lc.js                             23.56 kB \u2502 gzip:   8.82 kB\ndist/assets/authoringControlOutlinesV1-B4y9IvTz.js            44.84 kB \u2502 gzip:  13.74 kB\ndist/assets/download-Bic2EQq1.js                              45.62 kB \u2502 gzip:  18.29 kB\ndist/assets/colorSystemRecipeV1-CapuqGof.js                  104.31 kB \u2502 gzip:  31.85 kB\ndist/assets/sourceProvenanceDisclosureData-CxLfFIWs.js       166.30 kB \u2502 gzip:  52.12 kB\ndist/assets/index-CEcjgIQV.js                                359.52 kB \u2502 gzip: 113.15 kB\ndist/assets/GuidelineWorkspace-F78PBlTX.js                 1,141.26 kB \u2502 gzip: 341.40 kB\n\n[plugin builtin:vite-reporter] \n(!) Some chunks are larger than 500 kB after minification. Consider:\n- Using dynamic import() to code-split the application\n- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting\n- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.\n\u2713 built in 410ms\nIncluded 86 web dependency notices plus Teul source and APCA notices.\n"
+        }
+      ],
+      "browser": {
+        "composition": {
+          "scope": "Production Studio UI, synthetic Figma source, shared composition restoration and rule renewal. No live source or visual acceptance claimed.",
+          "node": "v24.19.0",
+          "scriptSha256": "84e7fae39c9e20cd9fed8e7a6096c92db96588423902ade815678c44abdb7e8b",
+          "checks": [
+            "Real source comparison, acceptance, renewed source review and restore retain exact paint and distinct embedded extension, with no old approval.",
+            "Pending work reopens exactly; missing and rejected decisions cannot enable renewal or export.",
+            "Saving during renewal preserves pending work, suppresses late approval and clears the checking status.",
+            "Cancelling renewal preserves pending composition; opening another project prevents late publication.",
+            "Explicit decisions target current proposal; full reassessment enables exact original SVG, leaves standalone extension intact, and reopens across browser/Node.",
+            "Pending rules, controls and retained composition fit desktop and 390px viewport."
+          ],
+          "errors": [],
+          "requests": [],
+          "buildHashes": {
+            "index.html": "ad87d8b81d223f8b5516cf904ab3657fa0f3750b16e52ef33e11588c4ff9c34b",
+            "assets/GuidelineWorkspace-F78PBlTX.js": "039ceb6cb5967c0676a037b553bf70d0c75d1149b19eb8d8b08ab1961be915c8",
+            "assets/GuidelineWorkspace-pv6HtDMK.css": "ecf811dfe4d1f6341fef82b5470b65f8797494db4b415ee152ac1e5377db88c9",
+            "assets/ProductSystemView-CPK5ZsO9.js": "92f3c03c0e77d6358a49c0535e515cb216809a7f0f3c99db2bbd64999a06fd10",
+            "assets/ProductSystemView-DJMb3_3z.css": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764",
+            "assets/authoring-DweR34lc.js": "2128764e42cbec6d424a92653b6ff1a867f49d45ae0d1e3b18c8b27679a81fd0",
+            "assets/authoringControlOutlinesV1-B4y9IvTz.js": "bed77c8bdc469f3e4a363841a9d62cb802c0c3ae4c297db7081320c3bcc83178",
+            "assets/colorSystemRecipeV1-CapuqGof.js": "7ea03325f7dbf50faaedcd86192cf355954e94c9457798f42fad6cb6497a3ea8",
+            "assets/download-Bic2EQq1.js": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6",
+            "assets/index-CEcjgIQV.js": "970b0bf603c2050721fb526c8e544cb4cf33f67aae9d0bf44eee483ccab2d3bb",
+            "assets/index-DqZwDzbM.css": "b390d285db969f0ef874b31cd0d191b798ad63ec29ebc6faaac63b7aa9378bde",
+            "assets/sourceProvenanceDisclosureData-CxLfFIWs.js": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361"
+          },
+          "browser": "153.0.8010.12",
+          "status": "passed"
+        },
+        "output": {
+          "status": "passed",
+          "node": "v24.19.0",
+          "checks": [
+            "Browser/Node bundle replay preserves extension, gradient and exact component SVG",
+            "Actual IndexedDB save, reload and reopen restores selected controls and checked exports",
+            "Corrupt and future bundles leave the selected application and source intact",
+            "Completed failed paint assessment restores visibly and remains nonexportable",
+            "Re-applying source review and editing extension controls invalidate visible and retained results",
+            "Cancelling replay prevents the subsequent local write",
+            "Desktop and 390px restored composition render without page errors or source/provider requests"
+          ]
+        },
+        "pdf": {
+          "status": "passed",
+          "node": "v24.19.0",
+          "checks": [
+            "Recapturing the same PDF/pages is a no-op even with a fresh capture timestamp; no revision or design reset occurs.",
+            "An unrelated selected-page edit retains both color decisions; rejecting preserves byte-exact project and gradient.",
+            "Editing the current review discards its staged proposal, preventing acceptance against a stale draft.",
+            "A real IndexedDB save failure prevents source replacement and preserves the exact selected design.",
+            "Acceptance preserves the exact prior design first, resets changed-color inclusion and applied results, and subsequent save appends the new source alongside the old revision.",
+            "A changed PDF anchor makes its previous gradient stale; restoration cannot silently substitute a new paint.",
+            "An added restriction enters the proposed draft unresolved; rejecting retains the preceding approved local review and gradient.",
+            "Malformed updated input preserves the current source, review and output.",
+            "Cancelling a delayed real File read prevents its late completion from publishing a comparison or changing the project.",
+            "Opening another project while acceptance waits on storage cancels the stale save and prevents late source replacement.",
+            "An unrelated PDF change preserves exact gradient paint under the renewed review, survives portable reopen, and a later review edit invalidates restoration.",
+            "390px comparison fits, no browser errors and no source or service network requests."
+          ],
+          "errors": [],
+          "requests": []
+        },
+        "native": {
+          "status": "passed",
+          "node": "v24.19.0",
+          "checks": [
+            "Figma: capture-time-only recapture is a no-op and rejection preserves exact reviewed project bytes.",
+            "Figma: changed evidence can be inspected and rejected while the current source and applied review remain exact.",
+            "Figma: editing the current review invalidates its staged proposal.",
+            "Figma: replacing the editor during a delayed acceptance save prevents late source publication.",
+            "Figma: failed IndexedDB save blocks replacement and preserves exact old work.",
+            "Figma: acceptance saves the complete old project, installs the compared draft without applied authority, and fits 390px.",
+            "Figma: saving the new review appends to the existing project history and retains the exact old revision.",
+            "Figma: unchanged gradient paint is restored under fresh review, survives portable reopen, fits 390px, and editing invalidates the restoration check.",
+            "Website: capture-time-only recapture is a no-op and rejection preserves exact reviewed project bytes.",
+            "Website: changed evidence can be inspected and rejected while the current source and applied review remain exact.",
+            "Website: editing the current review invalidates its staged proposal.",
+            "Website: replacing the editor during a delayed acceptance save prevents late source publication.",
+            "Website: failed IndexedDB save blocks replacement and preserves exact old work.",
+            "Website: acceptance saves the complete old project, installs the compared draft without applied authority, and fits 390px.",
+            "Website: saving the new review appends to the existing project history and retains the exact old revision.",
+            "Website: unchanged gradient paint is restored under fresh review, survives portable reopen, fits 390px, and editing invalidates the restoration check."
+          ],
+          "errors": [],
+          "requests": []
+        }
+      }
+    }
+  ],
+  "reviews": {
+    "reuse": "No actionable findings; shared controls and existing strict readers reused.",
+    "quality": "Resolved missing-button assertion, stale checking notice, unstable compiled evidence identity and guarded PDF V1 access.",
+    "efficiency": "No actionable findings; pending watcher cleanup and necessary engine reassessment verified."
+  },
+  "limits": [
+    "Synthetic Figma source for new production UI scenario; no live source/provider requests.",
+    "Existing PDF/native/output browser suites use development servers.",
+    "Default production keeps Guidelines disabled; proof builds explicitly set VITE_GUIDELINE_IMPORT=true.",
+    "Plugin/shared core unchanged; no new full root release-gate claim.",
+    "Manual PDF correspondence, multi-source refresh, broader corpus and human/release acceptance remain open."
+  ],
+  "otherChecks": [
+    {
+      "command": "validate_prd.py --profile full --extension ai --extension refactor --stage ready --strict",
+      "exitCode": 0,
+      "result": "PASS: no structural or traceability issues found"
+    },
+    {
+      "command": "prettier --check changed web files; git diff --check",
+      "exitCode": 0
+    }
+  ]
+}

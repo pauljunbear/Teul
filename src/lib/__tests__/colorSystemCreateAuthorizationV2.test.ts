@@ -15,7 +15,7 @@ vi.mock('../colorSystemResourceBlueprintV2', () => ({
   assertColorSystemResourceBlueprintV2Integrity: vi.fn(),
 }));
 
-import { deterministicContentHash } from '../colorSystemAudit';
+import { deterministicContentHash } from '../colorSystemHashing';
 import type {
   ColorSystemBuilderBriefV2,
   ColorSystemStrategyCandidateV2,
@@ -87,6 +87,7 @@ function fixture(): Fixture {
     sourceHash,
     sourcePackageHash,
     sourceReferenceColors: [],
+    secondaryTargetFamilyCount: 4,
     briefHash,
   } as unknown as ColorSystemBuilderBriefV2;
   const candidate = {
@@ -146,8 +147,8 @@ function fixture(): Fixture {
     sectionBlueprintHash: sectionBlueprint.sectionBlueprintHash,
     presentationProfileHash: presentationProfile.profileHash,
     output: {
-      systemId: 'ramp-color-system-v2',
-      name: 'Ramp color system v2',
+      systemId: 'example-color-system-v2',
+      name: 'Example color system v2',
       modes: ['Light', 'Dark'],
     },
     resourceBlueprintHash: hash('resource-blueprint'),
@@ -170,7 +171,7 @@ function fixture(): Fixture {
     actorId: 'user-paul',
     sessionId: 'session-1',
     action: 'create-copy',
-    outputName: 'Ramp color system v2',
+    outputName: 'Example color system v2',
     currentFileIdentityHash: fileHash,
     documentProfile: 'srgb',
     currentFileAcknowledged: true,
@@ -410,7 +411,7 @@ describe('colorSystemCreateAuthorizationV2', () => {
           actorId: 'user-paul',
           sessionId: 'session-1',
           action: 'create-copy',
-          outputName: 'Ramp color system v2',
+          outputName: 'Example color system v2',
           currentFileIdentityHash: baseline.input.currentFileIdentityHash,
           documentProfile: 'srgb',
           currentFileAcknowledged: true,
@@ -450,6 +451,68 @@ describe('colorSystemCreateAuthorizationV2', () => {
       validUntil: '2026-08-04T12:05:01.000Z',
     });
     expectCode(() => buildColorSystemCreateAuthorizationV2(futureSource), 'FUTURE_TIMESTAMP');
+  });
+
+  it('accepts a candidate whose count equals its own direction target inside the band, and nothing else', () => {
+    const perDirection = (
+      mutate: (input: ColorSystemCreateAuthorizationV2Input) => void
+    ): ColorSystemCreateAuthorizationV2Input => {
+      const built = fixture();
+      const input = clone(built.input);
+      const brief = input.brief as unknown as Record<string, unknown>;
+      brief.secondaryTargetFamilyCount = 9;
+      brief.secondaryTargetFamilyCountByDirection = {
+        'close-harmony': 5,
+        'balanced-contrast': 7,
+        'wide-spectrum': 9,
+      };
+      brief.secondaryTargetFamilyCountBand = { minimum: 5, maximum: 9 };
+      const candidate = input.candidate as unknown as Record<string, unknown>;
+      candidate.direction = 'close-harmony';
+      candidate.targetFamilyCount = 5;
+      candidate.actualFamilyCount = 5;
+      input.strategySet = {
+        ...input.strategySet,
+        candidates: [input.candidate],
+      } as typeof input.strategySet;
+      mutate(input);
+      return input;
+    };
+    // Derived filled its own five-family target: authorized even though the brief's
+    // largest target is nine.
+    const derived = perDirection(() => {});
+    expect(getColorSystemCreateEligibilityV2(derived)).toMatchObject({ eligible: true });
+
+    const wrongDirectionTarget = perDirection(input => {
+      (input.candidate as unknown as Record<string, unknown>).direction = 'wide-spectrum';
+    });
+    expectCode(
+      () => buildColorSystemCreateAuthorizationV2(wrongDirectionTarget),
+      'AUTHORITY_MISMATCH'
+    );
+
+    const undeclaredDirection = perDirection(input => {
+      delete (input.candidate as unknown as Record<string, unknown>).direction;
+    });
+    expectCode(
+      () => buildColorSystemCreateAuthorizationV2(undeclaredDirection),
+      'AUTHORITY_MISMATCH'
+    );
+
+    const outsideBand = perDirection(input => {
+      const brief = input.brief as unknown as Record<string, unknown>;
+      brief.secondaryTargetFamilyCountBand = { minimum: 6, maximum: 9 };
+    });
+    expectCode(() => buildColorSystemCreateAuthorizationV2(outsideBand), 'AUTHORITY_MISMATCH');
+
+    // Without per-direction targets the single reviewed count still binds.
+    const uniformMismatch = fixture();
+    (uniformMismatch.input.brief as unknown as Record<string, unknown>).secondaryTargetFamilyCount =
+      5;
+    expectCode(
+      () => buildColorSystemCreateAuthorizationV2(uniformMismatch.input),
+      'AUTHORITY_MISMATCH'
+    );
   });
 
   it('rejects underfilled, blocked, and unreviewed selection states', () => {

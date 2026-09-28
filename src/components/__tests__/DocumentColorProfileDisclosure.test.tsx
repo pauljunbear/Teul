@@ -2,6 +2,7 @@ import * as React from 'react';
 import { act } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { COLOR_SYSTEM_GENERIC_BUILDER_V2_ENABLED } from '../../lib/colorSystemGenericReleaseChannelV2';
 import { App } from '../../ui';
 
 class ResizeObserverMock {
@@ -40,7 +41,10 @@ describe('document color profile disclosure', () => {
     });
 
     const tablist = container.querySelector('[role="tablist"][aria-label="Teul sections"]');
-    expect(tablist?.querySelectorAll('[role="tab"]')).toHaveLength(5);
+    // The color-system builder adds a fifth rail item only in the candidate channel.
+    expect(tablist?.querySelectorAll('[role="tab"]')).toHaveLength(
+      COLOR_SYSTEM_GENERIC_BUILDER_V2_ENABLED ? 5 : 4
+    );
     expect(tablist?.textContent).not.toBe('SW');
 
     expect(postMessage).toHaveBeenCalledWith(

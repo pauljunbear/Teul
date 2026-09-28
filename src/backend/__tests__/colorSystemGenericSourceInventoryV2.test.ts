@@ -3,10 +3,73 @@ import type {
   FigmaColorInventoryHost,
   FigmaColorInventoryOptions,
 } from '../colorSystemAuditInventory';
-import { MAX_FIGMA_COLOR_TRAVERSED_NODES } from '../colorSystemAuditInventory';
+import {
+  captureFigmaColorInventoryScope,
+  MAX_FIGMA_COLOR_TRAVERSED_NODES,
+} from '../colorSystemAuditInventory';
 import { inventoryColorSystemGenericSourceV2 } from '../colorSystemGenericSourceInventoryV2';
 
 const CAPTURED_AT = '2026-08-21T12:00:00.000Z';
+
+describe('backend-supplied captured inventory scope', () => {
+  it('uses the supplied page and selection for both usage and structured palette evidence', async () => {
+    const section = paletteSection({
+      id: 'captured-primary',
+      kind: 'Primary',
+      colorName: 'Captured red',
+      hex: '#FF0000',
+      components: [1, 0, 0],
+    });
+    const other = paletteSection({
+      id: 'current-primary',
+      kind: 'Primary',
+      colorName: 'Current blue',
+      hex: '#0000FF',
+      components: [0, 0, 1],
+    });
+    const captured = page('page-captured', [section]);
+    const current = page('page-current', [other]);
+    captured.selection = [section];
+    current.selection = [other];
+    const { host, controls, spies } = hostFixture({
+      pages: [captured, current],
+      includeLibrary: false,
+    });
+    const frozenScope = captureFigmaColorInventoryScope(host, 'selection');
+    controls.setCurrentPage(current);
+    captured.selection = [];
+    const result = await inventoryColorSystemGenericSourceV2(
+      host,
+      options({ usageScope: 'selection', frozenScope })
+    );
+    expect(result.status).toBe('ready');
+    expect(result.snapshot?.scope.selectedNodeIds).toEqual(['captured-primary']);
+    expect(result.snapshot?.scope.loadedPageIds).toEqual(['page-captured']);
+    expect(result.snapshot?.paletteStructures.map(item => item.sourceNodeId)).toEqual([
+      'captured-primary',
+    ]);
+    expect(result.snapshot?.usageEvidence.map(item => item.value.components)).toContainEqual([
+      1, 0, 0,
+    ]);
+    expect(result.snapshot?.usageEvidence.map(item => item.value.components)).not.toContainEqual([
+      0, 0, 1,
+    ]);
+    expect(host.currentPage).toBe(current);
+    for (const mutation of spies.mutationCalls) expect(mutation).not.toHaveBeenCalled();
+  });
+
+  it('rejects a scope mismatch before any asynchronous inventory access', async () => {
+    const { host, spies } = hostFixture({ pages: [page('page-scope', [])], includeLibrary: false });
+    const frozenScope = captureFigmaColorInventoryScope(host, 'selection');
+    const result = await inventoryColorSystemGenericSourceV2(
+      host,
+      options({ usageScope: 'current-page', frozenScope })
+    );
+    expect(result.status).toBe('host-error');
+    expect(result.snapshot).toBeNull();
+    expect(spies.getLocalVariablesAsync).not.toHaveBeenCalled();
+  });
+});
 
 function solid(
   components: readonly [number, number, number],

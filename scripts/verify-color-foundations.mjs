@@ -128,6 +128,9 @@ export function validateColorFoundationsManifest(manifest, asOf) {
   if (!isIsoDate(manifest.reviewedAt)) errors.push('reviewedAt must be a valid YYYY-MM-DD date.');
   if (!isIsoDate(manifest.reviewBy)) errors.push('reviewBy must be a valid YYYY-MM-DD date.');
   if (!isIsoDate(asOf)) errors.push('The verification date must be a valid YYYY-MM-DD date.');
+  if (typeof manifest.reviewOwner !== 'string' || manifest.reviewOwner.trim().length === 0) {
+    errors.push('reviewOwner must name who owns the re-review, as a non-empty string.');
+  }
 
   if (isIsoDate(manifest.reviewedAt) && isIsoDate(manifest.reviewBy)) {
     if (manifest.reviewBy <= manifest.reviewedAt) {
@@ -248,6 +251,7 @@ export async function verifyColorFoundations({ asOf, manifestPath } = {}) {
     asOf: verificationDate,
     reviewedAt: manifest.reviewedAt,
     reviewBy: manifest.reviewBy,
+    reviewOwner: manifest.reviewOwner,
     sourceCount: manifest.sources.length,
   };
 }
@@ -257,7 +261,7 @@ if (invokedPath === import.meta.url) {
   try {
     const result = await verifyColorFoundations(parseArgs(process.argv.slice(2)));
     console.log(
-      `Offline color-foundation ledger validated for ${result.asOf}: ${result.sourceCount} pinned source records reviewed ${result.reviewedAt}; re-review by ${result.reviewBy}. Live upstream sources were not checked.`
+      `Offline color-foundation ledger validated for ${result.asOf}: ${result.sourceCount} pinned source records reviewed ${result.reviewedAt}; re-review by ${result.reviewBy}, owned by ${result.reviewOwner}. Live upstream sources were not checked.`
     );
   } catch (error) {
     console.error(

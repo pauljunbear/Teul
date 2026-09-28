@@ -1,0 +1,385 @@
+{
+  "schemaVersion": "teul.advanced-accessibility-verification.v1",
+  "status": "passed-local-verification",
+  "candidateBase": "dd44133f449ea4581f5cbd64ae627503e08ed132",
+  "requirements": ["TASK-010", "NFR-004", "AC-018"],
+  "sources": {
+    "web/scripts/guideline-accessibility.mjs": "3923ba57a823d32c15df17d152e5b0988af0f8e80bbf1cc779e420db37aa49a6",
+    "web/src/components/GuidelineStructureEditor.tsx": "ff7b9080b22dc5f592c43240ffbb6c378f8f94e61ef5d3ca02458a78fb7820cf",
+    "web/fixtures/guidelines/harbor-native.pdf": "4a6b3f600697dbd46bed4988a07224fc8ed894da2429a0b57294712745dfec35",
+    "web/fixtures/guidelines/harbor-scale.pdf": "0a88ecc879b30c20f823a29580a2d331a4969331e76d293c4dc757badbad6824",
+    "web/fixtures/guidelines/figma-project-v1.json": "698b20f9ba44c2613b09775a307dc98f482abadeedea1692de8cb494672573fa",
+    "web/fixtures/guidelines/website-capture.json": "bd7433bd71b11e21ecd7466992b43da5bdcc9773167c3d70f8a57531c0886346"
+  },
+  "runs": [
+    {
+      "node": "v22.13.1",
+      "browser": "153.0.8010.12",
+      "gate": {
+        "path": "docs/evidence/local-gates/2026-09-26T13-38-37Z-dd44133/receipt.json",
+        "bytes": 27444,
+        "sha256": "eb19b1f25ab936601cb9142c574dd5cb09574f00ec6688d751557488e5a10506"
+      },
+      "summary": {
+        "path": "docs/evidence/brand-guideline-import/advanced-accessibility-node22.json",
+        "bytes": 12813,
+        "sha256": "fa52bbd1f29d10c303a6d317e17c16f3a4327556b71dd85e90f7ef92e36e81a6"
+      },
+      "archive": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z",
+      "artifacts": [
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-checks.json",
+          "bytes": 13132,
+          "sha256": "72de4f581df200359248700bee64f4c3a98ef087472ed96cd2ebc6931bfd468c"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-empty.json",
+          "bytes": 194692,
+          "sha256": "1120500b21d94c4a10645c605deb080d6ca173f6f6b60c2497be576f460ddda6"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-pdf-ready.json",
+          "bytes": 237666,
+          "sha256": "7f407781a62edf04dec5f70a7eea51e08184e55cd69447f5a8b1e4b6b1e1de3f"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-pdf-review.json",
+          "bytes": 440386,
+          "sha256": "4d1405dd87f424c22a769fc790f3bc92fbaf274f008234ee2b6217f17d7a0446"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-review-applied.json",
+          "bytes": 855787,
+          "sha256": "69123ddfce7f0ec9272caed9702e432b4cdf059bba2b925dca55262695829edf"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-gradient.json",
+          "bytes": 906955,
+          "sha256": "ab425300e706f02716d9bec24a85ba226091a0261daeaa13a6314185aee60093"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-saved.json",
+          "bytes": 913502,
+          "sha256": "482c966ed31fdaad5a493772da71c498a225ded14606463def6a3763ae6a138c"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-import-error.json",
+          "bytes": 926921,
+          "sha256": "b89db96dfa54aa89bb7594b5e5efe8abe2ff05b11b3d9c5d7b71cd88ffeaff3d"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-mobile-review-error.json",
+          "bytes": 961634,
+          "sha256": "856eaae332e538a35377287bc9c497c9f6e944f6e051b99254b4d7699571c4dd"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-figma-review.json",
+          "bytes": 398207,
+          "sha256": "684e4b0cb43459b6923b15143ec6acab20b5d59037c4fa720a87e8bcf530a555"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-figma-mobile-review.json",
+          "bytes": 400280,
+          "sha256": "8453e7f344d896cbb797f27b48576340288210652f3b9b8c304240e980bd1338"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-website-review.json",
+          "bytes": 599001,
+          "sha256": "42a049ec608c0df9b9cecd2965e1db3a56c3c4b8747d243beea28bdbbb77ca9b"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-website-mobile-review.json",
+          "bytes": 597406,
+          "sha256": "924aac9c716d75e9c75ff63f6b6f497c6d12289f5112ed5afdd0e0dd9cc8dfc6"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-advanced-invalid-position.json",
+          "bytes": 587833,
+          "sha256": "01c2aeb49fb4b67ea2849cceb5bcb5592104840fe730332aaae249bb1e6743ec"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-advanced-relationship-error.json",
+          "bytes": 663344,
+          "sha256": "b6afb03f4842dcd13db4ef0cb498c471b2a8015809c1c15225d12162a5cb6446"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-advanced-source-editors.json",
+          "bytes": 660403,
+          "sha256": "9f71ff164537282c29120b86f097182c87550059e30f77c9d5586998d33b4217"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-advanced-source-mobile.json",
+          "bytes": 659180,
+          "sha256": "4cf31d118dc63e6a0f0a0456afbb350f6c5cc494378d691b45dd6f88257f8cba"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-advanced-gradient-constraints.json",
+          "bytes": 977345,
+          "sha256": "2c4270b3cfc9570e1ae5a43293d9d3ab4d1d00b8d12d29e2d759e4ae2ba33d54"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-advanced-gradient-mobile.json",
+          "bytes": 975640,
+          "sha256": "d28395bfd42d10e37e3b33035189a624fadaa9c0804b7c74b9b9cf6d2335ceb0"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-visible-table-contrast-1.json",
+          "bytes": 2055,
+          "sha256": "292c584c55d5a2d7853bb9086b56c0e082c561d9edb5e072b9f67adb30cd1d7b"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-visible-table-contrast-2.json",
+          "bytes": 2117,
+          "sha256": "91e594a093b43be42f8e86a32ee05037d7b9d92c5c64bc9e3d833453cf9db5b5"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-visible-table-contrast-3.json",
+          "bytes": 2117,
+          "sha256": "6d6c7cb7eb553c7500c8a7de37cb7c22eb042aff2016c550822657b28f6502d6"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-visible-table-contrast-4.json",
+          "bytes": 2088,
+          "sha256": "684e5113df4a4278476efee7d824eecbb699b0d8c07b365f29d0de2744c55b4b"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-desktop.png",
+          "bytes": 713590,
+          "sha256": "053d2b23c28fafbc71461bf16c970b5a36bb4c1407d5bbe4275d0fef04af9687"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-mobile.png",
+          "bytes": 555349,
+          "sha256": "bd4d6be9d4e42325b123fa531a3f786527ecd93685c4c5124c77cd92c4caad0f"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-figma-mobile-table.png",
+          "bytes": 8257,
+          "sha256": "624f904922cdc3b83263ac44edc8f45dca2773fe0d69115abb7bc3190edf1d68"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-advanced-source-mobile.png",
+          "bytes": 578542,
+          "sha256": "6a8ee47c08ef3feefb91988af9e21f19a48d4ebce445e993e6a8a6d588a5f504"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-advanced-gradient-mobile.png",
+          "bytes": 545730,
+          "sha256": "ca87eb648b525ac73fc245d8189fe220e24f7e65eccdc302f348e17d44acfca2"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-advanced-source-mobile-detail.png",
+          "bytes": 143571,
+          "sha256": "8da888413736397ab88cfe6d5559b33f4df40dd089aef71811fceef4e3ff9f8f"
+        },
+        {
+          "path": "release/guideline-accessibility/node22-2026-09-26T13-39-23-324Z/node22-advanced-gradient-mobile-detail.png",
+          "bytes": 111701,
+          "sha256": "0b498b8d6d7e49a8a15ab3d9ecbf547fb28495da06a078880bcf5fb9c05cfa75"
+        }
+      ],
+      "fullPageScans": 18,
+      "fullPageViolations": 0,
+      "clippedFullPageFindingsRetained": 1,
+      "visibleTargetContrastPasses": 4,
+      "keyboardTargetVisits": 59,
+      "studioTests": 658,
+      "testFiles": 53
+    },
+    {
+      "node": "v24.19.0",
+      "browser": "153.0.8010.12",
+      "gate": {
+        "path": "docs/evidence/local-gates/2026-09-26T13-39-54Z-dd44133/receipt.json",
+        "bytes": 27444,
+        "sha256": "50df015cd503bf40ae5255e08e6d476803b71396052bd45d7467d57e1d3c8165"
+      },
+      "summary": {
+        "path": "docs/evidence/brand-guideline-import/advanced-accessibility-node24.json",
+        "bytes": 12813,
+        "sha256": "64749f65077d04cb03632e654eeecfdc9584e74c979ae56eb9dacfab089561d1"
+      },
+      "archive": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z",
+      "artifacts": [
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-checks.json",
+          "bytes": 13132,
+          "sha256": "5e49ea20e202225d4227293b60776983c4095a7d5c73ab090d71ba5ab3074686"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-empty.json",
+          "bytes": 194692,
+          "sha256": "604c311f3c0c40a8c46cc2cf2279ef63a7108f5b02791c16ea9146c7badfb2d9"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-pdf-ready.json",
+          "bytes": 237666,
+          "sha256": "9add4385cb62d07ffb7ce2ceaaa3400c75547c05b089a9ebdafed6efd0b69f69"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-pdf-review.json",
+          "bytes": 440386,
+          "sha256": "4ef6b134308253eed013685ac00ccddd5179b94cc9af025171a116bec70de92a"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-review-applied.json",
+          "bytes": 855787,
+          "sha256": "199b11220bb65822bd0c4a7681b0753d032ee045d10d9640265eb1c84da9dfe0"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-gradient.json",
+          "bytes": 906955,
+          "sha256": "c341c6ae9fb7b539c12605618b22f7b6e9d49e390d232935686e615a0d98e6f6"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-saved.json",
+          "bytes": 913502,
+          "sha256": "d0858a5f0798e77bed9c45875a0bcb3508c8ecfe03fd67b2442d8f47abc0d8a7"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-import-error.json",
+          "bytes": 926921,
+          "sha256": "23522c6c31bf5ffe40c5858f94c51aff57eafddddf07a493e357da1bc85fd4f9"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-mobile-review-error.json",
+          "bytes": 961634,
+          "sha256": "568b2c45357b1dfbeedbb83657eb723f8c702f692d855f6609a13842df7f947b"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-figma-review.json",
+          "bytes": 398207,
+          "sha256": "f27dc2004a564ac268057da90c2b06eb18c083e2165800510cac34807f665081"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-figma-mobile-review.json",
+          "bytes": 400280,
+          "sha256": "73eeaa617a03ea25a1acd2a4ac564475b183c632367dad52bacead0318de4d58"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-website-review.json",
+          "bytes": 599001,
+          "sha256": "8c1f1b510d890105c74a8f928624fad8dc0e0d93cbebf31bcadc0b1766e58de1"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-website-mobile-review.json",
+          "bytes": 597406,
+          "sha256": "612fa4d1ad32009554bfc22ec3f1c07048bd85eea256bfcefa8fb94188cb875a"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-advanced-invalid-position.json",
+          "bytes": 587833,
+          "sha256": "b3edacdd42d72916ea343f3c3be19dcfe80f1dc26b6ca4e27d889fb96d84087a"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-advanced-relationship-error.json",
+          "bytes": 663344,
+          "sha256": "5db173875096802491e33fbd24a661ec8d16d534cbd7652732a7881a214c947e"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-advanced-source-editors.json",
+          "bytes": 660403,
+          "sha256": "d8153327a0cef2ebe36ed5bf5c6fdc8217c2ec196a1cb30642dc9007f188373c"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-advanced-source-mobile.json",
+          "bytes": 659180,
+          "sha256": "79e7caf233ba4220b84acc89dd37f77f620aed4bc2c4865a5525bb5799f8cfb8"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-advanced-gradient-constraints.json",
+          "bytes": 977345,
+          "sha256": "7c7b0c4f8654828bba82a95b56d9c9d56b79c2e810399fa9d5e83e45c7d757ca"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-advanced-gradient-mobile.json",
+          "bytes": 975640,
+          "sha256": "5719f5f3f709ec2a0775bb0ad6dc80cdc3b6bc4c5895cd620f189ef6711a85fe"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-visible-table-contrast-1.json",
+          "bytes": 2055,
+          "sha256": "21ec285515ce8beba94da0702b004eedff3601bfa579a3c96b344cfa43d4f356"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-visible-table-contrast-2.json",
+          "bytes": 2117,
+          "sha256": "36bde9833fb20be23901a0bbfd2621170e1398f8394ac3fc18633f32fbe89f41"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-visible-table-contrast-3.json",
+          "bytes": 2117,
+          "sha256": "8da168b1fdcc3b340f13f9a6723085b2f320c854acb39fbb792e6f21bf6783d1"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-visible-table-contrast-4.json",
+          "bytes": 2088,
+          "sha256": "86ddceb1fa4faf28a7d9c107ee6fb422b17c63f61b5b92da4bae2d5bcecfc3be"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-desktop.png",
+          "bytes": 713590,
+          "sha256": "053d2b23c28fafbc71461bf16c970b5a36bb4c1407d5bbe4275d0fef04af9687"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-mobile.png",
+          "bytes": 555349,
+          "sha256": "bd4d6be9d4e42325b123fa531a3f786527ecd93685c4c5124c77cd92c4caad0f"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-figma-mobile-table.png",
+          "bytes": 8257,
+          "sha256": "624f904922cdc3b83263ac44edc8f45dca2773fe0d69115abb7bc3190edf1d68"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-advanced-source-mobile.png",
+          "bytes": 578581,
+          "sha256": "987935cd83c0d458f2ebd199f91b592ea0c76bb7aa7da73ebaa7741c7a6b6469"
+        },
+        {
+          "path": "release/guideline-accessibility/node24-2026-09-26T13-40-35-646Z/node24-advanced-gradient-mobile.png",
+          "bytes": 545730,
+          "sha256": "ca87eb648b525ac73fc245d8189fe220e24f7e65eccdc302f348e17d44acfca2"
+        }
+      ],
+      "fullPageScans": 18,
+      "fullPageViolations": 0,
+      "clippedFullPageFindingsRetained": 1,
+      "visibleTargetContrastPasses": 4,
+      "keyboardTargetVisits": 59,
+      "studioTests": 658,
+      "testFiles": 53
+    }
+  ],
+  "preservedFailures": [
+    {
+      "path": "release/guideline-accessibility/advanced-node22-failed-keyboard-select.json",
+      "bytes": 10299,
+      "sha256": "fffbee4080b556777ce7a0aa7eda9c264cd413eecff82f69a9fe0b5b5094f7ac"
+    },
+    {
+      "path": "release/guideline-accessibility/advanced-node22-failed-keyboard-select-open.json",
+      "bytes": 10299,
+      "sha256": "657632c4ff2ed9ed667e2cda63757ddde79a5f517617641db03fa493a3cb5358"
+    },
+    {
+      "path": "release/guideline-accessibility/advanced-node22-failed-position-name.json",
+      "bytes": 11505,
+      "sha256": "e2b199315280828ca9e75a2c25c886949ae50447d5397a02e3993c0773a8736e"
+    }
+  ],
+  "productFix": "Position remains the accessible name during invalid input; its validation message is exposed separately through aria-describedby.",
+  "reviews": {
+    "reuse": "No material findings; existing Input/useId and harness helpers reused.",
+    "quality": "Added proof that the second hue range exists and is keyboard editable. Stable accessible name/description assertions cover the observed product defect.",
+    "efficiency": "No material lifecycle or efficiency findings."
+  },
+  "remaining": [
+    "Actual screen-reader use, status announcements and untested editor paths.",
+    "Operating-system file chooser; fixture bytes were supplied through production inputs.",
+    "Simple task-oriented authoring flow: the reviewed mobile screenshot contains multiple expanded forms on a long page.",
+    "Real-source corpus, independent designer evaluation and live service qualification."
+  ],
+  "qualified": false,
+  "deployed": false
+}

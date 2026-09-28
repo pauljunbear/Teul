@@ -1,0 +1,432 @@
+{
+  "status": "locally-verified-supporting-comparison",
+  "baseCommit": "df6f012cd06e651a51bca5b931d775afbfeb16fb",
+  "scope": "Partial TASK-007 / REQ-008 and TASK-009: shared comparison, exact selected-workspace persistence and refreshed-source replay. Full feature and visual acceptance remain open.",
+  "runtimeChecks": [
+    {
+      "node": "22.13.1",
+      "studioTests": 486,
+      "studioFiles": 43,
+      "lint": "passed",
+      "typecheckAndBuild": "passed"
+    },
+    {
+      "node": "24.19.0",
+      "studioTests": 486,
+      "studioFiles": 43,
+      "lint": "passed",
+      "typecheckAndBuild": "passed"
+    }
+  ],
+  "commands": [
+    "npm --prefix web test",
+    "npm --prefix web run lint",
+    "npm --prefix web run build",
+    "npm --prefix web run test:guideline-supporting",
+    "npm --prefix web run test:guideline-gradients",
+    "npm --prefix web run test:guideline-output-recovery",
+    "npm --prefix web run test:guideline-native-refresh (Node 22)",
+    "npm run report:dead-code",
+    "python3 /Users/paul.jun/.codex/skills/create-prd-and-build/scripts/validate_prd.py docs/prds/2026-09-25-brand-guideline-import.md --plan docs/plans/2026-09-25-brand-guideline-import-plan.md --profile full --extension ai --extension refactor --stage ready --strict"
+  ],
+  "browserChecks": [
+    {
+      "path": "release/guideline-supporting/node22-checks.json",
+      "status": "passed",
+      "node": "v22.13.1",
+      "checks": [
+        "PDF import and explicit source review generate up to three measured brand compositions; keeping a direction enables exact SVG/CSS/JSON and clipboard delivery.",
+        "Selected work survives offline workspace and browser-library reopen; editing removes stale export. Controls fit at 390px and receive keyboard focus.",
+        "Wrong-source supporting files preserve current work; exclusions remain clearable after they invalidate the comparison.",
+        "A product search with no feasible fixed source paints stays blocked and cannot export an unchecked direction.",
+        "Figma reviewed capture uses the same comparison and selected-direction save/reopen flow without a Figma plugin.",
+        "An older supporting replay cannot cancel or overwrite a newer local project open.",
+        "A newer native project download survives completion of an older supporting import.",
+        "Website reviewed capture uses the same comparison and selected-direction save/reopen flow without a Figma plugin.",
+        "A suitable synthetic source yields exact Radix paints in five actual product states; selected JSON retains the complete application set."
+      ],
+      "errors": [],
+      "requests": []
+    },
+    {
+      "path": "release/guideline-gradients/node22-checks.json",
+      "status": "passed",
+      "node": "v22.13.1",
+      "checks": [
+        "Actual PDF review supplies five exact source stops; positions, angle, hue route, stop locks, limits and scoped restrictions are enforced without resetting intent.",
+        "Workspace V3, offline reopen and independent Node replay preserve exact paint, controls, locks and export bytes; CSS/SVG renders differ by at most 2/255 per channel.",
+        "Controls fit at 390px with keyboard focus; edits remove stale exports, duplicate positions fail closed, and removal preserves two endpoints.",
+        "Legacy projects open/save without migration. A held gradient callback cannot cancel a newer local open or historical-revision open."
+      ],
+      "errors": [],
+      "requests": []
+    },
+    {
+      "path": "release/guideline-output-recovery/node22-checks.json",
+      "status": "passed",
+      "node": "v22.13.1",
+      "checks": [
+        "Browser/Node bundle replay preserves extension, gradient and exact component SVG",
+        "Actual IndexedDB save, reload and reopen restores selected controls and checked exports",
+        "Corrupt and future bundles leave the selected application and source intact",
+        "Completed failed paint assessment restores visibly and remains nonexportable",
+        "Re-applying source review and editing extension controls invalidate visible and retained results",
+        "Cancelling replay prevents the subsequent local write",
+        "Desktop and 390px restored composition render without page errors or source/provider requests"
+      ]
+    },
+    {
+      "path": "release/guideline-supporting/node24-checks.json",
+      "status": "passed",
+      "node": "v24.19.0",
+      "checks": [
+        "PDF import and explicit source review generate up to three measured brand compositions; keeping a direction enables exact SVG/CSS/JSON and clipboard delivery.",
+        "Selected work survives offline workspace and browser-library reopen; editing removes stale export. Controls fit at 390px and receive keyboard focus.",
+        "Wrong-source supporting files preserve current work; exclusions remain clearable after they invalidate the comparison.",
+        "A product search with no feasible fixed source paints stays blocked and cannot export an unchecked direction.",
+        "Figma reviewed capture uses the same comparison and selected-direction save/reopen flow without a Figma plugin.",
+        "An older supporting replay cannot cancel or overwrite a newer local project open.",
+        "A newer native project download survives completion of an older supporting import.",
+        "Website reviewed capture uses the same comparison and selected-direction save/reopen flow without a Figma plugin.",
+        "A suitable synthetic source yields exact Radix paints in five actual product states; selected JSON retains the complete application set."
+      ],
+      "errors": [],
+      "requests": []
+    },
+    {
+      "path": "release/guideline-gradients/node24-checks.json",
+      "status": "passed",
+      "node": "v24.19.0",
+      "checks": [
+        "Actual PDF review supplies five exact source stops; positions, angle, hue route, stop locks, limits and scoped restrictions are enforced without resetting intent.",
+        "Workspace V3, offline reopen and independent Node replay preserve exact paint, controls, locks and export bytes; CSS/SVG renders differ by at most 2/255 per channel.",
+        "Controls fit at 390px with keyboard focus; edits remove stale exports, duplicate positions fail closed, and removal preserves two endpoints.",
+        "Legacy projects open/save without migration. A held gradient callback cannot cancel a newer local open or historical-revision open."
+      ],
+      "errors": [],
+      "requests": []
+    },
+    {
+      "path": "release/guideline-output-recovery/node24-checks.json",
+      "status": "passed",
+      "node": "v24.19.0",
+      "checks": [
+        "Browser/Node bundle replay preserves extension, gradient and exact component SVG",
+        "Actual IndexedDB save, reload and reopen restores selected controls and checked exports",
+        "Corrupt and future bundles leave the selected application and source intact",
+        "Completed failed paint assessment restores visibly and remains nonexportable",
+        "Re-applying source review and editing extension controls invalidate visible and retained results",
+        "Cancelling replay prevents the subsequent local write",
+        "Desktop and 390px restored composition render without page errors or source/provider requests"
+      ]
+    },
+    {
+      "path": "release/guideline-native-refresh/receipt-node22.json",
+      "status": "passed",
+      "node": "v22.13.1",
+      "checks": [
+        "Figma: capture-time-only recapture is a no-op and rejection preserves exact reviewed project bytes.",
+        "Figma: changed evidence can be inspected and rejected while the current source and applied review remain exact.",
+        "Figma: editing the current review invalidates its staged proposal.",
+        "Figma: replacing the editor during a delayed acceptance save prevents late source publication.",
+        "Figma: failed IndexedDB save blocks replacement and preserves exact old work.",
+        "Figma: acceptance saves the complete old project, installs the compared draft without applied authority, and fits 390px.",
+        "Figma: saving the new review appends to the existing project history and retains the exact old revision.",
+        "Figma: unchanged gradient paint is restored under fresh review, survives portable reopen, fits 390px, and editing invalidates the restoration check.",
+        "Website: capture-time-only recapture is a no-op and rejection preserves exact reviewed project bytes.",
+        "Website: changed evidence can be inspected and rejected while the current source and applied review remain exact.",
+        "Website: editing the current review invalidates its staged proposal.",
+        "Website: replacing the editor during a delayed acceptance save prevents late source publication.",
+        "Website: failed IndexedDB save blocks replacement and preserves exact old work.",
+        "Website: acceptance saves the complete old project, installs the compared draft without applied authority, and fits 390px.",
+        "Website: saving the new review appends to the existing project history and retains the exact old revision.",
+        "Website: unchanged gradient paint is restored under fresh review, survives portable reopen, fits 390px, and editing invalidates the restoration check."
+      ],
+      "errors": [],
+      "requests": []
+    }
+  ],
+  "prdReadyValidation": "passed",
+  "deadExports": {
+    "exports": 48,
+    "filesOutsideEntryGraphs": 1,
+    "supportingAdapterConsumed": true
+  },
+  "review": {
+    "reuse": "shared SVG renderer and strict legacy serializers reused",
+    "quality": "native download operation guard and bounded visible exclusion recovery fixed",
+    "efficiency": "stale-context cancellation, immediate watcher cleanup and per-run frozen direction cache"
+  },
+  "visualInspection": "Inspected actual desktop/mobile comparison and five-state product screenshots; no human visual acceptance claimed.",
+  "sourceFiles": [
+    {
+      "path": "docs/evidence/brand-guideline-import/supporting-studio.md",
+      "bytes": 4960,
+      "sha256": "94e48d904994a2f3b12cf423e696436daa27fdad4d26975b27a566402ca83c45"
+    },
+    {
+      "path": "docs/plans/2026-09-25-brand-guideline-import-plan.md",
+      "bytes": 97485,
+      "sha256": "331e6d9679cb836aa86c3c7ec4ab4ff9c4d0742ef6ca68bf4e7f521472988392"
+    },
+    {
+      "path": "docs/prds/2026-09-25-brand-guideline-import.md",
+      "bytes": 117421,
+      "sha256": "2834506a83f7ff7e0e11991fb5a79ca072b48dbbc4592c81dfca4dd86841fb90"
+    },
+    {
+      "path": "web/package.json",
+      "bytes": 3008,
+      "sha256": "7620d320b42c7590c445afdc0f37ad2b6eece3b78e3c02264fdcb5012449d814"
+    },
+    {
+      "path": "web/scripts/guideline-supporting-smoke.mjs",
+      "bytes": 17452,
+      "sha256": "e4edaeb933f0f455f8bde547ade9ddfbc73817a8649be8366a3ed54698185b8e"
+    },
+    {
+      "path": "web/src/components/GuidelineApplicationStudio.tsx",
+      "bytes": 23513,
+      "sha256": "6b37ec77caaa1d759216f4d59e3a38f433588718677e1e1e0977d025840f9fca"
+    },
+    {
+      "path": "web/src/components/GuidelineDesignWorkspace.tsx",
+      "bytes": 1963,
+      "sha256": "9c2e40564c8e21bf5a93faff7b3042f63c813f748b98d1e64735d929f116f02e"
+    },
+    {
+      "path": "web/src/components/GuidelinePaintedNode.tsx",
+      "bytes": 627,
+      "sha256": "60ab06321146a4fbbdd5a487681f5c6e36c634619b1c4ffdb344c21999a5690c"
+    },
+    {
+      "path": "web/src/components/GuidelineRefreshRestore.tsx",
+      "bytes": 3991,
+      "sha256": "d15235fcd9dd57c5359439ff721821525b531be704c6f1f60152565858c2fe8d"
+    },
+    {
+      "path": "web/src/components/GuidelineSourceReview.tsx",
+      "bytes": 36400,
+      "sha256": "915d7f0e6eb6bf8e1fe9b70bea58adee621ba24a698a114c5c023ec16947d930"
+    },
+    {
+      "path": "web/src/components/GuidelineSupportingStudio.css",
+      "bytes": 2852,
+      "sha256": "bebd6822d0f412813f0fe8d76224852cd8c44c46d28a2447c0c0d4db0dca406a"
+    },
+    {
+      "path": "web/src/components/GuidelineSupportingStudio.tsx",
+      "bytes": 23759,
+      "sha256": "0a24cf859d4ea1c37b160b7e2a33522e4015ec24cc198c3fb0539eff1cc2f7d8"
+    },
+    {
+      "path": "web/src/components/GuidelineWorkspace.tsx",
+      "bytes": 55159,
+      "sha256": "a8cf8d46c3c8f6501cd468b78f859f242d6dca190d21b30e75fe36c7a0301dba"
+    },
+    {
+      "path": "web/src/lib/guideline/projectCodec.ts",
+      "bytes": 9174,
+      "sha256": "c77af7e65d92cc710e2cb96e92ce1cf77154b3ed2ed4d48a30b377f6cfd17312"
+    },
+    {
+      "path": "web/src/lib/guideline/refreshLineage.ts",
+      "bytes": 11176,
+      "sha256": "d1579ecc96b844c9816cddf24e02c3ea15fbed29864375fccbbd02a80b0f052c"
+    },
+    {
+      "path": "web/src/lib/guideline/refreshReplay.test.ts",
+      "bytes": 17007,
+      "sha256": "b4ebdaea8aeedd7b3dedb9c8808ed7dd24234872ff782fd2b54a499ddef4ac36"
+    },
+    {
+      "path": "web/src/lib/guideline/refreshReplay.ts",
+      "bytes": 16420,
+      "sha256": "225254dd783fc870073cec33bdb8820cec570c2de868850f498c5de0163bd1fe"
+    },
+    {
+      "path": "web/src/lib/guideline/selectedOutputs.ts",
+      "bytes": 4632,
+      "sha256": "a2deb7a10c4493a67876ac6a2a4cdcf2364f3dbdcccc91e18270ad3e0ae89b76"
+    },
+    {
+      "path": "web/src/lib/guideline/supportingDirections.ts",
+      "bytes": 27957,
+      "sha256": "334514bc3eb4b790a1f763a68b183e032c05c7a7f42de981974d9c8dd40bc2b3"
+    },
+    {
+      "path": "web/src/lib/guideline/supportingWorkspace.test.ts",
+      "bytes": 6050,
+      "sha256": "289b6542a01953f4ab6c650ed1cdbfa8b77d14c567fe232808ed494ee387ea78"
+    }
+  ],
+  "buildRuntime": "22.13.1",
+  "buildArtifacts": [
+    {
+      "path": "web/dist/index.html",
+      "bytes": 810,
+      "sha256": "40269e4353f4f45e960eef943facc0ddedc1d27a00574b7583bbcd18005f1d45"
+    },
+    {
+      "path": "web/dist/assets/GuidelineWorkspace-CHMFilPd.js",
+      "bytes": 908681,
+      "sha256": "b3e3fddad484c0c7ef73a9eb8dada4d0f20dfbe9935c50727af99940d4ad0ded"
+    },
+    {
+      "path": "web/dist/assets/GuidelineWorkspace-DFVma9ZM.css",
+      "bytes": 27252,
+      "sha256": "98c708fdbc3e16edeae61291b6f21bf631d42ab61d6fb88f86b844f4ecae671b"
+    },
+    {
+      "path": "web/dist/assets/ProductSystemView-AaRxh6Ml.js",
+      "bytes": 10033,
+      "sha256": "2c529a0eddbd75a26eb1a261610f95603f813d177d29b0327e707ae0f6962a07"
+    },
+    {
+      "path": "web/dist/assets/ProductSystemView-DJMb3_3z.css",
+      "bytes": 5952,
+      "sha256": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764"
+    },
+    {
+      "path": "web/dist/assets/authoring-BjofWU9B.js",
+      "bytes": 23564,
+      "sha256": "14ed3ea8f90ab57c9d5b5d34464bb24edf02ecfc85bd7e0b6cc489155fa3a3db"
+    },
+    {
+      "path": "web/dist/assets/authoringControlOutlinesV1-sGAwHJaE.js",
+      "bytes": 44846,
+      "sha256": "36b8497cbbb7eee864c2cb633f45e45159a8e1fabe8ff0aee5fb40d4ee5a9a8b"
+    },
+    {
+      "path": "web/dist/assets/colorSystemRecipeV1-BCRWdMRD.js",
+      "bytes": 104312,
+      "sha256": "cdf8be8bac6c92ebfb88ef89c10b24677b011ff6209628b5372fbc8c5c2343a7"
+    },
+    {
+      "path": "web/dist/assets/download-Bic2EQq1.js",
+      "bytes": 45624,
+      "sha256": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6"
+    },
+    {
+      "path": "web/dist/assets/index-Cn8SopkX.js",
+      "bytes": 358900,
+      "sha256": "34ccd2f0d4cd6a20c7d81ce693145009e4637f6bf4d8bc9ecde80277e8be79ec"
+    },
+    {
+      "path": "web/dist/assets/index-DqZwDzbM.css",
+      "bytes": 57437,
+      "sha256": "b390d285db969f0ef874b31cd0d191b798ad63ec29ebc6faaac63b7aa9378bde"
+    },
+    {
+      "path": "web/dist/assets/sourceProvenanceDisclosureData-BcglXYc9.js",
+      "bytes": 166316,
+      "sha256": "4f6227af4b91f1518b3c43588279d1303a5df5b3309bb00db07ad5ff208393ed"
+    }
+  ],
+  "browserArtifacts": [
+    {
+      "path": "release/guideline-supporting/node22-checks.json",
+      "bytes": 1226,
+      "sha256": "991ffe9dbd0705872684bc00e464ff08d3f5af6c8b654a263fec273ea09922eb"
+    },
+    {
+      "path": "release/guideline-gradients/node22-checks.json",
+      "bytes": 728,
+      "sha256": "914bd0274b6427adeeb5a82471918270f6f6b14f08cce067ffffcb8c3b15b4cf"
+    },
+    {
+      "path": "release/guideline-output-recovery/node22-checks.json",
+      "bytes": 680,
+      "sha256": "a98f6c7bcb56e889a76dcf45a5436023ad9afdaaf7f8e7fd0c8419f2a7109f8c"
+    },
+    {
+      "path": "release/guideline-supporting/node22-brand.css",
+      "bytes": 968,
+      "sha256": "ea2541c67e01b38204759b267ed82851687a7cae18f7fc862c9e3aeae7c27ee7"
+    },
+    {
+      "path": "release/guideline-supporting/node22-brand.json",
+      "bytes": 20847,
+      "sha256": "a757949ff97091185b01216a0f042853153d8a1e37a9bb4a8a44e2411daf5695"
+    },
+    {
+      "path": "release/guideline-supporting/node22-brand.svg",
+      "bytes": 946,
+      "sha256": "52c0244bc67f0594d82bc06047e1f7a8b6585e045f33dfbbac4d430f640aa82c"
+    },
+    {
+      "path": "release/guideline-supporting/node22-desktop.png",
+      "bytes": 112558,
+      "sha256": "6ce07e2a9ca792210b6b32f0d82396ca69de88cac6bd851aa2141f8d4455669c"
+    },
+    {
+      "path": "release/guideline-supporting/node22-mobile.png",
+      "bytes": 123139,
+      "sha256": "aa1b2cb69b969e169f41cecdddd6a560010d5a9132d7ad09afbd345da3b5d946"
+    },
+    {
+      "path": "release/guideline-supporting/node22-product.png",
+      "bytes": 134321,
+      "sha256": "7f855ca2ac1448b56cd283389487d62a85167f9eb3f7658eb1648e28eb22433d"
+    },
+    {
+      "path": "release/guideline-supporting/node24-checks.json",
+      "bytes": 1226,
+      "sha256": "931315a210def541221cd455e756bd3024fa253946ec96257240146fd2a593ad"
+    },
+    {
+      "path": "release/guideline-gradients/node24-checks.json",
+      "bytes": 728,
+      "sha256": "7aa4d49e5a16a400a953d277fa47338021ed1273359c08fa042c332dad8fe5f7"
+    },
+    {
+      "path": "release/guideline-output-recovery/node24-checks.json",
+      "bytes": 680,
+      "sha256": "dc7df88667383143677d4a60bfc09bdb2c3807b73b015d0694e059a5217bb8cd"
+    },
+    {
+      "path": "release/guideline-supporting/node24-brand.css",
+      "bytes": 945,
+      "sha256": "3060442ac56f82eef9f490c4f48cc93e543a232fc87b259682615261536a8955"
+    },
+    {
+      "path": "release/guideline-supporting/node24-brand.json",
+      "bytes": 20846,
+      "sha256": "7bc9ba144426c0c2bdd992ddef4de3a9518729f2fc24a94431291871fe7301fc"
+    },
+    {
+      "path": "release/guideline-supporting/node24-brand.svg",
+      "bytes": 946,
+      "sha256": "95b48ab93f8b5f9212b7adf94cecf9f92cf729b4270331bb047db712a8d4e74f"
+    },
+    {
+      "path": "release/guideline-supporting/node24-desktop.png",
+      "bytes": 112636,
+      "sha256": "70a8ebfc1f59aab253a059fdf843ba2aacb3e53645049fb7a36afe70888eae79"
+    },
+    {
+      "path": "release/guideline-supporting/node24-mobile.png",
+      "bytes": 122845,
+      "sha256": "68071d58299190d9a43f0a7f43abae4d87d921fd09f1acf068989004768aaff8"
+    },
+    {
+      "path": "release/guideline-supporting/node24-product.png",
+      "bytes": 134956,
+      "sha256": "ffc906c0d3a9310b738adff8ee42fda74f62f4968ceb19d2c959698903825887"
+    },
+    {
+      "path": "release/guideline-native-refresh/receipt-node22.json",
+      "bytes": 1880,
+      "sha256": "afc50389cc0a40a23dc8c854daad45e46437bf833c3351a69e6c3e0e8352cb19"
+    }
+  ],
+  "notClaimed": [
+    "full acceptance criteria",
+    "human visual acceptance",
+    "live remote source qualification",
+    "native Figma paste observation",
+    "integration",
+    "push",
+    "deployment"
+  ]
+}

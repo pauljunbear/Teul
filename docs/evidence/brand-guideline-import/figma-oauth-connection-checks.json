@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "teul.local-check-receipt.v1",
+  "createdAt": "2026-09-25T23:20:38.082483+00:00",
+  "baseCommit": "fec3b7058c5da542f186ece749a1244fe5951596",
+  "scope": "TASK-005 encrypted Figma OAuth lifecycle and leased native capture; partial implementation",
+  "commands": [
+    {
+      "command": "npm --prefix services/guideline-intake test",
+      "node": "22.13.1",
+      "result": "135 pass, 0 fail; includes build, 29 connection tests and 26 reader tests"
+    },
+    {
+      "command": "npm --prefix services/guideline-intake test",
+      "node": "24.19.0",
+      "result": "135 pass, 0 fail; includes build, 29 connection tests and 26 reader tests"
+    },
+    {
+      "command": "npm run lint:intake",
+      "node": "22.13.1",
+      "result": "pass, zero warnings"
+    },
+    {
+      "command": "validate_prd.py --profile full --extension ai --extension refactor --stage ready --strict",
+      "result": "pass"
+    },
+    {
+      "command": "git diff --check",
+      "result": "pass"
+    }
+  ],
+  "reviews": {
+    "reuse": "variable capability retained through lease and capture; reviewer confirmed",
+    "quality": "401 distinguishes authentication from access failure; exact grant/token rejection and job-path regressions confirmed",
+    "efficiency": "refresh preserves active reads, status avoids no-op writes, bounded transport and tracked outline shutdown confirmed"
+  },
+  "boundaries": {
+    "realFigmaRequests": false,
+    "realModelRequests": false,
+    "oauthAppConfigured": false,
+    "studioFigmaImportEnabled": false,
+    "sourceMutation": false,
+    "pushed": false,
+    "deployed": false,
+    "fullAcceptanceComplete": false
+  },
+  "sourceHashes": {
+    "services/guideline-intake/src/figmaConnection.ts": "sha256:944c80d1c94634f6192c6f93ca9d74c27e4623a9f4648060664e66ff0a2aeba4",
+    "services/guideline-intake/src/figmaConnectionStore.ts": "sha256:8eab9eb84153badacc292755c44f013758206ab13a95c58f4ddbc33aa2aadc0a",
+    "services/guideline-intake/src/figmaConnection.test.ts": "sha256:7ef364e9cfdacba53368ffb4098d456a8e2e5fe78bf449ea3c1837ff59aaa558",
+    "services/guideline-intake/src/figmaRead.ts": "sha256:2a579a150776f528e2773a362291c083ae57afecdd5f589bbb624e59efbace17",
+    "services/guideline-intake/src/figmaRead.test.ts": "sha256:ace207a5b02a0ca019152995c1055e28d20ccac963fd583f6f152f495b113cc9",
+    "services/guideline-intake/src/http.ts": "sha256:30640973e08b68281e17a7d77a2f9032d5cd0d452ff9c34f487ad04f768ff63e",
+    "services/guideline-intake/src/service.ts": "sha256:7ad49fc7663337ab98efa307146f0d70b43692e1cac18b69199750349e093b83",
+    "services/guideline-intake/README.md": "sha256:560f2d759aadf27098bdf49e4fd6bc114e06acd17c47bbe570a413621a6be91f",
+    "docs/prds/2026-09-25-brand-guideline-import.md": "sha256:8470ef40c2da5ac3c39f0774891baa4437ba2e9a62599b431e1215543e54f38d",
+    "docs/plans/2026-09-25-brand-guideline-import-plan.md": "sha256:a39928fefd1de54a6c25b040424ca383f434edc573af5ec7968e4065196811b1",
+    "docs/evidence/brand-guideline-import/figma-oauth-connection.md": "sha256:946a873721d3492f7392197e97021bfbeecdf47b87ec8316eb6fc6cf62d879e9"
+  }
+}

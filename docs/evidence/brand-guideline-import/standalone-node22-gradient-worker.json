@@ -1,0 +1,187 @@
+{
+  "scope": "Built Studio worker lifecycle regression; synthetic local sources and fault injection. No workload p95 or rendering qualification is claimed.",
+  "node": "v22.13.1",
+  "builtFiles": {
+    "assets/GuidelineWorkspace-BQYYCRG-.css": "d1cf4cfcf62a767dbcea2bdb53827f531fe151868f6d4ea98e857c613506439c",
+    "assets/GuidelineWorkspace-BaJ2H3vE.js": "445960d3b8290a0a17d467d163cb72bc775b8f1f11976590f9ab550d31a4eca6",
+    "assets/ProductSystemView-DJMb3_3z.css": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764",
+    "assets/ProductSystemView-j7xpqeQi.js": "f3ae66a5fd0cc3018ae1b3e09bb5ca4d8a2fde436700124de2adeb8e12e23821",
+    "assets/authoring-BwoR09q6.js": "89bfb0f3f975c25f1ac546d750c5137b47f6951c73bcc7ee11b2e0665d3fa8b2",
+    "assets/authoringControlOutlinesV1-BwdQitSv.js": "e9673136c387de3fa7892f477d464e8ef5ab75876a727ca53d63609565ec4384",
+    "assets/colorSystemRecipeV1-25UEwfVX.js": "7e7ffd72825e2766878ffda7cfe13e3c20a53290fc47c0502e1f68ef3a3837b6",
+    "assets/download-Bic2EQq1.js": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6",
+    "assets/index-BMMiDOxd.css": "0e359a3aeb7a2eb5c56422a31f451bda24c50d30c7ed62fc035c16ad0765f85e",
+    "assets/index-DxHbAq2t.js": "8f349250598a7434aa9df883b9c491e60f990d856f81dda8857206eeeba1f601",
+    "assets/sourceProvenanceDisclosureData-CxLfFIWs.js": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361",
+    "index.html": "399326a98ba4d73223ffd39075dd8b8fc3e1b7948db1acc2973ff5cc199f111e"
+  },
+  "scriptSha256": "46c1b5b4592ddfedb675c15bb9fc0f46398cdabf1e147e5fef1bd394dcd2d2b0",
+  "checks": [
+    "The production PDF flow generated a V2 design with a current passing mathematical receipt and Workspace V7; no saved success was supplied.",
+    "Cancelling a dispatched regeneration terminates its worker in under 250 ms and preserves the exact unsaved selected paint, export JSON and project bytes. Result delivery is held for a deterministic race.",
+    "An injected Worker constructor failure preserves current unsaved bytes; a fresh real-worker retry succeeds and returns the same selected design.",
+    "Saving on this device, updating its saved revision, and project downloads preserve the admitted receipt and exact export/project bytes without a replacement verification job.",
+    "A newer local update saves revision 3 and terminates the older pending regeneration. Delivering its held real result cannot cancel or replace the save; current exports, project bytes and the stored download remain exact.",
+    "After reload, saved V2 work reopens offline through the bundled worker and offers no CSS/SVG export until a new verification returns; exact paint and project bytes survive.",
+    "A native source keeps its completed V2 gradient proof and exact exports through a separate scale extension and rejected or read-only project imports, without re-verifying unchanged source paint.",
+    "A later Figma project open terminates a pending generation; explicitly delivering its held stale reply cannot replace the newly opened legacy paint or project."
+  ],
+  "errors": [],
+  "unexpectedRequests": [],
+  "browser": "153.0.8010.12",
+  "cancellation": {
+    "operation": "generate",
+    "acknowledgementMs": 0.5,
+    "resultArrivedBeforeCancellation": true
+  },
+  "beforeReload": {
+    "records": [
+      {
+        "index": 0,
+        "mode": "pass",
+        "createdAt": 536.7999999821186,
+        "operation": null,
+        "startedAt": null,
+        "resultAt": null,
+        "terminatedAt": null
+      },
+      {
+        "index": 1,
+        "mode": "pass",
+        "createdAt": 778.7999999821186,
+        "operation": "generate",
+        "startedAt": 795.1999999880791,
+        "resultAt": 877.5,
+        "terminatedAt": 879.5999999940395,
+        "requestId": 1,
+        "requestHash": "sha256:ffd330f6354d4b0acdcf152a4859e7ced326b5cd6a0ce909e9ec42e9ca6661c9",
+        "resultKind": "gradient",
+        "fidelityStatus": "pass"
+      },
+      {
+        "index": 2,
+        "mode": "hold-results",
+        "createdAt": 1328.9000000059605,
+        "operation": "generate",
+        "startedAt": 1345.7999999821186,
+        "resultAt": 1433.699999988079,
+        "terminatedAt": 1462.699999988079,
+        "requestId": 2,
+        "requestHash": "sha256:80e255ad1346f67aff9d03cfa97ed7a707f858f3d49a1f71943d795d1e310323",
+        "resultKind": "gradient",
+        "fidelityStatus": "pass"
+      },
+      {
+        "index": 3,
+        "mode": "pass",
+        "createdAt": 2095.699999988079,
+        "operation": "generate",
+        "startedAt": 2112.5999999940395,
+        "resultAt": 2202,
+        "terminatedAt": 2203.5,
+        "requestId": 4,
+        "requestHash": "sha256:80e255ad1346f67aff9d03cfa97ed7a707f858f3d49a1f71943d795d1e310323",
+        "resultKind": "gradient",
+        "fidelityStatus": "pass"
+      },
+      {
+        "index": 4,
+        "mode": "hold-results",
+        "createdAt": 3095.9000000059605,
+        "operation": "generate",
+        "startedAt": 3112.5,
+        "resultAt": 3200.699999988079,
+        "terminatedAt": 3250.5,
+        "requestId": 5,
+        "requestHash": "sha256:80e255ad1346f67aff9d03cfa97ed7a707f858f3d49a1f71943d795d1e310323",
+        "resultKind": "gradient",
+        "fidelityStatus": "pass"
+      }
+    ],
+    "longTasks": []
+  },
+  "observations": {
+    "records": [
+      {
+        "index": 0,
+        "mode": "hold-results",
+        "createdAt": 975.5,
+        "operation": "verify",
+        "startedAt": 985.5999999940395,
+        "resultAt": 1034.800000011921,
+        "terminatedAt": 1057.0999999940395,
+        "requestId": 1,
+        "requestHash": "sha256:0cd6f5506387d135ce3322948e1925f4277e85929ed733b5bef05f33a88d39a6",
+        "resultKind": "gradient",
+        "fidelityStatus": "pass"
+      },
+      {
+        "index": 1,
+        "mode": "pass",
+        "createdAt": 1398.5,
+        "operation": "verify",
+        "startedAt": 1407.5,
+        "resultAt": 1433.5,
+        "terminatedAt": 1433.5999999940395,
+        "requestId": 2,
+        "requestHash": "sha256:b147dffb1b547c2d4aec5641815e3656a91a87cb216e13db9f7a35f5581cff34",
+        "resultKind": "gradient",
+        "fidelityStatus": null
+      },
+      {
+        "index": 2,
+        "mode": "pass",
+        "createdAt": 1512.0999999940395,
+        "operation": "generate",
+        "startedAt": 1529.5,
+        "resultAt": 1588.5,
+        "terminatedAt": 1589.5,
+        "requestId": 3,
+        "requestHash": "sha256:042624892018183a243ba868ae5982a576b8b57a1ad9306fd81a97cdec4c862a",
+        "resultKind": "gradient",
+        "fidelityStatus": "pass"
+      },
+      {
+        "index": 3,
+        "mode": "pass",
+        "createdAt": 2580,
+        "operation": "verify",
+        "startedAt": 2597,
+        "resultAt": 2625.5999999940395,
+        "terminatedAt": 2625.5999999940395,
+        "requestId": 4,
+        "requestHash": "sha256:b147dffb1b547c2d4aec5641815e3656a91a87cb216e13db9f7a35f5581cff34",
+        "resultKind": "gradient",
+        "fidelityStatus": null
+      },
+      {
+        "index": 4,
+        "mode": "hold-results",
+        "createdAt": 2713.2000000178814,
+        "operation": "generate",
+        "startedAt": 2729.4000000059605,
+        "resultAt": 2788.2000000178814,
+        "terminatedAt": 2877.2000000178814,
+        "requestId": 5,
+        "requestHash": "sha256:75ba24eb0faa104f4dd678250766140e1aa8e6c7ea05513fd0a976ecf619241e",
+        "resultKind": "gradient",
+        "fidelityStatus": "pass"
+      },
+      {
+        "index": 5,
+        "mode": "pass",
+        "createdAt": 2877.5999999940395,
+        "operation": "verify",
+        "startedAt": 2896.7000000178814,
+        "resultAt": 2925.4000000059605,
+        "terminatedAt": 2925.5999999940395,
+        "requestId": 6,
+        "requestHash": "sha256:b147dffb1b547c2d4aec5641815e3656a91a87cb216e13db9f7a35f5581cff34",
+        "resultKind": "gradient",
+        "fidelityStatus": null
+      }
+    ],
+    "longTasks": []
+  },
+  "status": "passed"
+}

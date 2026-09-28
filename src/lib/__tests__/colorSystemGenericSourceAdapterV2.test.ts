@@ -6,7 +6,7 @@ import emptyCapacity from '../../../fixtures/color-builder/generic-source-v2/emp
 import hybridConflict from '../../../fixtures/color-builder/generic-source-v2/hybrid-conflict.json';
 import styleFirst from '../../../fixtures/color-builder/generic-source-v2/style-first.json';
 import variableFirst from '../../../fixtures/color-builder/generic-source-v2/variable-first.json';
-import { canonicalJson } from '../colorSystemAudit';
+import { canonicalJson } from '../colorSystemHashing';
 import {
   assertColorSystemGenericSourceSnapshotV2Integrity,
   buildColorSystemGenericSourceSnapshotV2,
@@ -16,6 +16,53 @@ import {
 } from '../colorSystemGenericSourceAdapterV2';
 
 const HASH = /^sha256:[0-9a-f]{64}$/;
+
+describe('exact native source identity', () => {
+  it.each([
+    { name: 'paint opacity', path: ['paintStyles', 1, 'paints', 0, 'opacity'] },
+    {
+      name: 'gradient color channel',
+      path: ['paintStyles', 0, 'paints', 0, 'payload', 'gradientStops', 0, 'color', 'r'],
+    },
+    {
+      name: 'gradient alpha',
+      path: ['paintStyles', 0, 'paints', 0, 'payload', 'gradientStops', 0, 'color', 'a'],
+    },
+    {
+      name: 'gradient position',
+      path: ['paintStyles', 0, 'paints', 0, 'payload', 'gradientStops', 0, 'position'],
+    },
+  ])('binds exact preserved $name before confirmation', ({ path }) => {
+    const first = build(mutated(compositingContext, path, 0.123456789012341));
+    const second = build(mutated(compositingContext, path, 0.123456789012342));
+    expect(first.exactNativeValueHash).toMatch(HASH);
+    expect(first.currentFileContentHash).not.toBe(second.currentFileContentHash);
+    expect(first.sourceSnapshotHash).not.toBe(second.sourceSnapshotHash);
+    const altered = mutated(first, path, 0.123456789012342);
+    expect(() => parseColorSystemGenericSourceSnapshotV2(altered)).toThrow('content hashes');
+    const { exactNativeValueHash: _identity, ...stripped } = first;
+    expect(() => parseColorSystemGenericSourceSnapshotV2(stripped)).toThrow('content hashes');
+  });
+
+  it('binds changes smaller than perceptual rounding before confirmation', () => {
+    const input = structuredClone(canvasOnly);
+    input.paletteStructures[0].entries[0].value.components[0] = 0.123456789012341;
+    const first = buildColorSystemGenericSourceSnapshotV2(input);
+    const altered = mutated(
+      first,
+      ['paletteStructures', 0, 'entries', 0, 'value', 'components', 0],
+      0.123456789012342
+    );
+    expect(() => parseColorSystemGenericSourceSnapshotV2(altered)).toThrow('content hashes');
+    input.paletteStructures[0].entries[0].value.components[0] = 0.123456789012342;
+    const second = buildColorSystemGenericSourceSnapshotV2(input);
+    expect(first.exactNativeValueHash).toMatch(HASH);
+    expect(first.currentFileContentHash).not.toBe(second.currentFileContentHash);
+    expect(first.sourceSnapshotHash).not.toBe(second.sourceSnapshotHash);
+    const { exactNativeValueHash: _identity, ...stripped } = first;
+    expect(() => parseColorSystemGenericSourceSnapshotV2(stripped)).toThrow('content hashes');
+  });
+});
 
 function clone<T>(value: T): T {
   return structuredClone(value);
@@ -85,15 +132,51 @@ describe('ColorSystemGenericSourceSnapshotV2', () => {
       'hybrid-conflict': build(hybridConflict).sourceSnapshotHash,
       'empty-capacity': build(emptyCapacity).sourceSnapshotHash,
     }).toEqual({
-      'variable-first': 'sha256:ad84f0b2acd48dc051321fed2f0a02330f321c8dd275b98de99f617437a8ea51',
-      'style-first': 'sha256:4f99d777479bd452ff741cb677033182145cb8d0fc172afdba018f3a96d2ad10',
-      'canvas-only': 'sha256:de2995cd42ceeb7a64c822e60875c4a92ebf7369d2af2d05469ae1039a520abd',
-      'display-p3': 'sha256:34dccd4f1b3ba0d4a9889acfb6b3044e2fde2ae2cd54b43dc31958742dd699df',
+      'variable-first': 'sha256:182e48c2b2012025ff42af7346e471a3dac513b7be620d95c360b621fe7837b8',
+      'style-first': 'sha256:485c5a9cd5e6aa6de9d178367b009d0f980905f1dfc1a02d4631d53d895f5e43',
+      'canvas-only': 'sha256:42a5039e1fc64413e0dc9b27e2b0675501c8a2afafa2722e0c26a0592119f3c0',
+      'display-p3': 'sha256:d6054b772c3cd53e34531115b932fab85221593ec370614a7d80b3fef921bd80',
       'compositing-context':
         'sha256:f9c8423371fb8ae34c03f660a9bf059c2d1848a7c845fa5f98c84696ebf39091',
-      'hybrid-conflict': 'sha256:6833ddf2c96df9aeec3a4e35ecaee02ed33c73b3f359d79986dc9a1aa55c95dd',
+      'hybrid-conflict': 'sha256:da51153ebe530a19c7d64b51ca2eaa02bf13ca8c2620a2d8db84d97ed5eb58af',
       'empty-capacity': 'sha256:a61de45af88857b636bbca83647152b6895d2fe05230f9969e5f7d18cad7a482',
     });
+    // Native source channels and preserved paint numerics are data, not runtime
+    // noise. Their exact digest participates in source identity. Existing byte-only
+    // fixtures retain their hashes; perceptual math still uses twelve-digit rounding.
+    const literal: FixturePath = [
+      'variables',
+      1,
+      'valuesByMode',
+      0,
+      'rawValue',
+      'value',
+      'components',
+      0,
+    ];
+    const resolved: FixturePath = [
+      'variables',
+      1,
+      'valuesByMode',
+      0,
+      'resolvedValue',
+      'components',
+      0,
+    ];
+    const baseline = build(variableFirst).sourceSnapshotHash;
+    const noisy = mutated(
+      mutated(variableFirst, literal, 0.1 * (1 + 1e-13)),
+      resolved,
+      0.1 * (1 + 1e-13)
+    );
+    expect(canonicalJson(noisy)).not.toBe(canonicalJson(variableFirst));
+    expect(build(noisy).sourceSnapshotHash).not.toBe(baseline);
+    const oneStep = mutated(
+      mutated(variableFirst, literal, 0.1 + 1 / 255),
+      resolved,
+      0.1 + 1 / 255
+    );
+    expect(build(oneStep).sourceSnapshotHash).not.toBe(baseline);
   });
 
   it.each([

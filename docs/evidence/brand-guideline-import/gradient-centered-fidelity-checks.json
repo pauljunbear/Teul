@@ -1,0 +1,1297 @@
+{
+  "schemaVersion": "teul.gradient-centered-fidelity-checks.v1",
+  "recordedAt": "2026-09-26T07:37:29.406907+00:00",
+  "baseCommit": "788e7a80fa210f100b2793e5b3e9b7222ac11176",
+  "lifecycle": "locally-verified-experiment",
+  "productCodeChanged": false,
+  "qualified": false,
+  "nativeMathQualified": false,
+  "fullReleaseGatesRun": false,
+  "fullReleaseGateReason": "No product implementation, dependency, bundle or saved-format changes. Previous product gates remain separate evidence.",
+  "sourceHashes": {
+    "docs/evidence/brand-guideline-import/gradient-centered-fidelity.md": "fe9528a361ce30491c0c4736a3a4c9a927d2ce6e4d25afbf7df4944deeb3441c",
+    "docs/plans/2026-09-25-brand-guideline-import-plan.md": "0e45e354a081fdd311286d18e2fbaf9d62ef21dc54bea70bd67a8e972ca213d9",
+    "docs/prds/2026-09-25-brand-guideline-import.md": "81cbcb6ca01a29f460d31ca69f2ae570b72088341af07b921cc324930b00aa67",
+    "package.json": "707b71dbe64a4127aa551c921dfac7bf863a9fe4bf252acae7cf3aafeb65c135",
+    "scripts/experiments/gradient-fidelity/README.md": "93f81098ff116c1f0f485dbf8f99cae39de290a68efabb4a0e189f2fb25193ec",
+    "scripts/experiments/gradient-fidelity/benchmark.mjs": "e7c8e2d9a238cd85300de8720600740db738320d04fe6c468eeea69877ac5d47",
+    "scripts/experiments/gradient-fidelity/colorSystemGradientDualIntervalsV1.test.ts": "ea87449c0a336f9fc90a42e5782e00c6423c8c7a1d4778568ebfc97b8eda7d16",
+    "scripts/experiments/gradient-fidelity/colorSystemGradientDualIntervalsV1.ts": "8ca82f0b253c6a94619b29ddf8bd82a46a6af43fbefefb31270585de76038b9d",
+    "scripts/experiments/gradient-fidelity/colorSystemGradientFidelityV1.test.ts": "e96702c36719e1da9f2720d64d90a7c642bc62d2f63353cda95913843ac29cff",
+    "scripts/experiments/gradient-fidelity/colorSystemGradientFidelityV1.ts": "e8ac6832c2790b6de92b4008ee78921abcc33ab5255e852d63bbc4a235742608",
+    "scripts/experiments/gradient-fidelity/fixtures.mjs": "dd3d99bbbf808ad641824a4a753af06ed9c9f624a88bfe8a8a6e3b7704ca4c71",
+    "scripts/experiments/gradient-fidelity/margin-benchmark.mjs": "2bc4d41e64c4d83025a6d1bf2ad1700ee67023f35e4d76b3f6d3c598a272a695"
+  },
+  "checks": [
+    {
+      "name": "experiment-node22",
+      "command": "Node 22: npm run test:gradient-fidelity-experiment",
+      "exitCode": 0,
+      "output": "\n> teul@1.0.0 test:gradient-fidelity-experiment\n> vitest run --config scripts/experiments/gradient-fidelity/vitest.config.mts\n\n\n RUN  v4.1.11 /Users/paul.jun/Downloads/Projects/Teul\n\n\n Test Files  3 passed (3)\n      Tests  27 passed (27)\n   Start at  03:35:01\n   Duration  5.62s (transform 118ms, setup 0ms, import 184ms, tests 5.47s, environment 0ms)\n\n"
+    },
+    {
+      "name": "experiment-node24",
+      "command": "Node 24: npm run test:gradient-fidelity-experiment",
+      "exitCode": 0,
+      "output": "\n> teul@1.0.0 test:gradient-fidelity-experiment\n> vitest run --config scripts/experiments/gradient-fidelity/vitest.config.mts\n\n\n RUN  v4.1.11 /Users/paul.jun/Downloads/Projects/Teul\n\n\n Test Files  3 passed (3)\n      Tests  27 passed (27)\n   Start at  03:35:01\n   Duration  3.83s (transform 93ms, setup 0ms, import 140ms, tests 3.68s, environment 0ms)\n\n"
+    },
+    {
+      "name": "typecheck",
+      "command": "tsc --project scripts/experiments/gradient-fidelity/tsconfig.json",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "lint",
+      "command": "eslint scripts/experiments/gradient-fidelity --ext .ts,.mjs --max-warnings=0",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "name": "prd-ready",
+      "command": "validate_prd.py docs/prds/2026-09-25-brand-guideline-import.md --plan docs/plans/2026-09-25-brand-guideline-import-plan.md --profile full --extension ai --extension refactor --stage ready --strict",
+      "exitCode": 0,
+      "output": "PRD profile: full + ai, refactor\nValidation stage: ready\nPASS: no structural or traceability issues found\n"
+    }
+  ],
+  "benchmarks": {
+    "node22": {
+      "schemaVersion": "teul.gradient-margin-experiment.v1",
+      "qualified": false,
+      "nativeMathQualified": false,
+      "node": "v22.13.1",
+      "machine": {
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M4 Pro"
+      },
+      "measurement": "One run per case in listed order, including compilation and assessment. No p95 or browser responsiveness claim.",
+      "sources": {
+        "scripts/experiments/gradient-fidelity/margin-benchmark.mjs": "2bc4d41e64c4d83025a6d1bf2ad1700ee67023f35e4d76b3f6d3c598a272a695",
+        "scripts/experiments/gradient-fidelity/fixtures.mjs": "dd3d99bbbf808ad641824a4a753af06ed9c9f624a88bfe8a8a6e3b7704ca4c71",
+        "scripts/experiments/gradient-fidelity/colorSystemGradientFidelityV1.ts": "e8ac6832c2790b6de92b4008ee78921abcc33ab5255e852d63bbc4a235742608",
+        "scripts/experiments/gradient-fidelity/colorSystemGradientIntervalsV1.ts": "be29951fc58eb1372a8d72d7259e5cb8459109b6c197a33962058dd68da13fff",
+        "scripts/experiments/gradient-fidelity/colorSystemGradientDualIntervalsV1.ts": "8ca82f0b253c6a94619b29ddf8bd82a46a6af43fbefefb31270585de76038b9d",
+        "src/lib/colorSystemGradientV1.ts": "6e4e2ff71114489e8170dbcefcc48e05d4037eca0d7f06b41ba1da3f243da930",
+        "src/lib/colorScale.ts": "d827205b9c49d9ddd4ea931344c0920bdec194682396e4781120a975c784ad05",
+        "src/lib/utils.ts": "310d5b7beda90ab475498e4af92c819a8d54a5f2f472d115d8c087e1deb8d49d"
+      },
+      "results": [
+        {
+          "name": "restrained",
+          "margin": 0.0025,
+          "colors": [
+            [0.1, 0.2, 0.3],
+            [0.2, 0.3, 0.4]
+          ],
+          "route": {
+            "space": "oklab"
+          },
+          "compilationMs": 25.497749999999996,
+          "totalMs": 52.91604100000001,
+          "compiledStops": 2,
+          "sampledMaximum": 0.0005925189207317688,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:fd64287db1d8df22a6732bf542850eacbb47ff0925d8abef2fffd8b871835874",
+            "candidatePaintHash": "sha256:c06638107a0a8849608df43c2d78ce4c86649ee97e605d14f03012e294eb5587",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.001858675756678963,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 63,
+            "boundedIntervals": 32,
+            "mappingStates": 320,
+            "centeredIntervals": 32,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "black-white",
+          "margin": 0.0025,
+          "colors": [
+            [0, 0, 0],
+            [1, 1, 1]
+          ],
+          "route": {
+            "space": "oklab"
+          },
+          "compilationMs": 37.52945900000003,
+          "totalMs": 148.58695900000004,
+          "compiledStops": 16,
+          "sampledMaximum": 0.002374856334819701,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:6573faa3dbc32340eddf9b98c5e60512e8907877bade843b648c54a751b18995",
+            "candidatePaintHash": "sha256:fbb5b821f661b808939610b686d74e85539f3afcf1026cd1b864fa17cdd0387f",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.0049870871687173295,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 603,
+            "boundedIntervals": 309,
+            "mappingStates": 70,
+            "centeredIntervals": 285,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "shorter",
+          "margin": 0.0025,
+          "colors": [
+            [0.12, 0.5, 0.6],
+            [0.35, 0.45, 0.7]
+          ],
+          "route": {
+            "space": "oklch",
+            "huePath": "shorter"
+          },
+          "compilationMs": 24.817042000000015,
+          "totalMs": 36.862957999999935,
+          "compiledStops": 3,
+          "sampledMaximum": 0.001583054468408386,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:ba0cd3b31f914f4cc7f26bd70f6df130a616fbdc197fe1ef623d8801962c5b06",
+            "candidatePaintHash": "sha256:9871423d2728361df93cbc98f10ce629d0c9e3422100a9ff5557201fecb3987d",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.004982529274878391,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 32,
+            "boundedIntervals": 17,
+            "mappingStates": 128,
+            "centeredIntervals": 17,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "longer",
+          "margin": 0.0025,
+          "colors": [
+            [0.8, 0.1, 0.2],
+            [0.1, 0.1, 0.8]
+          ],
+          "route": {
+            "space": "oklch",
+            "huePath": "longer"
+          },
+          "compilationMs": 68.14150000000006,
+          "totalMs": 4017.260916,
+          "compiledStops": 35,
+          "sampledMaximum": 0.0022242710305791823,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:422babcf561669397417e8f9fd0aa35466c3e5bdae1e5f6bd557eee494844852",
+            "candidatePaintHash": "sha256:f83261c77815135f2a455cf60b47e3288d77497247e8fe428da23f5deb6dd977",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.004991183534882416,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 2028,
+            "boundedIntervals": 1031,
+            "mappingStates": 64144,
+            "centeredIntervals": 555,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "neutral",
+          "margin": 0.0025,
+          "colors": [
+            [0.4, 0.4, 0.4],
+            [0.3, 0.5, 0.6]
+          ],
+          "route": {
+            "space": "oklch",
+            "huePath": "longer"
+          },
+          "compilationMs": 25.994958999999653,
+          "totalMs": 35.35716700000012,
+          "compiledStops": 3,
+          "sampledMaximum": 0.0009431036865056922,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:e6010eb85501b367ba0ca1a5b2b2b8fae9407abf9b575e7b8f2603d677b03df5",
+            "candidatePaintHash": "sha256:bedb4781c1bc77b2f4a28d228b52f89f28e93ce4beb535f5628f0d2278571224",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.0037834012330871906,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 30,
+            "boundedIntervals": 16,
+            "mappingStates": 64,
+            "centeredIntervals": 16,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "five",
+          "margin": 0.0025,
+          "colors": [
+            [0.1, 0.2, 0.3],
+            [0.12, 0.24, 0.36],
+            [0.18, 0.3, 0.4],
+            [0.2, 0.35, 0.45],
+            [0.3, 0.4, 0.5]
+          ],
+          "route": {
+            "space": "oklab"
+          },
+          "compilationMs": 91.65279199999986,
+          "totalMs": 120.24645899999996,
+          "compiledStops": 5,
+          "sampledMaximum": 0.00032974606583828226,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:399eda542243ec7b6e94ea8f5dbe4198dc36a00169f79532156b49075c5fd9bc",
+            "candidatePaintHash": "sha256:15126c6bc4d289616240fc628a14b4660d8d1e372f64fbe694be44fd2e25e103",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.004956866246509821,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 92,
+            "boundedIntervals": 48,
+            "mappingStates": 608,
+            "centeredIntervals": 48,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "between-sample-failure",
+          "margin": 0.0025,
+          "colors": [
+            [0.16032589599490166, 0.6980988865252584, 0.28516142861917615],
+            [0.5630403070244938, 0.9031179184094071, 0.5892083912622184]
+          ],
+          "route": {
+            "space": "oklch",
+            "huePath": "longer"
+          },
+          "compilationMs": 54.54958400000032,
+          "totalMs": 1437.4755839999998,
+          "compiledStops": 28,
+          "sampledMaximum": 0.002289782564061717,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:43a33adcd3bfa229ac6b22477b51e076d9383861593750f8ea25596cd675575b",
+            "candidatePaintHash": "sha256:adf082d5e1cbc1f20efcaea1d80507b0c536b6d88324d15419b750e98a1f2144",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.004990072761985846,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 761,
+            "boundedIntervals": 394,
+            "mappingStates": 18599,
+            "centeredIntervals": 347,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "restrained",
+          "margin": 0.001,
+          "colors": [
+            [0.1, 0.2, 0.3],
+            [0.2, 0.3, 0.4]
+          ],
+          "route": {
+            "space": "oklab"
+          },
+          "compilationMs": 22.201999999999316,
+          "totalMs": 38.697416999999405,
+          "compiledStops": 2,
+          "sampledMaximum": 0.0005925189207317688,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:fd64287db1d8df22a6732bf542850eacbb47ff0925d8abef2fffd8b871835874",
+            "candidatePaintHash": "sha256:c06638107a0a8849608df43c2d78ce4c86649ee97e605d14f03012e294eb5587",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.001858675756678963,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 63,
+            "boundedIntervals": 32,
+            "mappingStates": 320,
+            "centeredIntervals": 32,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "black-white",
+          "margin": 0.001,
+          "colors": [
+            [0, 0, 0],
+            [1, 1, 1]
+          ],
+          "route": {
+            "space": "oklab"
+          },
+          "compilationMs": 47.060333999999784,
+          "totalMs": 129.57137500000044,
+          "compiledStops": 28,
+          "sampledMaximum": 0.0008533058064643381,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:6573faa3dbc32340eddf9b98c5e60512e8907877bade843b648c54a751b18995",
+            "candidatePaintHash": "sha256:e8ef2e20c2a75ee8146b2db63429e785a400cd7fdd1855ab957233233dbe2940",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.004928402436738278,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 533,
+            "boundedIntervals": 280,
+            "mappingStates": 57,
+            "centeredIntervals": 253,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "shorter",
+          "margin": 0.001,
+          "colors": [
+            [0.12, 0.5, 0.6],
+            [0.35, 0.45, 0.7]
+          ],
+          "route": {
+            "space": "oklch",
+            "huePath": "shorter"
+          },
+          "compilationMs": 25.17029099999945,
+          "totalMs": 33.753999999999905,
+          "compiledStops": 5,
+          "sampledMaximum": 0.0004036555567385921,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:ba0cd3b31f914f4cc7f26bd70f6df130a616fbdc197fe1ef623d8801962c5b06",
+            "candidatePaintHash": "sha256:68005745286d6ac8bc666f61b681b328a46ab10d239e88302861879cf9dc1b14",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.0048990146707978,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 28,
+            "boundedIntervals": 16,
+            "mappingStates": 94,
+            "centeredIntervals": 16,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "longer",
+          "margin": 0.001,
+          "colors": [
+            [0.8, 0.1, 0.2],
+            [0.1, 0.1, 0.8]
+          ],
+          "route": {
+            "space": "oklch",
+            "huePath": "longer"
+          },
+          "compilationMs": 76.2060419999998,
+          "totalMs": 3761.9602919999998,
+          "compiledStops": 50,
+          "sampledMaximum": 0.0009867491777796392,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:422babcf561669397417e8f9fd0aa35466c3e5bdae1e5f6bd557eee494844852",
+            "candidatePaintHash": "sha256:825f64c98447401217b4465b34f5ed39f00a0db13ed525d4b5010094f3a0c143",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.00496557757351789,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 1979,
+            "boundedIntervals": 1014,
+            "mappingStates": 62857,
+            "centeredIntervals": 514,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "neutral",
+          "margin": 0.001,
+          "colors": [
+            [0.4, 0.4, 0.4],
+            [0.3, 0.5, 0.6]
+          ],
+          "route": {
+            "space": "oklch",
+            "huePath": "longer"
+          },
+          "compilationMs": 23.00066599999991,
+          "totalMs": 31.60895800000071,
+          "compiledStops": 3,
+          "sampledMaximum": 0.0009431036865056922,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:e6010eb85501b367ba0ca1a5b2b2b8fae9407abf9b575e7b8f2603d677b03df5",
+            "candidatePaintHash": "sha256:bedb4781c1bc77b2f4a28d228b52f89f28e93ce4beb535f5628f0d2278571224",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.0037834012330871906,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 30,
+            "boundedIntervals": 16,
+            "mappingStates": 64,
+            "centeredIntervals": 16,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "five",
+          "margin": 0.001,
+          "colors": [
+            [0.1, 0.2, 0.3],
+            [0.12, 0.24, 0.36],
+            [0.18, 0.3, 0.4],
+            [0.2, 0.35, 0.45],
+            [0.3, 0.4, 0.5]
+          ],
+          "route": {
+            "space": "oklab"
+          },
+          "compilationMs": 80.7256669999988,
+          "totalMs": 107.02745800000048,
+          "compiledStops": 5,
+          "sampledMaximum": 0.00032974606583828226,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:399eda542243ec7b6e94ea8f5dbe4198dc36a00169f79532156b49075c5fd9bc",
+            "candidatePaintHash": "sha256:15126c6bc4d289616240fc628a14b4660d8d1e372f64fbe694be44fd2e25e103",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.004956866246509821,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 92,
+            "boundedIntervals": 48,
+            "mappingStates": 608,
+            "centeredIntervals": 48,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "between-sample-failure",
+          "margin": 0.001,
+          "colors": [
+            [0.16032589599490166, 0.6980988865252584, 0.28516142861917615],
+            [0.5630403070244938, 0.9031179184094071, 0.5892083912622184]
+          ],
+          "route": {
+            "space": "oklch",
+            "huePath": "longer"
+          },
+          "compilationMs": 63.3690000000006,
+          "totalMs": 1365.4748749999999,
+          "compiledStops": 45,
+          "sampledMaximum": 0.0009074944986619052,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:43a33adcd3bfa229ac6b22477b51e076d9383861593750f8ea25596cd675575b",
+            "candidatePaintHash": "sha256:41fdba3adbbebf213909c4a67e51d286d78ffe6ab46b2f4fe94bcfe3776302b2",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.004990072761985846,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 738,
+            "boundedIntervals": 391,
+            "mappingStates": 18238,
+            "centeredIntervals": 325,
+            "reason": "bounded"
+          }
+        }
+      ]
+    },
+    "node24": {
+      "schemaVersion": "teul.gradient-margin-experiment.v1",
+      "qualified": false,
+      "nativeMathQualified": false,
+      "node": "v24.19.0",
+      "machine": {
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M4 Pro"
+      },
+      "measurement": "One run per case in listed order, including compilation and assessment. No p95 or browser responsiveness claim.",
+      "sources": {
+        "scripts/experiments/gradient-fidelity/margin-benchmark.mjs": "2bc4d41e64c4d83025a6d1bf2ad1700ee67023f35e4d76b3f6d3c598a272a695",
+        "scripts/experiments/gradient-fidelity/fixtures.mjs": "dd3d99bbbf808ad641824a4a753af06ed9c9f624a88bfe8a8a6e3b7704ca4c71",
+        "scripts/experiments/gradient-fidelity/colorSystemGradientFidelityV1.ts": "e8ac6832c2790b6de92b4008ee78921abcc33ab5255e852d63bbc4a235742608",
+        "scripts/experiments/gradient-fidelity/colorSystemGradientIntervalsV1.ts": "be29951fc58eb1372a8d72d7259e5cb8459109b6c197a33962058dd68da13fff",
+        "scripts/experiments/gradient-fidelity/colorSystemGradientDualIntervalsV1.ts": "8ca82f0b253c6a94619b29ddf8bd82a46a6af43fbefefb31270585de76038b9d",
+        "src/lib/colorSystemGradientV1.ts": "6e4e2ff71114489e8170dbcefcc48e05d4037eca0d7f06b41ba1da3f243da930",
+        "src/lib/colorScale.ts": "d827205b9c49d9ddd4ea931344c0920bdec194682396e4781120a975c784ad05",
+        "src/lib/utils.ts": "310d5b7beda90ab475498e4af92c819a8d54a5f2f472d115d8c087e1deb8d49d"
+      },
+      "results": [
+        {
+          "name": "restrained",
+          "margin": 0.0025,
+          "colors": [
+            [0.1, 0.2, 0.3],
+            [0.2, 0.3, 0.4]
+          ],
+          "route": {
+            "space": "oklab"
+          },
+          "compilationMs": 20.665708999999993,
+          "totalMs": 39.520084,
+          "compiledStops": 2,
+          "sampledMaximum": 0.0005925189207317688,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:fd64287db1d8df22a6732bf542850eacbb47ff0925d8abef2fffd8b871835874",
+            "candidatePaintHash": "sha256:c06638107a0a8849608df43c2d78ce4c86649ee97e605d14f03012e294eb5587",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.0018586757566787303,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 63,
+            "boundedIntervals": 32,
+            "mappingStates": 320,
+            "centeredIntervals": 32,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "black-white",
+          "margin": 0.0025,
+          "colors": [
+            [0, 0, 0],
+            [1, 1, 1]
+          ],
+          "route": {
+            "space": "oklab"
+          },
+          "compilationMs": 28.05733299999997,
+          "totalMs": 97.75058299999995,
+          "compiledStops": 16,
+          "sampledMaximum": 0.002374856334819701,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:78c237be89d490110fcc9104ddc28f6b91edf463f3ca9c7f85bebd8d34bfea3c",
+            "candidatePaintHash": "sha256:f228e675d77d6c24cdc2b8521936356e52ecc272decfbda5205c98ed59fe010b",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.004987087168717328,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 603,
+            "boundedIntervals": 309,
+            "mappingStates": 70,
+            "centeredIntervals": 285,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "shorter",
+          "margin": 0.0025,
+          "colors": [
+            [0.12, 0.5, 0.6],
+            [0.35, 0.45, 0.7]
+          ],
+          "route": {
+            "space": "oklch",
+            "huePath": "shorter"
+          },
+          "compilationMs": 20.541125000000022,
+          "totalMs": 27.96866700000004,
+          "compiledStops": 3,
+          "sampledMaximum": 0.001583054468408386,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:ba0cd3b31f914f4cc7f26bd70f6df130a616fbdc197fe1ef623d8801962c5b06",
+            "candidatePaintHash": "sha256:9871423d2728361df93cbc98f10ce629d0c9e3422100a9ff5557201fecb3987d",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.004982529274878158,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 32,
+            "boundedIntervals": 17,
+            "mappingStates": 128,
+            "centeredIntervals": 17,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "longer",
+          "margin": 0.0025,
+          "colors": [
+            [0.8, 0.1, 0.2],
+            [0.1, 0.1, 0.8]
+          ],
+          "route": {
+            "space": "oklch",
+            "huePath": "longer"
+          },
+          "compilationMs": 46.261292000000026,
+          "totalMs": 2502.322959,
+          "compiledStops": 35,
+          "sampledMaximum": 0.0022242710305790934,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:45bc6b8b1eb44fa1889eec760d6d97164be4be3a3c45dd2b6944c5b3a0a7dad1",
+            "candidatePaintHash": "sha256:acf44eb90b56bfa64d9f69757d2bdef1da955b8ccff55cfb524d30cbdf9a2671",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.004991183534882343,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 2028,
+            "boundedIntervals": 1031,
+            "mappingStates": 64144,
+            "centeredIntervals": 555,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "neutral",
+          "margin": 0.0025,
+          "colors": [
+            [0.4, 0.4, 0.4],
+            [0.3, 0.5, 0.6]
+          ],
+          "route": {
+            "space": "oklch",
+            "huePath": "longer"
+          },
+          "compilationMs": 21.705375000000004,
+          "totalMs": 27.512374999999793,
+          "compiledStops": 3,
+          "sampledMaximum": 0.0009431036865056922,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:e6010eb85501b367ba0ca1a5b2b2b8fae9407abf9b575e7b8f2603d677b03df5",
+            "candidatePaintHash": "sha256:bedb4781c1bc77b2f4a28d228b52f89f28e93ce4beb535f5628f0d2278571224",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.0037834012330871898,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 30,
+            "boundedIntervals": 16,
+            "mappingStates": 64,
+            "centeredIntervals": 16,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "five",
+          "margin": 0.0025,
+          "colors": [
+            [0.1, 0.2, 0.3],
+            [0.12, 0.24, 0.36],
+            [0.18, 0.3, 0.4],
+            [0.2, 0.35, 0.45],
+            [0.3, 0.4, 0.5]
+          ],
+          "route": {
+            "space": "oklab"
+          },
+          "compilationMs": 74.4479580000002,
+          "totalMs": 92.83649999999989,
+          "compiledStops": 5,
+          "sampledMaximum": 0.00032974606583828226,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:399eda542243ec7b6e94ea8f5dbe4198dc36a00169f79532156b49075c5fd9bc",
+            "candidatePaintHash": "sha256:15126c6bc4d289616240fc628a14b4660d8d1e372f64fbe694be44fd2e25e103",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.004956866246509808,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 92,
+            "boundedIntervals": 48,
+            "mappingStates": 608,
+            "centeredIntervals": 48,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "between-sample-failure",
+          "margin": 0.0025,
+          "colors": [
+            [0.16032589599490166, 0.6980988865252584, 0.28516142861917615],
+            [0.5630403070244938, 0.9031179184094071, 0.5892083912622184]
+          ],
+          "route": {
+            "space": "oklch",
+            "huePath": "longer"
+          },
+          "compilationMs": 41.216707999999926,
+          "totalMs": 902.3093749999998,
+          "compiledStops": 28,
+          "sampledMaximum": 0.002289782564061717,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:f37306fa21b3fd2f9adcfd82a67de46c4b5cdedb82f38f7aa750449d77eb686c",
+            "candidatePaintHash": "sha256:51914d2e901f961d34f11fdcab0e5d3c8ec06bdf11993b9503e99e2a8a926080",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.004990072761985893,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 761,
+            "boundedIntervals": 394,
+            "mappingStates": 18599,
+            "centeredIntervals": 347,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "restrained",
+          "margin": 0.001,
+          "colors": [
+            [0.1, 0.2, 0.3],
+            [0.2, 0.3, 0.4]
+          ],
+          "route": {
+            "space": "oklab"
+          },
+          "compilationMs": 19.40887500000008,
+          "totalMs": 30.524583000000348,
+          "compiledStops": 2,
+          "sampledMaximum": 0.0005925189207317688,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:fd64287db1d8df22a6732bf542850eacbb47ff0925d8abef2fffd8b871835874",
+            "candidatePaintHash": "sha256:c06638107a0a8849608df43c2d78ce4c86649ee97e605d14f03012e294eb5587",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.0018586757566787303,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 63,
+            "boundedIntervals": 32,
+            "mappingStates": 320,
+            "centeredIntervals": 32,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "black-white",
+          "margin": 0.001,
+          "colors": [
+            [0, 0, 0],
+            [1, 1, 1]
+          ],
+          "route": {
+            "space": "oklab"
+          },
+          "compilationMs": 34.7260839999999,
+          "totalMs": 89.2303750000001,
+          "compiledStops": 28,
+          "sampledMaximum": 0.0008533058064643381,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:78c237be89d490110fcc9104ddc28f6b91edf463f3ca9c7f85bebd8d34bfea3c",
+            "candidatePaintHash": "sha256:2a84a7a1f0b3769fd2403f5ab2f0cd2b83a8f6e32058e7ea785aaa9af5d4ccd0",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.004928402436738278,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 533,
+            "boundedIntervals": 280,
+            "mappingStates": 57,
+            "centeredIntervals": 253,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "shorter",
+          "margin": 0.001,
+          "colors": [
+            [0.12, 0.5, 0.6],
+            [0.35, 0.45, 0.7]
+          ],
+          "route": {
+            "space": "oklch",
+            "huePath": "shorter"
+          },
+          "compilationMs": 20.710833000000093,
+          "totalMs": 26.462916000000405,
+          "compiledStops": 5,
+          "sampledMaximum": 0.0004036555567385921,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:ba0cd3b31f914f4cc7f26bd70f6df130a616fbdc197fe1ef623d8801962c5b06",
+            "candidatePaintHash": "sha256:68005745286d6ac8bc666f61b681b328a46ab10d239e88302861879cf9dc1b14",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.0048990146707978,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 28,
+            "boundedIntervals": 16,
+            "mappingStates": 94,
+            "centeredIntervals": 16,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "longer",
+          "margin": 0.001,
+          "colors": [
+            [0.8, 0.1, 0.2],
+            [0.1, 0.1, 0.8]
+          ],
+          "route": {
+            "space": "oklch",
+            "huePath": "longer"
+          },
+          "compilationMs": 53.62595799999963,
+          "totalMs": 2427.4967909999996,
+          "compiledStops": 50,
+          "sampledMaximum": 0.0009867491777796602,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:45bc6b8b1eb44fa1889eec760d6d97164be4be3a3c45dd2b6944c5b3a0a7dad1",
+            "candidatePaintHash": "sha256:bab8e91ecd5c94225d52b8266b6d21d3626647927416605ff13c93355b4b0122",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.004965577573517876,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 1979,
+            "boundedIntervals": 1014,
+            "mappingStates": 62857,
+            "centeredIntervals": 514,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "neutral",
+          "margin": 0.001,
+          "colors": [
+            [0.4, 0.4, 0.4],
+            [0.3, 0.5, 0.6]
+          ],
+          "route": {
+            "space": "oklch",
+            "huePath": "longer"
+          },
+          "compilationMs": 19.93816599999991,
+          "totalMs": 25.659375000000182,
+          "compiledStops": 3,
+          "sampledMaximum": 0.0009431036865056922,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:e6010eb85501b367ba0ca1a5b2b2b8fae9407abf9b575e7b8f2603d677b03df5",
+            "candidatePaintHash": "sha256:bedb4781c1bc77b2f4a28d228b52f89f28e93ce4beb535f5628f0d2278571224",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.0037834012330871898,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 30,
+            "boundedIntervals": 16,
+            "mappingStates": 64,
+            "centeredIntervals": 16,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "five",
+          "margin": 0.001,
+          "colors": [
+            [0.1, 0.2, 0.3],
+            [0.12, 0.24, 0.36],
+            [0.18, 0.3, 0.4],
+            [0.2, 0.35, 0.45],
+            [0.3, 0.4, 0.5]
+          ],
+          "route": {
+            "space": "oklab"
+          },
+          "compilationMs": 73.92500000000018,
+          "totalMs": 91.46216699999968,
+          "compiledStops": 5,
+          "sampledMaximum": 0.00032974606583828226,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:399eda542243ec7b6e94ea8f5dbe4198dc36a00169f79532156b49075c5fd9bc",
+            "candidatePaintHash": "sha256:15126c6bc4d289616240fc628a14b4660d8d1e372f64fbe694be44fd2e25e103",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.004956866246509808,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 92,
+            "boundedIntervals": 48,
+            "mappingStates": 608,
+            "centeredIntervals": 48,
+            "reason": "bounded"
+          }
+        },
+        {
+          "name": "between-sample-failure",
+          "margin": 0.001,
+          "colors": [
+            [0.16032589599490166, 0.6980988865252584, 0.28516142861917615],
+            [0.5630403070244938, 0.9031179184094071, 0.5892083912622184]
+          ],
+          "route": {
+            "space": "oklch",
+            "huePath": "longer"
+          },
+          "compilationMs": 46.202416000000085,
+          "totalMs": 876.7900830000008,
+          "compiledStops": 45,
+          "sampledMaximum": 0.0009074944986619052,
+          "assessment": {
+            "schemaVersion": "teul.gradient-fidelity.v1",
+            "designHash": "sha256:f37306fa21b3fd2f9adcfd82a67de46c4b5cdedb82f38f7aa750449d77eb686c",
+            "candidatePaintHash": "sha256:802ab5c2c0f764d98171e018b2154feb7ef4243414b7e2156a29e564ddd8fb8a",
+            "status": "pass",
+            "scope": "mapped-route-versus-canonical-paint",
+            "toleranceDeltaEOK": 0.005,
+            "maximumDeltaEOKUpperBound": 0.004990072761985893,
+            "witness": null,
+            "numericalProfile": {
+              "arithmetic": "outward-intervals",
+              "nativeCoordinateAllowance": 1e-10,
+              "runtimeQualification": "not-qualified"
+            },
+            "budget": {
+              "maximumIntervals": 8192,
+              "maximumDepth": 24,
+              "maximumMappingStatesPerInterval": 32,
+              "maximumMappingStates": 65536
+            },
+            "visitedIntervals": 738,
+            "boundedIntervals": 391,
+            "mappingStates": 18238,
+            "centeredIntervals": 325,
+            "reason": "bounded"
+          }
+        }
+      ]
+    }
+  },
+  "review": {
+    "scope": "Exact experiment diff from baseCommit plus new experiment files; independent reuse, quality and efficiency reviews.",
+    "resolved": [
+      "Quality: previous 136 narrow-interval samples never invoked centered JND pruning. Added two wider fixtures that assert actual bound tightening and check 34 native interior values.",
+      "Efficiency: lazily initialize and cache route derivatives only when JND comparisons need centered bounds.",
+      "Efficiency: stop candidate factor evaluation once the centered-error upper bound exceeds the pass threshold."
+    ],
+    "limitations": [
+      "No native error qualification.",
+      "No p95 or browser responsiveness measurement.",
+      "Hardest route exceeds two-second target on both runtimes.",
+      "No human visual acceptance or production release."
+    ]
+  }
+}

@@ -1,0 +1,405 @@
+{
+  "schemaVersion": "teul.local-slice-checks.v1",
+  "verifiedAt": "2026-09-26T02:47:00.831304+00:00",
+  "baselineCommit": "3fef98bd199f1ea8e9a144682df59e967b4d92f4",
+  "branch": "codex/brand-guideline-import",
+  "lifecycle": "locally-verified-slice",
+  "fullPrdComplete": false,
+  "pushed": false,
+  "deployed": false,
+  "sourceTreeHash": "822d9a021bc7d25eeaa7eebb2cccdd92859fb947e63b8d9ae40fbec232f07bc8",
+  "sourceFiles": [
+    {
+      "path": "docs/evidence/brand-guideline-import/selected-output-recovery.md",
+      "bytes": 6116,
+      "sha256": "a3b0675db73a82a87629d718ec1d7cb46b0e26d73290384be335ec1a6209bd1d"
+    },
+    {
+      "path": "docs/plans/2026-09-25-brand-guideline-import-plan.md",
+      "bytes": 70053,
+      "sha256": "2f0eb330e9a652ffd101d28602c5827a237bf4a256771ce03974d8f13ecb66ca"
+    },
+    {
+      "path": "docs/prds/2026-09-25-brand-guideline-import.md",
+      "bytes": 112784,
+      "sha256": "7281b600c37e759811adebe639d1f16c30112c6fcd5b2293a41cbcd4959826bf"
+    },
+    {
+      "path": "services/guideline-intake/src/interpretation.ts",
+      "bytes": 21832,
+      "sha256": "07c3595ead0a5a8f15207ae94598dc9da1187c6d71f07e9eb8a45ece28d2700e"
+    },
+    {
+      "path": "web/README.md",
+      "bytes": 21991,
+      "sha256": "c0f4cc98c3ece94df9e4d6f7a04317ddcbd548a358ecdf08807c922874fd8c13"
+    },
+    {
+      "path": "web/package.json",
+      "bytes": 2597,
+      "sha256": "6e22c3c88de25dcec238fc43f9e5e21fefc283ff16cf8e08f413e16c2074e512"
+    },
+    {
+      "path": "web/scripts/guideline-figma-review-smoke.mjs",
+      "bytes": 18770,
+      "sha256": "27ee978ddc3c2be31e8d0fbf74354abc12746d1eac6b0b38d5fa6a72a1b268c1"
+    },
+    {
+      "path": "web/scripts/guideline-output-recovery-smoke.mjs",
+      "bytes": 8756,
+      "sha256": "4835fdc8ef7622f931c64e61d3d44a81fd8cf32de658f441656f97dfe154ea17"
+    },
+    {
+      "path": "web/scripts/guideline-smoke.mjs",
+      "bytes": 34424,
+      "sha256": "558fb2036fb2b1fd57b7530f795e849712f852af3f0809f10859260237993600"
+    },
+    {
+      "path": "web/scripts/guideline-website-smoke.mjs",
+      "bytes": 21762,
+      "sha256": "3b21f9bb9dabf7c7b8006e162156ee1420dc9946c6d49899be61624ad36ef7ab"
+    },
+    {
+      "path": "web/src/components/GuidelineApplicationStudio.tsx",
+      "bytes": 24037,
+      "sha256": "83668043da53579b0627b61d5919c8e70d4c0db2418bd05636e3410d7df49fce"
+    },
+    {
+      "path": "web/src/components/GuidelineDesignWorkspace.tsx",
+      "bytes": 1583,
+      "sha256": "18f65ea46db014df8e0001fb5b1c084cf68ac54abc179da5a9ff39a3756e9b05"
+    },
+    {
+      "path": "web/src/components/GuidelineExtensionPreview.tsx",
+      "bytes": 17156,
+      "sha256": "74230e5dc920f7470b256337d69f02f96458eead479238a387155abc4a2c20e7"
+    },
+    {
+      "path": "web/src/components/GuidelineFigmaPanel.tsx",
+      "bytes": 28339,
+      "sha256": "c9a8657bf1aa243aebd9955b5425019033912353acf9f427cd6694dfd6d999eb"
+    },
+    {
+      "path": "web/src/components/GuidelineFigmaReview.tsx",
+      "bytes": 2809,
+      "sha256": "b570268d4eec906c2b65c4606354e87f416723c8465b3b9acc93f479a9da6489"
+    },
+    {
+      "path": "web/src/components/GuidelineLocalProjects.tsx",
+      "bytes": 8141,
+      "sha256": "831939933025fbbfaaed1b80199bcb2561c6bcd02cfd15395ac8cf26aa6fd811"
+    },
+    {
+      "path": "web/src/components/GuidelineSourceReview.tsx",
+      "bytes": 30289,
+      "sha256": "7e351ddd00848b045d7282e4a1ecb15c2a8e6af033a278bb2f023bf1f5641bf7"
+    },
+    {
+      "path": "web/src/components/GuidelineWebsitePanel.tsx",
+      "bytes": 21209,
+      "sha256": "deb1adaac67c6cab63fe2f23e88be03cd8bb5cba5cd750ef4d3f1dddf036d653"
+    },
+    {
+      "path": "web/src/components/GuidelineWebsiteReview.tsx",
+      "bytes": 3105,
+      "sha256": "ff1434f2324528a98e06db559c4efff02a68a2f68d96852dbb841fea74eed2cd"
+    },
+    {
+      "path": "web/src/components/GuidelineWorkspace.tsx",
+      "bytes": 54721,
+      "sha256": "8bb3e3c7082873b1304a652f7d43f22331183694a915461d89a36e9d962d94e7"
+    },
+    {
+      "path": "web/src/lib/guideline/assistance.test.ts",
+      "bytes": 27811,
+      "sha256": "83aa2a5869a84e415ea7aa3c039b2396eae3547127b7e6d9e37fa347ab7406d8"
+    },
+    {
+      "path": "web/src/lib/guideline/assistance.ts",
+      "bytes": 15540,
+      "sha256": "54846674f3c9bfaa5a87f0848c1253642ea0e00829775327a69abd3b0d1628db"
+    },
+    {
+      "path": "web/src/lib/guideline/projectCodec.ts",
+      "bytes": 7226,
+      "sha256": "43324e47459f4895a9bce7db2780d777f77bd5564061d173a42c258d71ecf04f"
+    },
+    {
+      "path": "web/src/lib/guideline/projectStore.ts",
+      "bytes": 22042,
+      "sha256": "440d72c6d26260847e82788d86cb2a184da63642823263905075909666536b9b"
+    },
+    {
+      "path": "web/src/lib/guideline/projectV2.test.ts",
+      "bytes": 8995,
+      "sha256": "049e536c6fdb50e86bf393ef602bdbac5800f9532537b92fb2a0aaca5ee8996c"
+    },
+    {
+      "path": "web/src/lib/guideline/selectedOutputs.test.ts",
+      "bytes": 9935,
+      "sha256": "b5943dbfbe2e6de4132083e3129452e36514b258f3581104356c319da021017a"
+    },
+    {
+      "path": "web/src/lib/guideline/selectedOutputs.ts",
+      "bytes": 4405,
+      "sha256": "28c2300e5694fc4fe5325fc61bcc4977f1e8bad6da3e470861bae4b0a749ac48"
+    },
+    {
+      "path": "web/src/lib/guideline/useLocalProject.ts",
+      "bytes": 5527,
+      "sha256": "372e8851b2e2521da493a79c67f1af45f6998308bd460a3b3c5c4f0fd4b4c96c"
+    },
+    {
+      "path": "web/src/lib/guideline/websiteReview.test.ts",
+      "bytes": 11650,
+      "sha256": "0fc951362bddbce84445d98f51e54539b7b7ffc75d19beb854c9e54b882ef5a4"
+    }
+  ],
+  "localArtifacts": [
+    {
+      "path": "release/guideline-output-recovery/dead-code.log",
+      "bytes": 4018,
+      "sha256": "5e871053655a5e2df6924c63f64f59d4de241cb599639c5e0418acff803d6408"
+    },
+    {
+      "path": "release/guideline-output-recovery/format-docs.log",
+      "bytes": 235,
+      "sha256": "a9c5d11109d5f64efd4c31508bd31aace8222a25c68f53f582cfd21f0011fbee"
+    },
+    {
+      "path": "release/guideline-output-recovery/format-final.log",
+      "bytes": 96,
+      "sha256": "2061c68f820144deb414126ed423be471af013a14e6cbfe041dd266fb70d8243"
+    },
+    {
+      "path": "release/guideline-output-recovery/format.log",
+      "bytes": 165,
+      "sha256": "1785bad7f22470baee651992dffa6d05c1ae384417f22192730398542d98ec95"
+    },
+    {
+      "path": "release/guideline-output-recovery/lint.log",
+      "bytes": 65,
+      "sha256": "b17e4e0c51efc5d7733805e3b558caefdade5b77678b764b3de9bfbb4af1c89c"
+    },
+    {
+      "path": "release/guideline-output-recovery/node22-browser-project.json",
+      "bytes": 390177,
+      "sha256": "f3230dce1a163703c5b76fcc849e94ec4d7a4935beeca8b2a17a478e7ced8433"
+    },
+    {
+      "path": "release/guideline-output-recovery/node22-build.log",
+      "bytes": 3188,
+      "sha256": "61e99dab5f57a315cb15e2541689d3a9da079483716985afa2a251c39702f58b"
+    },
+    {
+      "path": "release/guideline-output-recovery/node22-checks.json",
+      "bytes": 680,
+      "sha256": "a98f6c7bcb56e889a76dcf45a5436023ad9afdaaf7f8e7fd0c8419f2a7109f8c"
+    },
+    {
+      "path": "release/guideline-output-recovery/node22-desktop-review.png",
+      "bytes": 125423,
+      "sha256": "b3b2087aa648ae760530876486712a155ebd1add10e33111560fc049747eae83"
+    },
+    {
+      "path": "release/guideline-output-recovery/node22-desktop.png",
+      "bytes": 822983,
+      "sha256": "4634ea564465c911b7cf884f78f7c5b346c46a11798a23a8f42a8a36d34c1f74"
+    },
+    {
+      "path": "release/guideline-output-recovery/node22-figma-browser.log",
+      "bytes": 2855,
+      "sha256": "59792a744d0fe3bbca805d77de1be5238a9bb9a72ec8c7de9d123236428c8eed"
+    },
+    {
+      "path": "release/guideline-output-recovery/node22-mobile-review.png",
+      "bytes": 81273,
+      "sha256": "86643f8426f0437e1d9810ba1d77e728917d1f1156003c1debc1c7001b731954"
+    },
+    {
+      "path": "release/guideline-output-recovery/node22-mobile.png",
+      "bytes": 138584,
+      "sha256": "651b0a704474a6c70b84c13e34e9038465fe37a7fb11e8052cd914c50878f77c"
+    },
+    {
+      "path": "release/guideline-output-recovery/node22-pdf-browser.log",
+      "bytes": 2861,
+      "sha256": "8dc8d10f889e164a83620b83eef0034a0d01a4211b93dcb8809597b4aabe84b5"
+    },
+    {
+      "path": "release/guideline-output-recovery/node22-recovery.log",
+      "bytes": 763,
+      "sha256": "1109eeacd3f695d62e861fa457373eb7ddc5537e9bcce05baf0ace5b018952d0"
+    },
+    {
+      "path": "release/guideline-output-recovery/node22-replay-differences.json",
+      "bytes": 28388,
+      "sha256": "4ca1fff1897a7b03d94252472bed8c9c98592ba912b5c700402c378a3ce7144e"
+    },
+    {
+      "path": "release/guideline-output-recovery/node22-storage.log",
+      "bytes": 2936,
+      "sha256": "5646dcedcdcc374f5336a014e8ef417e6f38cccc181b9fc67de350b00968be78"
+    },
+    {
+      "path": "release/guideline-output-recovery/node22-unit.log",
+      "bytes": 409,
+      "sha256": "3709403d814f1384b78e2fa91151580bac4ee6e656ca99b088cc682581f90959"
+    },
+    {
+      "path": "release/guideline-output-recovery/node22-website-browser.log",
+      "bytes": 571,
+      "sha256": "316913485a2870c023536e156562725df2e346b4115b0e2d264aaefe5e77cd61"
+    },
+    {
+      "path": "release/guideline-output-recovery/node24-browser-project.json",
+      "bytes": 390177,
+      "sha256": "f3230dce1a163703c5b76fcc849e94ec4d7a4935beeca8b2a17a478e7ced8433"
+    },
+    {
+      "path": "release/guideline-output-recovery/node24-build.log",
+      "bytes": 3188,
+      "sha256": "c9bd35d6a01887c1a55fe0a60ebad1e95c1151b2bc6bc33989302162f53086ae"
+    },
+    {
+      "path": "release/guideline-output-recovery/node24-checks.json",
+      "bytes": 680,
+      "sha256": "dc7df88667383143677d4a60bfc09bdb2c3807b73b015d0694e059a5217bb8cd"
+    },
+    {
+      "path": "release/guideline-output-recovery/node24-desktop.png",
+      "bytes": 823014,
+      "sha256": "935fee2e1d1eb59c67fb6d636eebeb5cdfeca00556b10c642db4d9a33bc717fe"
+    },
+    {
+      "path": "release/guideline-output-recovery/node24-mobile.png",
+      "bytes": 138584,
+      "sha256": "651b0a704474a6c70b84c13e34e9038465fe37a7fb11e8052cd914c50878f77c"
+    },
+    {
+      "path": "release/guideline-output-recovery/node24-output-unit.log",
+      "bytes": 248,
+      "sha256": "00c331efd6fc1d91452a46751ee0b25fa8e00ae5cd9901328b4e873c0ed2780a"
+    },
+    {
+      "path": "release/guideline-output-recovery/node24-recovery.log",
+      "bytes": 763,
+      "sha256": "1109eeacd3f695d62e861fa457373eb7ddc5537e9bcce05baf0ace5b018952d0"
+    },
+    {
+      "path": "release/guideline-output-recovery/node24-unit.log",
+      "bytes": 239,
+      "sha256": "a6cb55b7a2355b382afbcbe7ec23ddaa36b4087c74c593ba79058ab4300ada89"
+    },
+    {
+      "path": "release/guideline-output-recovery/prd-ready.log",
+      "bytes": 106,
+      "sha256": "8a1e214697235e7758f15146578aca9dc13ba368166b19cd9d3e8f6e493157ea"
+    },
+    {
+      "path": "release/guideline-output-recovery/typecheck.log",
+      "bytes": 40,
+      "sha256": "fc23fa52fef205aafdaa0f6aa82e092c6125d2b95ec6cf466fdcf27885f9d7dd"
+    },
+    {
+      "path": "release/guideline-output-recovery/web-lint.log",
+      "bytes": 56,
+      "sha256": "a08f059342d318275b9a38c2435399fa289a5f083ea5e1e8ed765022b7132c56"
+    }
+  ],
+  "checks": [
+    {
+      "command": "npm --prefix web test",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "status": "passed",
+      "testFiles": 34,
+      "tests": 417,
+      "logs": ["node22-unit.log", "node24-unit.log"]
+    },
+    {
+      "command": "npm --prefix services/guideline-intake test",
+      "runtime": "22.13.1",
+      "status": "passed",
+      "tests": 185,
+      "evidence": "Observed tool exit 0; complete TAP summary reported 185 passed and zero failed"
+    },
+    {
+      "command": "npm --prefix web run test:guideline-output-recovery",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "status": "passed",
+      "scenarios": 7,
+      "logs": ["node22-recovery.log", "node24-recovery.log"]
+    },
+    {
+      "command": "npm --prefix web run test:guidelines",
+      "runtime": "22.13.1",
+      "status": "passed",
+      "log": "node22-pdf-browser.log",
+      "includes": "Selected PDF extension rule decisions and application save/reopen after clearing the editor"
+    },
+    {
+      "command": "npm --prefix web run test:guideline-figma-review",
+      "runtime": "22.13.1",
+      "status": "passed",
+      "log": "node22-figma-browser.log"
+    },
+    {
+      "command": "npm --prefix web run test:guideline-website",
+      "runtime": "22.13.1",
+      "status": "passed",
+      "scenarios": 8,
+      "log": "node22-website-browser.log"
+    },
+    {
+      "command": "npm --prefix web run test:guideline-storage",
+      "runtime": "22.13.1",
+      "status": "passed",
+      "scenarios": 17,
+      "includedPaletteRegression": 9,
+      "log": "node22-storage.log"
+    },
+    {
+      "command": "VITE_GUIDELINE_IMPORT=true npm --prefix web run build",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "status": "passed",
+      "logs": ["node22-build.log", "node24-build.log"]
+    },
+    {
+      "command": "npm run lint; npm run typecheck; npm --prefix web run lint",
+      "runtime": "22.13.1",
+      "status": "passed",
+      "logs": ["lint.log", "typecheck.log", "web-lint.log"]
+    },
+    {
+      "command": "npm run report:dead-code",
+      "runtime": "22.13.1",
+      "status": "passed",
+      "exportsRequiringReview": 50,
+      "filesRequiringReview": 1,
+      "newRecoveryCandidates": 0,
+      "log": "dead-code.log"
+    },
+    {
+      "command": "validate_prd.py --profile full --extension ai --extension refactor --stage ready --strict",
+      "status": "passed",
+      "log": "prd-ready.log"
+    }
+  ],
+  "reviews": {
+    "quality": "Repeated-review stale child fixed; exact application selection receipt reviewed; no remaining blocker",
+    "reuse": "Shared nested interpretation evidence validation; no remaining blocker",
+    "efficiency": "Single-use exact-byte validation reuse and propagated cancellation; no remaining blocker"
+  },
+  "visualReview": {
+    "desktop": true,
+    "mobile390": true,
+    "humanBrandAcceptance": false
+  },
+  "remaining": [
+    "Immutable source history and explicit refresh",
+    "Persistent remote-job recovery",
+    "Remaining generation and held-out evaluations",
+    "Integrated release gates",
+    "Qualified hosting/account/provider/live access and human visual acceptance"
+  ]
+}

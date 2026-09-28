@@ -1,13 +1,16 @@
 import {
+  colorSystemMeanAnchorSeparationDeltaEOKV2,
+  colorSystemSourceContinuityDeltaEOKV2,
   composeColorSystemApplicationBlueprintV2,
   type ColorSystemApplicationComposerBlockerV2,
   type ColorSystemApplicationComposerOptionsV2,
 } from './colorSystemApplicationComposerV2';
-import type {
-  ColorSystemApplicationSystemBlueprintV2,
-  ColorSystemSectionBlueprintV2,
+import {
+  COLOR_SYSTEM_APPLICATION_MEANING_FILL_MINIMUM_DELTA_E_OK,
+  type ColorSystemApplicationSystemBlueprintV2,
+  type ColorSystemSectionBlueprintV2,
 } from './colorSystemApplicationBlueprintV2';
-import { deterministicContentHash } from './colorSystemAudit';
+import { deterministicContentHash } from './colorSystemHashing';
 import type {
   ColorSystemBuilderBriefV2,
   ColorSystemJobV2,
@@ -40,22 +43,20 @@ import {
 import type { ColorSystemGenericSourceSnapshotV2 } from './colorSystemGenericSourceAdapterV2';
 import type {
   GenericIntakeProposalV2,
-  GenericOwnerConfirmationV2,
+  GenericPolicyDecisionV2,
 } from './colorSystemGenericIntentPolicyV2';
 import type { ColorSystemGenericPolicyHandoffV2 } from './colorSystemGenericPolicyHandoffV2';
 import { compareText } from './utils';
 
 export const COLOR_SYSTEM_BUILDER_ORCHESTRATOR_V2_VERSION =
-  'teul-color-system-builder-orchestrator/v2' as const;
+  'teul-color-system-builder-orchestrator/v2.1' as const;
 export const COLOR_SYSTEM_BUILDER_RECOMMENDATION_POLICY_V2_VERSION =
-  'teul-color-system-recommendation-policy/v2' as const;
+  'teul-color-system-recommendation-policy/v2.1' as const;
 export const COLOR_SYSTEM_GENERIC_BUILDER_ORCHESTRATOR_INPUT_V2_VERSION =
   'teul-color-system-generic-builder-input/v1' as const;
 
 export type ColorSystemBuilderRecommendationObjectiveV2 =
-  | 'general-product-system'
-  | 'data-visualization-dominant'
-  | 'source-continuity-dominant';
+  'general-product-system' | 'data-visualization-dominant' | 'source-continuity-dominant';
 
 export interface ColorSystemBuilderRecommendationPolicyV2 {
   version: typeof COLOR_SYSTEM_BUILDER_RECOMMENDATION_POLICY_V2_VERSION;
@@ -98,13 +99,7 @@ export interface BuildColorSystemGenericBuilderOrchestratorV2InputOptions {
 }
 
 export type ColorSystemBuilderOrchestratorStageV2 =
-  | 'presentation'
-  | 'source'
-  | 'secondary'
-  | 'application'
-  | 'section'
-  | 'resource'
-  | 'review';
+  'presentation' | 'source' | 'secondary' | 'application' | 'section' | 'resource' | 'review';
 
 export interface ColorSystemBuilderOrchestratorBlockerV2 {
   stage: ColorSystemBuilderOrchestratorStageV2;
@@ -155,25 +150,52 @@ export interface ColorSystemBuilderBlockedDirectionV2 {
 }
 
 export type ColorSystemBuilderDirectionV2 =
-  | ColorSystemBuilderReadyDirectionV2
-  | ColorSystemBuilderBlockedDirectionV2;
+  ColorSystemBuilderReadyDirectionV2 | ColorSystemBuilderBlockedDirectionV2;
 
 export interface ColorSystemBuilderRecommendationV2 {
   directionId: string;
   label: string;
+  /** The measured statements joined into one sentence; kept as a string for wire consumers. */
   basis: string;
+  /** One measured statement per ranking criterion, in ranking order, ready to print. */
+  basisStatements: readonly string[];
   policy: ColorSystemBuilderRecommendationPolicyV2;
   evidence: ColorSystemBuilderRecommendationEvidenceV2;
   authority: 'teul-recommendation';
   ownerAcceptance: false;
 }
 
+/**
+ * Every field is measured from the direction's own application blueprint,
+ * candidate and brief. There is no static per-direction fit table: two directions
+ * with identical measurements tie and fall through to the stable direction ID.
+ */
 export interface ColorSystemBuilderRecommendationEvidenceV2 {
   requiredPairsPassing: number;
+  requiredPairsTotal: number;
   productSemanticsPassing: number;
   productGraphicsPassing: number;
-  objectiveFit: 1 | 2 | 3;
+  /** Hue-band roles whose resolved value sits inside its target OKLCH hue range. */
+  meaningRolesInRange: number;
+  meaningRolesTotal: number;
+  /** True when no meaning fill sits within the distinctness floor of another (declared error/destructive shares aside). */
+  distinctMeaningFills: boolean;
+  /** Meaning roles flagged with a fill collision, summed over modes. */
+  meaningFillCollisions: number;
+  /** Minimum modeled (normal plus Machado severity-1) Delta E OK across chart selections. */
   minimumModeledChartSeparation: number;
+  /** Coefficient of variation of the sequential ramp's adjacent steps; lower is more even. */
+  sequentialAdjacentCoefficientOfVariation: number | null;
+  /** Mean pairwise Delta E OK between family anchors (Light step 9 or base). */
+  meanAnchorSeparationDeltaEOK: number;
+  /** Mean Delta E OK from each family anchor to its nearest governed source anchor; null without sources. */
+  sourceContinuityDeltaEOK: number | null;
+  /** Categorical marks the owner requested per mode. */
+  categoricalMarksRequested: number;
+  /** Categorical marks actually achieved in each composed mode, sorted by mode. */
+  categoricalMarksAchievedByMode: readonly { mode: string; achieved: number }[];
+  /** Sum over modes of (requested − achieved); zero when every mode met the request. */
+  categoricalMarkShortfall: number;
 }
 
 interface ColorSystemBuilderOrchestratorBaseV2 {
@@ -278,63 +300,299 @@ export function inferColorSystemBuilderRecommendationObjectiveV2(
   return 'source-continuity-dominant';
 }
 
-function objectiveFit(
-  directionId: string,
-  objective: ColorSystemBuilderRecommendationObjectiveV2
-): 1 | 2 | 3 {
-  const fitByObjective: Readonly<
-    Record<ColorSystemBuilderRecommendationObjectiveV2, Readonly<Record<string, 1 | 2 | 3>>>
-  > = {
-    'general-product-system': {
-      'secondary-close-harmony': 2,
-      'secondary-balanced-contrast': 3,
-      'secondary-wide-spectrum': 1,
-    },
-    'data-visualization-dominant': {
-      'secondary-close-harmony': 1,
-      'secondary-balanced-contrast': 2,
-      'secondary-wide-spectrum': 3,
-    },
-    'source-continuity-dominant': {
-      'secondary-close-harmony': 3,
-      'secondary-balanced-contrast': 2,
-      'secondary-wide-spectrum': 1,
-    },
-  };
-  return fitByObjective[objective][directionId] ?? 1;
+/**
+ * Mean distance from each family anchor to its nearest governed source anchor
+ * (source reference colors plus exact Primary locks). Lower means the direction
+ * stays closer to the reviewed source. Null when the brief carries no anchors.
+ */
+/**
+ * p3-I: preserved Secondary colors and pinned tints count as source anchors
+ * (see colorSystemSourceContinuityDeltaEOKV2), so a brand whose hues all come
+ * back exact measures 0 rather than the distance to its own recorded palette.
+ */
+function sourceContinuity(
+  brief: ColorSystemBuilderBriefV2,
+  candidate: ColorSystemStrategyCandidateV2
+): number | null {
+  return colorSystemSourceContinuityDeltaEOKV2(brief, candidate);
+}
+
+function minimumCvdSeparation(
+  advisory: ColorSystemApplicationSystemBlueprintV2['visualization']['categorical']['cvdAdvisory']
+): number {
+  return Math.min(advisory.normal, advisory.protan, advisory.deutan, advisory.severeTritan);
 }
 
 function recommendationEvidence(
-  directionId: string,
-  application: ColorSystemApplicationSystemBlueprintV2,
-  policy: ColorSystemBuilderRecommendationPolicyV2
+  brief: ColorSystemBuilderBriefV2,
+  candidate: ColorSystemStrategyCandidateV2,
+  application: ColorSystemApplicationSystemBlueprintV2
 ): ColorSystemBuilderRecommendationEvidenceV2 {
-  const requiredPairsPassing = application.pairEvidence.filter(
-    evidence => evidence.context.assessment === 'required' && evidence.status === 'pass'
-  ).length;
-  const categoricalSeparation = Math.min(
-    application.visualization.categorical.cvdAdvisory.normal,
-    application.visualization.categorical.cvdAdvisory.protan,
-    application.visualization.categorical.cvdAdvisory.deutan,
-    application.visualization.categorical.cvdAdvisory.severeTritan
+  const requiredPairs = application.pairEvidence.filter(
+    evidence => evidence.context.assessment === 'required'
   );
-  const divergingSeparation = Math.min(
-    application.visualization.diverging.cvdAdvisory.normal,
-    application.visualization.diverging.cvdAdvisory.protan,
-    application.visualization.diverging.cvdAdvisory.deutan,
-    application.visualization.diverging.cvdAdvisory.severeTritan
-  );
+  const rangedRoles = application.semanticMeaning.filter(item => item.targetHueRange !== null);
+  const chartSelections = [
+    application.visualization.categorical,
+    application.visualization.diverging,
+    ...application.additionalCategorical,
+  ].filter(selection => selection !== null);
+  const categoricalSelections = [
+    application.visualization.categorical,
+    ...application.additionalCategorical,
+  ];
+  const selectionMode = (
+    selection: ColorSystemApplicationSystemBlueprintV2['visualization']['categorical']
+  ): string =>
+    selection.surface.kind === 'approved-family-member'
+      ? selection.surface.ref.mode
+      : selection.surface.mode;
+  const categoricalMarksAchievedByMode = categoricalSelections
+    .map(selection => ({ mode: selectionMode(selection), achieved: selection.achievedMarkCount }))
+    .sort((left, right) => compareText(left.mode, right.mode));
   return {
-    requiredPairsPassing,
+    requiredPairsPassing: requiredPairs.filter(evidence => evidence.status === 'pass').length,
+    requiredPairsTotal: requiredPairs.length,
     productSemanticsPassing: application.productSemantics.filter(
       role => role.accessibilityStatus === 'pass'
     ).length,
     productGraphicsPassing: application.productGraphics.filter(
       specimen => specimen.accessibilityStatus === 'pass'
     ).length,
-    objectiveFit: objectiveFit(directionId, policy.objective),
-    minimumModeledChartSeparation: Math.min(categoricalSeparation, divergingSeparation),
+    meaningRolesInRange: rangedRoles.filter(item => item.inRange).length,
+    meaningRolesTotal: rangedRoles.length,
+    distinctMeaningFills: application.semanticMeaning.every(item => item.collision === null),
+    meaningFillCollisions: application.semanticMeaning.filter(item => item.collision !== null)
+      .length,
+    minimumModeledChartSeparation: Math.min(
+      ...chartSelections.map(selection => minimumCvdSeparation(selection.cvdAdvisory))
+    ),
+    sequentialAdjacentCoefficientOfVariation:
+      application.visualization.sequential?.perceptualEvidence
+        .adjacentDeltaEOKCoefficientOfVariation ?? null,
+    meanAnchorSeparationDeltaEOK: colorSystemMeanAnchorSeparationDeltaEOKV2(candidate),
+    sourceContinuityDeltaEOK: sourceContinuity(brief, candidate),
+    categoricalMarksRequested: application.visualization.categorical.requestedMarkCount,
+    categoricalMarksAchievedByMode,
+    categoricalMarkShortfall: categoricalSelections.reduce(
+      (total, selection) => total + (selection.requestedMarkCount - selection.achievedMarkCount),
+      0
+    ),
   };
+}
+
+type EvidenceComparator = (
+  left: ColorSystemBuilderRecommendationEvidenceV2,
+  right: ColorSystemBuilderRecommendationEvidenceV2
+) => number;
+
+/**
+ * Fewer failing required pairs ranks higher. Failures, not passes, are compared so
+ * a direction that composes fewer categorical marks (and therefore fewer pairs)
+ * is not read as less accessible.
+ */
+const byRequiredPairs: EvidenceComparator = (left, right) =>
+  left.requiredPairsTotal -
+  left.requiredPairsPassing -
+  (right.requiredPairsTotal - right.requiredPairsPassing);
+/** A direction whose meaning fills collide ranks below one whose fills are distinct. */
+const byMeaningFillCollisions: EvidenceComparator = (left, right) =>
+  left.meaningFillCollisions - right.meaningFillCollisions;
+const byMeaningCoverage: EvidenceComparator = (left, right) =>
+  right.meaningRolesInRange - left.meaningRolesInRange;
+const byChartSeparation: EvidenceComparator = (left, right) =>
+  right.minimumModeledChartSeparation - left.minimumModeledChartSeparation;
+const byCategoricalShortfall: EvidenceComparator = (left, right) =>
+  left.categoricalMarkShortfall - right.categoricalMarkShortfall;
+const bySequentialUniformity: EvidenceComparator = (left, right) =>
+  left.sequentialAdjacentCoefficientOfVariation === null ||
+  right.sequentialAdjacentCoefficientOfVariation === null
+    ? 0
+    : left.sequentialAdjacentCoefficientOfVariation -
+      right.sequentialAdjacentCoefficientOfVariation;
+const byAnchorSeparation: EvidenceComparator = (left, right) =>
+  right.meanAnchorSeparationDeltaEOK - left.meanAnchorSeparationDeltaEOK;
+const bySourceContinuity: EvidenceComparator = (left, right) =>
+  left.sourceContinuityDeltaEOK === right.sourceContinuityDeltaEOK
+    ? 0
+    : (left.sourceContinuityDeltaEOK ?? Number.POSITIVE_INFINITY) -
+      (right.sourceContinuityDeltaEOK ?? Number.POSITIVE_INFINITY);
+
+/**
+ * Ranking order per objective. Required pairs always come first. A general
+ * product system then values meaning coverage; a data-visualization brief moves
+ * chart separation and ramp evenness ahead of meaning; a continuity brief moves
+ * closeness to the source (lower is better) directly behind required pairs. In
+ * Once application evidence ties, closer source continuity precedes general
+ * anchor variety: extra hues without a demonstrated application benefit must
+ * not win merely by increasing palette separation. In every order a direction
+ * that meets the requested categorical count outranks one
+ * that fell short, judged just before sequential uniformity.
+ */
+function rankingComparators(
+  objective: ColorSystemBuilderRecommendationObjectiveV2
+): readonly EvidenceComparator[] {
+  switch (objective) {
+    case 'data-visualization-dominant':
+      return [
+        byRequiredPairs,
+        byMeaningFillCollisions,
+        byChartSeparation,
+        byCategoricalShortfall,
+        bySequentialUniformity,
+        byMeaningCoverage,
+        bySourceContinuity,
+        byAnchorSeparation,
+      ];
+    case 'source-continuity-dominant':
+      return [
+        byRequiredPairs,
+        byMeaningFillCollisions,
+        bySourceContinuity,
+        byMeaningCoverage,
+        byChartSeparation,
+        byCategoricalShortfall,
+        bySequentialUniformity,
+        byAnchorSeparation,
+      ];
+    default:
+      return [
+        byRequiredPairs,
+        byMeaningFillCollisions,
+        byMeaningCoverage,
+        byChartSeparation,
+        byCategoricalShortfall,
+        bySequentialUniformity,
+        bySourceContinuity,
+        byAnchorSeparation,
+      ];
+  }
+}
+
+/**
+ * Pure ranking over measured evidence: returns direction IDs best-first for the
+ * objective. Exported so the ordering itself can be tested without a full
+ * orchestration.
+ */
+export function rankColorSystemBuilderRecommendationEvidenceV2(
+  entries: readonly { directionId: string; evidence: ColorSystemBuilderRecommendationEvidenceV2 }[],
+  objective: ColorSystemBuilderRecommendationObjectiveV2
+): string[] {
+  const comparators = rankingComparators(objective);
+  return [...entries]
+    .sort((left, right) => {
+      for (const compare of comparators) {
+        const order = compare(left.evidence, right.evidence);
+        if (order !== 0) return order;
+      }
+      return compareText(left.directionId, right.directionId);
+    })
+    .map(entry => entry.directionId);
+}
+
+function measured(value: number): string {
+  return value.toFixed(3);
+}
+
+/**
+ * When any ready direction fell short of the requested categorical count in some
+ * mode, name every direction's measured count for that mode so the owner can see
+ * which strategy carries the series they asked for.
+ */
+function categoricalComparisonStatements(
+  ready: readonly ColorSystemBuilderReadyDirectionV2[]
+): string[] {
+  const modes = [
+    ...new Set(
+      ready.flatMap(direction =>
+        direction.recommendationEvidence.categoricalMarksAchievedByMode.map(entry => entry.mode)
+      )
+    ),
+  ].sort(compareText);
+  return modes.flatMap(mode => {
+    const entries = ready
+      .map(direction => ({
+        label: direction.directionLabel,
+        requested: direction.recommendationEvidence.categoricalMarksRequested,
+        achieved:
+          direction.recommendationEvidence.categoricalMarksAchievedByMode.find(
+            entry => entry.mode === mode
+          )?.achieved ?? null,
+      }))
+      .filter((entry): entry is typeof entry & { achieved: number } => entry.achieved !== null);
+    if (entries.every(entry => entry.achieved >= entry.requested)) return [];
+    const requested = Math.max(...entries.map(entry => entry.requested));
+    return [
+      `Categorical series in ${mode}: ${entries
+        .map(entry => `${entry.label} ${entry.achieved}`)
+        .join(', ')} (${requested} requested).`,
+    ];
+  });
+}
+
+function basisStatements(
+  evidence: ColorSystemBuilderRecommendationEvidenceV2,
+  candidate: ColorSystemStrategyCandidateV2,
+  policy: ColorSystemBuilderRecommendationPolicyV2,
+  comparison: readonly string[]
+): string[] {
+  const statements: Record<string, string> = {
+    pairs: `${evidence.requiredPairsPassing} of ${evidence.requiredPairsTotal} required pairs pass.`,
+    distinct: evidence.distinctMeaningFills
+      ? `Meaning fills are pairwise distinct (at least ${COLOR_SYSTEM_APPLICATION_MEANING_FILL_MINIMUM_DELTA_E_OK} Delta E OK apart).`
+      : `${evidence.meaningFillCollisions} meaning roles share a fill with another meaning role.`,
+    meaning: `${evidence.meaningRolesInRange} of ${evidence.meaningRolesTotal} meaning roles sit inside their hue range.`,
+    chart: `Minimum modeled chart separation ${measured(evidence.minimumModeledChartSeparation)} Delta E OK.`,
+    categorical: `Categorical series achieved: ${evidence.categoricalMarksAchievedByMode
+      .map(entry => `${entry.mode} ${entry.achieved} of ${evidence.categoricalMarksRequested}`)
+      .join(', ')} requested.`,
+    uniformity:
+      evidence.sequentialAdjacentCoefficientOfVariation === null
+        ? 'The recorded chart palette is kept; no sequential ramp was requested.'
+        : `Sequential adjacent-step variation ${measured(evidence.sequentialAdjacentCoefficientOfVariation)} (coefficient of variation; lower is more even).`,
+    anchors: `Mean anchor separation ${measured(evidence.meanAnchorSeparationDeltaEOK)} Delta E OK across ${candidate.families.length} families.`,
+    continuity:
+      evidence.sourceContinuityDeltaEOK === null
+        ? 'No governed source anchors are available to measure continuity.'
+        : `Mean distance from source anchors ${measured(evidence.sourceContinuityDeltaEOK)} Delta E OK (lower keeps closer to the reviewed source).`,
+  };
+  const order: Record<ColorSystemBuilderRecommendationObjectiveV2, readonly string[]> = {
+    'general-product-system': [
+      'pairs',
+      'distinct',
+      'meaning',
+      'chart',
+      'categorical',
+      'uniformity',
+      'continuity',
+      'anchors',
+    ],
+    'data-visualization-dominant': [
+      'pairs',
+      'distinct',
+      'chart',
+      'categorical',
+      'uniformity',
+      'meaning',
+      'continuity',
+      'anchors',
+    ],
+    'source-continuity-dominant': [
+      'pairs',
+      'distinct',
+      'continuity',
+      'meaning',
+      'chart',
+      'categorical',
+      'uniformity',
+      'anchors',
+    ],
+  };
+  return [
+    ...order[policy.objective].map(key => statements[key]),
+    ...comparison,
+    `Ranked for ${policy.objective} under ${policy.version}. This is not owner acceptance.`,
+  ];
 }
 
 function readyDirection(
@@ -396,9 +654,9 @@ function readyDirection(
       reviewModelHash: review.reviewModelHash,
     };
     const recommendationEvidenceValue = recommendationEvidence(
-      candidate.id,
-      application,
-      input.recommendation
+      sourceCompilation.brief,
+      candidate,
+      application
     );
     const content = {
       status: 'ready' as const,
@@ -430,33 +688,29 @@ function recommendedDirection(
   directions: readonly ColorSystemBuilderDirectionV2[],
   policy: ColorSystemBuilderRecommendationPolicyV2
 ): ColorSystemBuilderRecommendationV2 | null {
-  const ranked = directions
-    .filter(
-      (direction): direction is ColorSystemBuilderReadyDirectionV2 => direction.status === 'ready'
-    )
-    .sort((left, right) => {
-      const leftEvidence = left.recommendationEvidence;
-      const rightEvidence = right.recommendationEvidence;
-      return (
-        rightEvidence.requiredPairsPassing - leftEvidence.requiredPairsPassing ||
-        rightEvidence.productSemanticsPassing - leftEvidence.productSemanticsPassing ||
-        rightEvidence.productGraphicsPassing - leftEvidence.productGraphicsPassing ||
-        rightEvidence.objectiveFit - leftEvidence.objectiveFit ||
-        rightEvidence.minimumModeledChartSeparation - leftEvidence.minimumModeledChartSeparation ||
-        compareText(left.directionId, right.directionId)
-      );
-    });
-  const selected = ranked[0];
+  const ready = directions.filter(
+    (direction): direction is ColorSystemBuilderReadyDirectionV2 => direction.status === 'ready'
+  );
+  const rankedIds = rankColorSystemBuilderRecommendationEvidenceV2(
+    ready.map(direction => ({
+      directionId: direction.directionId,
+      evidence: direction.recommendationEvidence,
+    })),
+    policy.objective
+  );
+  const selected = ready.find(direction => direction.directionId === rankedIds[0]);
   if (!selected) return null;
+  const statements = basisStatements(
+    selected.recommendationEvidence,
+    selected.candidate,
+    policy,
+    categoricalComparisonStatements(ready)
+  );
   return {
     directionId: selected.directionId,
     label: `Teul recommendation: ${selected.directionLabel}`,
-    basis:
-      policy.objective === 'general-product-system'
-        ? 'All mandatory evidence passes. Because this brief spans product systems and data visualization, the versioned policy prioritizes balanced source continuity and differentiation. This is not owner acceptance.'
-        : policy.objective === 'data-visualization-dominant'
-          ? 'All mandatory evidence passes. Because this brief is data-visualization dominant, the versioned policy prioritizes differentiation after exact application checks. This is not owner acceptance.'
-          : 'All mandatory evidence passes. Because this brief prioritizes continuity, the versioned policy favors the direction closest to the reviewed source. This is not owner acceptance.',
+    basis: statements.join(' '),
+    basisStatements: statements,
     policy,
     evidence: selected.recommendationEvidence,
     authority: 'teul-recommendation',
@@ -602,7 +856,7 @@ function genericBuilderInputContent(
 export function buildColorSystemGenericBuilderOrchestratorV2Input(
   snapshot: ColorSystemGenericSourceSnapshotV2,
   proposal: GenericIntakeProposalV2,
-  confirmation: GenericOwnerConfirmationV2,
+  confirmation: GenericPolicyDecisionV2,
   handoff: ColorSystemGenericPolicyHandoffV2,
   options: BuildColorSystemGenericBuilderOrchestratorV2InputOptions = {}
 ): ColorSystemGenericBuilderOrchestratorV2Input {

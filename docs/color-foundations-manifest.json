@@ -2,6 +2,7 @@
   "schemaVersion": 1,
   "reviewedAt": "2026-08-02",
   "reviewBy": "2027-02-02",
+  "reviewOwner": "Paul Jun (repository owner)",
   "policy": {
     "blockingContrastStandard": "WCAG 2.2 sRGB",
     "generatedGamutMapping": "CSS Color 4 Binary Search with Local MINDE",

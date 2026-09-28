@@ -1,0 +1,430 @@
+{
+  "schemaVersion": "teul.local-slice-checks.v1",
+  "verifiedAt": "2026-09-26T02:08:18.562917+00:00",
+  "baselineCommit": "3925a5e4c84f5da338b36a74e3d4c4f3dfdb0aea",
+  "branch": "codex/brand-guideline-import",
+  "lifecycle": "locally-verified-slice",
+  "fullPrdComplete": false,
+  "pushed": false,
+  "deployed": false,
+  "sourceTreeHash": "ccb3d8030e0281e3785bc9269377e29cd7aca4bae66e0582f95545727451a2d3",
+  "sourceFiles": [
+    {
+      "path": "docs/evidence/brand-guideline-import/website-review-project.md",
+      "bytes": 7607,
+      "sha256": "ed35ec5183f9eb3919f683b31f844f5160559c861a046a003b1f5348b79b2ea6"
+    },
+    {
+      "path": "docs/plans/2026-09-25-brand-guideline-import-plan.md",
+      "bytes": 64433,
+      "sha256": "ecc13f4e346eaa5739a3fd2972721c44fc279a82b986f1126aa11d5a9530a57e"
+    },
+    {
+      "path": "docs/prds/2026-09-25-brand-guideline-import.md",
+      "bytes": 108767,
+      "sha256": "90c9ba97976f38789bae94991cb081f21b44bf7b53503b4920fa657f1e301e70"
+    },
+    {
+      "path": "src/lib/colorSystemGradientV1.ts",
+      "bytes": 15888,
+      "sha256": "6e4e2ff71114489e8170dbcefcc48e05d4037eca0d7f06b41ba1da3f243da930"
+    },
+    {
+      "path": "src/lib/colorSystemValueProvenanceV1.ts",
+      "bytes": 2968,
+      "sha256": "ea1f3f176b24c5e6fb328665b69963d71ffbd2dcb84c4d005e250a14856391cf"
+    },
+    {
+      "path": "web/README.md",
+      "bytes": 19819,
+      "sha256": "2074db149146ae252a7fdd5a4a52c05d03becdb4d0d7e7662dcc8df26a3d242b"
+    },
+    {
+      "path": "web/fixtures/guidelines/figma-project-v1.json",
+      "bytes": 22943,
+      "sha256": "698b20f9ba44c2613b09775a307dc98f482abadeedea1692de8cb494672573fa"
+    },
+    {
+      "path": "web/fixtures/guidelines/website-capture.json",
+      "bytes": 41535,
+      "sha256": "bd7433bd71b11e21ecd7466992b43da5bdcc9773167c3d70f8a57531c0886346"
+    },
+    {
+      "path": "web/package.json",
+      "bytes": 2433,
+      "sha256": "7c0f1f887c76cb707ef5d07b56510483c715c14e5f578b4f48e090426062aeb8"
+    },
+    {
+      "path": "web/scripts/guideline-figma-review-smoke.mjs",
+      "bytes": 18665,
+      "sha256": "78a6a430737b219f3061d4f5873a38d387340a17ed372ff8c9710af529576a1a"
+    },
+    {
+      "path": "web/scripts/guideline-website-smoke.mjs",
+      "bytes": 21659,
+      "sha256": "23e2638889ef14dcea59c20cfca0235dacfea8be48024bf65b8be68df4d52009"
+    },
+    {
+      "path": "web/src/components/GuidelineFigmaPanel.tsx",
+      "bytes": 26776,
+      "sha256": "b1d935228ae7647f37b45c4a67702f1581597e6c6bc27c2e8765643d31c05b8b"
+    },
+    {
+      "path": "web/src/components/GuidelineFigmaReview.tsx",
+      "bytes": 2409,
+      "sha256": "03a26e37efd70f833f22d5c98f45ffeff741a64416f5fa3b6299e33533d4a2f7"
+    },
+    {
+      "path": "web/src/components/GuidelineSourceReview.tsx",
+      "bytes": 28529,
+      "sha256": "ab3a0d6eab6d38e7e766c4ddcab8d24292d94b3fab15d67b5fc4a1b378fef009"
+    },
+    {
+      "path": "web/src/components/GuidelineWebsitePanel.css",
+      "bytes": 616,
+      "sha256": "984e14ca9394953e58693db506a29221ea5f8d00af7f14bbdb11edacaa71c9e5"
+    },
+    {
+      "path": "web/src/components/GuidelineWebsitePanel.tsx",
+      "bytes": 19633,
+      "sha256": "168cabccea9ebb48f46e9eca72b404557c7768ec9e2e793b06215eccb577f218"
+    },
+    {
+      "path": "web/src/components/GuidelineWebsiteReview.tsx",
+      "bytes": 2705,
+      "sha256": "4b09291bd360f44e88d380a1e157aabf02876b811677d513fd41f460adc6cbdb"
+    },
+    {
+      "path": "web/src/components/GuidelineWorkspace.tsx",
+      "bytes": 50886,
+      "sha256": "d8e4611e42264201b13cdb145bd73ac4d45aba75f94aa04e355580c93fcb9a7c"
+    },
+    {
+      "path": "web/src/lib/guideline/captureJob.ts",
+      "bytes": 2142,
+      "sha256": "b6194f020ce91d204c7c46588b6f4ea3b14bf35d92e2d9f046d0bf54fc3da638"
+    },
+    {
+      "path": "web/src/lib/guideline/figmaModel.ts",
+      "bytes": 11557,
+      "sha256": "3801329a1a168bc300df942e563b78422cb0056721a01d63fc08b6084518d188"
+    },
+    {
+      "path": "web/src/lib/guideline/figmaProject.ts",
+      "bytes": 1138,
+      "sha256": "a865e4ee5845d3f45a0a7e9e76e1d87249741b381bfa67edfc0070d4e265fe7e"
+    },
+    {
+      "path": "web/src/lib/guideline/figmaReview.test.ts",
+      "bytes": 18635,
+      "sha256": "c821fec0f147171ec566f30e6446a6e71eb02fe09e55c174a6853b350da834a2"
+    },
+    {
+      "path": "web/src/lib/guideline/figmaReview.ts",
+      "bytes": 1596,
+      "sha256": "b47405d79278bc04089f3e1dc41d28c1339e7ef2e88b75312c076aa41457aa91"
+    },
+    {
+      "path": "web/src/lib/guideline/figmaStatements.ts",
+      "bytes": 590,
+      "sha256": "26b98a2e12fc0e085fde537171446b649cfd234b521ead9ac3e26d2a2ad7e470"
+    },
+    {
+      "path": "web/src/lib/guideline/gradientPortability.test.ts",
+      "bytes": 4298,
+      "sha256": "05eb38b17185d0ed4b4c7909d7c0a475bfba42052fe55d022af3698ccd95e85d"
+    },
+    {
+      "path": "web/src/lib/guideline/modeGradient.ts",
+      "bytes": 4856,
+      "sha256": "7839bc90588edfb08f297e5efbe93e544fd882853ed7f4a94b8cffea9c8df1b1"
+    },
+    {
+      "path": "web/src/lib/guideline/project.ts",
+      "bytes": 9629,
+      "sha256": "a4a3342f183bbc380ba3418639e68050ecb71d1f1c7f5570984114678bbdf0ec"
+    },
+    {
+      "path": "web/src/lib/guideline/sourceProject.ts",
+      "bytes": 4841,
+      "sha256": "0cb3e9fb25d06ed7f62e4746cfc972234e4fbdb294a7d58e4e7394a926b6b7a2"
+    },
+    {
+      "path": "web/src/lib/guideline/sourceReview.ts",
+      "bytes": 20006,
+      "sha256": "aa5af859d09ce2a487253fe2a6da555eedcb380bd554ce31f86a88f5900e5b8f"
+    },
+    {
+      "path": "web/src/lib/guideline/sourceReviewContracts.ts",
+      "bytes": 1579,
+      "sha256": "12ef2fd348b12e454a4d6f3d1222237d931be31b52360a30aa8bcf23da876cdd"
+    },
+    {
+      "path": "web/src/lib/guideline/sourceStatements.ts",
+      "bytes": 1329,
+      "sha256": "a08957d588c339722478610cca0e06a2d17080760ad1ba60df4859c61e30b909"
+    },
+    {
+      "path": "web/src/lib/guideline/websiteCapture.ts",
+      "bytes": 2123,
+      "sha256": "653a57c200f70a307083e51b2ee61e6b63a46630394214e695d09113971116cc"
+    },
+    {
+      "path": "web/src/lib/guideline/websiteInventory.ts",
+      "bytes": 6738,
+      "sha256": "808a5b37f666c001abdb6d5e44cfb97f5135596293120e0b236df0b9aa471902"
+    },
+    {
+      "path": "web/src/lib/guideline/websiteModel.ts",
+      "bytes": 6791,
+      "sha256": "13b9bd8f589f3a2c93dd2b282e0793f6550f888c0f6d3270c602eabf9397d7c4"
+    },
+    {
+      "path": "web/src/lib/guideline/websiteProject.ts",
+      "bytes": 1175,
+      "sha256": "ec255b42654af5c0786c340438e8385570173ac4f390db1d745207aec91a7a91"
+    },
+    {
+      "path": "web/src/lib/guideline/websiteReview.test.ts",
+      "bytes": 11030,
+      "sha256": "4d4c461ed718bdea64eb7b867153ea1e45254c2ec36cd21c67be4ecae41fb7f3"
+    },
+    {
+      "path": "web/src/lib/guideline/websiteReview.ts",
+      "bytes": 1270,
+      "sha256": "0bd06ec3a2a783c28747ffe28fc13f4ecfcc87783b41e82bd024e0d661b92675"
+    }
+  ],
+  "localArtifacts": [
+    {
+      "path": "release/guideline-website-review/build-node22.log",
+      "bytes": 3188,
+      "sha256": "9451bc751f9b83bbd0f90e80fdc4c28cf8c596327df8244fc603e9b96fc9f77c"
+    },
+    {
+      "path": "release/guideline-website-review/build-node24.log",
+      "bytes": 3188,
+      "sha256": "92b3de194eb96288f6a6494bee69bf0f687dd121448f5072b25c31b450124e17"
+    },
+    {
+      "path": "release/guideline-website-review/core-node24.log",
+      "bytes": 312,
+      "sha256": "06d4b45b06943fc6e03e819a54315d06cc500296c24ac93ed8a910b70608463b"
+    },
+    {
+      "path": "release/guideline-website-review/figma-capture-node24.log",
+      "bytes": 390,
+      "sha256": "063b250e81cc2d99810e478e4dcc12586bf46b4e1a20a7bca4e582bd35358c70"
+    },
+    {
+      "path": "release/guideline-website-review/figma-review-node24.log",
+      "bytes": 2942,
+      "sha256": "e71b5d4f622dce2ffa0418d5e021d9194aea094e5199a004562af2a49c2828eb"
+    },
+    {
+      "path": "release/guideline-website-review/lint-web.log",
+      "bytes": 56,
+      "sha256": "a08f059342d318275b9a38c2435399fa289a5f083ea5e1e8ed765022b7132c56"
+    },
+    {
+      "path": "release/guideline-website-review/node22-desktop.png",
+      "bytes": 871563,
+      "sha256": "98e869be6626ffc50655bfe9af8ea7b05ecca8bd75a0eaa38bc8860b60f9b71f"
+    },
+    {
+      "path": "release/guideline-website-review/node22-gradient-portability.json",
+      "bytes": 200,
+      "sha256": "a33e010de91c95005efc1759aa138106e67d5ea5a0bc1ec025af09fa443d0fdd"
+    },
+    {
+      "path": "release/guideline-website-review/node22-gradient.css",
+      "bytes": 454,
+      "sha256": "4a3cc9bc9a666fa4b065a99b5a483da863473252f9c014b7245aa97691437b7c"
+    },
+    {
+      "path": "release/guideline-website-review/node22-gradient.json",
+      "bytes": 3706,
+      "sha256": "d436b0a0f78582ed6d999189c36392aa1baff600aad99eaf4e772c0d1f6204c8"
+    },
+    {
+      "path": "release/guideline-website-review/node22-gradient.png",
+      "bytes": 222956,
+      "sha256": "99f39c11810605d94dd08e8b947c7c558f665a4d4aa6ecdb5a6734e81d0d3fe2"
+    },
+    {
+      "path": "release/guideline-website-review/node22-gradient.svg",
+      "bytes": 862,
+      "sha256": "ed9ca2f0bfded2ac0f7fbbeb5757afdb1d385c8c0406ae6bd7b5ca0ba6d6106f"
+    },
+    {
+      "path": "release/guideline-website-review/node22-mobile.png",
+      "bytes": 81211,
+      "sha256": "cea88514dd59d4a224d4a3ba39b143d792fa1929caa4f96a303ec97720cd004f"
+    },
+    {
+      "path": "release/guideline-website-review/node22-node-replayed-exports.json",
+      "bytes": 5595,
+      "sha256": "9ba5001c914f354277e0c3213b5900f526f3f919edcc0618220759427637eac4"
+    },
+    {
+      "path": "release/guideline-website-review/node22-project.json",
+      "bytes": 54398,
+      "sha256": "7b8df573badf3a40b6863d6030b490e2176ee00578c84d958e465fe588291fa5"
+    },
+    {
+      "path": "release/guideline-website-review/node22-receipt.json",
+      "bytes": 3856,
+      "sha256": "b00943ba86866ede1ffd9d9da2761df654781c19eef839c07c64a9e594413333"
+    },
+    {
+      "path": "release/guideline-website-review/node24-desktop.png",
+      "bytes": 874912,
+      "sha256": "1442e9a5872cdc081f0aca60e8d430a737b3ee4927bd69a72a46d7463e0967ce"
+    },
+    {
+      "path": "release/guideline-website-review/node24-gradient-portability.json",
+      "bytes": 200,
+      "sha256": "b86e4adcac2f79281b8376bdd58abd0602f4299716de2d1f64c8385bac099cfa"
+    },
+    {
+      "path": "release/guideline-website-review/node24-gradient.css",
+      "bytes": 450,
+      "sha256": "32772b6fa7e7c07ad515c5eac2a8aaeaf9dfe88d0e4399691a025e2114bc186a"
+    },
+    {
+      "path": "release/guideline-website-review/node24-gradient.json",
+      "bytes": 3706,
+      "sha256": "aa0733e5bc39271e380f9b0cb153e2e673f9e1a72f8bc1aaf116083eca221b2f"
+    },
+    {
+      "path": "release/guideline-website-review/node24-gradient.png",
+      "bytes": 226526,
+      "sha256": "654c2cce5ccfa79b99878e48db761a768397f801eff9523bd6a77d854e31bd99"
+    },
+    {
+      "path": "release/guideline-website-review/node24-gradient.svg",
+      "bytes": 858,
+      "sha256": "871ec3f8f0ffd21176b658a3dc76fec163b862df471aa0c79a21144ea6120282"
+    },
+    {
+      "path": "release/guideline-website-review/node24-mobile.png",
+      "bytes": 80495,
+      "sha256": "c70433771bb84da14445486488a041e5bf7cb155116750045c044484955ef0ae"
+    },
+    {
+      "path": "release/guideline-website-review/node24-node-replayed-exports.json",
+      "bytes": 5587,
+      "sha256": "cc0419787717f6fb482921deb78061057312c940a3e07c6f82d07b07fdb32b44"
+    },
+    {
+      "path": "release/guideline-website-review/node24-project.json",
+      "bytes": 54398,
+      "sha256": "f765194c03026b81f4034c2e807c727aa74007b719335c2c6031dc17d848d2d5"
+    },
+    {
+      "path": "release/guideline-website-review/node24-receipt.json",
+      "bytes": 3856,
+      "sha256": "24163d4a5148ea6ffb6b674b2601e93899deb257bce7d6b11506acf48c209987"
+    },
+    {
+      "path": "release/guideline-website-review/pdf-node22.log",
+      "bytes": 2838,
+      "sha256": "f83bbd5b20d85173781a5dd4f871d4f5972b6c105a9b6f31b5592c475906c11b"
+    },
+    {
+      "path": "release/guideline-website-review/pdf-node24.log",
+      "bytes": 2848,
+      "sha256": "9d86dcb1f564590a74ef334c52871127c7cb9bcd7f25eb079338cbc943a27b3e"
+    },
+    {
+      "path": "release/guideline-website-review/studio-node22.log",
+      "bytes": 408,
+      "sha256": "b933696fac4e7ba04042c0c524e5a9b73eeb25e9e949d990efbef376ab582420"
+    },
+    {
+      "path": "release/guideline-website-review/studio-node24.log",
+      "bytes": 239,
+      "sha256": "0917b7ac3d41223451ad24bafd7a1ddb35888d0e8fc56f569138557f3df603af"
+    },
+    {
+      "path": "release/guideline-figma/node22-receipt.json",
+      "bytes": 1574,
+      "sha256": "035373112c1871335ff07b57cec4b069f55cb7e88758e2f867455e9ca3f413aa"
+    },
+    {
+      "path": "release/guideline-figma/node24-receipt.json",
+      "bytes": 1574,
+      "sha256": "a5c504187aa0b1f7974dd634d81ffa6b963c8042375c564785fe476f9fb234a4"
+    },
+    {
+      "path": "release/guideline-figma-review/browser-receipt-node22.json",
+      "bytes": 2640,
+      "sha256": "e6c6852e5baac11fd0085ed5848e3e9780a03f5226b5dfccce2ea4dc075fb0b6"
+    },
+    {
+      "path": "release/guideline-figma-review/browser-receipt-node24.json",
+      "bytes": 2640,
+      "sha256": "f912e66a0931a4b7bf68f7a2810b21ed22b50fdbcf2f8ea14e92a1c52b6e9073"
+    }
+  ],
+  "checks": [
+    {
+      "command": "npm --prefix web test",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "32 files / 401 passed per runtime"
+    },
+    {
+      "command": "npm run test:run -- src/lib/__tests__/colorSystemGradientV1.test.ts",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "6 passed per runtime; Node 22 output recorded in task tool trace"
+    },
+    {
+      "command": "npm --prefix web run test:guideline-website",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "8 browser scenarios and 65 bidirectional gradient cases per runtime"
+    },
+    {
+      "command": "npm --prefix web run test:guideline-figma",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "11 scenarios per runtime"
+    },
+    {
+      "command": "npm --prefix web run test:guideline-figma-review",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "9 scenarios per runtime"
+    },
+    {
+      "command": "npm --prefix web run test:guidelines",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "Passed; complete output retained in PDF logs"
+    },
+    {
+      "command": "VITE_GUIDELINE_IMPORT=true npm --prefix web run build",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "Passed with existing lazy-chunk size advisory"
+    },
+    {
+      "command": "npm run lint; npm run typecheck; npm --prefix web run lint",
+      "runtimes": ["22.13.1"],
+      "result": "Passed; root outputs recorded in task tool trace"
+    },
+    {
+      "command": "validate_prd.py --profile full --extension ai --extension refactor --stage ready --strict",
+      "result": "Passed; no structural or traceability issues"
+    },
+    {
+      "check": "simplify exact diff",
+      "result": "Three read-only reviews; reuse/quality no blocker; cache registration, duplicate compilation and no-change polling issues fixed"
+    },
+    {
+      "check": "visual inspection",
+      "result": "Desktop gradient and 390px viewport screenshots inspected; no page overflow. Fixture palette is not aesthetic approval"
+    }
+  ],
+  "remaining": [
+    "No live public website or production isolation qualification",
+    "No deployment or Figma mutation",
+    "Full local release gates remain for integrated feature",
+    "Cross-format evaluation, integrated storage, refresh, supporting directions, full gradient editing and designer acceptance remain open"
+  ]
+}

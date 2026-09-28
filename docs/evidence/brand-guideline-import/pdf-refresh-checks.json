@@ -1,0 +1,228 @@
+{
+  "status": "locally-verified",
+  "baseCommit": "4ef469b4c948ac886a21989853dbd3a2e54e532e",
+  "scope": "Staged PDF refresh and unchanged editable decision carryover; TASK-009 partial, full AC-011 remains open",
+  "runtimeChecks": [
+    {
+      "node": "22.13.1",
+      "studioTests": 444,
+      "studioFiles": 38,
+      "refreshScenarios": 10,
+      "storageScenarios": 25,
+      "paletteRegressionScenarios": 9,
+      "proofBuild": "passed"
+    },
+    {
+      "node": "24.19.0",
+      "studioTests": 444,
+      "studioFiles": 38,
+      "refreshScenarios": 10,
+      "storageScenarios": 25,
+      "paletteRegressionScenarios": 9,
+      "proofBuild": "passed"
+    }
+  ],
+  "otherChecks": {
+    "studioLint": "passed",
+    "studioTypecheck": "passed through both builds",
+    "strictPrdReady": "passed",
+    "diffWhitespace": "passed",
+    "deadExports": 50,
+    "deadFiles": 1,
+    "changeInDeadReport": 0,
+    "mobileInspection": "390px comparison and failed-save state fit; inspected again after spacing change"
+  },
+  "review": {
+    "reuse": "Shared source-rule mapping and page-limit fixes confirmed",
+    "quality": "Ambiguous supporting-text dependency fix confirmed; no remaining findings",
+    "efficiency": "Precomputed color/family dependency lookups confirmed"
+  },
+  "limitations": [
+    "Editable interpretation only; no automatic applied-review or result carryover",
+    "Manual PDF confirmations require renewed source evidence",
+    "Figma and website refresh remain open",
+    "Persistent carryover lineage and multi-source reconciliation remain open",
+    "No live provider/connector, designer, screen-reader or integrated release qualification",
+    "Not merged, pushed or deployed",
+    "Existing Studio chunk-size advisory remains"
+  ],
+  "sourceFiles": [
+    {
+      "path": "docs/evidence/brand-guideline-import/pdf-refresh.md",
+      "bytes": 4588,
+      "sha256": "0ae5c33e73a7de0b8372c4bfc4ec54beda504a35b73734ee1fff354c103b3118"
+    },
+    {
+      "path": "docs/plans/2026-09-25-brand-guideline-import-plan.md",
+      "bytes": 83276,
+      "sha256": "0be4508c32723e9ee0413bd5045c7948e19ba38847bc493545d5c708bb01c23d"
+    },
+    {
+      "path": "docs/prds/2026-09-25-brand-guideline-import.md",
+      "bytes": 114804,
+      "sha256": "c50b7cc66f5254f363b2c1e00dec7754ab279f02e3a87a9def13747bee81b76f"
+    },
+    {
+      "path": "web/README.md",
+      "bytes": 25247,
+      "sha256": "11bc3a88808f9e6d1c7561b372d6138705f523da7e16a473731035d55c93ceb0"
+    },
+    {
+      "path": "web/fixtures/guidelines/README.md",
+      "bytes": 2049,
+      "sha256": "f7b171ce0067a814c3f844c79bb9a8cad5ac26207422abab079d5200f37c9d47"
+    },
+    {
+      "path": "web/fixtures/guidelines/generate-refresh.py",
+      "bytes": 847,
+      "sha256": "a39407dac3241bbcfbbc98fc91a0e08b354c74ea9586af39f424c0cce79a495d"
+    },
+    {
+      "path": "web/fixtures/guidelines/refresh-color.pdf",
+      "bytes": 1898,
+      "sha256": "bd5f3e3db9bc3759bb93db9dbc348113d53cd1c3fd5d3b1b9220b333dd2d08c2"
+    },
+    {
+      "path": "web/fixtures/guidelines/refresh-initial.pdf",
+      "bytes": 1898,
+      "sha256": "9faed4b3b17f64bf44389c8f8b2dbbfdbbc60d2a15cbe97e901a44fe44b5ce67"
+    },
+    {
+      "path": "web/fixtures/guidelines/refresh-note.pdf",
+      "bytes": 1898,
+      "sha256": "7ed309a0e745dc1842145d97f9e28672d9e1caa941fed8a4567343867306d158"
+    },
+    {
+      "path": "web/fixtures/guidelines/refresh-rule.pdf",
+      "bytes": 1905,
+      "sha256": "b2ee93907da5636e2caeb6a4c8b977ed7ef10042ffbf805158026e73137cb780"
+    },
+    {
+      "path": "web/package.json",
+      "bytes": 2763,
+      "sha256": "8b6fe9e0c3f3ce056cb0502e751cfbaea4b0dbd02daafa59c6b4172775083f0f"
+    },
+    {
+      "path": "web/scripts/guideline-refresh-smoke.mjs",
+      "bytes": 11921,
+      "sha256": "3de44fb41eb24848752f4524f92b794c0825dbcb595f5935fad3f2520c46f244"
+    },
+    {
+      "path": "web/src/components/GuidelinePdfRefresh.tsx",
+      "bytes": 8566,
+      "sha256": "db3b0e801fb2c58bd7017df3fd7f783794be8c3ed53727a41e8a42dfad1d53bc"
+    },
+    {
+      "path": "web/src/components/GuidelineWorkspace.css",
+      "bytes": 8440,
+      "sha256": "3d8fb60b251833c06a2a86dab9459a9e5dec78ec4fccc9e5e4ffb37b40b87985"
+    },
+    {
+      "path": "web/src/components/GuidelineWorkspace.tsx",
+      "bytes": 57852,
+      "sha256": "6453089059c365f524bbb6f7fb5f963266d4edee1abdfb349bb2fa86dc9b019c"
+    },
+    {
+      "path": "web/src/lib/guideline/assistance.ts",
+      "bytes": 15180,
+      "sha256": "16ed7230d0133c158c63ad11a8541ea731ebdcb5f3c10b9e09c1bd31b2dff8aa"
+    },
+    {
+      "path": "web/src/lib/guideline/pdfPages.ts",
+      "bytes": 885,
+      "sha256": "c33977bc81d9d30aa50deb4498f4974afa537f77044253b3117d7d396b654c6c"
+    },
+    {
+      "path": "web/src/lib/guideline/pdfRefresh.test.ts",
+      "bytes": 8968,
+      "sha256": "5e307f18fe2f9afbaf633ece08b5cbc22cba60b9f86e2c0dadd021aa6485913f"
+    },
+    {
+      "path": "web/src/lib/guideline/pdfRefresh.ts",
+      "bytes": 9893,
+      "sha256": "4fcfd3056d123bbf2eab5a40bc584d42e7135af37f60820d16e16f073200bccd"
+    },
+    {
+      "path": "web/src/lib/guideline/structureRules.ts",
+      "bytes": 1889,
+      "sha256": "2481aa8b1e5e58284f9d7b5c9f33bd202bf14a3764a1aa292168bd10ef32bd9a"
+    },
+    {
+      "path": "web/src/lib/guideline/useLocalProject.ts",
+      "bytes": 7521,
+      "sha256": "1f4b7599c4577872f45d5a9afdb38818fa969d86ca1369d57d7da42a37f3fda5"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "release/guideline-refresh/node22-checks.json",
+      "bytes": 1295,
+      "sha256": "36b872bd525b0bf21cef3ef2658ac102625433f29b0b5bc86f3be3ea864317fa"
+    },
+    {
+      "path": "release/guideline-refresh/node22-comparison-mobile.png",
+      "bytes": 104081,
+      "sha256": "b8dac4e1c417415c3c44d43707134bceb8559ef6744401bb276ac7ef4426edc6"
+    },
+    {
+      "path": "release/guideline-refresh/build-node22.log",
+      "bytes": 3188,
+      "sha256": "607612c7e1ca4b757ee54e2bb71614506b33bfd3ccf089604c9e8b8983d9bc0a"
+    },
+    {
+      "path": "release/guideline-storage/node22-receipt.json",
+      "bytes": 3014,
+      "sha256": "fb5dfb2e24883180d525f522c46e171642c7ac85cda90207db41239645c933d0"
+    },
+    {
+      "path": "release/guideline-storage/node22-palette-regression/storage-browser.json",
+      "bytes": 1129,
+      "sha256": "d47a471b6852b5f84410e330d22f4baf48ddf8fca79a58f68936f24402c52c15"
+    },
+    {
+      "path": "release/guideline-refresh/node24-checks.json",
+      "bytes": 1295,
+      "sha256": "d3997001a2038a03163d8b08f0b130383e9fce6b5d09caeac001dc774a06d0d8"
+    },
+    {
+      "path": "release/guideline-refresh/node24-comparison-mobile.png",
+      "bytes": 101726,
+      "sha256": "988a8c355fa9a26457303a6fd6ff276723d4a0bf8a968d5f26088b6f98c09515"
+    },
+    {
+      "path": "release/guideline-refresh/build-node24.log",
+      "bytes": 3188,
+      "sha256": "e1cc408c713faa716cd3c9c64b97c2eadcda2c7c3e26b4cde65cc3ac0b557cbb"
+    },
+    {
+      "path": "release/guideline-storage/node24-receipt.json",
+      "bytes": 3014,
+      "sha256": "3a970eb004d9abfe58d1bb6e26568d42b3b31122944cc6f757c416574deb3ff9"
+    },
+    {
+      "path": "release/guideline-storage/node24-palette-regression/storage-browser.json",
+      "bytes": 1142,
+      "sha256": "661fe3da5df4080d622b067ec9909d6c305ca5c8ef45aec759ea6bb7019cbd5c"
+    },
+    {
+      "path": "web/dist/assets/GuidelineWorkspace-oKNVp4Hu.css",
+      "bytes": 23773,
+      "sha256": "1747017559658eff9c48620c42f9041ecb7ebc1de0ca4519d3e6dfc3c1d183b9"
+    },
+    {
+      "path": "web/dist/assets/GuidelineWorkspace-CiYX-wUE.js",
+      "bytes": 847270,
+      "sha256": "9153237386278c8d482a6617c9738241cc52f26b414fda042cc4e674e42a9ec3"
+    },
+    {
+      "path": "web/dist/index.html",
+      "bytes": 810,
+      "sha256": "44de089ce0b7b859e18c45c9f9618ec021626cb89dace951b89e5f330cb012a5"
+    },
+    {
+      "path": "release/guideline-refresh/dead-export-report.log",
+      "bytes": 4018,
+      "sha256": "f0aa69872ec205e4ce7ce850ea9db13cb5ac631c8317977698f8c7ddda30312a"
+    }
+  ]
+}

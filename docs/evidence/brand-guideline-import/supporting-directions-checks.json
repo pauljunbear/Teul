@@ -1,0 +1,133 @@
+{
+  "status": "locally-verified-adapter",
+  "baseCommit": "264e5ab645a70becafae53c32e663e50814cf08a",
+  "scope": "Partial TASK-007 / REQ-008; reviewed-source catalog applications and portable replay. Comparison UI and saved-project integration remain pending.",
+  "runtimeChecks": [
+    {
+      "node": "22.13.1",
+      "studioTests": 482,
+      "studioFiles": 42,
+      "newSupportingTests": 10,
+      "lint": "passed",
+      "typecheckAndBuild": "passed"
+    },
+    {
+      "node": "24.19.0",
+      "studioTests": 482,
+      "studioFiles": 42,
+      "newSupportingTests": 10,
+      "lint": "passed",
+      "typecheckAndBuild": "passed"
+    }
+  ],
+  "commands": [
+    "npm --prefix web test",
+    "npm --prefix web run lint",
+    "npm --prefix web run build",
+    "npm run report:dead-code",
+    "python3 /Users/paul.jun/.codex/skills/create-prd-and-build/scripts/validate_prd.py docs/prds/2026-09-25-brand-guideline-import.md --plan docs/plans/2026-09-25-brand-guideline-import-plan.md --profile full --extension ai --extension refactor --stage ready --strict"
+  ],
+  "prdReadyValidation": "passed",
+  "deadExports": {
+    "exports": 48,
+    "filesOutsideEntryGraphs": 2,
+    "newOutsideFile": "web/src/lib/guideline/supportingDirections.ts",
+    "integrationPending": true
+  },
+  "review": {
+    "reuse": "canonical distance decisions",
+    "quality": "stable selected-content IDs and eligible replay outside the current shortlist",
+    "efficiency": "yield between materializations; cache source RGB and member distances",
+    "additionalContractReview": "application-scoped optional gaps; source adoptions retained exactly"
+  },
+  "sourceFiles": [
+    {
+      "path": "web/src/lib/guideline/extension.ts",
+      "bytes": 13462,
+      "sha256": "b1222b1be62afe166f4810049bf56c237eb60212706092c60a9d4fc96b6b02d7"
+    },
+    {
+      "path": "web/src/lib/guideline/generationReview.ts",
+      "bytes": 1798,
+      "sha256": "45e0096197d7ca487b41d5533473617dc0aa728ed35e6ad3951af6124039fb0c"
+    },
+    {
+      "path": "web/src/lib/guideline/supportingDirections.ts",
+      "bytes": 24914,
+      "sha256": "cb70f14f74289ce0a8439f3df403f05aaa0641e38b22f8ba1e0d03e402141c8e"
+    },
+    {
+      "path": "web/src/lib/guideline/supportingDirections.test.ts",
+      "bytes": 19514,
+      "sha256": "a4a5331afd0f2086c670a170789da0f3f2a1d736c4bb5c6374aa4c734cf123e9"
+    },
+    {
+      "path": "docs/prds/2026-09-25-brand-guideline-import.md",
+      "bytes": 116690,
+      "sha256": "5dfce282bb0ee41f608b3dfd79e49c617987ad7253d6efb99bfa83bd6e33acd5"
+    },
+    {
+      "path": "docs/plans/2026-09-25-brand-guideline-import-plan.md",
+      "bytes": 95529,
+      "sha256": "60f7917d272155bf9fcf24afa6d850060d799d6dde4153243bd6e0d5e7e6e7ad"
+    },
+    {
+      "path": "docs/evidence/brand-guideline-import/supporting-directions.md",
+      "bytes": 5554,
+      "sha256": "2f43366e06b8fa6ac2b54d2a63a711f733aa574d61925e4a0b403a94902d102c"
+    }
+  ],
+  "buildArtifacts": [
+    {
+      "path": "web/dist/assets/GuidelineWorkspace-JZtfNAu7.js",
+      "bytes": 881939,
+      "sha256": "0f24c2f0cda2779706fab767b7be97c8fcbf20a994d77fc8720bd8ad087d2788"
+    },
+    {
+      "path": "web/dist/assets/ProductSystemView-CnEDw9Lg.js",
+      "bytes": 10033,
+      "sha256": "97191992d82bd5884fc165cca242d2a0454418d200e65d20eb51c799c2ec8c13"
+    },
+    {
+      "path": "web/dist/assets/authoring-7qF4YdU8.js",
+      "bytes": 27356,
+      "sha256": "0e9f2521794b3187063c853b258620a962c736c853c10f0874d906fe43d7e36c"
+    },
+    {
+      "path": "web/dist/assets/authoringControlOutlinesV1-x4AhO4Sf.js",
+      "bytes": 40997,
+      "sha256": "42a8bec038f5af3d899b3c4de6c9b499e640d9f5e48a0e534988eb88a84a43d4"
+    },
+    {
+      "path": "web/dist/assets/colorSystemRecipeV1-BMHXI_hg.js",
+      "bytes": 104297,
+      "sha256": "255a416e9e8807945c14423d11ccf6ac85a00f3a86f6f61f976c2a7a32324498"
+    },
+    {
+      "path": "web/dist/assets/download-Bic2EQq1.js",
+      "bytes": 45624,
+      "sha256": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6"
+    },
+    {
+      "path": "web/dist/assets/index-sf0V8zgO.js",
+      "bytes": 358900,
+      "sha256": "03d34112ac563b4ccce3cf9f4c0258666033e9370c04fb829ed5a669e0a9b52a"
+    },
+    {
+      "path": "web/dist/assets/sourceProvenanceDisclosureData-BcglXYc9.js",
+      "bytes": 166316,
+      "sha256": "4f6227af4b91f1518b3c43588279d1303a5df5b3309bb00db07ad5ff208393ed"
+    },
+    {
+      "path": "web/dist/index.html",
+      "bytes": 810,
+      "sha256": "1f0ce32b64d3f812af02ff8f68d9682c6d0c33ef04be34becef5a5cd27ca2f04"
+    }
+  ],
+  "limitations": [
+    "No comparison UI, project persistence or source-refresh supporting-selection replay yet.",
+    "Synthetic engineering evidence is not human visual acceptance.",
+    "No live connectors, external processing, Figma paste observation, integration, push or deployment.",
+    "Full PRD acceptance remains open."
+  ]
+}

@@ -1,0 +1,132 @@
+{
+  "node": "v22.13.1",
+  "browser": "153.0.8010.12",
+  "status": "passed-local-verification",
+  "taskChecks": [
+    "New PDF review starts with a task choice and reports a missing source scale without inventing one.",
+    "Switching retains gradient, supporting and layout drafts; selected exports and project bytes stay exact; inactive controls stay out of Tab navigation.",
+    "Reopening displays a retained result; changing source review removes authoring and stale exports.",
+    "The shared Figma workspace retains ungenerated scale inputs across task switches. Website and combined-source paths use the same selector and run in their existing regression journeys."
+  ],
+  "scans": [
+    {
+      "name": "choose-task",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "gradient-task",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "gradient-task-mobile",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "empty",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "pdf-ready",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "pdf-review",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "review-applied",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "gradient",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "saved",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "import-error",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "mobile-review-error",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "figma-review",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "figma-mobile-review",
+      "violations": 0,
+      "incomplete": 1
+    },
+    {
+      "name": "website-review",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "website-mobile-review",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "advanced-invalid-position",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "advanced-relationship-error",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "advanced-source-editors",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "advanced-source-mobile",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "advanced-gradient-constraints",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "advanced-gradient-mobile",
+      "violations": 0,
+      "incomplete": 0
+    }
+  ],
+  "keyboardTargetVisits": 62,
+  "visibleTableContrastFollowups": 4,
+  "gradientNavigationSmoke": {
+    "fixtures": 7,
+    "repetitions": 1,
+    "measurementClass": "smoke-only",
+    "fullDeclaredWorkload": false
+  },
+  "errors": [],
+  "notes": [
+    "These are local synthetic-source and interface checks, not human usability, visual acceptance, screen-reader or live-service qualification.",
+    "The historical clipped mobile table finding remains recorded; four follow-up visible targets pass.",
+    "A single generation per performance fixture exercises task selection only; it does not replace the declared thirty-repetition performance workload."
+  ]
+}

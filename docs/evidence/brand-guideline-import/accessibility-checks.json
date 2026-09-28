@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "teul.guideline-accessibility-verification.v1",
+  "baselineCommit": "2cd494e",
+  "scope": "Local automated accessibility and keyboard coverage of twelve standalone Studio states. No screen-reader, complete WCAG, live source, visual quality, deployment or beta qualification claim.",
+  "sources": {
+    "scripts/verify-local.mjs": "ecc3f76e70a19c9df612e1871be56ba17df38931217136a5ab39b7b48cbc5cbe",
+    "web/package.json": "15bdd9fe12fe4a05459da03233a0184afd33c839147547ba19126e26be2376d7",
+    "web/package-lock.json": "58c454e0cd0ba63690761367bcbab479d4f1551c1f0793f6a5eb3545a0a584a9",
+    "web/scripts/guideline-accessibility.mjs": "bb361bedefaf4d1e7fa6a435c9160200b7ad2758a19278e8ade29bf56d690ba9",
+    "web/src/App.css": "38f5002143dd3e70947139242dfe7f2f5c26d81d0a6be16d7a5162e364d3502b",
+    "web/src/components/GuidelineLocalProjects.tsx": "0231b1de0679957b99b5e542b30ed7bf7943973896a63e6ecf1e602a75082589",
+    "web/src/components/GuidelineModeGradientEditor.tsx": "d847d50f02864a60e9e773f5f09a2f0417bfed3fa631b5eec4c18a267052b64e",
+    "web/src/components/GuidelineFigmaPanel.tsx": "0f34f0af6856681831f99d75156890b76f7f09c03529741ad128b4fa5aae0462",
+    "web/src/components/GuidelineWorkspace.tsx": "82faeaa9fe7d405cae1afad4557a24f14c38f81a1373f5b9e15c92c814e8a77a",
+    "web/fixtures/guidelines/harbor-native.pdf": "4a6b3f600697dbd46bed4988a07224fc8ed894da2429a0b57294712745dfec35",
+    "web/fixtures/guidelines/figma-project-v1.json": "698b20f9ba44c2613b09775a307dc98f482abadeedea1692de8cb494672573fa",
+    "web/fixtures/guidelines/website-capture.json": "bd7433bd71b11e21ecd7466992b43da5bdcc9773167c3d70f8a57531c0886346"
+  },
+  "runs": [
+    {
+      "node": "v22.13.1",
+      "browser": "153.0.8010.12",
+      "report": "accessibility-node22.json",
+      "sha256": "638005921476912eccabfbe6e26a137c508c8126b98bce5896d127ad3c550c01",
+      "gate": "docs/evidence/local-gates/2026-09-26T12-22-52Z-2cd494e/receipt.json",
+      "gateSha256": "a1669877cec7042cef8de3f01a6eedd640af0eddf703c0439dc9a55906e0997d",
+      "note": "Final harness status-receipt protection was followed by a separate passing accessibility run against the unchanged built candidate."
+    },
+    {
+      "node": "v24.19.0",
+      "browser": "153.0.8010.12",
+      "report": "accessibility-node24.json",
+      "sha256": "18ae0b57ae0a2bdcd8acd2258b25c1f273d07edf2c0af8ab4029fc2bc2916b45",
+      "gate": "docs/evidence/local-gates/2026-09-26T12-23-58Z-2cd494e/receipt.json",
+      "gateSha256": "c7b2c4137fec05cd7e23d108883a3425c02bd38d17f42137653bd8f4ff3de690",
+      "note": "Final harness included in the focused gate."
+    }
+  ],
+  "reviews": {
+    "reuse": "Resolved off-origin request blocking by aborting requests and retaining failures.",
+    "quality": "No actionable findings.",
+    "efficiency": "No actionable findings."
+  },
+  "remaining": [
+    "Actual screen-reader announcements and navigation, focus visibility and non-color meaning across the complete editor.",
+    "Mobile Figma table contrast: axe cannot resolve four partially clipped nodes; retain incomplete report and keyboard-scroll evidence.",
+    "OS file chooser interaction; fixtures are supplied through production input controls by Playwright."
+  ]
+}

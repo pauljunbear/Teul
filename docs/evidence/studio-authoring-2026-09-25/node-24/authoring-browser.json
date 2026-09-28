@@ -1,0 +1,48 @@
+{
+  "checkedAt": "2026-09-25T19:02:24.327Z",
+  "checks": [
+    "parity: selected recipe drives both modes, all states, saved work and semantic exports",
+    "interaction: real hover, press and keyboard focus use selected native paints",
+    "pending-save: delayed acknowledgement cannot change the record being edited",
+    "tabs: live Saved view refreshes and stale overwrite is refused",
+    "recovery: endpoints and cancellation preserve the last valid selected system",
+    "retained-data: unreadable saved recipes remain visible and recoverable",
+    "mobile: long names, reachable controls and custom picker survive narrow layouts"
+  ],
+  "failures": [],
+  "pageErrors": [],
+  "timings": [
+    {
+      "scenario": "parity: selected recipe drives both modes, all states, saved work and semantic exports",
+      "initialReadyMs": 990
+    },
+    {
+      "scenario": "interaction: real hover, press and keyboard focus use selected native paints",
+      "initialReadyMs": 983
+    },
+    {
+      "scenario": "pending-save: delayed acknowledgement cannot change the record being edited",
+      "initialReadyMs": 985
+    },
+    {
+      "scenario": "tabs: live Saved view refreshes and stale overwrite is refused",
+      "initialReadyMs": 979
+    },
+    {
+      "scenario": "recovery: endpoints and cancellation preserve the last valid selected system",
+      "initialReadyMs": 981
+    },
+    {
+      "scenario": "generation cancellation",
+      "cancellationMs": 75
+    },
+    {
+      "scenario": "retained-data: unreadable saved recipes remain visible and recoverable",
+      "initialReadyMs": 988
+    },
+    {
+      "scenario": "mobile: long names, reachable controls and custom picker survive narrow layouts",
+      "initialReadyMs": 998
+    }
+  ]
+}

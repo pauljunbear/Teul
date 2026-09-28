@@ -78,7 +78,7 @@ would obscure domain behavior rather than simplify it.
 - Reduce `dist/ui.html` to at most 400 KiB before substantial new UI features.
 - Move repeated visual declarations into a small active component and theme
   layer using Figma theme variables.
-- Add a bundle composition report and a dead-export check to CI.
+- Add a bundle composition report and a dead-export check to the release gate.
 - Remove production-unreferenced helpers, empty compatibility models, and stale
   duplicate contrast implementations unless an explicit supported API depends
   on them.
@@ -105,5 +105,6 @@ would obscure domain behavior rather than simplify it.
 - Supported canvas selections populate accessibility tests without manual copy.
 - Theme and working context persist across normal plugin use.
 - No correctness-critical orchestration is hidden by aggregate coverage alone.
-- Bundle, dead-export, dependency, and artifact gates pass in CI.
+- Bundle, dead-export, dependency, and artifact gates pass in the local release
+  gate (`npm run release-gate`).
 - The complete Figma acceptance matrix is recorded against the release commit.

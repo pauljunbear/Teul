@@ -5,11 +5,12 @@ import {
   type ColorSystemSectionBlueprintV2,
   type ColorSystemSectionBlueprintV2FrameTuple,
 } from './colorSystemApplicationBlueprintV2';
-import { canonicalJson } from './colorSystemAudit';
+import { canonicalJson } from './colorSystemHashing';
 import {
   COLOR_SYSTEM_SECTION_ROLES_V2,
   type ColorSystemApplicationColorRefV2,
   type ColorSystemBuilderBriefV2,
+  type ColorSystemSectionRoleV2,
   type ColorSystemColorValueV2,
   type ColorSystemJobV2,
   type ColorSystemStrategyCandidateV2,
@@ -120,7 +121,7 @@ function needsBlackVisibilityBoundary(
 
 function preservedSectionRefs(
   brief: ColorSystemBuilderBriefV2,
-  section: 'primary' | 'typography'
+  section: ColorSystemSectionRoleV2
 ): ColorSystemApplicationColorRefV2[] {
   return brief.preservedColors
     .filter(color => color.section === section)
@@ -165,7 +166,7 @@ function visualizationRefs(
     application.visualization.categorical,
     application.visualization.sequential,
     application.visualization.diverging,
-  ];
+  ].filter(selection => selection !== null);
   return uniqueRefs(
     selections.flatMap(selection => [
       ...selection.marks.map(mark => mark.ref),
@@ -244,13 +245,27 @@ export function composeColorSystemSectionBlueprintV2(
   }
 
   const resolver: ComposerResolver = { brief, candidate };
-  const refsByRole = {
+  const allRefsByRole = {
     primary: uniqueRefs(preservedSectionRefs(brief, 'primary')),
     secondary: uniqueRefs(candidateRefsForJobs(candidate, brief.sections[1].jobs)),
     'product-graphics': productApplicationRefs(application),
-    'data-visualization': visualizationRefs(application),
+    'data-visualization': uniqueRefs([
+      ...(brief.sections.find(section => section.role === 'data-visualization')?.disposition ===
+      'preserve'
+        ? preservedSectionRefs(brief, 'data-visualization')
+        : []),
+      ...visualizationRefs(application),
+    ]),
     typography: typographyApplicationRefs(brief, application),
   } as const;
+  const refsByRole = Object.fromEntries(
+    COLOR_SYSTEM_SECTION_ROLES_V2.map(role => [
+      role,
+      allRefsByRole[role].filter(ref =>
+        application.modes.includes(ref.kind === 'preserved-source-color' ? ref.mode : ref.ref.mode)
+      ),
+    ])
+  ) as Record<ColorSystemSectionRoleV2, ColorSystemApplicationColorRefV2[]>;
   for (const role of COLOR_SYSTEM_SECTION_ROLES_V2) {
     if (
       refsByRole[role].length === 0 &&
@@ -261,7 +276,9 @@ export function composeColorSystemSectionBlueprintV2(
   }
 
   const examplesByRole = {
-    primary: brief.primaryLocks.map(lock => `Primary lock: ${lock.lockId}`),
+    primary: brief.primaryLocks
+      .filter(lock => application.modes.includes(lock.mode))
+      .map(lock => `Primary lock: ${lock.lockId}`),
     secondary: candidate.families.map(family => `Scale: ${family.displayName}`),
     'product-graphics': [
       ...application.productGraphics.map(specimen => specimen.derivationId),
@@ -273,9 +290,9 @@ export function composeColorSystemSectionBlueprintV2(
     ],
     'data-visualization': [
       application.visualization.categorical.selectionId,
-      application.visualization.sequential.selectionId,
-      application.visualization.diverging.selectionId,
-    ],
+      application.visualization.sequential?.selectionId,
+      application.visualization.diverging?.selectionId,
+    ].filter((id): id is string => id !== undefined),
     typography: application.typography.map(specimen => specimen.specimenId),
   } as const;
 

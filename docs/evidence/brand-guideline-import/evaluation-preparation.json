@@ -1,0 +1,218 @@
+{
+  "schemaVersion": "teul.guideline-evaluation-preparation.v1",
+  "state": "prepared-not-frozen",
+  "baselineCommit": "c49a8de",
+  "candidateProductChangesAfterBaseline": false,
+  "note": "The application-proof harness changes one stale limitation sentence; product code is unchanged.",
+  "sourceRelease": "release:agency-brain:0.6.0",
+  "sourceDigest": "9819e00c71ecd620cc2801a41a13947a27eb22cfa283dcad42149f8c51bc63bc",
+  "runtimeDigest": "5a160686e020c3089c56a561a49b4fdfafe8add07d13908a04b324cb8629f3ca",
+  "releaseCheckoutCommit": "8310a81d6e622eb67d3a1760d4c90394e40cacd3",
+  "route": {
+    "status": "needs-clarification",
+    "receiptId": "3dddeb4e6b7bb8a74224200e20e7446af5e70edd473abe10c69e1dcede99a951",
+    "scope": "Read-only source availability audit outside successful support-route execution; no new brand phase requested."
+  },
+  "sources": [
+    {
+      "brand": "Crane",
+      "projectId": "project:crane:2019-2020-brand-system",
+      "assetId": "asset:crane:2019-08-12:identity-guidelines-pdf",
+      "sha256": "53a4ebbff846dbcce77d6a2e76ac010767307a7f5a142544d877568c5a176a43",
+      "kind": "original",
+      "deliveredStatus": "produced",
+      "logicalSourceId": null,
+      "declaredByteLength": 38047032,
+      "available": true,
+      "byteLength": 38047032,
+      "hashMatches": true,
+      "pdfEligibility": "within-current-file-limit",
+      "qualification": "Unannotated source candidate; no accuracy or visual acceptance claim."
+    },
+    {
+      "brand": "Medium",
+      "projectId": "project:medium:2020-brand-guidelines",
+      "assetId": "asset:medium:2020-brand-guidelines:pdf",
+      "sha256": "f84433ce257af5bb533d7684114b7d2bf007360d11e62bd85e5e183b9a466afc",
+      "kind": "original",
+      "deliveredStatus": "produced",
+      "logicalSourceId": null,
+      "declaredByteLength": 71275298,
+      "available": false,
+      "byteLength": null,
+      "hashMatches": null,
+      "pdfEligibility": "not-available",
+      "qualification": "Unannotated source candidate; no accuracy or visual acceptance claim."
+    },
+    {
+      "brand": "Coinbase",
+      "projectId": "project:coinbase:2019-brand-evolution",
+      "assetId": "asset:coinbase:385e1974496c:pdf-export",
+      "sha256": "385e1974496cf46fbcbe8d01766f5a48de86626a943c52d48d82c480c17dda86",
+      "kind": "rendition",
+      "deliveredStatus": "shortlisted",
+      "logicalSourceId": null,
+      "declaredByteLength": 146408268,
+      "available": false,
+      "byteLength": null,
+      "hashMatches": null,
+      "pdfEligibility": "not-available",
+      "qualification": "Unannotated source candidate; no accuracy or visual acceptance claim."
+    },
+    {
+      "brand": "Robinhood",
+      "projectId": "project:robinhood:2019-brand-guidelines",
+      "assetId": "asset:robinhood:2019-guidelines:pdf",
+      "sha256": "6b41fd012002e0695357e28e35c007c779493b4bc6f09482317dac6fb67b03aa",
+      "kind": "original",
+      "deliveredStatus": "produced",
+      "logicalSourceId": null,
+      "declaredByteLength": 91200912,
+      "available": true,
+      "byteLength": 91200912,
+      "hashMatches": true,
+      "pdfEligibility": "exceeds-current-file-limit",
+      "qualification": "Unannotated source candidate; no accuracy or visual acceptance claim."
+    },
+    {
+      "brand": "OpenWeb",
+      "projectId": "project:openweb:2020-brand-guidelines",
+      "assetId": "asset:openweb:2020-04-03:brand-guidelines-pdf",
+      "sha256": "f89cb0215fb4ec788a863d66b8027b82fd19bdd5263d2b3ca525a8723e0402cc",
+      "kind": "original",
+      "deliveredStatus": "produced",
+      "logicalSourceId": null,
+      "declaredByteLength": 11549527,
+      "available": true,
+      "byteLength": 11549527,
+      "hashMatches": true,
+      "pdfEligibility": "within-current-file-limit",
+      "qualification": "Unannotated source candidate; no accuracy or visual acceptance claim."
+    },
+    {
+      "brand": "Sweetgreen",
+      "projectId": "project:sweetgreen:2020-brand-system",
+      "assetId": "asset:sweetgreen:2020-10-08:identity-guidelines-pdf",
+      "sha256": "8509afa74c2c81f4434068b701c6ef6f62cf14345882c639a267fbb49268c902",
+      "kind": "original",
+      "deliveredStatus": "produced",
+      "logicalSourceId": null,
+      "declaredByteLength": 47380260,
+      "available": true,
+      "byteLength": 47380260,
+      "hashMatches": true,
+      "pdfEligibility": "within-current-file-limit",
+      "qualification": "Unannotated source candidate; no accuracy or visual acceptance claim."
+    }
+  ],
+  "developmentProbe": {
+    "node": "v22.13.1",
+    "scope": "Development-only extraction and expected size refusal; no accuracy, brand interpretation or human qualification.",
+    "sources": [
+      {
+        "brand": "Crane",
+        "sha256": "53a4ebbff846dbcce77d6a2e76ac010767307a7f5a142544d877568c5a176a43",
+        "bytes": 38047032,
+        "pageCount": 102,
+        "requested": ["page:27", "page:28", "page:29", "page:30", "page:33"],
+        "inspected": ["page:27", "page:28", "page:29", "page:30", "page:33"],
+        "extractionVersion": "teul.pdf-evidence.v2/pdfjs-6.3.289",
+        "captureHash": "sha256:6eb31b42935f362a063976b19667df029b57f7aa2ac00e0fda84115c7ca6a3c3",
+        "observedNumericOccurrences": 17,
+        "syntaxCounts": {
+          "hex": 17,
+          "rgb": 0,
+          "srgb": 0
+        },
+        "gaps": ["NOT_INSPECTED"],
+        "durationMs": 69,
+        "outcome": "Extraction and strict replay completed; eligible-color ground truth is not yet reconciled"
+      },
+      {
+        "brand": "Robinhood",
+        "sha256": "6b41fd012002e0695357e28e35c007c779493b4bc6f09482317dac6fb67b03aa",
+        "bytes": 91200912,
+        "outcome": "Expected oversized-original refusal; no pages inspected"
+      }
+    ],
+    "status": "passed"
+  },
+  "developmentApplication": {
+    "status": "passed",
+    "infeasibleBriefRejected": true,
+    "version": "teul.guideline-application-proof.v1",
+    "sourceHash": "sha256:b2643fb178108c0dde036c851cc9bcd6a6c1c3e62e4d851d4d01099a292a085d",
+    "captureHash": "sha256:60d63b50aac91ad11e8160b475bc0bf5a46312a1bddbed5b6152d3f541ac6bc8",
+    "sourceModelHash": "sha256:5a5a0f35f0229a5626dc261daeeace19c285bab5bc54662cbac5599ad17eb9d3",
+    "durationMs": 1390,
+    "receipts": [
+      {
+        "id": "katalon:product",
+        "status": "ready",
+        "qualified": false,
+        "receiptHash": "sha256:ac51c39195213e4af577cc33b766c4bd4e866a02a00ef69d7b8459432fe57363",
+        "sourceAnchorsPreserved": 29,
+        "sourceScaleStepsPreserved": 27,
+        "generatedColors": 2,
+        "requiredPairs": 19,
+        "primaryRemovalRejected": true
+      },
+      {
+        "id": "katalon:brand",
+        "status": "ready",
+        "qualified": false,
+        "receiptHash": "sha256:41246d5b2aa993592dee3cd3d5173ba7a7403a1a949c5af39b05071b3d214020",
+        "sourceAnchorsPreserved": 29,
+        "sourceScaleStepsPreserved": 27,
+        "generatedColors": 2,
+        "requiredPairs": 0,
+        "primaryRemovalRejected": true
+      }
+    ],
+    "gradientBanPreserved": true,
+    "limitations": [
+      "Manual agent interpretation; not assisted-reading proof or human acceptance.",
+      "Proposed interpolation permission, not brand-owner approval.",
+      "One public development fixture; no held-out quality claim.",
+      "No dark mode invented.",
+      "Direct engine construction; this harness does not exercise Studio review controls.",
+      "SVG is a portable proof; native Figma destination untested."
+    ],
+    "browser": {
+      "computedProductRolePaintsMatch": true,
+      "mobileOverflow": false,
+      "errors": [],
+      "limits": "CSS computed colors read back through a canvas; screenshots captured and inspected separately. SVG source shares measured geometry and assessed paints; destination rendering is not qualified."
+    }
+  },
+  "codeHashes": {
+    "web/src/lib/guideline/pdf.ts": "a8a2f139eb54247ef8f8b9c8a4ffb960c604dd5214a7d433436589ab1d70efb6",
+    "web/src/lib/guideline/pdfV2.ts": "f65382cd3081762dd87bb3695e65d11441b58dceaf7c09f8cf6679d64ff67d1a",
+    "web/src/lib/guideline/evidence.ts": "070bc1cb4715c3b81a924220f3b5c4249423f438e392bcfc98fb2d34a3deff1e",
+    "web/src/lib/guideline/evidenceV2.ts": "d7e7f2b4eaefd896bbb73c3b0c1671b46149bdd701228aede966a1bea7863745",
+    "web/scripts/guideline-application-proof.mjs": "82bd3cb70da3a0e4e5ce187536c350c947edbba39c89844bc9ebe7e3777d0d72"
+  },
+  "privateArtifacts": {
+    "sourceAvailabilitySha256": "dc6be5bff8e0693a4d8fa3318bec03d63110e8190b1c9cb26290d8e05dc087e6",
+    "probeScriptSha256": "841756be53939dfd6ece8a25e6ac1af921b48dbec21ba0b7be213a43bff603d4",
+    "probeReceiptSha256": "a3eb5b784abe89114bdc2637812bdc4ae6e49aa1c84987849302c784e5af64af",
+    "applicationPreviewSha256": "dffe3d6e0a52a095080e6b6b79f473cdfe1434e80a017030b979ddf40d4a8044"
+  },
+  "acceptance": {
+    "frozenSourceCases": 0,
+    "requiredSourceCases": 30,
+    "requiredCasesPerAdapter": 10,
+    "requiredDevelopmentCases": 15,
+    "requiredHeldOutCases": 15,
+    "minimumRealCases": 15,
+    "frozenDesignBriefs": 0,
+    "requiredDesignBriefs": 15,
+    "requiredBriefsPerOutputType": 5,
+    "requiredSystems": 5,
+    "requiredUnseenSystems": 2,
+    "assignedIndependentDesigners": 0,
+    "requiredIndependentDesigners": 2,
+    "humanRatings": 0,
+    "betaQualified": false
+  }
+}

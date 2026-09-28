@@ -18,9 +18,9 @@ import {
 } from '../types/colorSystemAudit';
 import {
   COLOR_SYSTEM_AUDIT_TRANSPORT_LIMITS,
-  deterministicContentHash,
   observedLiteralCandidateIdentity,
 } from '../lib/colorSystemAudit';
+import { deterministicContentHash } from '../lib/colorSystemHashing';
 import { inferScalePosition, inferSourceRoleEvidence } from '../lib/colorSystemRoleInference';
 import {
   normalizeSourceSectionHeading,
@@ -607,7 +607,7 @@ export function extractStructuredSourceColorSections(
 ): SourceColorSection[] {
   if (options.authorization.status !== 'user-authorized' || options.isCancelled?.()) return [];
   const sections = new Map<SourceColorSectionKind, SourceColorSection>();
-  const scope = resolvedFrozenScope(host, options);
+  const scope = resolveFigmaColorInventoryScope(host, options);
   const scopeRoots: readonly BaseNode[] =
     scope.usageScope === 'selection'
       ? scope.selectionRoots
@@ -1611,7 +1611,7 @@ function isInsideAuditOutput(node: BaseNode): boolean {
   return false;
 }
 
-function selectionRoots(selection: readonly SceneNode[]): SceneNode[] {
+export function selectFigmaColorInventoryRoots(selection: readonly SceneNode[]): SceneNode[] {
   const selectedIds = new Set(selection.map(node => node.id));
   return selection.filter(node => {
     let parent = node.parent;
@@ -1639,14 +1639,14 @@ export function captureFigmaColorInventoryScope(
     selectedNodeIds: Object.freeze(
       usageScope === 'selection' ? selection.map(node => node.id).sort(compareText) : []
     ),
-    selectionRoots: Object.freeze(selectionRoots(selection)),
+    selectionRoots: Object.freeze(selectFigmaColorInventoryRoots(selection)),
     currentPageRoots: Object.freeze([...currentPage.children]),
     pages: Object.freeze([...pages]),
     pageIds: Object.freeze(pages.map(page => page.id).sort(compareText)),
   });
 }
 
-function resolvedFrozenScope(
+export function resolveFigmaColorInventoryScope(
   host: FigmaColorInventoryHost,
   options: Pick<FigmaColorInventoryOptions, 'usageScope' | 'frozenScope'>
 ): FigmaColorInventoryFrozenScope {
@@ -2062,7 +2062,7 @@ export async function inventoryFigmaColorSystem(
   }
   // This runs before the first await in this async function. Every later
   // usage/palette phase consumes this same receipt rather than live UI state.
-  const frozenScope = resolvedFrozenScope(host, options);
+  const frozenScope = resolveFigmaColorInventoryScope(host, options);
 
   const supported = new Map<string, UsageAccumulator>();
   const unsupported = new Map<string, UnsupportedAccumulator>();

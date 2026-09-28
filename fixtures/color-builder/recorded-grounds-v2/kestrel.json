@@ -1,0 +1,1095 @@
+{
+  "capturedAt": "2026-09-08T09:00:00.000Z",
+  "scope": {
+    "kind": "current-file",
+    "usageScope": "whole-file",
+    "selectedNodeIds": [],
+    "loadedPageIds": ["page:color"],
+    "excludedPageIds": [],
+    "coverage": "complete-supported-scope"
+  },
+  "documentProfile": "srgb",
+  "collections": [
+    {
+      "collectionId": "collection:color",
+      "name": "Color",
+      "defaultModeId": "mode:light",
+      "modes": [
+        {
+          "collectionId": "collection:color",
+          "modeId": "mode:light",
+          "name": "Light",
+          "order": 1
+        },
+        {
+          "collectionId": "collection:color",
+          "modeId": "mode:dark",
+          "name": "Dark",
+          "order": 2
+        }
+      ]
+    }
+  ],
+  "variables": [
+    {
+      "variableId": "variable:kestrel-primary-a-kestrel-teal",
+      "name": "Primary / Kestrel Teal",
+      "description": "Primary / Kestrel Teal",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.058823529411764705, 0.5450980392156862, 0.5529411764705883],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.058823529411764705, 0.5450980392156862, 0.5529411764705883],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-primary-b-white",
+      "name": "Primary / White",
+      "description": "Primary / White",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [1, 1, 1],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [1, 1, 1],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-primary-c-surface-gray",
+      "name": "Primary / Surface Gray",
+      "description": "Primary / Surface Gray",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.9568627450980393, 0.9490196078431372, 0.9294117647058824],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.9568627450980393, 0.9490196078431372, 0.9294117647058824],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-primary-d-surface-black",
+      "name": "Primary / Surface Black",
+      "description": "Primary / Surface Black",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.11372549019607843, 0.10980392156862745, 0.10196078431372549],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.11372549019607843, 0.10980392156862745, 0.10196078431372549],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-primary-e-black",
+      "name": "Primary / Black",
+      "description": "Primary / Black",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.058823529411764705, 0.054901960784313725, 0.047058823529411764],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.058823529411764705, 0.054901960784313725, 0.047058823529411764],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-typography-gray-1",
+      "name": "Typography / Gray 1",
+      "description": "Typography / Gray 1",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.9450980392156862, 0.9333333333333333, 0.9098039215686274],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.9450980392156862, 0.9333333333333333, 0.9098039215686274],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-typography-gray-2",
+      "name": "Typography / Gray 2",
+      "description": "Typography / Gray 2",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8509803921568627, 0.8352941176470589, 0.807843137254902],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8509803921568627, 0.8352941176470589, 0.807843137254902],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-typography-gray-3",
+      "name": "Typography / Gray 3",
+      "description": "Typography / Gray 3",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.7490196078431373, 0.7333333333333333, 0.7019607843137254],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.7490196078431373, 0.7333333333333333, 0.7019607843137254],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-typography-gray-4",
+      "name": "Typography / Gray 4",
+      "description": "Typography / Gray 4",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.6470588235294118, 0.6313725490196078, 0.6],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.6470588235294118, 0.6313725490196078, 0.6],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-typography-gray-5",
+      "name": "Typography / Gray 5",
+      "description": "Typography / Gray 5",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.5450980392156862, 0.5294117647058824, 0.4980392156862745],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.5450980392156862, 0.5294117647058824, 0.4980392156862745],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-typography-gray-6",
+      "name": "Typography / Gray 6",
+      "description": "Typography / Gray 6",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.44313725490196076, 0.42745098039215684, 0.4],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.44313725490196076, 0.42745098039215684, 0.4],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-typography-gray-7",
+      "name": "Typography / Gray 7",
+      "description": "Typography / Gray 7",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.3411764705882353, 0.32941176470588235, 0.3058823529411765],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.3411764705882353, 0.32941176470588235, 0.3058823529411765],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-typography-gray-8",
+      "name": "Typography / Gray 8",
+      "description": "Typography / Gray 8",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.24313725490196078, 0.23137254901960785, 0.21176470588235294],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.24313725490196078, 0.23137254901960785, 0.21176470588235294],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-typography-ink",
+      "name": "Typography / Ink",
+      "description": "Typography / Ink",
+      "collectionId": "collection:color",
+      "scopes": ["TEXT_FILL"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.058823529411764705, 0.054901960784313725, 0.047058823529411764],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.058823529411764705, 0.054901960784313725, 0.047058823529411764],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-typography-hushed",
+      "name": "Typography / Hushed",
+      "description": "Typography / Hushed",
+      "collectionId": "collection:color",
+      "scopes": ["TEXT_FILL"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.058823529411764705, 0.054901960784313725, 0.047058823529411764],
+              "alpha": 0.5
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.058823529411764705, 0.054901960784313725, 0.047058823529411764],
+              "alpha": 0.5
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-typography-ink-reverse",
+      "name": "Typography / Ink Reverse",
+      "description": "Typography / Ink Reverse",
+      "collectionId": "collection:color",
+      "scopes": ["TEXT_FILL"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [1, 1, 1],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [1, 1, 1],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-typography-hushed-reverse",
+      "name": "Typography / Hushed Reverse",
+      "description": "Typography / Hushed Reverse",
+      "collectionId": "collection:color",
+      "scopes": ["TEXT_FILL"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [1, 1, 1],
+              "alpha": 0.5
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [1, 1, 1],
+              "alpha": 0.5
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-secondary-cobalt",
+      "name": "Secondary / Cobalt",
+      "description": "Secondary / Cobalt",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.22745098039215686, 0.37254901960784315, 0.803921568627451],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.22745098039215686, 0.37254901960784315, 0.803921568627451],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-secondary-moss",
+      "name": "Secondary / Moss",
+      "description": "Secondary / Moss",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.3568627450980392, 0.5490196078431373, 0.24313725490196078],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.3568627450980392, 0.5490196078431373, 0.24313725490196078],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-secondary-plum",
+      "name": "Secondary / Plum",
+      "description": "Secondary / Plum",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.47843137254901963, 0.2901960784313726, 0.5490196078431373],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.47843137254901963, 0.2901960784313726, 0.5490196078431373],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-secondary-ember",
+      "name": "Secondary / Ember",
+      "description": "Secondary / Ember",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8313725490196079, 0.3333333333333333, 0.1803921568627451],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8313725490196079, 0.3333333333333333, 0.1803921568627451],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-secondary-sand",
+      "name": "Secondary / Sand",
+      "description": "Secondary / Sand",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.7843137254901961, 0.6627450980392157, 0.3176470588235294],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.7843137254901961, 0.6627450980392157, 0.3176470588235294],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-secondary-harbor",
+      "name": "Secondary / Harbor",
+      "description": "Secondary / Harbor",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.30980392156862746, 0.4980392156862745, 0.6039215686274509],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.30980392156862746, 0.4980392156862745, 0.6039215686274509],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-data-viz-01-harbor",
+      "name": "Data Viz / 01 Harbor",
+      "description": "Data Viz / 01 Harbor",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.30980392156862746, 0.4980392156862745, 0.6039215686274509],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.30980392156862746, 0.4980392156862745, 0.6039215686274509],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-data-viz-02-ember",
+      "name": "Data Viz / 02 Ember",
+      "description": "Data Viz / 02 Ember",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8313725490196079, 0.3333333333333333, 0.1803921568627451],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8313725490196079, 0.3333333333333333, 0.1803921568627451],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-data-viz-03-moss",
+      "name": "Data Viz / 03 Moss",
+      "description": "Data Viz / 03 Moss",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.3568627450980392, 0.5490196078431373, 0.24313725490196078],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.3568627450980392, 0.5490196078431373, 0.24313725490196078],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-data-viz-04-plum",
+      "name": "Data Viz / 04 Plum",
+      "description": "Data Viz / 04 Plum",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.47843137254901963, 0.2901960784313726, 0.5490196078431373],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.47843137254901963, 0.2901960784313726, 0.5490196078431373],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-data-viz-05-sand",
+      "name": "Data Viz / 05 Sand",
+      "description": "Data Viz / 05 Sand",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.7843137254901961, 0.6627450980392157, 0.3176470588235294],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.7843137254901961, 0.6627450980392157, 0.3176470588235294],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    },
+    {
+      "variableId": "variable:kestrel-data-viz-06-cobalt",
+      "name": "Data Viz / 06 Cobalt",
+      "description": "Data Viz / 06 Cobalt",
+      "collectionId": "collection:color",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode:light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.22745098039215686, 0.37254901960784315, 0.803921568627451],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode:dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.22745098039215686, 0.37254901960784315, 0.803921568627451],
+              "alpha": 1
+            }
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["evidence:variables"]
+    }
+  ],
+  "paintStyles": [],
+  "paletteStructures": [],
+  "usageEvidence": [],
+  "unsupported": [],
+  "evidence": [
+    {
+      "evidenceId": "evidence:variables",
+      "kind": "figma-resource",
+      "locator": "figma://local-variables"
+    }
+  ],
+  "enabledLibraryDescriptors": [],
+  "libraryBoundaryNote": "No remote library values were imported.",
+  "scannedNodeCount": 1,
+  "cancelled": false,
+  "partial": false
+}

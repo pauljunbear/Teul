@@ -1,0 +1,446 @@
+{
+  "capturedAt": "2026-09-07T09:00:00.000Z",
+  "scope": {
+    "kind": "current-file",
+    "usageScope": "whole-file",
+    "selectedNodeIds": [],
+    "loadedPageIds": ["page-tokens"],
+    "excludedPageIds": [],
+    "coverage": "complete-supported-scope"
+  },
+  "documentProfile": "srgb",
+  "collections": [
+    {
+      "collectionId": "collection-tokens",
+      "name": "Tokens",
+      "defaultModeId": "mode-light",
+      "modes": [
+        {
+          "collectionId": "collection-tokens",
+          "modeId": "mode-light",
+          "name": "Light",
+          "order": 1
+        },
+        {
+          "collectionId": "collection-tokens",
+          "modeId": "mode-dark",
+          "name": "Dark",
+          "order": 2
+        }
+      ]
+    }
+  ],
+  "variables": [
+    {
+      "variableId": "variable-blue-300",
+      "name": "Blue/300",
+      "description": "Tint step of the blue ladder.",
+      "collectionId": "collection-tokens",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.5764705882352941, 0.7725490196078432, 0.9921568627450981],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.5764705882352941, 0.7725490196078432, 0.9921568627450981],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.11764705882352941, 0.22745098039215686, 0.5411764705882353],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.11764705882352941, 0.22745098039215686, 0.5411764705882353],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-blue-300"]
+    },
+    {
+      "variableId": "variable-blue-500",
+      "name": "Blue/500",
+      "description": "Base step of the blue ladder.",
+      "collectionId": "collection-tokens",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.11372549019607843, 0.3058823529411765, 0.8470588235294118],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.11372549019607843, 0.3058823529411765, 0.8470588235294118],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.23137254901960785, 0.5098039215686274, 0.9647058823529412],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.23137254901960785, 0.5098039215686274, 0.9647058823529412],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-blue-500"]
+    },
+    {
+      "variableId": "variable-blue-700",
+      "name": "Blue/700",
+      "description": "Shade step of the blue ladder.",
+      "collectionId": "collection-tokens",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.11764705882352941, 0.22745098039215686, 0.5411764705882353],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.11764705882352941, 0.22745098039215686, 0.5411764705882353],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.5764705882352941, 0.7725490196078432, 0.9921568627450981],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.5764705882352941, 0.7725490196078432, 0.9921568627450981],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-blue-700"]
+    },
+    {
+      "variableId": "variable-orange-500",
+      "name": "Orange/500",
+      "description": "Second hue family.",
+      "collectionId": "collection-tokens",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.9764705882352941, 0.45098039215686275, 0.08627450980392157],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.9764705882352941, 0.45098039215686275, 0.08627450980392157],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.984313725490196, 0.5725490196078431, 0.23529411764705882],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.984313725490196, 0.5725490196078431, 0.23529411764705882],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-orange-500"]
+    },
+    {
+      "variableId": "variable-gray-50",
+      "name": "Gray/50",
+      "description": "Warm paper neutral.",
+      "collectionId": "collection-tokens",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.9607843137254902, 0.9372549019607843, 0.9019607843137255],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.9607843137254902, 0.9372549019607843, 0.9019607843137255],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.16862745098039217, 0.14901960784313725, 0.13333333333333333],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.16862745098039217, 0.14901960784313725, 0.13333333333333333],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-gray-50"]
+    },
+    {
+      "variableId": "variable-gray-900",
+      "name": "Gray/900",
+      "description": "Warm ink neutral.",
+      "collectionId": "collection-tokens",
+      "scopes": ["TEXT_FILL"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.16862745098039217, 0.14901960784313725, 0.13333333333333333],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.16862745098039217, 0.14901960784313725, 0.13333333333333333],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.9607843137254902, 0.9372549019607843, 0.9019607843137255],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.9607843137254902, 0.9372549019607843, 0.9019607843137255],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-gray-900"]
+    },
+    {
+      "variableId": "variable-status-error",
+      "name": "Status/Error",
+      "description": "Destructive status color.",
+      "collectionId": "collection-tokens",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-light",
+          "modeName": "Light",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.8627450980392157, 0.14901960784313725, 0.14901960784313725],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.8627450980392157, 0.14901960784313725, 0.14901960784313725],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        },
+        {
+          "modeId": "mode-dark",
+          "modeName": "Dark",
+          "rawValue": {
+            "kind": "color",
+            "value": {
+              "colorSpace": "srgb",
+              "components": [0.9725490196078431, 0.44313725490196076, 0.44313725490196076],
+              "alpha": 1
+            }
+          },
+          "resolvedValue": {
+            "colorSpace": "srgb",
+            "components": [0.9725490196078431, 0.44313725490196076, 0.44313725490196076],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-status-error"]
+    }
+  ],
+  "paintStyles": [
+    {
+      "styleId": "style-surface-card",
+      "name": "Surface/Card",
+      "description": "Elevated card surface.",
+      "paints": [
+        {
+          "order": 1,
+          "type": "SOLID",
+          "visible": true,
+          "opacity": 1,
+          "blendMode": "NORMAL",
+          "solidValue": {
+            "colorSpace": "srgb",
+            "components": [1, 1, 1],
+            "alpha": 1
+          },
+          "payload": {
+            "color": {
+              "b": 1,
+              "g": 1,
+              "r": 1
+            },
+            "type": "SOLID"
+          }
+        }
+      ],
+      "directDeclaration": {
+        "kind": "literal",
+        "value": {
+          "colorSpace": "srgb",
+          "components": [1, 1, 1],
+          "alpha": 1
+        }
+      },
+      "governingEligibility": "eligible",
+      "evidenceIds": ["e-style-surface-card"]
+    }
+  ],
+  "paletteStructures": [],
+  "usageEvidence": [],
+  "unsupported": [],
+  "evidence": [
+    {
+      "evidenceId": "e-style-surface-card",
+      "kind": "figma-resource",
+      "locator": "style:style-surface-card"
+    },
+    {
+      "evidenceId": "e-variable-blue-300",
+      "kind": "figma-resource",
+      "locator": "variable:variable-blue-300"
+    },
+    {
+      "evidenceId": "e-variable-blue-500",
+      "kind": "figma-resource",
+      "locator": "variable:variable-blue-500"
+    },
+    {
+      "evidenceId": "e-variable-blue-700",
+      "kind": "figma-resource",
+      "locator": "variable:variable-blue-700"
+    },
+    {
+      "evidenceId": "e-variable-gray-50",
+      "kind": "figma-resource",
+      "locator": "variable:variable-gray-50"
+    },
+    {
+      "evidenceId": "e-variable-gray-900",
+      "kind": "figma-resource",
+      "locator": "variable:variable-gray-900"
+    },
+    {
+      "evidenceId": "e-variable-orange-500",
+      "kind": "figma-resource",
+      "locator": "variable:variable-orange-500"
+    },
+    {
+      "evidenceId": "e-variable-status-error",
+      "kind": "figma-resource",
+      "locator": "variable:variable-status-error"
+    }
+  ],
+  "enabledLibraryDescriptors": [],
+  "libraryBoundaryNote": "No enabled-library metadata was requested.",
+  "scannedNodeCount": 14,
+  "cancelled": false,
+  "partial": false
+}

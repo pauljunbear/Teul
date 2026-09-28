@@ -1,0 +1,274 @@
+{
+  "schemaVersion": "teul.pdf-fragment-evidence-verification.v1",
+  "status": "passed-local-verification",
+  "candidateBase": "52b486926a84bcc0a412aad03ddd02245dc41856",
+  "extractionVersion": "teul.pdf-evidence.v2-table-2/pdfjs-6.3.289",
+  "requirements": ["TASK-004", "REQ-001", "AC-001", "EVAL-001", "DEC-024"],
+  "sourceHashes": {
+    "web/src/lib/guideline/pdfTableEvidence.ts": "e0597553fdadd388079392b737273c0d1ca6eaacef38de11c0ac63d2d11db25e",
+    "web/src/lib/guideline/pdfTableEvidence.test.ts": "24d2ed1422a2e3ae456f2907883ef0d197616e8956c9e8a43427b0a2b431676a",
+    "web/src/lib/guideline/evidenceV2.ts": "fdd2f3c5ba4c6fb57ce0377cbb4b3072e2c27177099d689f7aa9cb113240b143",
+    "web/src/lib/guideline/pdfV2.ts": "fd58d65cf8117fb3ad3d011b9201a9f7e94f2ef1cfd777d5ddfd400708f6b748",
+    "web/src/lib/guideline/pdfV2.test.ts": "938bb02a509d79e2a52d69356dae86dbcbf6fe972ccec5e05ee4f482c285b5d3",
+    "web/src/lib/guideline/numericEvidence.ts": "4128b96bdc54ac4fd08a27feaf14f5ff8a7db38e1290838ba17022f132084ad9",
+    "web/src/lib/guideline/pdf.ts": "540e70a999c0b06c806d6dc0d32bb0886ccf99dae43ed3a15e5b45383989d691",
+    "web/scripts/guideline-numeric-smoke.mjs": "3cde3887c4546aa9a632ebd7325644c938845fc6a5c927a770c14341f50dd7d3",
+    "web/fixtures/guidelines/generate-fragments.py": "5f67ae90df94da5859b17198b154e95d497ac2d6c242b0e600fa6770c41ed7ad",
+    "web/fixtures/guidelines/harbor-fragments.pdf": "9a952fbaa0dee28d4cab31efc28791f45eade0bc71926d9dda02d640b7754e41"
+  },
+  "runtimes": [
+    {
+      "node": "v22.13.1",
+      "gate": {
+        "path": "docs/evidence/local-gates/2026-09-26T13-05-58Z-52b4869/receipt.json",
+        "bytes": 27576,
+        "sha256": "f7f37cd589444fb2d36f67ddcd66f2fec368f9f9830094c68e0fd27ea14a8311"
+      },
+      "studioTests": 651,
+      "testFiles": 52,
+      "browser": {
+        "path": "docs/evidence/brand-guideline-import/pdf-fragment-browser-node22.json",
+        "bytes": 6254,
+        "sha256": "daac10f4b9b8e0bd6975400c33575bb89a355b69b1f1e50f4451f51071c688f4"
+      },
+      "robinhood": {
+        "counts": {
+          "expectedStatements": 100,
+          "capturedStatements": 100,
+          "expectedRgb": 50,
+          "capturedRgb": 50,
+          "expectedHex": 50,
+          "capturedHex": 50,
+          "expectedDistinctNumericValues": 24,
+          "capturedDistinctNumericValues": 24,
+          "matched": 100,
+          "missing": 0,
+          "unexpected": 0
+        },
+        "captureHash": "sha256:fb859a6cd5813fb732660c4b75a33c3121c7302e015eb225e0dd7a68f84f103e",
+        "legacyReplay": "exact",
+        "originalTextAndHexObservations": "unchanged",
+        "conflictingOccurrences": 3,
+        "coverageGaps": [],
+        "productionProjectReplay": "byte-exact project download",
+        "highlightedOriginalPage": 37,
+        "ruleProposals": 27,
+        "appliedReview": null,
+        "selection": null
+      },
+      "crane": {
+        "counts": {
+          "before": {
+            "hex": 17,
+            "rgb": 0,
+            "distinct": 17
+          },
+          "after": {
+            "hex": 17,
+            "rgb": 17,
+            "distinct": 19
+          }
+        },
+        "captureHash": "sha256:a4d2ecc29d3f994a2358406997ef42645e4242bbcd787a87781d1252454781dd",
+        "conflictingOccurrences": 2,
+        "originalTextAndHexObservations": "unchanged"
+      }
+    },
+    {
+      "node": "v24.19.0",
+      "gate": {
+        "path": "docs/evidence/local-gates/2026-09-26T13-07-14Z-52b4869/receipt.json",
+        "bytes": 27575,
+        "sha256": "2638a586358c49b1984852dc45cb393148b5eadbc93457f237998ef7a6fe184d"
+      },
+      "studioTests": 651,
+      "testFiles": 52,
+      "browser": {
+        "path": "docs/evidence/brand-guideline-import/pdf-fragment-browser-node24.json",
+        "bytes": 6254,
+        "sha256": "71c8a954b4e4e2d563290e85ab13434414f420e7dbdbd69a1e36b64a48ceecf2"
+      },
+      "robinhood": {
+        "counts": {
+          "expectedStatements": 100,
+          "capturedStatements": 100,
+          "expectedRgb": 50,
+          "capturedRgb": 50,
+          "expectedHex": 50,
+          "capturedHex": 50,
+          "expectedDistinctNumericValues": 24,
+          "capturedDistinctNumericValues": 24,
+          "matched": 100,
+          "missing": 0,
+          "unexpected": 0
+        },
+        "captureHash": "sha256:fb859a6cd5813fb732660c4b75a33c3121c7302e015eb225e0dd7a68f84f103e",
+        "legacyReplay": "exact",
+        "originalTextAndHexObservations": "unchanged",
+        "conflictingOccurrences": 3,
+        "coverageGaps": [],
+        "productionProjectReplay": "byte-exact project download",
+        "highlightedOriginalPage": 37,
+        "ruleProposals": 27,
+        "appliedReview": null,
+        "selection": null
+      },
+      "crane": {
+        "counts": {
+          "before": {
+            "hex": 17,
+            "rgb": 0,
+            "distinct": 17
+          },
+          "after": {
+            "hex": 17,
+            "rgb": 17,
+            "distinct": 19
+          }
+        },
+        "captureHash": "sha256:a4d2ecc29d3f994a2358406997ef42645e4242bbcd787a87781d1252454781dd",
+        "conflictingOccurrences": 2,
+        "originalTextAndHexObservations": "unchanged"
+      }
+    }
+  ],
+  "privateRoot": "/Users/paul.jun/Documents/private-jobs/teul-guideline-evaluation-2026-09-26",
+  "privateArtifacts": [
+    {
+      "path": "robinhood-development/after-fragments-node22.json",
+      "bytes": 1561,
+      "sha256": "f8a26683c3dbbf358a470e21323354f9f103fea1fa386864559e17c20f531c4b"
+    },
+    {
+      "path": "robinhood-development/after-fragments-node22.capture.json",
+      "bytes": 642866,
+      "sha256": "19a986483989c0e10dede6720530ee5975751a98fc209e621bd50a975fd503c2"
+    },
+    {
+      "path": "robinhood-development/after-fragments-studio-node22.json",
+      "bytes": 2946,
+      "sha256": "e1e996a115f16c9115c73fc3906bd764e2c57a1633f965be96290d96efa72a8a"
+    },
+    {
+      "path": "robinhood-development/after-fragments-node22.studio.json",
+      "bytes": 385128,
+      "sha256": "893fc822ac4f0906cf5eac6b929fcb556199bd2e3e53a2da29e0ec530827f8f7"
+    },
+    {
+      "path": "robinhood-development/after-fragments-node22-desktop.png",
+      "bytes": 1397447,
+      "sha256": "e84e16f4e891ce3984397f647492bf94ad071c0d6a17a8fe0d9a142cd5200ca7"
+    },
+    {
+      "path": "robinhood-development/after-fragments-node22-mobile.png",
+      "bytes": 1264878,
+      "sha256": "b4c566dc59a12e6282120ef81e810dfb14143090ae976f3be9b7f39d8cf6baa6"
+    },
+    {
+      "path": "crane-development/after-fragments-node22.json",
+      "bytes": 1066,
+      "sha256": "b1909ab66152401cfc86289448f2c38651045acc4fa36eb27eac227f1d07f32f"
+    },
+    {
+      "path": "crane-development/after-fragments-node22.capture.json",
+      "bytes": 117123,
+      "sha256": "6aa2b980a01f53e74b1810c2f8bfa700d4049e7034e4686dda0d6d01e5cab64f"
+    },
+    {
+      "path": "robinhood-development/after-fragments-node24.json",
+      "bytes": 1561,
+      "sha256": "5f6d902fb9a6265b099869223d20bf10a42df66d7a65e14cea5d841f060b9269"
+    },
+    {
+      "path": "robinhood-development/after-fragments-node24.capture.json",
+      "bytes": 642866,
+      "sha256": "f2788f505d493e2df2243c95c2b8863b002a069740305b3a1dd9ea1c531813a8"
+    },
+    {
+      "path": "robinhood-development/after-fragments-studio-node24.json",
+      "bytes": 2946,
+      "sha256": "13b796937ae4552ed0b2ed0e39678422ce88f1ea67f406cae5da6f56aa0dbff0"
+    },
+    {
+      "path": "robinhood-development/after-fragments-node24.studio.json",
+      "bytes": 385128,
+      "sha256": "a68bf5cd913d8346b59062ba5693842d65eca2c54f9f8b3e7c88c56a314fe914"
+    },
+    {
+      "path": "robinhood-development/after-fragments-node24-desktop.png",
+      "bytes": 1397448,
+      "sha256": "b766ca3084c120dbe0f349e1d09143a1b1a9bc71b2fae800cb6ba09649588134"
+    },
+    {
+      "path": "robinhood-development/after-fragments-node24-mobile.png",
+      "bytes": 1264878,
+      "sha256": "b4c566dc59a12e6282120ef81e810dfb14143090ae976f3be9b7f39d8cf6baa6"
+    },
+    {
+      "path": "crane-development/after-fragments-node24.json",
+      "bytes": 1066,
+      "sha256": "d0f72b35c866d4344ffadf8d8332bbd16cc450446ed6e715d3ecdba55e948682"
+    },
+    {
+      "path": "crane-development/after-fragments-node24.capture.json",
+      "bytes": 117123,
+      "sha256": "8f5e4273a2e05a351767ec9665141711860ad434e3772ac2fcfad3ea44cfeeec"
+    },
+    {
+      "path": "robinhood-development/check-fragments.mjs",
+      "bytes": 4920,
+      "sha256": "13edf30b8df1e8ab5111631259011f803ff19caab0ddbc4d5116f95bf3accdce"
+    },
+    {
+      "path": "robinhood-development/prepare-fragments-studio.mjs",
+      "bytes": 6156,
+      "sha256": "452c45c86332ba658795ff03c348e8cc49eccf9c07aa30f4ca1e74048591c055"
+    },
+    {
+      "path": "check-crane-fragments.mjs",
+      "bytes": 3716,
+      "sha256": "294cc2d79c176aadcba2ded7c2cf7ed26f3cfd1fe52b3914589ce566106ba51f"
+    },
+    {
+      "path": "robinhood-development/after-fragments-review.md",
+      "bytes": 1406,
+      "sha256": "df137fc3f2b4a4b0933b9e187459f7ff5f82b3e651129db9d059727f32c3e39e"
+    },
+    {
+      "path": "robinhood-development/after-fragments-attempt1-node22.json",
+      "bytes": 671,
+      "sha256": "9acfc108a514aff9988ceae07e619644813bbac38acb2a6fb55a1d87a5b5921a"
+    },
+    {
+      "path": "robinhood-development/after-fragments-attempt1-node22.capture.json",
+      "bytes": 604264,
+      "sha256": "674dc7615964081dc7575949e98f1b618dc08ca38feddcfd546c0ef561fd7c10"
+    }
+  ],
+  "failedGate": "docs/evidence/local-gates/2026-09-26T13-05-31Z-52b4869/receipt.json",
+  "reviews": {
+    "reuse": "Resolved duplicated version allowlist by delegating to the shared reader.",
+    "quality": "No material findings; reviewer independently ran 60 affected tests.",
+    "efficiency": "No material findings; whole-page inspection and reference limits remain bounded."
+  },
+  "fixture": {
+    "pages": 2,
+    "expectedDigitalStatements": 11,
+    "expectedRgb": 3,
+    "referencesPerRgb": 6,
+    "visibleGapPage": 2,
+    "renderedPagesInspected": 2,
+    "deterministicRegeneration": "byte-exact"
+  },
+  "historicalRobinhoodArtifactBindings": "all 17 unchanged",
+  "annotationStatus": "agent-draft-not-reconciled",
+  "humanReaders": [],
+  "designerRatings": [],
+  "metrics": null,
+  "qualified": false,
+  "limitations": [
+    "Two repaired development documents do not establish corpus accuracy or held-out performance.",
+    "100-row source-review speed has not been measured.",
+    "No live-host, assistive-technology or designer qualification; no push, merge or deployment."
+  ]
+}
