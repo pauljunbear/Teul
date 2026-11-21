@@ -10,7 +10,7 @@ npm run verify:local -- --studio-only --guidelines
 npm run verify:local -- --guidelines
 ```
 
-The runner owns its servers and records separate artifact manifests for the ordinary and enabled builds. It ignores inherited server URLs and feature flags, runs browser harnesses sequentially, and rejects artifacts that change during verification. The normal-build smoke test verifies that Guidelines stays disabled. The clean-checkout profile excludes the separate Katalon experiment, which requires an admitted external PDF. Individual harnesses retain their documented production or development boundaries; this is not a claim that every fixture is a production service test.
+The runner owns its servers and records separate artifact manifests for the ordinary and enabled builds. It ignores inherited server URLs and feature flags, runs browser harnesses sequentially, and rejects artifacts that change during verification. The normal-build smoke test verifies that Guidelines stays disabled. The clean-checkout profile excludes the separate Brand D experiment, which requires an admitted external PDF. Individual harnesses retain their documented production or development boundaries; this is not a claim that every fixture is a production service test.
 
 ## Product fixes
 

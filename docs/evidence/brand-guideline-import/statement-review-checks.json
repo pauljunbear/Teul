@@ -82,7 +82,7 @@
     "node": "v22.13.1",
     "passed": 11
   },
-  "openweb": {
+  "brand-c": {
     "runtime": "v22.13.1",
     "sourceSha256": "f89cb0215fb4ec788a863d66b8027b82fd19bdd5263d2b3ca525a8723e0402cc",
     "selectedPages": [34, 40, 41, 42, 43, 98],
@@ -109,32 +109,32 @@
   "privateRoot": "/Users/paul.jun/Documents/private-jobs/teul-guideline-evaluation-2026-09-26",
   "privateArtifacts": [
     {
-      "path": "openweb-development/after-statement-review-node22-desktop-full.png",
+      "path": "brand-c-development/after-statement-review-node22-desktop-full.png",
       "bytes": 638368,
       "sha256": "19533b02ad1494f3394cfb49b88325692a71559c440edba3ecfb7f0eb90691a5"
     },
     {
-      "path": "openweb-development/after-statement-review-node22-desktop.png",
+      "path": "brand-c-development/after-statement-review-node22-desktop.png",
       "bytes": 183511,
       "sha256": "d6a73b53d786e98811c10d9f3a7375f1c5e106d99808979c529b3430662b3caf"
     },
     {
-      "path": "openweb-development/after-statement-review-node22-mobile.png",
+      "path": "brand-c-development/after-statement-review-node22-mobile.png",
       "bytes": 54824,
       "sha256": "7f4a6ad29e90bae91d273eaa188b9f0049195072f3b5a115151aa4510a61cb2f"
     },
     {
-      "path": "openweb-development/after-statement-review-node22.json",
+      "path": "brand-c-development/after-statement-review-node22.json",
       "bytes": 2459,
       "sha256": "84be65fc5ecbcd66d74896c99c9df93b884f9881173c40769142c901a1f99791"
     },
     {
-      "path": "openweb-development/after-statement-review-node22.studio.json",
+      "path": "brand-c-development/after-statement-review-node22.studio.json",
       "bytes": 53101,
       "sha256": "8965423f9a0f5b02aa27898230d20002229403da95ca4ee7146d7c7e81042f4f"
     },
     {
-      "path": "openweb-development/after-statement-review.mjs",
+      "path": "brand-c-development/after-statement-review.mjs",
       "bytes": 7419,
       "sha256": "8617b2438088a819a3b9c05555ee1b236c1da1bdf703ab1134464f725cc01455"
     }
@@ -159,7 +159,7 @@
   ],
   "limitations": [
     "Affected 13-step local profile, not a rerun of the complete plugin/service qualification.",
-    "Fictional observations test UI contracts; OpenWeb is one previously exposed development source.",
+    "Fictional observations test UI contracts; Brand C is one previously exposed development source.",
     "No measured human correction time, full corpus score, reconciled source annotation or independent design acceptance.",
     "No actual screen-reader walkthrough; one existing mobile-table contrast check remains incomplete.",
     "No push, merge, deployment, live remote intake or beta qualification."

@@ -27,7 +27,6 @@
     "test:guideline-figma": "npm --prefix ../services/guideline-intake run build && node scripts/guideline-figma-smoke.mjs",
     "test:guideline-figma-review": "npm --prefix ../services/guideline-intake run build && node scripts/guideline-figma-review-smoke.mjs",
     "test:guideline-capacity": "node scripts/guideline-capacity.mjs",
-    "proof:guideline-application": "node scripts/guideline-application-proof.mjs",
     "test:guideline-website": "npm --prefix ../services/guideline-intake run build && node scripts/guideline-website-smoke.mjs",
     "test:guideline-cross-format": "npm --prefix ../services/guideline-intake run build && node scripts/guideline-cross-format.mjs",
     "test:guideline-output-recovery": "node scripts/guideline-output-recovery-smoke.mjs",

@@ -8,9 +8,9 @@ PDF review also shows a small, labeled view of nearby source lines. It preserves
 
 ## Real-source check
 
-The preserved OpenWeb development case now displays seven groups for sixteen rule statements. All sixteen numeric statements and original text observations remain unchanged. Ten identical access notices share one card. An explicit agent-driven exclusion updates the nine remaining copies while retaining the six other unresolved statements, the full source evidence and its document restrictions. The white-use statement's continuation is visible beside it. The project reopens byte-exactly offline, and the source remains visible during desktop review. Desktop and 390px screenshots were inspected.
+The preserved Brand C development case now displays seven groups for sixteen rule statements. All sixteen numeric statements and original text observations remain unchanged. Ten identical access notices share one card. An explicit agent-driven exclusion updates the nine remaining copies while retaining the six other unresolved statements, the full source evidence and its document restrictions. The white-use statement's continuation is visible beside it. The project reopens byte-exactly offline, and the source remains visible during desktop review. Desktop and 390px screenshots were inspected.
 
-This verifies a workflow on one development source. It does not measure human correction time, reconcile conflicting clauses, authorize distribution, qualify the full rule inventory or provide a designer rating. OpenWeb remains an exposed development reference, not a held-out case. Review and selection remain null in that real-source check; no design was generated.
+This verifies a workflow on one development source. It does not measure human correction time, reconcile conflicting clauses, authorize distribution, qualify the full rule inventory or provide a designer rating. Brand C remains an exposed development reference, not a held-out case. Review and selection remain null in that real-source check; no design was generated.
 
 ## Verification and limits
 

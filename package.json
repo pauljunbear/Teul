@@ -46,6 +46,7 @@
     "verify:generic-source-benchmark": "node scripts/benchmark-color-system-generic-source.js",
     "verify:authoring-performance": "node scripts/benchmark-color-system-authoring.cjs",
     "verify:generic-sanitization": "node --test scripts/verify-generic-candidate-sanitization.test.mjs && node scripts/verify-generic-candidate-sanitization.js",
+    "verify:no-third-party-brands": "node --test scripts/verify-no-third-party-brands.test.mjs && node scripts/verify-no-third-party-brands.mjs",
     "verify:color-foundations": "node --test scripts/verify-color-foundations.test.mjs && node scripts/verify-color-foundations.mjs",
     "verify:wada": "node scripts/verify-wada-upstream.mjs",
     "werner:sample": "node scripts/werner-sampling/sample.mjs",

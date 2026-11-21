@@ -1,6 +1,6 @@
 # Nonconsecutive PDF table fixture
 
-`harbor-table.pdf` is a fictional technical source. Rebuild with `generate-table.py` using ReportLab. It is independent of the private Crane source; none of that source's text, colors or page artwork is distributed here.
+`harbor-table.pdf` is a fictional technical source. Rebuild with `generate-table.py` using ReportLab. It is independent of the private Brand A source; none of that source's text, colors or page artwork is distributed here.
 
 The three 640 × 820 point pages deliberately draw labels before their value cells. Reading PDF text in stream order therefore does not reconstruct the table rows. Numeric authority comes from the explicit label, complete value and checked geometry, with both original source references retained.
 

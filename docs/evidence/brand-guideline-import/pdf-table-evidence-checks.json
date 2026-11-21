@@ -36,12 +36,12 @@
         "sha256": "ac716fc3e622dfd0dd5ab7d8869fdd8acb3cdb3ba9d6539240f6889159411a90"
       },
       "developmentComparison": {
-        "path": "crane-development/after-table-node22.json",
+        "path": "brand-a-development/after-table-node22.json",
         "bytes": 1066,
         "sha256": "c14d11a1b98fdf983a6cd6511847a5ecbfa8873110cbf8a933566febd6d38aec"
       },
       "developmentCapture": {
-        "path": "crane-development/after-table-node22.capture.json",
+        "path": "brand-a-development/after-table-node22.capture.json",
         "bytes": 117123,
         "sha256": "45e76899277bce0fb41594458eb5dae835052977f482d8c7a75f18d6f4bd981f"
       }
@@ -66,19 +66,19 @@
         "sha256": "502837fc3d6f60113aeebb89eaa1646ea8136b35dd2ecd97d89b5eb5fe92f774"
       },
       "developmentComparison": {
-        "path": "crane-development/after-table-node24.json",
+        "path": "brand-a-development/after-table-node24.json",
         "bytes": 1066,
         "sha256": "fb9e1938beb47d06c756db69ff0c2cbae56cfba00c011b2b789fc0d1e2e69eb9"
       },
       "developmentCapture": {
-        "path": "crane-development/after-table-node24.capture.json",
+        "path": "brand-a-development/after-table-node24.capture.json",
         "bytes": 117123,
         "sha256": "2ff17fbe0c2f8c2ae28e7994699b212afe7eb7581bda28fe0cc209bd267d9442"
       }
     }
   ],
   "development": {
-    "caseId": "pdf-dev-crane-color",
+    "caseId": "pdf-dev-brand-a-color",
     "annotationStatus": "agent-draft-not-reconciled",
     "baselineCandidate": "f79788896ca9599cb1b96ec6786e10d644ce7001",
     "counts": {
@@ -99,22 +99,22 @@
     "privateRoot": "/Users/paul.jun/Documents/private-jobs/teul-guideline-evaluation-2026-09-26",
     "boundInputs": [
       {
-        "path": "check-crane-table.mjs",
+        "path": "check-brand-a-table.mjs",
         "bytes": 3511,
         "sha256": "3e2bffe0b254ac534e1a3c6fea4d4ff9f18dde56048f61fc5545963f233e6ef5"
       },
       {
-        "path": "crane-development/source-annotation.draft.json",
+        "path": "brand-a-development/source-annotation.draft.json",
         "bytes": 9829,
         "sha256": "8c10ed5d8aed1a98ecb4967dca0c1c6c001c0797e34dd8398615a3d88266acca"
       },
       {
-        "path": "crane-development/comparison.json",
+        "path": "brand-a-development/comparison.json",
         "bytes": 2819,
         "sha256": "abbfb78b05defbe9510806d019c6ed1d0a7acec95b4983fd18be00552033f575"
       },
       {
-        "path": "crane-v2-capture.json",
+        "path": "brand-a-v2-capture.json",
         "bytes": 104832,
         "sha256": "c188ea0d74155958a15770e8c87848660f768258cbdad821fc497f7771355a6a"
       }

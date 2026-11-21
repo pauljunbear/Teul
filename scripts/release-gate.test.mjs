@@ -73,6 +73,7 @@ test('the step list matches the former workflow order and excludes report:bundle
       'check:generic-candidate-ui-bundle',
       'test:generic-candidate-ui',
       'assert:generic-candidate-artifacts',
+      'verify:no-third-party-brands',
       'verify:generic-source-benchmark',
     ]
   );
@@ -122,9 +123,9 @@ test('a passing run writes a JSON and Markdown receipt with hashes and sizes', (
     assert.equal(receipt.environment.node, 'v22.23.1');
     assert.ok(receipt.steps.every(step => step.status === 'passed' && step.durationMs === 1500));
     assert.equal(receipt.durationMs, RELEASE_GATE_STEPS.length * 3000 + 1500);
-    // 17 steps × 3 s of fake clock + 1.5 s = 52.5 s after the 13:45:12 start.
-    assert.equal(receipt.finishedAt, '2026-09-07T13:46:04.500Z');
-    assert.match(result.written.directory, /^docs\/evidence\/gates\/2026-09-07T13-46-04Z-abc1234$/);
+    // 18 steps × 3 s of fake clock + 1.5 s = 55.5 s after the 13:45:12 start.
+    assert.equal(receipt.finishedAt, '2026-09-07T13:46:07.500Z');
+    assert.match(result.written.directory, /^docs\/evidence\/gates\/2026-09-07T13-46-07Z-abc1234$/);
 
     const code = readFileSync(path.join(root, 'dist', 'code.js'));
     const codeArtifact = receipt.artifacts.find(artifact => artifact.path === 'dist/code.js');
@@ -147,7 +148,7 @@ test('a passing run writes a JSON and Markdown receipt with hashes and sizes', (
 
     const markdown = readFileSync(path.join(root, result.written.markdownPath), 'utf8');
     assert.match(markdown, /^# Release gate receipt/);
-    assert.match(markdown, /Status: \*\*PASSED\*\* \(17 of 17 steps passed\)/);
+    assert.match(markdown, /Status: \*\*PASSED\*\* \(18 of 18 steps passed\)/);
     assert.match(markdown, /Node v22\.23\.1, npm 10\.9\.8, darwin arm64/);
     assert.match(markdown, /1\. PASSED `npm run audit`/);
     assert.match(markdown, /`dist\/code\.js`: 21 bytes, SHA-256 `[0-9a-f]{64}`/);
@@ -188,10 +189,10 @@ test('the gate stops at the first failure, skips the rest, and still writes the 
         ['test:coverage', 'skipped', null],
       ]
     );
-    assert.equal(receipt.steps.filter(step => step.status === 'skipped').length, 14);
+    assert.equal(receipt.steps.filter(step => step.status === 'skipped').length, 15);
 
     const markdown = readFileSync(path.join(root, result.written.markdownPath), 'utf8');
-    assert.match(markdown, /Status: \*\*FAILED\*\* \(2 of 17 steps passed\)/);
+    assert.match(markdown, /Status: \*\*FAILED\*\* \(2 of 18 steps passed\)/);
     assert.match(markdown, /3\. FAILED `npm run typecheck`/);
     assert.match(markdown, /4\. SKIPPED `npm run test:coverage` \(not run\)/);
     assert.match(markdown, /worktree has uncommitted changes/);
@@ -219,7 +220,7 @@ test('dry run lists every step without executing or writing anything', () => {
     assert.equal(existsSync(path.join(root, EVIDENCE_DIRECTORY)), false);
     const text = output.join('\n');
     for (const step of RELEASE_GATE_STEPS) assert.ok(text.includes(`npm run ${step.script}`));
-    assert.match(text, /17 steps in order/);
+    assert.match(text, /18 steps in order/);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

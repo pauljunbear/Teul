@@ -25,11 +25,11 @@ The complete private record is `implementation-baseline/task008-final-performanc
 
 ## Reference replay
 
-Crane, Medium, Robinhood and Coinbase replay against the current source on Node 22.13.1 and Node 24.19.0. All ten deterministic output files match across runtimes. The replay binds 276 unchanged original files and 15 loaded modules; the 13 repository modules match product commit `047c59b`.
+Brand A, Brand H, Brand B and Brand G replay against the current source on Node 22.13.1 and Node 24.19.0. All ten deterministic output files match across runtimes. The replay binds 276 unchanged original files and 15 loaded modules; the 13 repository modules match product commit `047c59b`.
 
 The proof retains four canonical models, seven explicit numeric-choice variants, 38 canonical assessments, 87 prior variant assessments, 118 expanded rule cases, 82 rules and 160 assertions. It checks the existing geometry and exact paints for 38 canonical applications and 83 expanded SVG boards. It does not rerender pixels or observe Figma.
 
-All 107 printed numeric records, 641 claims, 20 conflicts and 33 unconverted source instructions remain visible. The 28 canonical missing numeric identities remain missing, including all 19 Coinbase identities. Successful replay therefore establishes compatibility with the represented source subset; it cannot establish whole-guideline compliance or missing numeric authority.
+All 107 printed numeric records, 641 claims, 20 conflicts and 33 unconverted source instructions remain visible. The 28 canonical missing numeric identities remain missing, including all 19 Brand G identities. Successful replay therefore establishes compatibility with the represented source subset; it cannot establish whole-guideline compliance or missing numeric authority.
 
 The complete private record is `implementation-baseline/task008-current-reconstruction-replay/receipt.json`, SHA-256 `21d2f17e8f20ddbc1fede2ab0ebdb5ba9f2d9a47e73bfa782b55fa9c375550fb`. Its manifest pins all 27 new files. Original models, variants, images and source packets were not changed.
 

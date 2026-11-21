@@ -68,7 +68,7 @@ An independent read-only review identified stale native-delivery clauses in outc
 
 ## Verification of this specification
 
-The subsequent source-scale slice was checked against the five de-risking questions before implementation. Current precedent is the core construction/proposal/adoption path already exercised by the Katalon fixture. The smaller design adds a reviewed input adapter and controls instead of new interpolation or rule math. Stable source selectors and separate V2 files make the data flow inspectable and preserve V1 replay. A synthetic browser journey will exercise scale review, extension and stale decisions before broader intake work. Provider selection, supporting-direction ranking and application templates remain open decisions; this slice does not substitute scale swatches for actual application quality.
+The subsequent source-scale slice was checked against the five de-risking questions before implementation. Current precedent is the core construction/proposal/adoption path already exercised by the Brand D fixture. The smaller design adds a reviewed input adapter and controls instead of new interpolation or rule math. Stable source selectors and separate V2 files make the data flow inspectable and preserve V1 replay. A synthetic browser journey will exercise scale review, extension and stale decisions before broader intake work. Provider selection, supporting-direction ranking and application templates remain open decisions; this slice does not substitute scale swatches for actual application quality.
 
 The ready-stage validator passed with zero structural or traceability issues:
 

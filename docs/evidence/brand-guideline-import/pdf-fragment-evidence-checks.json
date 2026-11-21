@@ -31,7 +31,7 @@
         "bytes": 6254,
         "sha256": "daac10f4b9b8e0bd6975400c33575bb89a355b69b1f1e50f4451f51071c688f4"
       },
-      "robinhood": {
+      "brand-b": {
         "counts": {
           "expectedStatements": 100,
           "capturedStatements": 100,
@@ -56,7 +56,7 @@
         "appliedReview": null,
         "selection": null
       },
-      "crane": {
+      "brand-a": {
         "counts": {
           "before": {
             "hex": 17,
@@ -88,7 +88,7 @@
         "bytes": 6254,
         "sha256": "71c8a954b4e4e2d563290e85ab13434414f420e7dbdbd69a1e36b64a48ceecf2"
       },
-      "robinhood": {
+      "brand-b": {
         "counts": {
           "expectedStatements": 100,
           "capturedStatements": 100,
@@ -113,7 +113,7 @@
         "appliedReview": null,
         "selection": null
       },
-      "crane": {
+      "brand-a": {
         "counts": {
           "before": {
             "hex": 17,
@@ -135,112 +135,112 @@
   "privateRoot": "/Users/paul.jun/Documents/private-jobs/teul-guideline-evaluation-2026-09-26",
   "privateArtifacts": [
     {
-      "path": "robinhood-development/after-fragments-node22.json",
+      "path": "brand-b-development/after-fragments-node22.json",
       "bytes": 1561,
       "sha256": "f8a26683c3dbbf358a470e21323354f9f103fea1fa386864559e17c20f531c4b"
     },
     {
-      "path": "robinhood-development/after-fragments-node22.capture.json",
+      "path": "brand-b-development/after-fragments-node22.capture.json",
       "bytes": 642866,
       "sha256": "19a986483989c0e10dede6720530ee5975751a98fc209e621bd50a975fd503c2"
     },
     {
-      "path": "robinhood-development/after-fragments-studio-node22.json",
+      "path": "brand-b-development/after-fragments-studio-node22.json",
       "bytes": 2946,
       "sha256": "e1e996a115f16c9115c73fc3906bd764e2c57a1633f965be96290d96efa72a8a"
     },
     {
-      "path": "robinhood-development/after-fragments-node22.studio.json",
+      "path": "brand-b-development/after-fragments-node22.studio.json",
       "bytes": 385128,
       "sha256": "893fc822ac4f0906cf5eac6b929fcb556199bd2e3e53a2da29e0ec530827f8f7"
     },
     {
-      "path": "robinhood-development/after-fragments-node22-desktop.png",
+      "path": "brand-b-development/after-fragments-node22-desktop.png",
       "bytes": 1397447,
       "sha256": "e84e16f4e891ce3984397f647492bf94ad071c0d6a17a8fe0d9a142cd5200ca7"
     },
     {
-      "path": "robinhood-development/after-fragments-node22-mobile.png",
+      "path": "brand-b-development/after-fragments-node22-mobile.png",
       "bytes": 1264878,
       "sha256": "b4c566dc59a12e6282120ef81e810dfb14143090ae976f3be9b7f39d8cf6baa6"
     },
     {
-      "path": "crane-development/after-fragments-node22.json",
+      "path": "brand-a-development/after-fragments-node22.json",
       "bytes": 1066,
       "sha256": "b1909ab66152401cfc86289448f2c38651045acc4fa36eb27eac227f1d07f32f"
     },
     {
-      "path": "crane-development/after-fragments-node22.capture.json",
+      "path": "brand-a-development/after-fragments-node22.capture.json",
       "bytes": 117123,
       "sha256": "6aa2b980a01f53e74b1810c2f8bfa700d4049e7034e4686dda0d6d01e5cab64f"
     },
     {
-      "path": "robinhood-development/after-fragments-node24.json",
+      "path": "brand-b-development/after-fragments-node24.json",
       "bytes": 1561,
       "sha256": "5f6d902fb9a6265b099869223d20bf10a42df66d7a65e14cea5d841f060b9269"
     },
     {
-      "path": "robinhood-development/after-fragments-node24.capture.json",
+      "path": "brand-b-development/after-fragments-node24.capture.json",
       "bytes": 642866,
       "sha256": "f2788f505d493e2df2243c95c2b8863b002a069740305b3a1dd9ea1c531813a8"
     },
     {
-      "path": "robinhood-development/after-fragments-studio-node24.json",
+      "path": "brand-b-development/after-fragments-studio-node24.json",
       "bytes": 2946,
       "sha256": "13b796937ae4552ed0b2ed0e39678422ce88f1ea67f406cae5da6f56aa0dbff0"
     },
     {
-      "path": "robinhood-development/after-fragments-node24.studio.json",
+      "path": "brand-b-development/after-fragments-node24.studio.json",
       "bytes": 385128,
       "sha256": "a68bf5cd913d8346b59062ba5693842d65eca2c54f9f8b3e7c88c56a314fe914"
     },
     {
-      "path": "robinhood-development/after-fragments-node24-desktop.png",
+      "path": "brand-b-development/after-fragments-node24-desktop.png",
       "bytes": 1397448,
       "sha256": "b766ca3084c120dbe0f349e1d09143a1b1a9bc71b2fae800cb6ba09649588134"
     },
     {
-      "path": "robinhood-development/after-fragments-node24-mobile.png",
+      "path": "brand-b-development/after-fragments-node24-mobile.png",
       "bytes": 1264878,
       "sha256": "b4c566dc59a12e6282120ef81e810dfb14143090ae976f3be9b7f39d8cf6baa6"
     },
     {
-      "path": "crane-development/after-fragments-node24.json",
+      "path": "brand-a-development/after-fragments-node24.json",
       "bytes": 1066,
       "sha256": "d0f72b35c866d4344ffadf8d8332bbd16cc450446ed6e715d3ecdba55e948682"
     },
     {
-      "path": "crane-development/after-fragments-node24.capture.json",
+      "path": "brand-a-development/after-fragments-node24.capture.json",
       "bytes": 117123,
       "sha256": "8f5e4273a2e05a351767ec9665141711860ad434e3772ac2fcfad3ea44cfeeec"
     },
     {
-      "path": "robinhood-development/check-fragments.mjs",
+      "path": "brand-b-development/check-fragments.mjs",
       "bytes": 4920,
       "sha256": "13edf30b8df1e8ab5111631259011f803ff19caab0ddbc4d5116f95bf3accdce"
     },
     {
-      "path": "robinhood-development/prepare-fragments-studio.mjs",
+      "path": "brand-b-development/prepare-fragments-studio.mjs",
       "bytes": 6156,
       "sha256": "452c45c86332ba658795ff03c348e8cc49eccf9c07aa30f4ca1e74048591c055"
     },
     {
-      "path": "check-crane-fragments.mjs",
+      "path": "check-brand-a-fragments.mjs",
       "bytes": 3716,
       "sha256": "294cc2d79c176aadcba2ded7c2cf7ed26f3cfd1fe52b3914589ce566106ba51f"
     },
     {
-      "path": "robinhood-development/after-fragments-review.md",
+      "path": "brand-b-development/after-fragments-review.md",
       "bytes": 1406,
       "sha256": "df137fc3f2b4a4b0933b9e187459f7ff5f82b3e651129db9d059727f32c3e39e"
     },
     {
-      "path": "robinhood-development/after-fragments-attempt1-node22.json",
+      "path": "brand-b-development/after-fragments-attempt1-node22.json",
       "bytes": 671,
       "sha256": "9acfc108a514aff9988ceae07e619644813bbac38acb2a6fb55a1d87a5b5921a"
     },
     {
-      "path": "robinhood-development/after-fragments-attempt1-node22.capture.json",
+      "path": "brand-b-development/after-fragments-attempt1-node22.capture.json",
       "bytes": 604264,
       "sha256": "674dc7615964081dc7575949e98f1b618dc08ca38feddcfd546c0ef561fd7c10"
     }
@@ -260,7 +260,7 @@
     "renderedPagesInspected": 2,
     "deterministicRegeneration": "byte-exact"
   },
-  "historicalRobinhoodArtifactBindings": "all 17 unchanged",
+  "historicalBrandBArtifactBindings": "all 17 unchanged",
   "annotationStatus": "agent-draft-not-reconciled",
   "humanReaders": [],
   "designerRatings": [],

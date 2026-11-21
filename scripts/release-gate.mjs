@@ -38,6 +38,10 @@ export const RELEASE_GATE_STEPS = Object.freeze([
   { script: 'check:generic-candidate-ui-bundle', purpose: 'Candidate UI bundle budget' },
   { script: 'test:generic-candidate-ui', purpose: 'Candidate UI smoke test' },
   { script: 'assert:generic-candidate-artifacts', purpose: 'Candidate artifacts and manifest' },
+  {
+    script: 'verify:no-third-party-brands',
+    purpose: 'No third-party brand used as a development source in the tree or either built bundle',
+  },
   { script: 'verify:generic-source-benchmark', purpose: 'Bounded generic source benchmark' },
 ]);
 

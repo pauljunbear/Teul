@@ -1,6 +1,6 @@
 # Fragmented RGB evidence fixture
 
-`harbor-fragments.pdf` is an independently authored technical fixture. Its two pages contain fictional values and no private Robinhood source artwork. Rebuild with `generate-fragments.py` and ReportLab; fixed metadata makes the output deterministic. The current file is 3,358 bytes, SHA-256 `9a952fbaa0dee28d4cab31efc28791f45eade0bc71926d9dda02d640b7754e41`.
+`harbor-fragments.pdf` is an independently authored technical fixture. Its two pages contain fictional values and no private Brand B source artwork. Rebuild with `generate-fragments.py` and ReportLab; fixed metadata makes the output deterministic. The current file is 3,358 bytes, SHA-256 `9a952fbaa0dee28d4cab31efc28791f45eade0bc71926d9dda02d640b7754e41`.
 
 Page 1 has three explicit RGB expressions and three HEX statements. Each RGB expression occupies six native text items: its label, three channels and two separators. Alternating separator fonts prevent PDF.js from coalescing those fragments. Labels and values occur in different stream positions. One RGB statement intentionally disagrees with its HEX statement; retain both.
 
