@@ -1,0 +1,31 @@
+.guideline-website-controls {
+  display: grid;
+  gap: 16px;
+  margin: 20px 0;
+}
+.guideline-website-controls label {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0;
+}
+.guideline-website-controls select,
+.guideline-website-controls textarea {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  background: var(--background);
+  max-width: 100%;
+}
+.guideline-website-controls summary {
+  cursor: pointer;
+}
+.guideline-website-screenshot {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+  margin: 16px 0;
+}
+.guideline-website {
+  overflow-wrap: anywhere;
+}

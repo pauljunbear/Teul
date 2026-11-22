@@ -1,0 +1,162 @@
+{
+  "status": "locally-verified",
+  "baseCommit": "d1d818b6835c13eb23bb5457e1178600f83e3842",
+  "scope": "Immutable saved guideline revisions; TASK-009 partial, AC-011 source refresh remains open",
+  "runtimeChecks": [
+    {
+      "node": "22.13.1",
+      "studioTests": 435,
+      "studioFiles": 37,
+      "storageScenarios": 25,
+      "paletteRegressionScenarios": 9,
+      "outputRecoveryScenarios": 7,
+      "proofBuild": "passed"
+    },
+    {
+      "node": "24.19.0",
+      "studioTests": 435,
+      "studioFiles": 37,
+      "storageScenarios": 25,
+      "paletteRegressionScenarios": 9,
+      "outputRecoveryScenarios": 7,
+      "proofBuild": "passed"
+    }
+  ],
+  "otherChecks": {
+    "studioLint": "passed",
+    "rootTypecheck": "passed",
+    "studioTypecheck": "passed through both builds",
+    "prdReadyStrict": "passed",
+    "diffWhitespace": "passed",
+    "deadExports": 50,
+    "deadFiles": 1,
+    "deadReportChange": 0,
+    "mobileHistoryInspection": "390px controls and copy fit"
+  },
+  "independentReview": {
+    "reuse": "two correctness fixes confirmed",
+    "quality": "fixes confirmed, no remaining findings",
+    "efficiency": "duplicate head hash removed and confirmed"
+  },
+  "limitations": [
+    "Full source refresh not implemented",
+    "No live provider or connector qualification",
+    "No assistive technology or designer acceptance",
+    "No release gate, merge, push or deployment",
+    "Existing large-chunk advisory remains"
+  ],
+  "sourceFiles": [
+    {
+      "path": "docs/evidence/brand-guideline-import/saved-revisions.md",
+      "bytes": 4831,
+      "sha256": "4fbab1dc46ecf09686b50177346ff054be411afd3cf4211dcfe6e97e5b95ed84"
+    },
+    {
+      "path": "docs/plans/2026-09-25-brand-guideline-import-plan.md",
+      "bytes": 77912,
+      "sha256": "b3a3fcf186671dbd3704e730375cc717a55fd76152d067513321b50e4c4ba9b4"
+    },
+    {
+      "path": "docs/prds/2026-09-25-brand-guideline-import.md",
+      "bytes": 114551,
+      "sha256": "8135611f87bc82c7edf153acc16450fece233da120024fe158033d48f8bb8f43"
+    },
+    {
+      "path": "web/README.md",
+      "bytes": 24269,
+      "sha256": "be9ebaab5baccd0cf49dcfe4f7b66f601af1bed2ff8e622d71e0494d4b5d84d2"
+    },
+    {
+      "path": "web/scripts/guideline-storage-smoke.mjs",
+      "bytes": 37564,
+      "sha256": "4bff64916563bc1857985221a239aa42315a2325920a90d5f2636613089ac77d"
+    },
+    {
+      "path": "web/src/components/GuidelineLocalProjects.tsx",
+      "bytes": 10425,
+      "sha256": "078b653f67e2bd46cda7216b1a8022fa03e77e75b7a30216d9f9e425bdb3c67f"
+    },
+    {
+      "path": "web/src/lib/guideline/projectRecord.test.ts",
+      "bytes": 3106,
+      "sha256": "7ad4793b1cb3dc2b3a7fa7dc6c42a3bf2905a41f7b6f9a318d7ae8c302033ebc"
+    },
+    {
+      "path": "web/src/lib/guideline/projectRecord.ts",
+      "bytes": 4068,
+      "sha256": "4971d42fe4ffecb2058ad0fb66f492d6d016bfb02f1838e5204c4b8664e80700"
+    },
+    {
+      "path": "web/src/lib/guideline/projectStore.ts",
+      "bytes": 23823,
+      "sha256": "8682f376471ec041db836dc2c1942ddc1ca81e2a6f1310c3ea133e491b14e168"
+    },
+    {
+      "path": "web/src/lib/guideline/useLocalProject.ts",
+      "bytes": 7447,
+      "sha256": "6b1fb4ef5e4dfb43e041b9ad15faf54c59a532fe7ed099e376b648cb2346abc9"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "release/guideline-storage/node22-receipt.json",
+      "bytes": 3014,
+      "sha256": "fb5dfb2e24883180d525f522c46e171642c7ac85cda90207db41239645c933d0"
+    },
+    {
+      "path": "release/guideline-storage/node22-palette-regression/storage-browser.json",
+      "bytes": 1142,
+      "sha256": "7aee4327a6fe694b95fbee755f5899a904d3cb5d95558cea8ebf42def60ee07c"
+    },
+    {
+      "path": "release/guideline-storage/node22-history.png",
+      "bytes": 689257,
+      "sha256": "f216524081eb311470ab0b603657b9011000e1471af2d1f960c5b5ca15e2ce0d"
+    },
+    {
+      "path": "release/guideline-output-recovery/node22-checks.json",
+      "bytes": 680,
+      "sha256": "a98f6c7bcb56e889a76dcf45a5436023ad9afdaaf7f8e7fd0c8419f2a7109f8c"
+    },
+    {
+      "path": "release/guideline-storage/node24-receipt.json",
+      "bytes": 3014,
+      "sha256": "3a970eb004d9abfe58d1bb6e26568d42b3b31122944cc6f757c416574deb3ff9"
+    },
+    {
+      "path": "release/guideline-storage/node24-palette-regression/storage-browser.json",
+      "bytes": 1142,
+      "sha256": "0a8ed00a0a257cbb3bd26ab170d392ccffa655c93c4efa4a0fbba08f65522621"
+    },
+    {
+      "path": "release/guideline-storage/node24-history.png",
+      "bytes": 690050,
+      "sha256": "06d12ddfc14b83c4ba7dc9076d296fdee9c8306ffb8716c6d29fe10a7bd404f0"
+    },
+    {
+      "path": "release/guideline-output-recovery/node24-checks.json",
+      "bytes": 680,
+      "sha256": "dc7df88667383143677d4a60bfc09bdb2c3807b73b015d0694e059a5217bb8cd"
+    },
+    {
+      "path": "web/dist/assets/GuidelineWorkspace-BS1BmbWa.js",
+      "bytes": 838567,
+      "sha256": "f7a510047ce3e5becfbfb26920aa8124e8d46c8c43197b68ed58b65936af4170"
+    },
+    {
+      "path": "web/dist/index.html",
+      "bytes": 810,
+      "sha256": "044862c4eece493578017c3549b8ec28dbb550a639658689aed1e796666761b5"
+    },
+    {
+      "path": "release/guideline-storage/history-review.png",
+      "bytes": 107560,
+      "sha256": "b8813072ed30a9f4dadf94db6eee4f865f6cff5ddef627e51ed2bab0d0f4f370"
+    },
+    {
+      "path": "release/guideline-storage/build-node24.log",
+      "bytes": 3188,
+      "sha256": "58cdc86ddd9d4c9bab972ca52cff6eef4db4664b7f7598243bbd023fe61c074a"
+    }
+  ]
+}

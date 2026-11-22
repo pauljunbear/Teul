@@ -1,0 +1,104 @@
+{
+  "decision": "DEC-046",
+  "status": "implemented and focused checks passed; final review and release gates tracked separately",
+  "baseCommit": "aca93b713e2d28585c0559124605d72c00f28f28",
+  "evidence": {
+    "privateRelativePath": "implementation-baseline/task008-repair6/verification/dec046-source-evidence/verification.json",
+    "bytes": 4403,
+    "sha256": "86a35f56dbd60a1f69f8b0fec9eb88d01aa6dc040da746ac9c4edb1fe753c874"
+  },
+  "behavior": [
+    "The integrated authoring view retains its source summary and exposes the complete backend source through an exact-model-hash inspect request.",
+    "Imported and reopened source evidence can be inspected, copied and downloaded without rereading Figma or granting mutation authority.",
+    "Successful replacement clears old evidence; failed or cancelled replacement retains the confirmed source. Unsupported recipes do not show unrelated active-source evidence.",
+    "Only the short artifact readiness message is a live status region."
+  ],
+  "checks": {
+    "negativeBaseline": "Built ACA UI failed newly added integrated smoke because complete source evidence was unavailable after intake closes. See baseline-ui-smoke.log.",
+    "targetedTests": "87 tests passed in five files; authoring controller, model controller, bridge, integrated authoring UI, intake guards.",
+    "typecheck": "passed",
+    "focusedLint": "passed, zero warnings",
+    "gitDiffCheck": "passed",
+    "candidateBuild": "passed",
+    "candidateBudget": {
+      "bytes": 429847,
+      "capBytes": 430080
+    },
+    "candidateBuiltUiSmoke": "passed; initial source, saved recipe resume, failed/cancelled/successful replacement, late reply, unsupported recipe, existing construction/refinement/delivery smoke",
+    "finalAccessibilityReview": "Live status is restricted to the short readiness paragraph; full source evidence and controls are outside the live region. Nine affected UI tests and focused UI lint passed after this final change; candidate build, budget and built smoke rerun passed.",
+    "reviewRepair": "Independent reuse/efficiency review reproduced an accepted near-2MiB source that could not be inspected once summary text was added. Source inspection now uses the existing 8MiB transport byte cap and permits one extra inert node for summary; input model limits are unchanged. A real-import boundary regression and all60 directly affected tests pass."
+  },
+  "implementationFiles": {
+    "scripts/smoke-production-ui.js": {
+      "bytes": 105122,
+      "sha256": "d4ecedb1a0d107bc3e52ba56583880513160aabe558b79edb50372e2eda150da"
+    },
+    "src/backend/__tests__/colorSystemAuthoringControllerV1.test.ts": {
+      "bytes": 45365,
+      "sha256": "b0570913fb4fa267f0ea9e8e1e9a544018b01c6b5eade91741b086e0d98903cc"
+    },
+    "src/backend/colorSystemAuthoringControllerV1.ts": {
+      "bytes": 36244,
+      "sha256": "b8c4f0460edaa9b3c2089695a152d5e17805d467c2c87a5c560cff121d137f32"
+    },
+    "src/backend/colorSystemModelControllerV1.ts": {
+      "bytes": 13289,
+      "sha256": "5990671a13751d2b8bd72c1a7a6ae543c7646faff682e90c9b09a8c49076834c"
+    },
+    "src/components/ColorSystemAuthoringV1.tsx": {
+      "bytes": 31389,
+      "sha256": "0f8300b0f3439322bdec91925a3206af61170dddb53cafb0d194a72cc68469cf"
+    },
+    "src/components/ColorSystemModelIntakeV1.tsx": {
+      "bytes": 7158,
+      "sha256": "a7823d69030579f131fe9f19ff1ec9aadbd80902d723761ddcc42477c637ad7f"
+    },
+    "src/components/__tests__/ColorSystemAuthoringV1.test.tsx": {
+      "bytes": 10692,
+      "sha256": "4def4a261c590df4ccc002a4110689758ddaed200dab5176cb37a4cc005eb7b0"
+    },
+    "src/components/__tests__/ColorSystemModelIntakeV1.test.tsx": {
+      "bytes": 4787,
+      "sha256": "703092385176878b073e9aa21b4cec6d9b8b0ca9cb603e1c1c5ccfcd48424012"
+    },
+    "src/lib/__tests__/colorSystemAuthoringBridgeV1.test.ts": {
+      "bytes": 14531,
+      "sha256": "b86e1d572f88be2cb7d69dcfab0e32c1c431e80a8c4c41a130f1b5f19ebb8af4"
+    },
+    "src/lib/colorSystemAuthoringBridgeV1.ts": {
+      "bytes": 3774,
+      "sha256": "6ef5035294255bd7d8e120839e679c0709ce22fd0dd14a6252c41ac2efcc4cbb"
+    },
+    "src/lib/colorSystemAuthoringViewV1.ts": {
+      "bytes": 9900,
+      "sha256": "df28f647717b1af32ecb75e5cbe9d859b53716e97743e77f9cf23977a33a12ff"
+    },
+    "src/types/colorSystemAuthoringViewV1.ts": {
+      "bytes": 4004,
+      "sha256": "f0a56858034cbd0148ebc65481f1cdef325e61afc2af4233e2644e4fbdc6fa58"
+    }
+  },
+  "boundaries": [
+    "No live Figma host interaction; built UI smoke uses explicit in-memory Figma API.",
+    "No full release gate, Node24 gate, commit, publication or candidate qualification performed by repair agent.",
+    "Frozen evaluation sources, outputs, owner packets, engine math and native geometry were not modified."
+  ],
+  "reviewRepair": {
+    "scopePrivateRelativePath": "implementation-baseline/task008-repair6/verification/dec046-source-evidence/boundary-fix-scope.json",
+    "diff": {
+      "file": "boundary-fix.diff",
+      "bytes": 6032,
+      "sha256": "af71da6475acf8c114538ceb9afbb9dde1b87e93cf4b2f51f1c6ce775d3a6376"
+    }
+  },
+  "builtArtifactsBeforeReviewRepair": {
+    "figma-candidate/dist/code.js": {
+      "bytes": 1571604,
+      "sha256": "edca6a1cecb8929e81165bf79ab948b56d3310428ca2424f3043141d44603fda"
+    },
+    "figma-candidate/dist/ui.html": {
+      "bytes": 429847,
+      "sha256": "0b55cdb99f95f7e366be6f77146cecdefd65d8417fe07e8c4b546431c008f27f"
+    }
+  }
+}

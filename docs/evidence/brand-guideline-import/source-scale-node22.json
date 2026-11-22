@@ -1,0 +1,311 @@
+{
+  "node": "v22.13.1",
+  "passedSteps": 33,
+  "studioTests": 675,
+  "vitestMaxWorkers": 4,
+  "scriptTests": 11,
+  "gates": [
+    {
+      "path": "docs/evidence/local-gates/2026-09-26T14-11-07Z-c08fb81/receipt.json",
+      "bytes": 16130,
+      "sha256": "a175a3867c492f6f1f0147df5fbd0881df889a04255df0769ee0a9ae18e4b8cc"
+    },
+    {
+      "path": "docs/evidence/local-gates/2026-09-26T14-11-47Z-c08fb81/receipt.json",
+      "bytes": 34893,
+      "sha256": "a0be448edcd28aa0770b5043966d844124c59d0fa3fa60054ab18b1be9959bf5"
+    },
+    {
+      "path": "docs/evidence/local-gates/2026-09-26T14-17-36Z-c08fb81/receipt.json",
+      "bytes": 8422,
+      "sha256": "3d6b9fb2d636c47acdcd59a02c28a42116d29c0926a5c27cac2db49424e2e101"
+    }
+  ],
+  "archive": {
+    "directory": "release/guideline-source-scale/verified-node22",
+    "artifacts": [
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-advanced-gradient-constraints.json",
+        "bytes": 712458,
+        "sha256": "ef3cabe6bdd27e145d0d3767f3a34a72d60547a9602e17294b9c53845f6e8140"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-advanced-gradient-mobile-detail.png",
+        "bytes": 111701,
+        "sha256": "0b498b8d6d7e49a8a15ab3d9ecbf547fb28495da06a078880bcf5fb9c05cfa75"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-advanced-gradient-mobile.json",
+        "bytes": 710827,
+        "sha256": "1e803bbdf1b3d048cb97997b347efdc8897f90f5997b37b59f00fc38e85505a9"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-advanced-gradient-mobile.png",
+        "bytes": 424471,
+        "sha256": "796f887b96e780394e6fc0e3053819ad61cd072344707e719bb759044b008184"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-advanced-invalid-position.json",
+        "bytes": 587833,
+        "sha256": "0f59d98fe6c33af652a90b880de9a4205a66bfcaf1863f08381420b77aefffc0"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-advanced-relationship-error.json",
+        "bytes": 663344,
+        "sha256": "71b1f129dc56b87acdb13cfa4aed87bdbc60a8d3fda9d95f386ceff3c553b04d"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-advanced-source-editors.json",
+        "bytes": 660403,
+        "sha256": "0118de5051c4e0b9d745fcfd56b5673b78b2772d553a0b0742fa2e79a8ad37fd"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-advanced-source-mobile-detail.png",
+        "bytes": 143571,
+        "sha256": "8da888413736397ab88cfe6d5559b33f4df40dd089aef71811fceef4e3ff9f8f"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-advanced-source-mobile.json",
+        "bytes": 659180,
+        "sha256": "6ebfb4e48c5506b4d41055c900664094e34cd7110bcdd27fe3b90cda5c055a91"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-advanced-source-mobile.png",
+        "bytes": 394911,
+        "sha256": "fdc3b903afc464d77ee9ac116d7db9cbc8716e65bd44494f71b4f89b0e0ac409"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-checks.json",
+        "bytes": 13330,
+        "sha256": "3e085f7dd1981964622f4023654d0eab5cb76b00342481076101fb679553f21d"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-desktop.png",
+        "bytes": 613027,
+        "sha256": "51a5466e6ca6319884352da4e2b3d819915ae90d9503b06c58a1babe7c54d3e8"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-empty.json",
+        "bytes": 194462,
+        "sha256": "3dba16a8b3148cd7d17b149e352b08eccd1739ea2ff2bea7ccb12e5ff51b09eb"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-figma-mobile-review.json",
+        "bytes": 400280,
+        "sha256": "f35bd145c285f922b068406e3cab499345b036316293ad1212e6518d51e33a99"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-figma-mobile-table.png",
+        "bytes": 8257,
+        "sha256": "624f904922cdc3b83263ac44edc8f45dca2773fe0d69115abb7bc3190edf1d68"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-figma-review.json",
+        "bytes": 398207,
+        "sha256": "c0427e3cdc1045ce21f2a4d7d9be0c77e0ed135bcf9457c7d38b2666cf9e1259"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-gradient.json",
+        "bytes": 642163,
+        "sha256": "c21ec26001d3af66aa8b3929bc6569b5f8944a1ed08e9f7054200b5c71271fb0"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-import-error.json",
+        "bytes": 662129,
+        "sha256": "a0d894cfdfd1fa38f58ff041ca889693e846f32f3891f20f1370d9dbcf042fb7"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-mobile-review-error.json",
+        "bytes": 687944,
+        "sha256": "9697c230101bd730ee48340b4e6f1c40f9fe77be4da66a682a1622ade1e424df"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-mobile.png",
+        "bytes": 439831,
+        "sha256": "257c3ed0c632e08c149d0aead3a204125bc21173daf23eafede61a4b154f0f99"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-pdf-ready.json",
+        "bytes": 237666,
+        "sha256": "59c31fba0759e9cf9ebceb34b9e54c11fe7cd0fe9416148d63f1f0c8a5bb8106"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-pdf-review.json",
+        "bytes": 440386,
+        "sha256": "c1989e7a4c63bd367100da3e49751a0d09fb183e8af54ded2c7ee403693a57c4"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-review-applied.json",
+        "bytes": 590900,
+        "sha256": "271a4c480096a2dd11d4a6571d2388e597d09e2e7fc1264f127673ba127295ba"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-saved.json",
+        "bytes": 648710,
+        "sha256": "852d2ea2726fd849602334ef3eeeaf3b6c7a2fb72bb1f27de8478330fbe0892e"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-visible-table-contrast-1.json",
+        "bytes": 2055,
+        "sha256": "4b1f01d74047b75e82cf6b754c3ba9efdf9a39b5eba165a32ef10dfb7692b6fa"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-visible-table-contrast-2.json",
+        "bytes": 2117,
+        "sha256": "9e955d6d739070b86dbeaf1caa4bd2136701097882a6cc08ec0da7963c26f0c1"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-visible-table-contrast-3.json",
+        "bytes": 2117,
+        "sha256": "6e1e0252eaf3f0f544386922bbee25b55ce66d4e88a4bdc27a09d4f4e750a3a0"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-visible-table-contrast-4.json",
+        "bytes": 2088,
+        "sha256": "6ee6a339c8c704ea3f20e261d2269f682fa9d738f034aa11defbeb8a11e3e1bd"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-website-mobile-review.json",
+        "bytes": 597406,
+        "sha256": "831c47f80c3075d6c33a3f89030242be4d13c9ecb421b58091dce0de53f7f0db"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-accessibility/node22-website-review.json",
+        "bytes": 599001,
+        "sha256": "9c6f0487b95e0287001f7f862ae6b3620a2e793bcf0f1a2ce142fa8890347ec6"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-source-scale/node22-application.css",
+        "bytes": 3665,
+        "sha256": "390d9fe244b47681c29af9b483ad240997f56c676ce7957b4e1c193e60af2c43"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-source-scale/node22-application.png",
+        "bytes": 114726,
+        "sha256": "b3f93d92d22d046aa5863c82235c4b75404946ad1cb088b175568162c76beed1"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-source-scale/node22-checks.json",
+        "bytes": 2733,
+        "sha256": "282b15dc7769880334d2ffa5742bd9c1d86f9fcfde21ae57a819438ddc22f11c"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-source-scale/node22-derived-application.json",
+        "bytes": 838499,
+        "sha256": "00d668293e1f0f18ea430333258a0f941883d634c3d40fc02e12b0244c10dc20"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-source-scale/node22-derived-scale-mobile.json",
+        "bytes": 610861,
+        "sha256": "5acf8c3b1b39a9776703da77f7dbab02c1f35d3c0a8d889c7305988f7af5792f"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-source-scale/node22-derived-scale.json",
+        "bytes": 620745,
+        "sha256": "f77df46493517b9bd6fbe68e0a0ad0b2c3dca9584996af680f43c0f9490004ea"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-source-scale/node22-mobile.png",
+        "bytes": 104251,
+        "sha256": "e5941897875e1a655a81b7d9efc478b92568f4a987b8d7d89e004b2df177c2d4"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-source-scale/node22-project.json",
+        "bytes": 506902,
+        "sha256": "1e64eb4801bd68c276de6514c5a29212838dcf150561bb23c94edfd56b59cfd1"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-source-scale/node22-rest.svg",
+        "bytes": 11305,
+        "sha256": "739ae5486d5170743aff22f287c6c16082538b88b8c30ef9b07f89d3f52c3141"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-source-scale/node22-scale.png",
+        "bytes": 102012,
+        "sha256": "554c8370677e25d30650894cebc259b779daba6c3bd1e2964aeb888f64417687"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-source-scale/node22-to-node24.json",
+        "bytes": 261,
+        "sha256": "2cb36a36e3dfba25427148d2fb49cbc351b5ee62cd2f40168cd7a2a882010928"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-task-flow/node22-checks.json",
+        "bytes": 2789,
+        "sha256": "f0f87f423fe8e5ec5f9ede90589d5cb97819c56e9e2cc0ba35d582479f6119ca"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-task-flow/node22-choose-task.json",
+        "bytes": 495081,
+        "sha256": "ca4165c5a28257b5cec989cf9672cffeb0ed2c4137ba171c226db9092c3d4c86"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-task-flow/node22-desktop.png",
+        "bytes": 64818,
+        "sha256": "7bd4de967ae80a725ad1a5fbec10097aa3be18b9b6015d6893471fcfe2743e43"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-task-flow/node22-gradient-task-mobile.json",
+        "bytes": 634146,
+        "sha256": "f391fa1454a35240959c851e8b7eda1ce05f2963d3c44e2e5338173fc6f00a17"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-task-flow/node22-gradient-task.json",
+        "bytes": 635763,
+        "sha256": "39d33c9383df51390feb06dd8cd139160e499a9ed5e17af730bdb5fcf8e30db7"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-task-flow/node22-mobile.png",
+        "bytes": 153261,
+        "sha256": "54ca40a527e00c5688b5cbc1fe0bf08211b831ad1b8083f612fd1b00d4050be8"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/guideline-task-flow/node22-runner.log",
+        "bytes": 2587,
+        "sha256": "cec188fc0ded7a5c78a2a4e710063db67ba2733f14217bb348a4069ae1586cc3"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/teul-source-scale-cross22.log",
+        "bytes": 231,
+        "sha256": "6f4f27d429cbc045a368ff0bc07fb0c8c5be266f5624391eda0faf10d9c409e4"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/teul-source-scale-cross24.log",
+        "bytes": 231,
+        "sha256": "ef0cef8a5cd8b3d61ef91c4639f238ebbedbeb3c631cd34b0cf20e18cbfa671c"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/teul-source-scale-node22-final.log",
+        "bytes": 3014,
+        "sha256": "264cc436c97b6570d65c428d4c906207f3165001c9167e517cab669fdd717cfd"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/teul-source-scale-node22-retry.log",
+        "bytes": 57289,
+        "sha256": "39b9eaf74c73375850795c582f46bba7bad57eb4e64b9c223ef2831b6e0fd2ad"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node22/teul-source-scale-node22.log",
+        "bytes": 2914,
+        "sha256": "e6990420a2b4891fd2f68da9f2cd0c96ef1e57db0036c70c960d5334cbce099a"
+      }
+    ]
+  },
+  "focusedScans": [
+    {
+      "name": "derived-scale",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "derived-application",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "derived-scale-mobile",
+      "violations": 0,
+      "incomplete": 0
+    }
+  ]
+}

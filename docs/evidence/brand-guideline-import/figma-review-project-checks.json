@@ -1,0 +1,242 @@
+{
+  "schemaVersion": "teul.local-check-receipt.v1",
+  "createdAt": "2026-09-26T00:07:47.152555+00:00",
+  "baseCommit": "aa640277675a491c72d8a6aa88b0f3baeaefc30e",
+  "scope": "TASK-005/TASK-008/TASK-009 native review, generation, mode-aware gradient and portable project slice",
+  "commands": [
+    {
+      "command": "npm --prefix web test",
+      "nodes": ["22.13.1", "24.19.0"],
+      "result": "30 files; 389 tests pass on each runtime"
+    },
+    {
+      "command": "npm --prefix web run test:guideline-figma-review",
+      "nodes": ["22.13.1", "24.19.0"],
+      "result": "9 native review/project browser scenarios pass on each runtime; no page errors or external requests"
+    },
+    {
+      "command": "npm --prefix web run test:guideline-figma",
+      "nodes": ["22.13.1", "24.19.0"],
+      "result": "11 local browser/session/HTTP/capture scenarios pass on each runtime; synthetic Figma transport"
+    },
+    {
+      "command": "npm --prefix web run test:guidelines",
+      "nodes": ["22.13.1", "24.19.0"],
+      "result": "24 PDF review/structure/application/project browser scenarios pass on each runtime"
+    },
+    {
+      "command": "npm --prefix web run lint; npm --prefix web run build; VITE_GUIDELINE_IMPORT=true npm --prefix web run build",
+      "nodes": ["22.13.1", "24.19.0"],
+      "result": "pass; typecheck included; default and guideline-enabled build; Vite chunk-size advisory recorded separately"
+    },
+    {
+      "command": "validate_prd.py --profile full --extension ai --extension refactor --stage ready --strict",
+      "result": "pass; complete stage not claimed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "pass"
+    }
+  ],
+  "browserReceipts": [
+    {
+      "path": "release/guideline-figma-review/browser-receipt-node22.json",
+      "sha256": "sha256:1c6cdd5348981a4e010312592f927ba53944912e4a3f5bb75e0e9418aa43a2d2",
+      "node": "v22.13.1",
+      "checks": [
+        "Keyboard entry opens native review; partial scope requires an explicit reason and unresolved captured text blocks generation.",
+        "A native scale with source anchors at positions zero and two produces one proposed intermediate shade through the existing extension engine.",
+        "The captured gradient restriction blocks product use while brand use generates the reviewed native anchors and exports qualified SVG, CSS and JSON.",
+        "Changing a source decision immediately removes generated views and saved review/selection authority while retaining the draft.",
+        "Offline reopen replays the original capture, review, native mode and selected gradient; project and SVG/CSS/JSON bytes remain exact.",
+        "Tampered saved models and future project versions do not replace the current reviewed source or result.",
+        "Native review and generated output fit a 390px viewport without horizontal page overflow.",
+        "A valid capture above the review statement limit displays a narrowing error without crashing Studio or losing the captured packet.",
+        "Renaming a shared scale slot preserves both native modes through save/reopen; removing it explicitly removes its anchors in both modes."
+      ],
+      "failures": [],
+      "artifacts": [
+        {
+          "file": "node22-gradient.svg",
+          "sha256": "3cc5e0becf67d11bfa6655053378685187efb7ecbfa7da3b45c3a4331198e4d0"
+        },
+        {
+          "file": "node22-gradient.css",
+          "sha256": "d97ecd4518f21b0bfd1e19037d380f629708802fea1f9b43f9b092faf6995c3d"
+        },
+        {
+          "file": "node22-gradient.json",
+          "sha256": "75683d89714b4b9eda58cdfcc1625c7a0fd3cd9325b81e5ffe39e21cfbab9213"
+        },
+        {
+          "file": "node22-project.json",
+          "sha256": "a031aedee739cc1bcae04d1de89a9edab09a7c4dc81143ebf9ebdf11cd7f66e6"
+        },
+        {
+          "file": "node22-gradient-editor.png",
+          "sha256": "0ef7954439cd7a7a1ea42ecdcec2b58c68dfc4c68fa1ec112e6fb7af00211c2a"
+        },
+        {
+          "file": "node22-desktop.png",
+          "sha256": "3af6701623058cc19f17b5cd68e3954aade62265664d8beec4799c84199fd5f6"
+        },
+        {
+          "file": "node22-mobile.png",
+          "sha256": "2dbf8653d7a875231649de6eb727d5f530b6659cfb46a8057d144aa1dfa21879"
+        },
+        {
+          "file": "node22-mobile-viewport.png",
+          "sha256": "fc7426f5b415fc14c1f144642f2804461dc5da2d44b0e4c5bb5204ac0c44818f"
+        }
+      ]
+    },
+    {
+      "path": "release/guideline-figma/node22-receipt.json",
+      "sha256": "sha256:55df716de3c61298712ed607c5fdbabd4d092a2c875f2da016495114804c6408",
+      "node": "v22.13.1",
+      "checks": [
+        "No ambient service/provider requests; missing session leaves PDF fallback enabled",
+        "PKCE browser link and authenticated cookie callback connect the real server manager without exposing credentials",
+        "Explicit selection dispatches one native job; full-precision paints, gradients, text, modes and gaps survive download; source text stays inert",
+        "Lost submission response retains its recovery record through a later 401 and reconciles the exact existing job after an explicit Check capture action",
+        "File access failure retains prior capture and allows recovery without substituting empty evidence",
+        "Cancel reaches the owned server job and retains the previous completed capture",
+        "Confirmed authentication and disabled-processor rejections release pending state and leave recovery controls enabled",
+        "Completion winning cancellation remains recoverable and is never reported as cancelled",
+        "Offline packet with a valid hash but conflicting repeated node identity is rejected without hiding a source restriction",
+        "Large source text is paged and gap/property previews are bounded; complete source data remains in the packet",
+        "Disconnect preserves portable evidence; offline reopen makes no request; 390px viewport and keyboard connection control work"
+      ],
+      "failures": [],
+      "artifacts": []
+    },
+    {
+      "path": "release/guideline-figma-review/browser-receipt-node24.json",
+      "sha256": "sha256:3e60c55d4567171020ae79994259e346ed58c0d34e531e7af06875870fc8580d",
+      "node": "v24.19.0",
+      "checks": [
+        "Keyboard entry opens native review; partial scope requires an explicit reason and unresolved captured text blocks generation.",
+        "A native scale with source anchors at positions zero and two produces one proposed intermediate shade through the existing extension engine.",
+        "The captured gradient restriction blocks product use while brand use generates the reviewed native anchors and exports qualified SVG, CSS and JSON.",
+        "Changing a source decision immediately removes generated views and saved review/selection authority while retaining the draft.",
+        "Offline reopen replays the original capture, review, native mode and selected gradient; project and SVG/CSS/JSON bytes remain exact.",
+        "Tampered saved models and future project versions do not replace the current reviewed source or result.",
+        "Native review and generated output fit a 390px viewport without horizontal page overflow.",
+        "A valid capture above the review statement limit displays a narrowing error without crashing Studio or losing the captured packet.",
+        "Renaming a shared scale slot preserves both native modes through save/reopen; removing it explicitly removes its anchors in both modes."
+      ],
+      "failures": [],
+      "artifacts": [
+        {
+          "file": "node24-gradient.svg",
+          "sha256": "3cc5e0becf67d11bfa6655053378685187efb7ecbfa7da3b45c3a4331198e4d0"
+        },
+        {
+          "file": "node24-gradient.css",
+          "sha256": "d97ecd4518f21b0bfd1e19037d380f629708802fea1f9b43f9b092faf6995c3d"
+        },
+        {
+          "file": "node24-gradient.json",
+          "sha256": "67d2e8d12ae5b16b99896aa508f539e40bf6fe25b76cfa95f7eef21968e138f3"
+        },
+        {
+          "file": "node24-project.json",
+          "sha256": "9d14df805f857300bdfabe50c2a0d3c3f43d1e5cb2cb4d080661b8af0f329273"
+        },
+        {
+          "file": "node24-gradient-editor.png",
+          "sha256": "4f196785d5973e2a5c3ea1b2e8f5eb6eed92906fc8edcb655dcdcbdf2a4e3ae9"
+        },
+        {
+          "file": "node24-desktop.png",
+          "sha256": "3cf4459d533a594748b2526f13012fd19beb09355048f4e4c1c8db2ed53e1277"
+        },
+        {
+          "file": "node24-mobile.png",
+          "sha256": "2dbf8653d7a875231649de6eb727d5f530b6659cfb46a8057d144aa1dfa21879"
+        },
+        {
+          "file": "node24-mobile-viewport.png",
+          "sha256": "fc7426f5b415fc14c1f144642f2804461dc5da2d44b0e4c5bb5204ac0c44818f"
+        }
+      ]
+    },
+    {
+      "path": "release/guideline-figma/node24-receipt.json",
+      "sha256": "sha256:6434bd6f2b9d0c281414a09d4ffe4982d255337b94ddf49165118af1aa0b8eb0",
+      "node": "v24.19.0",
+      "checks": [
+        "No ambient service/provider requests; missing session leaves PDF fallback enabled",
+        "PKCE browser link and authenticated cookie callback connect the real server manager without exposing credentials",
+        "Explicit selection dispatches one native job; full-precision paints, gradients, text, modes and gaps survive download; source text stays inert",
+        "Lost submission response retains its recovery record through a later 401 and reconciles the exact existing job after an explicit Check capture action",
+        "File access failure retains prior capture and allows recovery without substituting empty evidence",
+        "Cancel reaches the owned server job and retains the previous completed capture",
+        "Confirmed authentication and disabled-processor rejections release pending state and leave recovery controls enabled",
+        "Completion winning cancellation remains recoverable and is never reported as cancelled",
+        "Offline packet with a valid hash but conflicting repeated node identity is rejected without hiding a source restriction",
+        "Large source text is paged and gap/property previews are bounded; complete source data remains in the packet",
+        "Disconnect preserves portable evidence; offline reopen makes no request; 390px viewport and keyboard connection control work"
+      ],
+      "failures": [],
+      "artifacts": []
+    }
+  ],
+  "reviews": {
+    "reuse": "Shared native statement projection preserves prior identities; explicit scale rename metadata preserves other-mode anchors; duplicate names rejected. Follow-up confirmed.",
+    "quality": "Strict enum types; per-source family/scale claims; mode-specific closed-palette membership. Focused regressions pass.",
+    "efficiency": "Fallible draft preparation is guarded before mounting; draft adoption hash is computed once. Oversized browser case and focused tests pass."
+  },
+  "buildAdvisories": {
+    "message": "Lazy guideline chunk exceeds Vite default 500 kB advisory; integrated performance/release qualification remains open.",
+    "guidelineEnabledBuild": [
+      {
+        "path": "web/dist/assets/GuidelineWorkspace-B6wPhvSk.js",
+        "bytes": 760752,
+        "gzipBytes": 225047,
+        "sha256": "sha256:a34bea06129fbadc54252102f7b60ad361317daee99f7974cac731fa5b5a3ccd"
+      }
+    ]
+  },
+  "boundaries": {
+    "realFigmaRequests": false,
+    "realModelRequests": false,
+    "sourceMutation": false,
+    "nativeReviewLocallyVerified": true,
+    "strictProjectReplayVerified": true,
+    "figmaSvgPasteObserved": false,
+    "extensionApplicationSavedInProject": false,
+    "automaticProjectPersistence": false,
+    "fullAcceptanceComplete": false,
+    "integratedIntoMain": false,
+    "pushed": false,
+    "deployed": false
+  },
+  "sourceHashes": {
+    "docs/evidence/brand-guideline-import/figma-review-project.md": "sha256:66f774fe647774f1fe045a3e2d536ddc12cc039a29d53798441e8521f56f72c6",
+    "docs/plans/2026-09-25-brand-guideline-import-plan.md": "sha256:445634b7120977f7ef5d1a2e0b739077aacafc3449973c1a5117f1da08dc8a34",
+    "docs/prds/2026-09-25-brand-guideline-import.md": "sha256:5b96760bc3cbb15c5b91f792626907139f68b0ddc0d8d21dae44f59bb24c0783",
+    "web/README.md": "sha256:f970ef2284b453e415872cd0d730843c26678b4ef7455687b6261513d604f924",
+    "web/package.json": "sha256:41658e0a58e63a90bb18f45684621c459c46e65a47c8e3f60dc31f5e04ad694e",
+    "web/scripts/guideline-figma-review-smoke.mjs": "sha256:63c6b04f03b55662d6473169cfe27049dfaf0e6a1857dde244ee96f9affbecdb",
+    "web/src/components/GuidelineFigmaPanel.tsx": "sha256:e02724b673ce2ea965f70077d468f89b423661349d376cc9a0f2ad13b6d46071",
+    "web/src/components/GuidelineFigmaReview.css": "sha256:49d117eab0441fa46bb84a588c02884c1e6753ae75b6f63fc21c5631f8843ebc",
+    "web/src/components/GuidelineFigmaReview.tsx": "sha256:7436b54ac8f70decf9acbb1e3359c50d4297b8d1903bd45c9c2271947d273005",
+    "web/src/components/GuidelineModeGradientEditor.tsx": "sha256:3983eda9b3439f8dda359c27403eed99ba504e19fd08ea66aac9d243a7e44a8e",
+    "web/src/components/GuidelineStructureEditor.tsx": "sha256:c13a343c5ac5fc2534062abb45f5ba3f3bb5de82c41fe55e1402c8b44895a62d",
+    "web/src/lib/guideline/figmaModel.ts": "sha256:565396b129666538a675b644899b843da887df6ece72b1ec782843547c9a92a2",
+    "web/src/lib/guideline/figmaProject.ts": "sha256:e2db8780644ed4c92f331018dc2537477cfc84fd07074f5c30e46696a09b9ddb",
+    "web/src/lib/guideline/figmaReview.test.ts": "sha256:bec5092d72fd15275c559de6c76da0ad584df470aa5e5eb5319a1166ed551915",
+    "web/src/lib/guideline/figmaReview.ts": "sha256:d63f173348a90ca39af9838a4d518e0946c9349574b205808d983d78b33dead9",
+    "web/src/lib/guideline/figmaStatements.test.ts": "sha256:727b2cc0adea641a146866869b363a4bdfcd6f86555009d09f401d82d3231233",
+    "web/src/lib/guideline/figmaStatements.ts": "sha256:7533118d91cf95d7867191ec186261520146adb78f10590c9e0dc8af0d3787f0",
+    "web/src/lib/guideline/gradientExport.ts": "sha256:cdefed3d4a02203fac5692d10261504975d33c31838803232807049ba930cc9c",
+    "web/src/lib/guideline/modeGradient.test.ts": "sha256:b29b29de1835041cac5e51666c4d0fc4a999395aee9e9f51817bb43a4b4fb204",
+    "web/src/lib/guideline/modeGradient.ts": "sha256:2fb597216ec70e0535664c7b8b7f0f6b249c89ec932e837171fc46b5529a17fc",
+    "web/src/lib/guideline/project.ts": "sha256:c6c08e32162a780efa000a808250f4328f0af3668f4bc10c8e5278f4706e8d90",
+    "web/src/lib/guideline/review.ts": "sha256:17a535cfae1252d55bc47a6ae7e4951ab80e0111e9ab8c570026c4678d5cdf8d",
+    "web/src/lib/guideline/reviewV2.ts": "sha256:8ab91831557ff96093e0eed2f458359a4c755c132b40e659441c7cf434cc765c",
+    "web/src/lib/guideline/structureRules.test.ts": "sha256:491ce3fe2e291a57a588ad8e52ab5fc3b55b3577e97d9f8494c66295fdf56eec",
+    "web/src/lib/guideline/structureRules.ts": "sha256:9007148b0d601ccc565f02e8d06bfb6ed2d6c84ac1f1b8f7eb5c05d0994be341"
+  }
+}

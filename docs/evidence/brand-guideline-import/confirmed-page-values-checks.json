@@ -1,0 +1,138 @@
+{
+  "schemaVersion": "teul.local-slice-evidence.v1",
+  "recordedAt": "2026-09-25T22:53:22.500949+00:00",
+  "baselineCommit": "949f540d57a183e7d9cf30fd9a939816006451c3",
+  "state": "implemented and locally verified; not integrated, pushed or deployed",
+  "scope": "Confirmed transcriptions and rendered samples from selected PDF pages in standalone Studio",
+  "sourceHashes": {
+    ".prettierignore": "04195204958eda668dbfe9221f23262dd1ae73a9df6091aff5d20308157fddf7",
+    "docs/evidence/brand-guideline-import/confirmed-page-values.md": "d28ba444df210651b65416351d1c223bc0cf05a56fa072722e9a69f58852d6f1",
+    "docs/evidence/brand-guideline-import/manual-assistance-browser-node22.json": "89ef00c514844299624b2f5a308d84c3e111b36036f05f124e9475dcbc9f1b08",
+    "docs/evidence/brand-guideline-import/manual-assistance-browser-node24.json": "3a2be174ce4f577e3acf630293db2296f8de914a6bef3eaf9789d99ac15e5504",
+    "docs/evidence/brand-guideline-import/manual-browser-node22.json": "6cb457f42b3ed5e94116350089abe47ea986c31d7db9083815700dda6138b4f6",
+    "docs/evidence/brand-guideline-import/manual-browser-node24.json": "5293b8bf9e48f535e06b8ca4b4d4ab0961085f264af68669e4ca121e1f52809b",
+    "docs/evidence/brand-guideline-import/manual-efficiency.json": "1d971f3c84caa971673a4faebc97fbab0cda64724a4c7950ec96134b4c688478",
+    "docs/evidence/brand-guideline-import/manual-mobile-sample.png": "b5b006f76188b858250cf0ad6c46e86fab2a989c95bad08a15bffed39623ce9b",
+    "docs/evidence/brand-guideline-import/manual-offline-crop.png": "449a052451077ad56b0d104987e55cb05b3874eeda2d9ceb87b3fe010fc45d80",
+    "docs/plans/2026-09-25-brand-guideline-import-plan.md": "9c0e30e02d6a0d63992fdd12c048af6bffba7bd568027006b9b4bc60cffa5334",
+    "docs/prds/2026-09-25-brand-guideline-import.md": "dd8fe7760a605b31248ca06b9372b71a6e7984feda167e40aea3fe4888ca2dfd",
+    "src/lib/colorSystemAuthoringDeliveryV1.ts": "cbed753ec380c98884abce1bbf7458c5f016dbff5ee4ca179dafa5687b4bf4b6",
+    "src/lib/colorSystemProposalV1.ts": "f4cf7c4d42b4e1357474218331ef9ba944e2d6973c976e7a373fd471a604be5a",
+    "src/lib/colorSystemValueProvenanceV1.ts": "cd1028368a3f0287238173ac79724771666386e41daca21eef57b0824b9e5275",
+    "web/README.md": "e0734da3ea7ea0adb24cb4775e76263422ea736a3b9c83ea226b29b1c0fbe830",
+    "web/fixtures/guidelines/README-numeric.md": "1862f62f1cbc6b33a301a8cddc7915a1d0e6152308582d2d7be755bc21f75ba4",
+    "web/fixtures/guidelines/legacy-project-v3.json": "11a27d87e3d714039f246c9edacda42f9782d918865d020d77af773c0eaf39db",
+    "web/package.json": "58b6dbdddad4d4fb4e8e1733904c699d3f6cab6511aba9e32e50df86e805b5a5",
+    "web/scripts/guideline-assistance-smoke.mjs": "ce26dd5ba379bc3b044f4450e610bb54496457610b2160321dfc75e20c37f405",
+    "web/scripts/guideline-manual-smoke.mjs": "b8ed7658e39ad66285d7cbfad48e46288d0e69c70a15d41349d369ecebcce4ef",
+    "web/src/components/GuidelineManualColorPanel.css": "ed708362bb225e5597e4ba7ed21d2f55b2590278eac76245d3107df9c79232da",
+    "web/src/components/GuidelineManualColorPanel.tsx": "25e50bc2e0942c834e3cf5ef645a7bea2dccf0fbfde5ab70a9267630386cac5f",
+    "web/src/components/GuidelineStructureEditor.tsx": "e5447cf7ae6b7c1eca3cf853df47081b488673c36699eb6eea3c0513c8213975",
+    "web/src/components/GuidelineWorkspace.tsx": "ff273721d9e5383734c2d0e22bb865e83daa6a88f42354e20a8fdca30fff11e4",
+    "web/src/lib/guideline/applicationGeometry.ts": "9e7cab2292248cedd08fcd252f3fb990fc8894a913f3820b1972a7c2242182d9",
+    "web/src/lib/guideline/gradientExport.ts": "2dabcb4d5a266d051c1c54d8ad329545df2188d1ae4b57e33880b6781d95cf63",
+    "web/src/lib/guideline/pdfRegion.test.ts": "5a8dd18f0ae9d5e83edba965d99922c8ab17a839c9cf95ee77278b38c9d52a4b",
+    "web/src/lib/guideline/pdfRegion.ts": "ffd20361a90f10b24ea080372bb720a6d2b8ef5cd1da3ae9ccce5b4bc2c26311",
+    "web/src/lib/guideline/projectV4.test.ts": "c86c6050cd9d99c84447879895eb2f5f14bd6339a4f8f3ceabd7645e91ae15f9",
+    "web/src/lib/guideline/projectV4.ts": "43b2703faba77d75772baac30f1648b2d7131c27456f33f8878fd26eff7cce95",
+    "web/src/lib/guideline/review.ts": "63f2ac59c07f574239bd3a9cbbfcb749bf8c4afe5a2d2bbaee1bd409d7657729",
+    "web/src/lib/guideline/reviewV2.ts": "68a78a3ca930a03065da62bbd7b75c0eb3f82e0d9f7dcdb928d74245060593fe",
+    "web/src/lib/guideline/reviewV4.test.ts": "1c638977bf8e13e19e6865641775fe9affb05cae7df11efeabc73eefeed70c85",
+    "web/src/lib/guideline/reviewV4.ts": "869d5513d8e9b10e152855ebe456f2c863389b7bf59853575c8ebd4981476469",
+    "web/src/lib/guideline/reviewedValues.test.ts": "716f3ce70bbce457a8ac627b3c76de8ccaa068bd2bbd60100ea53d644981b947",
+    "web/src/lib/guideline/reviewedValues.ts": "59c444570384d1b0d8e76b736c1dd2e9963aaa26d35c7d43548a09f2547e2528",
+    "web/src/lib/guideline/sourceInventory.ts": "324d3df360cb6454653d87ba03dfb14150f4959f01a1c4996ef809f2e31ae53d"
+  },
+  "checks": [
+    {
+      "command": "npm --prefix web test",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "status": "passed",
+      "testFiles": 24,
+      "tests": 332
+    },
+    {
+      "command": "npm run test:run -- src/lib/__tests__/colorSystemProposalV1.test.ts src/lib/__tests__/colorSystemConstructionProposalV1.test.ts src/lib/__tests__/colorSystemAuthoringDeliveryV1.test.ts",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "status": "passed",
+      "tests": 78
+    },
+    {
+      "command": "npm --prefix web run test:guideline-manual",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "status": "passed",
+      "scenarioGroups": 10,
+      "receipts": ["manual-browser-node22.json", "manual-browser-node24.json"]
+    },
+    {
+      "command": "npm --prefix web run test:guideline-assistance",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "status": "passed",
+      "scenarioGroups": 12,
+      "provider": "synthetic local HTTP transport; no live model",
+      "receipts": ["manual-assistance-browser-node22.json", "manual-assistance-browser-node24.json"]
+    },
+    {
+      "command": "npm --prefix web run test:guidelines",
+      "runtimes": ["22.13.1"],
+      "status": "passed",
+      "scenarioGroups": 24,
+      "remoteRequests": 0
+    },
+    {
+      "command": "npm --prefix web run test:guideline-numeric",
+      "runtimes": ["22.13.1"],
+      "status": "passed",
+      "scenarioGroups": 8,
+      "remoteRequests": 0
+    },
+    {
+      "command": "npm --prefix web run build",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "status": "passed",
+      "includesTypecheck": true,
+      "advisory": "Existing >500kB lazy chunk advisory remains; guideline690.29kB, gzip206.83kB."
+    },
+    {
+      "command": "npm --prefix web run lint",
+      "runtime": "22.13.1",
+      "status": "passed"
+    },
+    {
+      "command": "eslint changed core TypeScript --max-warnings0",
+      "runtime": "22.13.1",
+      "status": "passed"
+    },
+    {
+      "command": "validate_prd.py --profile full --extension ai --extension refactor --stage ready --strict",
+      "status": "passed"
+    },
+    {
+      "command": "git diff --check",
+      "status": "passed"
+    }
+  ],
+  "review": {
+    "reuse": "no additional actionable findings",
+    "quality": [
+      "Mismatched review/gradient exports now fail through shared selection replay",
+      "V4 transitions preserve recover/check/cancel controls for unresolved assisted requests; real service browser regression passes"
+    ],
+    "efficiency": [
+      "Trusted frozen witnesses, overlays and inventory reuse",
+      "Small field edits avoid whole-raster hashing/validation",
+      "Project review reuses the validated matching outer draft"
+    ],
+    "remainingFindings": [],
+    "performanceReceipt": "manual-efficiency.json"
+  },
+  "limitations": [
+    "Full parent acceptance remains open; ready-stage validation is not completion",
+    "PDF metadata and saved user confirmations are declared provenance, not source/reviewer authentication",
+    "Scanned source rules still need broader interpretation coverage",
+    "Assisted suggestions currently precede manual values; recovery remains available afterward",
+    "No live model, private upload, OAuth configuration, deployment or Figma mutation",
+    "No human aesthetic acceptance or assistive-technology qualification",
+    "Full Node22/24 release gate not run for this local slice"
+  ]
+}

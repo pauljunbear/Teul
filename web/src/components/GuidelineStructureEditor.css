@@ -1,0 +1,179 @@
+.guideline-structure {
+  margin: 28px 0;
+  min-width: 0;
+}
+.guideline-structure-heading,
+.guideline-structure-actions,
+.guideline-scale-slot-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.guideline-structure-heading h3 {
+  margin: 0;
+}
+.guideline-structure-hint,
+.guideline-structure-empty {
+  display: block;
+  color: var(--studio-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}
+.guideline-structure-empty {
+  padding: 12px 0;
+  font-size: 13px;
+}
+.guideline-source-scale {
+  border: 1px solid var(--border);
+  padding: 16px;
+  border-radius: 8px;
+  min-width: 0;
+  margin: 20px 0 0;
+}
+.guideline-source-scale > legend {
+  padding: 0 6px;
+  font-size: 14px;
+  font-weight: 500;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.guideline-scale-fields,
+.guideline-scale-slot-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.guideline-structure label,
+.guideline-relationship label {
+  display: block;
+  min-width: 0;
+  font-size: 13px;
+}
+.guideline-structure input,
+.guideline-structure select,
+.guideline-relationship input,
+.guideline-relationship select {
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+}
+.guideline-scale-slot {
+  border-top: 1px solid var(--border);
+  padding: 14px 0;
+  margin-top: 14px;
+}
+.guideline-scale-anchor {
+  grid-column: 1 / -1;
+}
+.guideline-scale-slot-actions {
+  margin-top: 6px;
+}
+.guideline-anchor-source {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 40px;
+  padding: 2px;
+  border-radius: 4px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 12px;
+}
+.guideline-anchor-source:hover .guideline-anchor-location {
+  text-decoration: underline;
+}
+.guideline-anchor-source:active {
+  background: var(--muted);
+}
+.guideline-anchor-source:focus-visible,
+.guideline-structure select:focus-visible,
+.guideline-relationship select:focus-visible,
+.guideline-structure-check input:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 3px;
+}
+.guideline-anchor-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px #0002;
+}
+.guideline-anchor-location {
+  color: var(--studio-muted);
+  text-underline-offset: 3px;
+}
+.guideline-relationship {
+  display: grid;
+  gap: 12px;
+  margin: 16px 0;
+}
+.guideline-selector-list {
+  margin: 0;
+  border: 0;
+  padding: 0;
+  min-width: 0;
+}
+.guideline-selector-list > legend {
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+.guideline-selector-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 40px;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.guideline-selector-row [data-slot='button'] {
+  width: 40px;
+}
+.guideline-relationship .guideline-structure-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+}
+.guideline-relationship .guideline-structure-check input {
+  width: 16px;
+  min-height: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.guideline-prominence-group {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.guideline-prominence-group > [data-slot='button'] {
+  margin-top: 6px;
+}
+@media (max-width: 600px) {
+  .guideline-source-scale {
+    padding: 12px;
+  }
+  .guideline-scale-fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .guideline-structure [data-slot='button'],
+  .guideline-relationship [data-slot='button'],
+  .guideline-anchor-source,
+  .guideline-structure input,
+  .guideline-structure select,
+  .guideline-relationship input,
+  .guideline-relationship select {
+    min-height: 44px;
+  }
+  .guideline-selector-row {
+    grid-template-columns: minmax(0, 1fr) 44px;
+  }
+  .guideline-selector-row [data-slot='button'] {
+    width: 44px;
+  }
+  .guideline-relationship .guideline-structure-check input {
+    min-height: 16px;
+  }
+}

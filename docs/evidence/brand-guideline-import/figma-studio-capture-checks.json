@@ -1,0 +1,98 @@
+{
+  "schemaVersion": "teul.local-check-receipt.v1",
+  "createdAt": "2026-09-25T23:39:32.311319+00:00",
+  "baseCommit": "6b6a50750166601f82e5103e039f3097e041f160",
+  "scope": "TASK-005 Studio Figma capture, inspection and offline packet recovery; partial implementation",
+  "commands": [
+    {
+      "command": "npm --prefix web test",
+      "node": "22.13.1",
+      "result": "25 files, 338 tests pass"
+    },
+    {
+      "command": "npm --prefix web test",
+      "node": "24.19.0",
+      "result": "25 files, 338 tests pass"
+    },
+    {
+      "command": "npm --prefix services/guideline-intake test",
+      "node": "22.13.1",
+      "result": "135 tests pass"
+    },
+    {
+      "command": "npm --prefix services/guideline-intake test",
+      "node": "24.19.0",
+      "result": "135 tests pass"
+    },
+    {
+      "command": "npm --prefix web run test:guideline-figma",
+      "node": "22.13.1",
+      "result": "11 scenarios pass, no failures; synthetic Figma transport"
+    },
+    {
+      "command": "npm --prefix web run test:guideline-figma",
+      "node": "24.19.0",
+      "result": "11 scenarios pass, no failures; synthetic Figma transport"
+    },
+    {
+      "command": "npm --prefix web run test:guideline-assistance",
+      "node": "22.13.1",
+      "result": "12 scenarios pass, no failures; synthetic provider"
+    },
+    {
+      "command": "VITE_GUIDELINE_IMPORT=true npm --prefix web run build",
+      "node": "22.13.1",
+      "result": "pass; existing chunk warning"
+    },
+    {
+      "command": "npm --prefix web run lint; npm run lint:intake",
+      "node": "22.13.1",
+      "result": "pass, zero warnings"
+    },
+    {
+      "command": "validate_prd.py --profile full --extension ai --extension refactor --stage ready --strict",
+      "result": "pass"
+    },
+    {
+      "command": "git diff --check",
+      "result": "pass"
+    }
+  ],
+  "reviews": {
+    "reuse": "Shared packet/node identity and cancellation classification; follow-up reviewer confirmed",
+    "quality": "Confirmed rejections release controls while recovery preserves earlier uncertain submissions; follow-up reviewer confirmed",
+    "efficiency": "Bounded inspection windows and retained terminal recovery; follow-up reviewer confirmed"
+  },
+  "boundaries": {
+    "realFigmaRequests": false,
+    "realModelRequests": false,
+    "oauthAppConfigured": false,
+    "studioCaptureLocallyVerified": true,
+    "nativeReviewAndGenerationImplemented": false,
+    "sourceMutation": false,
+    "pushed": false,
+    "deployed": false,
+    "fullAcceptanceComplete": false
+  },
+  "sourceHashes": {
+    "docs/evidence/brand-guideline-import/figma-studio-browser-node22.json": "sha256:c83706caa9eac35051de867cea465f0ffae0c4edf6036a724a5ccdef45210a4b",
+    "docs/evidence/brand-guideline-import/figma-studio-browser-node24.json": "sha256:4fc55c453aa1abc417edd4d5eba316e2e08026217aa2f87768ce8e8c23a5ae41",
+    "docs/evidence/brand-guideline-import/figma-studio-capture.md": "sha256:b6080463fbfc74bfd706719aaedb9c28288a0f20a37200d55342365b043b106d",
+    "docs/plans/2026-09-25-brand-guideline-import-plan.md": "sha256:d873e8560ce526d05cbd7812d7133963d9baf9c8d277fe0494475f0ab8d2026e",
+    "docs/prds/2026-09-25-brand-guideline-import.md": "sha256:4f828d5077e5837dd185e74929397769a9743008fc479aa1d82a27b028b70b3c",
+    "services/guideline-intake/README.md": "sha256:4c0c19fb41d1763b0c32581f5b6ea00f4ab76746e324b960ca381af8af6edd90",
+    "services/guideline-intake/src/figmaProtocol.ts": "sha256:9bef62a631d051f6af4009b08a60a992d8c7fe8bd8aa200949bb1028af5b8a7d",
+    "services/guideline-intake/src/figmaRead.ts": "sha256:7d7024eb99a8f78ba99b361f283a5fd78b1b615dcddeff2126f55835ece1580d",
+    "web/README.md": "sha256:102792403d2be7182cfa18405020718aa75210b5f25eadd333f39c1f7edc0e10",
+    "web/fixtures/guidelines/figma-native.json": "sha256:ad142f1bdceb2b7afbad84b2e94d0b4c449bdb13a1536cea2bd8967b9adac712",
+    "web/package.json": "sha256:19b8fd45f79955fc5c0142954e76fb35828022e5a41133150e484da9ee56f83c",
+    "web/scripts/guideline-figma-smoke.mjs": "sha256:498df344ee694137c2fba75f0426ef8ef8585f9cfd4e726c8a6bab67702ee85f",
+    "web/src/components/GuidelineAssistancePanel.tsx": "sha256:66b4dd4b85cd4944e52fe184b21e91bf07ac1084e83128c728f46f0b9a632b8f",
+    "web/src/components/GuidelineFigmaPanel.css": "sha256:46423fdc4851245e34b6704908d064cd8bc59ad3414c73c4283d8edd43ceb843",
+    "web/src/components/GuidelineFigmaPanel.tsx": "sha256:c37d1530810f9ad4ca7fb7c058f3202f4f5150ab17d156168b26100b1463e452",
+    "web/src/components/GuidelineWorkspace.tsx": "sha256:e8dfe9b7bb497ca75111427629c71ec66c9ca8faa3482063e4c9e22521025465",
+    "web/src/lib/guideline/figmaCapture.test.ts": "sha256:0585668416873a1ca526098ff0ae6850908e70b90fc29b7b50a587a199c969d9",
+    "web/src/lib/guideline/figmaCapture.ts": "sha256:c12f13a29a491649d6599e03be7ff29ae9c9a47a9494c216715e0ec00f5b4919",
+    "web/src/lib/guideline/intakeClient.ts": "sha256:4b73ea917b876e0aa645c63bcef010b7de631c2d41fd9a5aa52fa0cd5772f452"
+  }
+}

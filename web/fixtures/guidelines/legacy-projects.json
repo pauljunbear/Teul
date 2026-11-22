@@ -1,0 +1,699 @@
+{
+  "baseline": "edbac863b6ae267a7d4d2c3afd30d46c263718f6",
+  "project": {
+    "schemaVersion": "teul.guideline-project.v1",
+    "capture": {
+      "schemaVersion": "teul.guideline-capture.v1",
+      "id": "synthetic:compatibility",
+      "kind": "pdf",
+      "identity": {
+        "label": "Legacy numeric boundary",
+        "locator": null,
+        "revision": null,
+        "sha256": "sha256:9999999999999999999999999999999999999999999999999999999999999999"
+      },
+      "capturedAt": "2026-09-25T00:00:00.000Z",
+      "scope": {
+        "total": 1,
+        "requested": ["page:1"],
+        "inspected": ["page:1"],
+        "gaps": []
+      },
+      "observations": [
+        {
+          "id": "text:0",
+          "kind": "text",
+          "text": "#126E78",
+          "locator": {
+            "kind": "pdf",
+            "page": 1,
+            "bounds": [0, 0, 400, 20]
+          }
+        },
+        {
+          "id": "text:1",
+          "kind": "text",
+          "text": "#ECBF74",
+          "locator": {
+            "kind": "pdf",
+            "page": 1,
+            "bounds": [0, 20, 400, 20]
+          }
+        },
+        {
+          "id": "text:2",
+          "kind": "text",
+          "text": "Do not use gradients in product controls.",
+          "locator": {
+            "kind": "pdf",
+            "page": 1,
+            "bounds": [0, 40, 400, 20]
+          }
+        },
+        {
+          "id": "color:0",
+          "kind": "color",
+          "literal": "#126E78",
+          "value": "#126E78",
+          "method": "stated-hex",
+          "evidenceRefs": ["text:0"],
+          "locator": {
+            "kind": "pdf",
+            "page": 1,
+            "bounds": [0, 0, 400, 20]
+          }
+        },
+        {
+          "id": "color:1",
+          "kind": "color",
+          "literal": "#ECBF74",
+          "value": "#ECBF74",
+          "method": "stated-hex",
+          "evidenceRefs": ["text:1"],
+          "locator": {
+            "kind": "pdf",
+            "page": 1,
+            "bounds": [0, 20, 400, 20]
+          }
+        }
+      ],
+      "extractionVersion": "synthetic:compatibility.v1",
+      "captureHash": "sha256:95d6316a8a9a37c40d31eed043e2819bce02a627300bdc518925b8a6041b7f37"
+    },
+    "draft": {
+      "captureHash": "sha256:95d6316a8a9a37c40d31eed043e2819bce02a627300bdc518925b8a6041b7f37",
+      "colors": [
+        {
+          "observationId": "color:0",
+          "include": true,
+          "label": "Ocean",
+          "family": "Harbor"
+        },
+        {
+          "observationId": "color:1",
+          "include": true,
+          "label": "Sand",
+          "family": "Harbor"
+        }
+      ],
+      "rules": [
+        {
+          "observationId": "text:2",
+          "meaning": "no-gradients",
+          "scope": "product",
+          "reason": ""
+        }
+      ]
+    },
+    "review": {
+      "schemaVersion": "teul.guideline-review.v1",
+      "captureHash": "sha256:95d6316a8a9a37c40d31eed043e2819bce02a627300bdc518925b8a6041b7f37",
+      "model": {
+        "schemaVersion": "teul.color-system-model.v1",
+        "sources": [
+          {
+            "id": "source:9999999999999999999999999999999999999999999999999999999999999999",
+            "label": "Legacy numeric boundary",
+            "sourceHash": "sha256:9999999999999999999999999999999999999999999999999999999999999999",
+            "version": null,
+            "locator": null,
+            "freshnessMode": "imported-snapshot",
+            "status": "draft"
+          }
+        ],
+        "evidence": [
+          {
+            "id": "color:0",
+            "sourceId": "source:9999999999999999999999999999999999999999999999999999999999999999",
+            "locator": "{\"bounds\":[0,0,400,20],\"kind\":\"pdf\",\"page\":1}",
+            "status": "observed",
+            "description": "#126E78 → #126E78; stated digital notation"
+          },
+          {
+            "id": "color:1",
+            "sourceId": "source:9999999999999999999999999999999999999999999999999999999999999999",
+            "locator": "{\"bounds\":[0,20,400,20],\"kind\":\"pdf\",\"page\":1}",
+            "status": "observed",
+            "description": "#ECBF74 → #ECBF74; stated digital notation"
+          },
+          {
+            "id": "text:0",
+            "sourceId": "source:9999999999999999999999999999999999999999999999999999999999999999",
+            "locator": "{\"bounds\":[0,0,400,20],\"kind\":\"pdf\",\"page\":1}",
+            "status": "observed",
+            "description": "#126E78"
+          },
+          {
+            "id": "text:1",
+            "sourceId": "source:9999999999999999999999999999999999999999999999999999999999999999",
+            "locator": "{\"bounds\":[0,20,400,20],\"kind\":\"pdf\",\"page\":1}",
+            "status": "observed",
+            "description": "#ECBF74"
+          },
+          {
+            "id": "text:2",
+            "sourceId": "source:9999999999999999999999999999999999999999999999999999999999999999",
+            "locator": "{\"bounds\":[0,40,400,20],\"kind\":\"pdf\",\"page\":1}",
+            "status": "observed",
+            "description": "Do not use gradients in product controls."
+          }
+        ],
+        "coverage": [
+          {
+            "sourceId": "source:9999999999999999999999999999999999999999999999999999999999999999",
+            "status": "partial",
+            "evidenceRefs": ["color:0", "color:1", "text:0", "text:1", "text:2"],
+            "unresolvedClaimIds": ["claim:1"],
+            "note": "Reviewed selected colors and statements from 1/1 source sections. Other text and visual rules may be unreviewed. "
+          }
+        ],
+        "claims": [
+          {
+            "id": "claim:1",
+            "sourceId": "source:9999999999999999999999999999999999999999999999999999999999999999",
+            "text": "Do not use gradients in product controls.",
+            "status": "unsupported",
+            "evidenceRefs": ["text:2"],
+            "contextIds": ["gradient:product"],
+            "ruleIds": [],
+            "modeIds": ["Source"]
+          }
+        ],
+        "modes": [
+          {
+            "id": "Source",
+            "label": "Source values (no display mode stated)"
+          }
+        ],
+        "colors": [
+          {
+            "id": "color:1",
+            "label": "Ocean",
+            "sourceId": "source:9999999999999999999999999999999999999999999999999999999999999999",
+            "valuesByMode": {
+              "Source": {
+                "colorSpace": "srgb",
+                "hex": "#126E78",
+                "components": {
+                  "r": 0.07058823529411765,
+                  "g": 0.43137254901960786,
+                  "b": 0.47058823529411764
+                },
+                "alpha": 1
+              }
+            },
+            "evidenceRefs": ["color:0"],
+            "claimIds": []
+          },
+          {
+            "id": "color:2",
+            "label": "Sand",
+            "sourceId": "source:9999999999999999999999999999999999999999999999999999999999999999",
+            "valuesByMode": {
+              "Source": {
+                "colorSpace": "srgb",
+                "hex": "#ECBF74",
+                "components": {
+                  "r": 0.9254901960784314,
+                  "g": 0.7490196078431373,
+                  "b": 0.4549019607843137
+                },
+                "alpha": 1
+              }
+            },
+            "evidenceRefs": ["color:1"],
+            "claimIds": []
+          }
+        ],
+        "families": [
+          {
+            "id": "family:1",
+            "label": "Harbor",
+            "colorIds": ["color:1", "color:2"],
+            "evidenceRefs": ["color:0", "color:1"],
+            "claimIds": []
+          }
+        ],
+        "scales": [],
+        "contexts": [
+          {
+            "id": "brand",
+            "label": "brand",
+            "modeIds": ["Source"],
+            "evidenceRefs": [],
+            "claimIds": []
+          },
+          {
+            "id": "gradient:brand",
+            "label": "gradient:brand",
+            "modeIds": ["Source"],
+            "evidenceRefs": [],
+            "claimIds": []
+          },
+          {
+            "id": "gradient:product",
+            "label": "gradient:product",
+            "modeIds": ["Source"],
+            "evidenceRefs": [],
+            "claimIds": []
+          },
+          {
+            "id": "product",
+            "label": "product",
+            "modeIds": ["Source"],
+            "evidenceRefs": [],
+            "claimIds": []
+          }
+        ],
+        "brandConstraintsByContext": [],
+        "rules": [],
+        "adoptions": [],
+        "conflicts": [],
+        "modelHash": "sha256:2e20a510a094a5756aa45adc3d7306766d3d02e3499fecc3c0185bbf1f19c525"
+      },
+      "decision": {
+        "actor": {
+          "kind": "user",
+          "ref": "test:legacy"
+        },
+        "reviewedAt": "2026-09-25T01:00:00.000Z",
+        "draft": {
+          "captureHash": "sha256:95d6316a8a9a37c40d31eed043e2819bce02a627300bdc518925b8a6041b7f37",
+          "colors": [
+            {
+              "observationId": "color:0",
+              "include": true,
+              "label": "Ocean",
+              "family": "Harbor"
+            },
+            {
+              "observationId": "color:1",
+              "include": true,
+              "label": "Sand",
+              "family": "Harbor"
+            }
+          ],
+          "rules": [
+            {
+              "observationId": "text:2",
+              "meaning": "no-gradients",
+              "scope": "product",
+              "reason": ""
+            }
+          ]
+        }
+      },
+      "reviewHash": "sha256:f1d127e099ba8a1745437ca0862d5e228de146d0032e327e27546610937c0d32"
+    },
+    "selection": null,
+    "projectHash": "sha256:8cf9c3ee1a2b925b0459ee2899e2887493cb98c142959b632acb572705dd98df"
+  },
+  "project2": {
+    "schemaVersion": "teul.guideline-project.v2",
+    "capture": {
+      "schemaVersion": "teul.guideline-capture.v1",
+      "id": "synthetic:compatibility",
+      "kind": "pdf",
+      "identity": {
+        "label": "Legacy numeric boundary",
+        "locator": null,
+        "revision": null,
+        "sha256": "sha256:9999999999999999999999999999999999999999999999999999999999999999"
+      },
+      "capturedAt": "2026-09-25T00:00:00.000Z",
+      "scope": {
+        "total": 1,
+        "requested": ["page:1"],
+        "inspected": ["page:1"],
+        "gaps": []
+      },
+      "observations": [
+        {
+          "id": "text:0",
+          "kind": "text",
+          "text": "#126E78",
+          "locator": {
+            "kind": "pdf",
+            "page": 1,
+            "bounds": [0, 0, 400, 20]
+          }
+        },
+        {
+          "id": "text:1",
+          "kind": "text",
+          "text": "#ECBF74",
+          "locator": {
+            "kind": "pdf",
+            "page": 1,
+            "bounds": [0, 20, 400, 20]
+          }
+        },
+        {
+          "id": "text:2",
+          "kind": "text",
+          "text": "Do not use gradients in product controls.",
+          "locator": {
+            "kind": "pdf",
+            "page": 1,
+            "bounds": [0, 40, 400, 20]
+          }
+        },
+        {
+          "id": "color:0",
+          "kind": "color",
+          "literal": "#126E78",
+          "value": "#126E78",
+          "method": "stated-hex",
+          "evidenceRefs": ["text:0"],
+          "locator": {
+            "kind": "pdf",
+            "page": 1,
+            "bounds": [0, 0, 400, 20]
+          }
+        },
+        {
+          "id": "color:1",
+          "kind": "color",
+          "literal": "#ECBF74",
+          "value": "#ECBF74",
+          "method": "stated-hex",
+          "evidenceRefs": ["text:1"],
+          "locator": {
+            "kind": "pdf",
+            "page": 1,
+            "bounds": [0, 20, 400, 20]
+          }
+        }
+      ],
+      "extractionVersion": "synthetic:compatibility.v1",
+      "captureHash": "sha256:95d6316a8a9a37c40d31eed043e2819bce02a627300bdc518925b8a6041b7f37"
+    },
+    "draft": {
+      "captureHash": "sha256:95d6316a8a9a37c40d31eed043e2819bce02a627300bdc518925b8a6041b7f37",
+      "colors": [
+        {
+          "observationId": "color:0",
+          "include": true,
+          "label": "Ocean",
+          "family": "Harbor"
+        },
+        {
+          "observationId": "color:1",
+          "include": true,
+          "label": "Sand",
+          "family": "Harbor"
+        }
+      ],
+      "rules": [
+        {
+          "observationId": "text:2",
+          "meaning": "no-gradients",
+          "scope": "product",
+          "reason": "",
+          "definition": null
+        }
+      ],
+      "scales": [
+        {
+          "id": "harbor",
+          "label": "Harbor source",
+          "family": "Harbor",
+          "slots": [
+            {
+              "id": "100",
+              "position": 100,
+              "observationId": "color:0"
+            },
+            {
+              "id": "900",
+              "position": 900,
+              "observationId": "color:1"
+            }
+          ],
+          "evidenceRefs": ["text:0", "text:1"]
+        }
+      ]
+    },
+    "review": {
+      "schemaVersion": "teul.guideline-review.v2",
+      "captureHash": "sha256:95d6316a8a9a37c40d31eed043e2819bce02a627300bdc518925b8a6041b7f37",
+      "model": {
+        "schemaVersion": "teul.color-system-model.v1",
+        "sources": [
+          {
+            "id": "source:9999999999999999999999999999999999999999999999999999999999999999",
+            "label": "Legacy numeric boundary",
+            "sourceHash": "sha256:9999999999999999999999999999999999999999999999999999999999999999",
+            "version": null,
+            "locator": null,
+            "freshnessMode": "imported-snapshot",
+            "status": "draft"
+          }
+        ],
+        "evidence": [
+          {
+            "id": "color:0",
+            "sourceId": "source:9999999999999999999999999999999999999999999999999999999999999999",
+            "locator": "{\"bounds\":[0,0,400,20],\"kind\":\"pdf\",\"page\":1}",
+            "status": "observed",
+            "description": "#126E78 → #126E78; stated digital notation"
+          },
+          {
+            "id": "color:1",
+            "sourceId": "source:9999999999999999999999999999999999999999999999999999999999999999",
+            "locator": "{\"bounds\":[0,20,400,20],\"kind\":\"pdf\",\"page\":1}",
+            "status": "observed",
+            "description": "#ECBF74 → #ECBF74; stated digital notation"
+          },
+          {
+            "id": "text:0",
+            "sourceId": "source:9999999999999999999999999999999999999999999999999999999999999999",
+            "locator": "{\"bounds\":[0,0,400,20],\"kind\":\"pdf\",\"page\":1}",
+            "status": "observed",
+            "description": "#126E78"
+          },
+          {
+            "id": "text:1",
+            "sourceId": "source:9999999999999999999999999999999999999999999999999999999999999999",
+            "locator": "{\"bounds\":[0,20,400,20],\"kind\":\"pdf\",\"page\":1}",
+            "status": "observed",
+            "description": "#ECBF74"
+          },
+          {
+            "id": "text:2",
+            "sourceId": "source:9999999999999999999999999999999999999999999999999999999999999999",
+            "locator": "{\"bounds\":[0,40,400,20],\"kind\":\"pdf\",\"page\":1}",
+            "status": "observed",
+            "description": "Do not use gradients in product controls."
+          }
+        ],
+        "coverage": [
+          {
+            "sourceId": "source:9999999999999999999999999999999999999999999999999999999999999999",
+            "status": "partial",
+            "evidenceRefs": ["color:0", "color:1", "text:0", "text:1", "text:2"],
+            "unresolvedClaimIds": [
+              "claim:b0b173194fc76d0da0da618c6ee544fa200812eb022a64dcce4797b5931f364c"
+            ],
+            "note": "Reviewed selected colors and statements from 1/1 source sections. Other text and visual rules may be unreviewed. "
+          }
+        ],
+        "claims": [
+          {
+            "id": "claim:b0b173194fc76d0da0da618c6ee544fa200812eb022a64dcce4797b5931f364c",
+            "sourceId": "source:9999999999999999999999999999999999999999999999999999999999999999",
+            "text": "Do not use gradients in product controls.",
+            "status": "unsupported",
+            "evidenceRefs": ["text:2"],
+            "contextIds": ["gradient:product"],
+            "ruleIds": [],
+            "modeIds": ["Source"]
+          }
+        ],
+        "modes": [
+          {
+            "id": "Source",
+            "label": "Source values (no display mode stated)"
+          }
+        ],
+        "colors": [
+          {
+            "id": "color:736c424c036e8955ed87d674a82faa0f83e0f4e40c52857e82b64025fe1f58a6",
+            "label": "Sand",
+            "sourceId": "source:9999999999999999999999999999999999999999999999999999999999999999",
+            "valuesByMode": {
+              "Source": {
+                "colorSpace": "srgb",
+                "hex": "#ECBF74",
+                "components": {
+                  "r": 0.9254901960784314,
+                  "g": 0.7490196078431373,
+                  "b": 0.4549019607843137
+                },
+                "alpha": 1
+              }
+            },
+            "evidenceRefs": ["color:1"],
+            "claimIds": []
+          },
+          {
+            "id": "color:98d03481060d58f67d85af956b39ee91a5cd52521d97849c92ba95f1cf5a4eeb",
+            "label": "Ocean",
+            "sourceId": "source:9999999999999999999999999999999999999999999999999999999999999999",
+            "valuesByMode": {
+              "Source": {
+                "colorSpace": "srgb",
+                "hex": "#126E78",
+                "components": {
+                  "r": 0.07058823529411765,
+                  "g": 0.43137254901960786,
+                  "b": 0.47058823529411764
+                },
+                "alpha": 1
+              }
+            },
+            "evidenceRefs": ["color:0"],
+            "claimIds": []
+          }
+        ],
+        "families": [
+          {
+            "id": "family:faf43e4032644cd16949fd5cfc47e48f0e5350a4cae430ba015cf73c773c9a44",
+            "label": "Harbor",
+            "colorIds": [
+              "color:736c424c036e8955ed87d674a82faa0f83e0f4e40c52857e82b64025fe1f58a6",
+              "color:98d03481060d58f67d85af956b39ee91a5cd52521d97849c92ba95f1cf5a4eeb"
+            ],
+            "evidenceRefs": ["color:0", "color:1"],
+            "claimIds": []
+          }
+        ],
+        "scales": [
+          {
+            "id": "harbor",
+            "label": "Harbor source",
+            "familyId": "family:faf43e4032644cd16949fd5cfc47e48f0e5350a4cae430ba015cf73c773c9a44",
+            "slots": [
+              {
+                "id": "100",
+                "position": 100
+              },
+              {
+                "id": "900",
+                "position": 900
+              }
+            ],
+            "modes": [
+              {
+                "modeId": "Source",
+                "anchors": [
+                  {
+                    "slotId": "100",
+                    "colorId": "color:98d03481060d58f67d85af956b39ee91a5cd52521d97849c92ba95f1cf5a4eeb"
+                  },
+                  {
+                    "slotId": "900",
+                    "colorId": "color:736c424c036e8955ed87d674a82faa0f83e0f4e40c52857e82b64025fe1f58a6"
+                  }
+                ]
+              }
+            ],
+            "evidenceRefs": ["text:0", "text:1"],
+            "claimIds": []
+          }
+        ],
+        "contexts": [
+          {
+            "id": "brand",
+            "label": "brand",
+            "modeIds": ["Source"],
+            "evidenceRefs": [],
+            "claimIds": []
+          },
+          {
+            "id": "gradient:brand",
+            "label": "gradient:brand",
+            "modeIds": ["Source"],
+            "evidenceRefs": [],
+            "claimIds": []
+          },
+          {
+            "id": "gradient:product",
+            "label": "gradient:product",
+            "modeIds": ["Source"],
+            "evidenceRefs": [],
+            "claimIds": []
+          },
+          {
+            "id": "product",
+            "label": "product",
+            "modeIds": ["Source"],
+            "evidenceRefs": [],
+            "claimIds": []
+          }
+        ],
+        "brandConstraintsByContext": [],
+        "rules": [],
+        "adoptions": [],
+        "conflicts": [],
+        "modelHash": "sha256:1e0999c86263f56e9e91cb9c53ad1edb98d472fbba0132eb54715d9eed97b9c6"
+      },
+      "decision": {
+        "actor": {
+          "kind": "user",
+          "ref": "test:legacy"
+        },
+        "reviewedAt": "2026-09-25T01:00:00.000Z",
+        "draft": {
+          "captureHash": "sha256:95d6316a8a9a37c40d31eed043e2819bce02a627300bdc518925b8a6041b7f37",
+          "colors": [
+            {
+              "observationId": "color:0",
+              "include": true,
+              "label": "Ocean",
+              "family": "Harbor"
+            },
+            {
+              "observationId": "color:1",
+              "include": true,
+              "label": "Sand",
+              "family": "Harbor"
+            }
+          ],
+          "rules": [
+            {
+              "observationId": "text:2",
+              "meaning": "no-gradients",
+              "scope": "product",
+              "reason": "",
+              "definition": null
+            }
+          ],
+          "scales": [
+            {
+              "id": "harbor",
+              "label": "Harbor source",
+              "family": "Harbor",
+              "slots": [
+                {
+                  "id": "100",
+                  "position": 100,
+                  "observationId": "color:0"
+                },
+                {
+                  "id": "900",
+                  "position": 900,
+                  "observationId": "color:1"
+                }
+              ],
+              "evidenceRefs": ["text:0", "text:1"]
+            }
+          ]
+        }
+      },
+      "reviewHash": "sha256:7d2a7645c0979f7d33fad00b7600256602db206315ad7898274cac32f0a67462"
+    },
+    "selection": null,
+    "projectHash": "sha256:3c2dfb54ebab0d44f28007ee14d5faa01db68a112ecd06098ade1490d7b817f1"
+  }
+}

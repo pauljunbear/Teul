@@ -1,0 +1,431 @@
+{
+  "schemaVersion": "teul.guideline-durable-recovery-checks.v1",
+  "checkedAt": "2026-09-26T03:39:39.007874+00:00",
+  "baseCommit": "8c185b58567cbbcb5bfff756f9678cced97ff673",
+  "status": "locally-verified",
+  "scope": "Durable pre-dispatch recovery records, explicit reload recovery and account/source/cross-tab publication guards",
+  "requirements": ["REQ-013", "TASK-009-partial", "AC-012-partial"],
+  "runtimes": [
+    {
+      "node": "22.13.1",
+      "studioTests": 431,
+      "studioFiles": 36,
+      "browserScenarios": 52,
+      "guidelineEnabledBuild": "passed"
+    },
+    {
+      "node": "24.19.0",
+      "studioTests": 431,
+      "studioFiles": 36,
+      "browserScenarios": 52,
+      "guidelineEnabledBuild": "passed"
+    }
+  ],
+  "browser": [
+    {
+      "runtime": 22,
+      "journey": "storage",
+      "status": "passed",
+      "scenarios": 9,
+      "checks": [
+        "Two browser tabs reopen exact legacy project/input bytes; another owner cannot list or open them.",
+        "Job updates write metadata only; stale update/removal cannot overwrite another tab or alter retained evidence.",
+        "Completed job status and exact workspace survive a full browser reload without any service request.",
+        "Deletion removes payload and metadata atomically; a late publication check rejects the old handle.",
+        "Quota failure after metadata put rolls back both stores; pre-aborted creation leaves previous records intact.",
+        "Eight-entry capacity and duplicate identity fail without evicting or resubmitting existing requests.",
+        "Expiry deletes only known-format temporary entries; future records remain unchanged until explicit removal.",
+        "The 64 MiB total budget rejects another record below the count limit, without loading or evicting existing payloads.",
+        "Corrupt retained evidence is rejected without rewriting its original bytes."
+      ]
+    },
+    {
+      "runtime": 22,
+      "journey": "assistance",
+      "status": "passed",
+      "scenarios": 18,
+      "checks": [
+        "No service request before explicit discovery; local preparation previews selected evidence; consent required before POST",
+        "Actual HTTP service and provider adapter return source-linked suggestions; only selected PNG and text are dispatched",
+        "Explicit suggestion adoption changes editable labels only; final manual review still required; generated gradient and downloadable provenance follow",
+        "Fabricated model observation IDs fail closed without changing the manual draft",
+        "Editing source review detaches local polling and preserves the request; explicit cancellation stops its job, and late output cannot overwrite the new draft",
+        "Lost POST response recovers the identical persisted job without a second provider invocation",
+        "390px view has no horizontal overflow; keyboard activation applies suggestions",
+        "Unavailable authentication leaves the complete local review and deterministic generation path usable",
+        "Uncertain request survives draft replacement; explicit recovery reuses the old job and cannot adopt stale suggestions",
+        "Uncertain request survives source replacement; explicit recovery reuses the old job and cannot adopt stale suggestions",
+        "Completion winning the cancellation race is reported accurately and does not apply suggestions",
+        "An unknown submitted request survives opening a V4 manual-value project. Failed cancellation retains recover/check/cancel controls; explicit retry cancels the same service job without provider retry, suggestion adoption or any project mutation.",
+        "never-submitted recovery performs lookup only, releases controls, and requires fresh preparation/consent",
+        "deleted recovery performs lookup only, releases controls, and requires fresh preparation/consent",
+        "Account change after preparation rejects submission before creating a job for the new principal",
+        "PDF source, edited draft and selected images survive reload/account partitioning; unknown and completed requests reopen without another submission or provider call, including after applying suggestions.",
+        "Deleting a request in another tab during the final account check prevents stale PDF restoration and retains the newer draft.",
+        "An actual browser storage quota failure prevents submission before any provider work and preserves the current draft."
+      ]
+    },
+    {
+      "runtime": 22,
+      "journey": "figma",
+      "status": "passed",
+      "scenarios": 14,
+      "checks": [
+        "No ambient service/provider requests; missing session leaves PDF fallback enabled",
+        "PKCE browser link and authenticated cookie callback connect the real server manager without exposing credentials",
+        "Explicit selection dispatches one native job; full-precision paints, gradients, text, modes and gaps survive download; source text stays inert",
+        "Lost submission response retains its recovery record through a later 401 and reconciles the exact existing job after an explicit Check capture action",
+        "Completed native capture reopens after reload using the saved job, without rediscovery, submission, or another Figma API request.",
+        "File access failure retains prior capture and allows recovery without substituting empty evidence",
+        "Cancel reaches the owned server job and retains the previous completed capture",
+        "Confirmed authentication and disabled-processor rejections release pending state and leave recovery controls enabled",
+        "Completion winning cancellation remains recoverable and is never reported as cancelled",
+        "Deleted unknown capture releases controls without another submission or replacing prior evidence.",
+        "Offline packet with a valid hash but conflicting repeated node identity is rejected without hiding a source restriction",
+        "Deleting a saved capture in another tab while its result is arriving prevents stale publication and releases recovery controls.",
+        "Large source text is paged and gap/property previews are bounded; complete source data remains in the packet",
+        "Disconnect preserves portable evidence; offline reopen makes no request; 390px viewport and keyboard connection control work"
+      ]
+    },
+    {
+      "runtime": 22,
+      "journey": "website",
+      "status": "passed",
+      "scenarios": 11,
+      "checks": [
+        "Explicit host/session check and capture produce rendered evidence through the real owned job service; no ambient requests or user browser credentials.",
+        "Keyboard review preserves named CSS observations, requires scope/text decisions, extends a source scale, and enforces the product gradient restriction.",
+        "Changing decisions removes stale results; offline browser and Node reopen retain exact source/model/paint and browser SVG/CSS/JSON bytes.",
+        "Invalid and future input retain the prior usable result; future original bytes remain downloadable.",
+        "Lost submission response and a later 401 retain the same recovery envelope; reconciliation returns the existing job without duplicate capture.",
+        "Completed website capture reopens after reload without another submission or page capture.",
+        "Cancellation reaches the owned job and retains the previous completed evidence.",
+        "Repeating the exact retained request directs the user to its saved copy without replacing it or submitting again.",
+        "Deleted unknown submission releases capture controls without resubmitting or replacing prior evidence.",
+        "65 gradient recipes replay in both Chromium/Node directions with exact saved values and matching CSS/SVG; independent generation hashes may differ.",
+        "Review and export fit a 390px viewport; no external requests or browser errors occurred."
+      ]
+    },
+    {
+      "runtime": 24,
+      "journey": "storage",
+      "status": "passed",
+      "scenarios": 9,
+      "checks": [
+        "Two browser tabs reopen exact legacy project/input bytes; another owner cannot list or open them.",
+        "Job updates write metadata only; stale update/removal cannot overwrite another tab or alter retained evidence.",
+        "Completed job status and exact workspace survive a full browser reload without any service request.",
+        "Deletion removes payload and metadata atomically; a late publication check rejects the old handle.",
+        "Quota failure after metadata put rolls back both stores; pre-aborted creation leaves previous records intact.",
+        "Eight-entry capacity and duplicate identity fail without evicting or resubmitting existing requests.",
+        "Expiry deletes only known-format temporary entries; future records remain unchanged until explicit removal.",
+        "The 64 MiB total budget rejects another record below the count limit, without loading or evicting existing payloads.",
+        "Corrupt retained evidence is rejected without rewriting its original bytes."
+      ]
+    },
+    {
+      "runtime": 24,
+      "journey": "assistance",
+      "status": "passed",
+      "scenarios": 18,
+      "checks": [
+        "No service request before explicit discovery; local preparation previews selected evidence; consent required before POST",
+        "Actual HTTP service and provider adapter return source-linked suggestions; only selected PNG and text are dispatched",
+        "Explicit suggestion adoption changes editable labels only; final manual review still required; generated gradient and downloadable provenance follow",
+        "Fabricated model observation IDs fail closed without changing the manual draft",
+        "Editing source review detaches local polling and preserves the request; explicit cancellation stops its job, and late output cannot overwrite the new draft",
+        "Lost POST response recovers the identical persisted job without a second provider invocation",
+        "390px view has no horizontal overflow; keyboard activation applies suggestions",
+        "Unavailable authentication leaves the complete local review and deterministic generation path usable",
+        "Uncertain request survives draft replacement; explicit recovery reuses the old job and cannot adopt stale suggestions",
+        "Uncertain request survives source replacement; explicit recovery reuses the old job and cannot adopt stale suggestions",
+        "Completion winning the cancellation race is reported accurately and does not apply suggestions",
+        "An unknown submitted request survives opening a V4 manual-value project. Failed cancellation retains recover/check/cancel controls; explicit retry cancels the same service job without provider retry, suggestion adoption or any project mutation.",
+        "never-submitted recovery performs lookup only, releases controls, and requires fresh preparation/consent",
+        "deleted recovery performs lookup only, releases controls, and requires fresh preparation/consent",
+        "Account change after preparation rejects submission before creating a job for the new principal",
+        "PDF source, edited draft and selected images survive reload/account partitioning; unknown and completed requests reopen without another submission or provider call, including after applying suggestions.",
+        "Deleting a request in another tab during the final account check prevents stale PDF restoration and retains the newer draft.",
+        "An actual browser storage quota failure prevents submission before any provider work and preserves the current draft."
+      ]
+    },
+    {
+      "runtime": 24,
+      "journey": "figma",
+      "status": "passed",
+      "scenarios": 14,
+      "checks": [
+        "No ambient service/provider requests; missing session leaves PDF fallback enabled",
+        "PKCE browser link and authenticated cookie callback connect the real server manager without exposing credentials",
+        "Explicit selection dispatches one native job; full-precision paints, gradients, text, modes and gaps survive download; source text stays inert",
+        "Lost submission response retains its recovery record through a later 401 and reconciles the exact existing job after an explicit Check capture action",
+        "Completed native capture reopens after reload using the saved job, without rediscovery, submission, or another Figma API request.",
+        "File access failure retains prior capture and allows recovery without substituting empty evidence",
+        "Cancel reaches the owned server job and retains the previous completed capture",
+        "Confirmed authentication and disabled-processor rejections release pending state and leave recovery controls enabled",
+        "Completion winning cancellation remains recoverable and is never reported as cancelled",
+        "Deleted unknown capture releases controls without another submission or replacing prior evidence.",
+        "Offline packet with a valid hash but conflicting repeated node identity is rejected without hiding a source restriction",
+        "Deleting a saved capture in another tab while its result is arriving prevents stale publication and releases recovery controls.",
+        "Large source text is paged and gap/property previews are bounded; complete source data remains in the packet",
+        "Disconnect preserves portable evidence; offline reopen makes no request; 390px viewport and keyboard connection control work"
+      ]
+    },
+    {
+      "runtime": 24,
+      "journey": "website",
+      "status": "passed",
+      "scenarios": 11,
+      "checks": [
+        "Explicit host/session check and capture produce rendered evidence through the real owned job service; no ambient requests or user browser credentials.",
+        "Keyboard review preserves named CSS observations, requires scope/text decisions, extends a source scale, and enforces the product gradient restriction.",
+        "Changing decisions removes stale results; offline browser and Node reopen retain exact source/model/paint and browser SVG/CSS/JSON bytes.",
+        "Invalid and future input retain the prior usable result; future original bytes remain downloadable.",
+        "Lost submission response and a later 401 retain the same recovery envelope; reconciliation returns the existing job without duplicate capture.",
+        "Completed website capture reopens after reload without another submission or page capture.",
+        "Cancellation reaches the owned job and retains the previous completed evidence.",
+        "Repeating the exact retained request directs the user to its saved copy without replacing it or submitting again.",
+        "Deleted unknown submission releases capture controls without resubmitting or replacing prior evidence.",
+        "65 gradient recipes replay in both Chromium/Node directions with exact saved values and matching CSS/SVG; independent generation hashes may differ.",
+        "Review and export fit a 390px viewport; no external requests or browser errors occurred."
+      ]
+    }
+  ],
+  "otherChecks": {
+    "studioLint": "passed (oxlint)",
+    "rootLint": "passed (src ESLint only)",
+    "rootTypecheck": "passed",
+    "studioTypecheck": "passed",
+    "strictPrdReady": "passed",
+    "diffWhitespace": "passed",
+    "deadExportReport": {
+      "exports": 50,
+      "files": 1,
+      "changeFromBaseline": 0
+    },
+    "mobileVisualInspection": "390px recovery list, text wrapping and controls inspected"
+  },
+  "review": {
+    "reuse": "no remaining findings",
+    "quality": "late-publication and stale pending fixes verified; duplicate-create branch rechecked",
+    "efficiency": "metadata-only status writes and revision reads verified"
+  },
+  "limitations": [
+    "Synthetic provider transport and host sessions only",
+    "Temporary browser cache is not encrypted account storage",
+    "Expiry cleanup requires Studio to run",
+    "Source revision history and explicit refresh remain open",
+    "No integrated release gate, merge, push or deployment",
+    "Existing bundle-size advisories remain",
+    "No designer or assistive-technology acceptance from these tests"
+  ],
+  "sourceFiles": [
+    {
+      "path": "docs/evidence/brand-guideline-import/durable-job-recovery.md",
+      "bytes": 5938,
+      "sha256": "e8876a48434fe79653b53bf6e50e6950fb046feacd3d93dec67bf25ec6ad47a1"
+    },
+    {
+      "path": "docs/plans/2026-09-25-brand-guideline-import-plan.md",
+      "bytes": 74562,
+      "sha256": "4d13fcb2a4fe1d0cb8f552892f9a558061b494f5f1c8b80920bacfbe10447a5a"
+    },
+    {
+      "path": "docs/prds/2026-09-25-brand-guideline-import.md",
+      "bytes": 113881,
+      "sha256": "c5ec4a7c30286a517d21240e2c61293cf607bfd3d92317d75fccf37bfdd3e941"
+    },
+    {
+      "path": "services/guideline-intake/README.md",
+      "bytes": 36631,
+      "sha256": "77864ef2088eec946d7046db4588a75ddbb074b83f987885b6436924cc2b1b13"
+    },
+    {
+      "path": "web/README.md",
+      "bytes": 23576,
+      "sha256": "deb81d5dd0ba5d575f29e1f61aa97b815a6f8f80cf510d01cf1f268f5c555883"
+    },
+    {
+      "path": "web/package.json",
+      "bytes": 2689,
+      "sha256": "9bdf1d4464e906aeb5b0bbc95d2bb040c15bf9ba50ea1cd0635cf201bd4e9b09"
+    },
+    {
+      "path": "web/scripts/guideline-assistance-smoke.mjs",
+      "bytes": 33547,
+      "sha256": "d4329a50927fd783d1612df890417f4e294c6a0666c276a20f6719aa73219fb4"
+    },
+    {
+      "path": "web/scripts/guideline-figma-smoke.mjs",
+      "bytes": 22617,
+      "sha256": "ec001d3a46cb4012d4c12f6f5b067c0a2f96aefaf182a8d3d07d8600ee870c5e"
+    },
+    {
+      "path": "web/scripts/guideline-recovery-storage-smoke.mjs",
+      "bytes": 15522,
+      "sha256": "d44a5f6a5c9ac82eef9d60452ee3aebb42742cf9bd64b58af76cd843a343ff36"
+    },
+    {
+      "path": "web/scripts/guideline-website-smoke.mjs",
+      "bytes": 24855,
+      "sha256": "ce8b83bb3e97d779e0cc36ae69554387a523d396a70b152ad9fb71ad1c05adca"
+    },
+    {
+      "path": "web/src/components/GuidelineAssistancePanel.tsx",
+      "bytes": 38041,
+      "sha256": "d403b89418c96628608a60eefee012442814612895327a98f7b8963e7c868c18"
+    },
+    {
+      "path": "web/src/components/GuidelineFigmaPanel.tsx",
+      "bytes": 31029,
+      "sha256": "dc5639e442d67d18f01492f25d833bce78b4e8fec791e7d53451ee32c49f5c42"
+    },
+    {
+      "path": "web/src/components/GuidelineRecovery.tsx",
+      "bytes": 4374,
+      "sha256": "917bbebfd8fb5859682aeb975b2d3ae867f6bd5dcb200383822b7d64f70dea5b"
+    },
+    {
+      "path": "web/src/components/GuidelineWebsitePanel.tsx",
+      "bytes": 23872,
+      "sha256": "c928c9aa1903ef96218568a08892127f2cc3597af4affcaa786fd80c49dcae49"
+    },
+    {
+      "path": "web/src/components/GuidelineWorkspace.tsx",
+      "bytes": 56866,
+      "sha256": "506d07214d328e2ec02979f3a12fc114e91b80a60b510118e41c0051c24d61d6"
+    },
+    {
+      "path": "web/src/lib/guideline/assistance.ts",
+      "bytes": 15840,
+      "sha256": "ef69844440c42c7edac9e4df705f2a062ba9e97515c60775c3f9c8b28e41fde5"
+    },
+    {
+      "path": "web/src/lib/guideline/assistanceRecovery.ts",
+      "bytes": 1943,
+      "sha256": "605eb9264d939703f4129c33bd7bc22af7c2ecd9b19306879cbbc268bfff8b9d"
+    },
+    {
+      "path": "web/src/lib/guideline/captureJob.ts",
+      "bytes": 2606,
+      "sha256": "86db8309ba668d62cef6bb909cfdc9b8f26759ea8da389381afc3163c2a8c3a3"
+    },
+    {
+      "path": "web/src/lib/guideline/intakeClient.ts",
+      "bytes": 23258,
+      "sha256": "b26240b071cc42b539894d55ccbb8c91545f82fa55421d5bb4503bbd2df21959"
+    },
+    {
+      "path": "web/src/lib/guideline/recovery.ts",
+      "bytes": 2644,
+      "sha256": "3792ab485c16d2a70da5781d13f94def3c67a65e3f394d6ccd20e34e5f03e5e0"
+    },
+    {
+      "path": "web/src/lib/guideline/recoveryRecord.test.ts",
+      "bytes": 6379,
+      "sha256": "7aff03c9bd938f19eb626469aa7d8145ed0e34235c46042abcdc535d6a6d2da7"
+    },
+    {
+      "path": "web/src/lib/guideline/recoveryRecord.ts",
+      "bytes": 7677,
+      "sha256": "7cc9dee0c47b38c99e866600e2da6eacdac18c8d49a4b4f22dce53015cea8ab4"
+    },
+    {
+      "path": "web/src/lib/guideline/recoveryStore.ts",
+      "bytes": 14464,
+      "sha256": "730b5895317398d74579867b02ec3dd6626377fbe74337eda1cab48d6ded9a77"
+    },
+    {
+      "path": "web/src/lib/guideline/useLocalProject.ts",
+      "bytes": 5874,
+      "sha256": "14aa19df992d2b7f19a44928c6038a4a0d49aa64938dbdeb1c9a0d11805c8425"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "release/guideline-job-recovery/storage-node22.json",
+      "bytes": 1080,
+      "sha256": "b95891b8651df1b8b96eae01dc89ed523872d19ddea044801050b861ec1a9ced"
+    },
+    {
+      "path": "release/guideline-assistance/browser-receipt-node22.json",
+      "bytes": 14520,
+      "sha256": "2d10ada73889a0942afa7967b99385c1c73db5c24bae6f160cd6c09bbe694392"
+    },
+    {
+      "path": "release/guideline-figma/node22-receipt.json",
+      "bytes": 1951,
+      "sha256": "76b7b02ac599848ad6d50034033c3dbe88a7a436e2259f2375fd758117d9dcaf"
+    },
+    {
+      "path": "release/guideline-website-review/node22-receipt.json",
+      "bytes": 5556,
+      "sha256": "764ea0fbf66649c75e260d1a8236629917c39c828d0d8fad751aa04d12ba4ed3"
+    },
+    {
+      "path": "release/guideline-job-recovery/build-node22.log",
+      "bytes": 3188,
+      "sha256": "6221a2881eada04b33546b954c09eabf28053ddfa3a9fdfa6f9aea79986d675c"
+    },
+    {
+      "path": "release/guideline-figma/node22-mobile.png",
+      "bytes": 289906,
+      "sha256": "7bcbc465b87bd9526055964ab26de7124d969141a8d0aaeba073e819b442599a"
+    },
+    {
+      "path": "release/guideline-website-review/node22-mobile.png",
+      "bytes": 80579,
+      "sha256": "c83b905bbeaeb298bd371dff51dcab39b36b129c40dc4c1cdcf509a474a957b8"
+    },
+    {
+      "path": "release/guideline-job-recovery/storage-node24.json",
+      "bytes": 1080,
+      "sha256": "9d7989f8484f87c0d1c93826b374c1048fba70179903bb6d7c601c300a908786"
+    },
+    {
+      "path": "release/guideline-assistance/browser-receipt-node24.json",
+      "bytes": 14520,
+      "sha256": "c43862b13b9a31100f7f0d4ce1b0127f0b744c9282b71d0574707d6e11f55e37"
+    },
+    {
+      "path": "release/guideline-figma/node24-receipt.json",
+      "bytes": 1951,
+      "sha256": "c8a46f9b3a51a18fe736e95652315d3722d1287e8ba0427ce0718c6c3822e996"
+    },
+    {
+      "path": "release/guideline-website-review/node24-receipt.json",
+      "bytes": 5556,
+      "sha256": "d60eca7ca3b4a4facdd8abb48c276b8cad71b76a0f6c736d4e2938571b719b8a"
+    },
+    {
+      "path": "release/guideline-job-recovery/build-node24.log",
+      "bytes": 3188,
+      "sha256": "0a6c307beb28dbee4ba3b908f260ed03d7bfdf72e04083585ec3930436107cb6"
+    },
+    {
+      "path": "release/guideline-figma/node24-mobile.png",
+      "bytes": 289213,
+      "sha256": "254c6d81a91244c57fcf51d061c6f55671ff3f7fe831516493e2039b582f05f2"
+    },
+    {
+      "path": "release/guideline-website-review/node24-mobile.png",
+      "bytes": 81158,
+      "sha256": "59f785aa5b022acfbad3d37fdaa1e4909e54b96a6f5ecfbe1a6da47bea614850"
+    },
+    {
+      "path": "release/guideline-job-recovery/mobile-recovery-review.png",
+      "bytes": 208579,
+      "sha256": "c7b881a99fe2e4c98044ce1217d347499f5a5df883aefa5ae00f80a30cef4208"
+    },
+    {
+      "path": "web/dist/index.html",
+      "bytes": 810,
+      "sha256": "fbd17bb4a0c9394afc903a93b1f4279e86ce7244b5d12dad284047f8c7333070"
+    },
+    {
+      "path": "web/dist/assets/GuidelineWorkspace-BwxO0g5x.js",
+      "bytes": 834084,
+      "sha256": "4788e50f86ffaff1618ba2eb4adbc806efc8758f733af5b60758c86343802f8a"
+    }
+  ]
+}

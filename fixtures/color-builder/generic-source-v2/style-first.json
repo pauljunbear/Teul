@@ -1,0 +1,49 @@
+{
+  "capturedAt": "2026-08-21T12:00:00.000Z",
+  "scope": {
+    "kind": "current-file",
+    "usageScope": "current-page",
+    "selectedNodeIds": [],
+    "loadedPageIds": ["page-styles"],
+    "excludedPageIds": [],
+    "coverage": "complete-supported-scope"
+  },
+  "documentProfile": "srgb",
+  "collections": [],
+  "variables": [],
+  "paintStyles": [
+    {
+      "styleId": "style-accent",
+      "name": "Secondary/Accent",
+      "description": "One opaque normal solid.",
+      "paints": [
+        {
+          "order": 1,
+          "type": "SOLID",
+          "visible": true,
+          "opacity": 1,
+          "blendMode": "NORMAL",
+          "solidValue": { "colorSpace": "srgb", "components": [0.25, 0.5, 0.75], "alpha": 1 },
+          "payload": { "color": { "b": 0.75, "g": 0.5, "r": 0.25 }, "type": "SOLID" }
+        }
+      ],
+      "directDeclaration": {
+        "kind": "literal",
+        "value": { "colorSpace": "srgb", "components": [0.25, 0.5, 0.75], "alpha": 1 }
+      },
+      "governingEligibility": "eligible",
+      "evidenceIds": ["e-style-accent"]
+    }
+  ],
+  "paletteStructures": [],
+  "usageEvidence": [],
+  "unsupported": [],
+  "evidence": [
+    { "evidenceId": "e-style-accent", "kind": "figma-resource", "locator": "style:style-accent" }
+  ],
+  "enabledLibraryDescriptors": [],
+  "libraryBoundaryNote": "No enabled-library metadata was requested.",
+  "scannedNodeCount": 0,
+  "cancelled": false,
+  "partial": false
+}

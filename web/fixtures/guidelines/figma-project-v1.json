@@ -1,0 +1,652 @@
+{
+  "schemaVersion": "teul.figma-project.v1",
+  "capture": {
+    "capturedAt": "2026-09-25T13:00:00.000Z",
+    "contentHash": "sha256:c00962fee5b8155a07c04cf3e7b59d9218a9fcf708fac36331fc242d6cc3e5b7",
+    "file": {
+      "name": "Native scale",
+      "requestedVersion": "revision-7",
+      "returnedVersion": "revision-7"
+    },
+    "gaps": [
+      {
+        "code": "FIGMA_PROFILE_UNVERIFIED",
+        "retryAfterSeconds": null,
+        "scope": "document"
+      }
+    ],
+    "profile": "unverified",
+    "request": {
+      "fileKey": "ABC",
+      "includeVariables": false,
+      "nodeIds": ["1:2"],
+      "schemaVersion": "teul.figma-rest-request.v1",
+      "version": "revision-7"
+    },
+    "roots": [
+      {
+        "document": {
+          "children": [
+            {
+              "fills": [
+                {
+                  "color": {
+                    "b": 0.95,
+                    "g": 0.9,
+                    "r": 0.85
+                  },
+                  "type": "SOLID"
+                }
+              ],
+              "id": "1:3",
+              "name": "Light",
+              "type": "RECTANGLE"
+            },
+            {
+              "fills": [
+                {
+                  "color": {
+                    "b": 0.3,
+                    "g": 0.2,
+                    "r": 0.1
+                  },
+                  "type": "SOLID"
+                }
+              ],
+              "id": "1:4",
+              "name": "Dark",
+              "type": "RECTANGLE"
+            },
+            {
+              "characters": "Never use gradients in product.",
+              "id": "1:5",
+              "name": "Restriction",
+              "type": "TEXT"
+            }
+          ],
+          "id": "1:2",
+          "name": "Primary ramp",
+          "type": "FRAME"
+        },
+        "id": "1:2",
+        "styles": {}
+      }
+    ],
+    "schemaVersion": "teul.figma-rest-capture.v1",
+    "variables": {
+      "collections": {},
+      "relationship": "unversioned-current-read",
+      "revision": null,
+      "status": "not-requested",
+      "values": {}
+    }
+  },
+  "draft": {
+    "schemaVersion": "teul.figma-review-draft.v1",
+    "captureHash": "sha256:c00962fee5b8155a07c04cf3e7b59d9218a9fcf708fac36331fc242d6cc3e5b7",
+    "modeIds": ["figma:captured-paints"],
+    "colors": [
+      {
+        "declarationId": "figma:paint:84b7ea39839361b8981650e6f2a37d00",
+        "label": "Light",
+        "family": "Primary"
+      },
+      {
+        "declarationId": "figma:paint:208b5de7e0216acd08f5a1916643b58b",
+        "label": "Dark",
+        "family": "Primary"
+      }
+    ],
+    "profileDecision": {
+      "actor": {
+        "kind": "user",
+        "ref": "studio:figma-source-review"
+      },
+      "captureHash": "sha256:c00962fee5b8155a07c04cf3e7b59d9218a9fcf708fac36331fc242d6cc3e5b7",
+      "decidedAt": "2026-09-26T00:05:15.354Z",
+      "interpretation": "srgb"
+    },
+    "scales": [
+      {
+        "id": "scale:4fdacb63-91f3-463e-93b5-7d6e0c034509",
+        "label": "Primary",
+        "family": "Primary",
+        "evidenceRefs": [
+          "figma:paint:84b7ea39839361b8981650e6f2a37d00",
+          "figma:paint:208b5de7e0216acd08f5a1916643b58b"
+        ],
+        "slots": [
+          {
+            "id": "100",
+            "position": 0
+          },
+          {
+            "id": "900",
+            "position": 2
+          }
+        ],
+        "modes": [
+          {
+            "modeId": "figma:captured-paints",
+            "anchors": [
+              {
+                "slotId": "100",
+                "declarationId": "figma:paint:84b7ea39839361b8981650e6f2a37d00"
+              },
+              {
+                "slotId": "900",
+                "declarationId": "figma:paint:208b5de7e0216acd08f5a1916643b58b"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "statements": [
+      {
+        "observationId": "figma:statement:6281ba2509b4b4dc5564c932009b48a9",
+        "meaning": "no-gradients",
+        "scope": "product",
+        "modeIds": [],
+        "reason": "",
+        "definition": null
+      }
+    ],
+    "scopeDecision": {
+      "accepted": true,
+      "reason": "Synthetic selected primary scale for this proposal."
+    }
+  },
+  "review": {
+    "schemaVersion": "teul.figma-reviewed.v1",
+    "captureHash": "sha256:c00962fee5b8155a07c04cf3e7b59d9218a9fcf708fac36331fc242d6cc3e5b7",
+    "model": {
+      "schemaVersion": "teul.color-system-model.v1",
+      "sources": [
+        {
+          "id": "figma:source:c69cc19a8533b74534931e2a33d6a8b2",
+          "label": "Native scale / captured nodes",
+          "sourceHash": "sha256:403a2a4d4fe017d79382ee1c621ab1e041fbf6a2bc132e1a9b5a29a3eaf6580e",
+          "version": "revision-7",
+          "locator": "https://www.figma.com/design/ABC",
+          "freshnessMode": "imported-snapshot",
+          "status": "unknown"
+        }
+      ],
+      "evidence": [
+        {
+          "id": "figma:evidence:8d3fc45105556d9e06e659b9e6c8bdd3",
+          "sourceId": "figma:source:c69cc19a8533b74534931e2a33d6a8b2",
+          "locator": "node:1:5/characters/characters/0-31",
+          "status": "observed",
+          "description": "Never use gradients in product."
+        },
+        {
+          "id": "figma:evidence:94b05943c1ab9bdfb78c8cb29427adde",
+          "sourceId": "figma:source:c69cc19a8533b74534931e2a33d6a8b2",
+          "locator": "capture-scope",
+          "status": "observed",
+          "description": "Packet sha256:c00962fee5b8155a07c04cf3e7b59d9218a9fcf708fac36331fc242d6cc3e5b7; 2 selected declarations from 2 total; 0 unsupported property records and 1 capture gaps remain in the packet. This selected inventory establishes neither brand roles nor complete guideline coverage."
+        },
+        {
+          "id": "figma:evidence:b40466d97dfd9cff7fd03d62c09dba2a",
+          "sourceId": "figma:source:c69cc19a8533b74534931e2a33d6a8b2",
+          "locator": "node:1:4/fills/0/description/0",
+          "status": "observed",
+          "description": "Native node-paint: Dark / fills 1. Captured node paint; not proof of a Paint Style, palette membership, scale or token role. Color alpha and paint opacity are combined; layer/ancestor opacity, blending and surrounding appearance are not flattened."
+        },
+        {
+          "id": "figma:evidence:e38885564f3cebce0e4a1bc770e9566d",
+          "sourceId": "figma:source:c69cc19a8533b74534931e2a33d6a8b2",
+          "locator": "node:1:3/fills/0/description/0",
+          "status": "observed",
+          "description": "Native node-paint: Light / fills 1. Captured node paint; not proof of a Paint Style, palette membership, scale or token role. Color alpha and paint opacity are combined; layer/ancestor opacity, blending and surrounding appearance are not flattened."
+        },
+        {
+          "id": "figma:evidence:ebca04fc37c2dd3be4f7851c5cffd395",
+          "sourceId": "figma:source:c69cc19a8533b74534931e2a33d6a8b2",
+          "locator": "review/profile-srgb",
+          "status": "inferred",
+          "description": "User-selected sRGB interpretation: User studio:figma-source-review chose sRGB for these recorded channels at 2026-09-26T00:05:15.354Z, bound to sha256:c00962fee5b8155a07c04cf3e7b59d9218a9fcf708fac36331fc242d6cc3e5b7. Source profile remains unverified; this is a working interpretation, not a source-profile observation."
+        },
+        {
+          "id": "figma:evidence:eefe1c53a75558568798d7408c268614",
+          "sourceId": "figma:source:c69cc19a8533b74534931e2a33d6a8b2",
+          "locator": "review/partial-scope",
+          "status": "inferred",
+          "description": "User studio:figma-source-review accepted the selected partial capture for this work at 2026-09-26T00:05:15.720Z. Synthetic selected primary scale for this proposal."
+        },
+        {
+          "id": "figma:evidence:f2b3baccf2a871a9baac2177eb5a4392",
+          "sourceId": "figma:source:c69cc19a8533b74534931e2a33d6a8b2",
+          "locator": "review/statement/figma:statement:6281ba2509b4b4dc5564c932009b48a9",
+          "status": "inferred",
+          "description": "User studio:figma-source-review interpreted this statement as no-gradients. "
+        }
+      ],
+      "coverage": [
+        {
+          "sourceId": "figma:source:c69cc19a8533b74534931e2a33d6a8b2",
+          "status": "partial",
+          "evidenceRefs": ["figma:evidence:94b05943c1ab9bdfb78c8cb29427adde"],
+          "unresolvedClaimIds": ["figma:claim:8d3fc45105556d9e06e659b9e6c8bdd3"],
+          "note": "Only the explicitly selected native declarations and modes are projected. Full captured text awaits review; unsupported properties and capture gaps remain in the immutable packet. No source authority or external freshness is asserted."
+        }
+      ],
+      "claims": [
+        {
+          "id": "figma:claim:19a7286835cba5959055042bec551a08",
+          "sourceId": "figma:source:c69cc19a8533b74534931e2a33d6a8b2",
+          "text": "The user reviewed the selected partial source scope; this does not establish complete guideline coverage or corporate approval.",
+          "status": "inferred",
+          "evidenceRefs": [
+            "figma:evidence:94b05943c1ab9bdfb78c8cb29427adde",
+            "figma:evidence:eefe1c53a75558568798d7408c268614"
+          ],
+          "contextIds": ["brand", "gradient:brand", "gradient:product", "product"],
+          "ruleIds": [],
+          "modeIds": ["figma:captured-paints"]
+        },
+        {
+          "id": "figma:claim:8d3fc45105556d9e06e659b9e6c8bdd3",
+          "sourceId": "figma:source:c69cc19a8533b74534931e2a33d6a8b2",
+          "text": "Never use gradients in product.",
+          "status": "unsupported",
+          "evidenceRefs": [
+            "figma:evidence:8d3fc45105556d9e06e659b9e6c8bdd3",
+            "figma:evidence:f2b3baccf2a871a9baac2177eb5a4392"
+          ],
+          "contextIds": ["gradient:product"],
+          "ruleIds": [],
+          "modeIds": ["figma:captured-paints"]
+        },
+        {
+          "id": "figma:claim:c357bfc1cc8939bc99223c5085a8fbcf",
+          "sourceId": "figma:source:c69cc19a8533b74534931e2a33d6a8b2",
+          "text": "User-reviewed family membership: Primary. It does not establish a global primary or permitted use.",
+          "status": "inferred",
+          "evidenceRefs": [
+            "figma:evidence:b40466d97dfd9cff7fd03d62c09dba2a",
+            "figma:evidence:e38885564f3cebce0e4a1bc770e9566d"
+          ],
+          "contextIds": [],
+          "ruleIds": [],
+          "modeIds": ["figma:captured-paints"]
+        },
+        {
+          "id": "figma:claim:d16bd9237ef923e1b082d1565919ccc9",
+          "sourceId": "figma:source:c69cc19a8533b74534931e2a33d6a8b2",
+          "text": "User-selected sRGB interpretation: User studio:figma-source-review chose sRGB for these recorded channels at 2026-09-26T00:05:15.354Z, bound to sha256:c00962fee5b8155a07c04cf3e7b59d9218a9fcf708fac36331fc242d6cc3e5b7. Source profile remains unverified; this is a working interpretation, not a source-profile observation.",
+          "status": "inferred",
+          "evidenceRefs": ["figma:evidence:ebca04fc37c2dd3be4f7851c5cffd395"],
+          "contextIds": ["brand", "gradient:brand", "gradient:product", "product"],
+          "ruleIds": [],
+          "modeIds": ["figma:captured-paints"]
+        },
+        {
+          "id": "figma:claim:f530dfa74287f3ee59643eb43ced4997",
+          "sourceId": "figma:source:c69cc19a8533b74534931e2a33d6a8b2",
+          "text": "User-reviewed source scale: Primary; native mode identities and empty positions are retained.",
+          "status": "inferred",
+          "evidenceRefs": [
+            "figma:evidence:b40466d97dfd9cff7fd03d62c09dba2a",
+            "figma:evidence:e38885564f3cebce0e4a1bc770e9566d"
+          ],
+          "contextIds": [],
+          "ruleIds": [],
+          "modeIds": ["figma:captured-paints"]
+        }
+      ],
+      "modes": [
+        {
+          "id": "figma:captured-paints",
+          "label": "Captured node paints (working binding)"
+        }
+      ],
+      "colors": [
+        {
+          "id": "figma:paint:208b5de7e0216acd08f5a1916643b58b",
+          "label": "Dark",
+          "sourceId": "figma:source:c69cc19a8533b74534931e2a33d6a8b2",
+          "valuesByMode": {
+            "figma:captured-paints": {
+              "colorSpace": "srgb",
+              "hex": "#1A334D",
+              "components": {
+                "r": 0.1,
+                "g": 0.2,
+                "b": 0.3
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:88b3c17ce16f1c8b99d40a876a20c6d55d4c2183d22a895b0797d2b2b6728082"
+              }
+            }
+          },
+          "evidenceRefs": [
+            "figma:evidence:b40466d97dfd9cff7fd03d62c09dba2a",
+            "figma:evidence:ebca04fc37c2dd3be4f7851c5cffd395"
+          ],
+          "claimIds": ["figma:claim:d16bd9237ef923e1b082d1565919ccc9"]
+        },
+        {
+          "id": "figma:paint:84b7ea39839361b8981650e6f2a37d00",
+          "label": "Light",
+          "sourceId": "figma:source:c69cc19a8533b74534931e2a33d6a8b2",
+          "valuesByMode": {
+            "figma:captured-paints": {
+              "colorSpace": "srgb",
+              "hex": "#D9E6F2",
+              "components": {
+                "r": 0.85,
+                "g": 0.9,
+                "b": 0.95
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:29b9e603ac27d7f4e7a35d045e9c82ae8ad22b92caaa180bc7bc4f6a671d7541"
+              }
+            }
+          },
+          "evidenceRefs": [
+            "figma:evidence:e38885564f3cebce0e4a1bc770e9566d",
+            "figma:evidence:ebca04fc37c2dd3be4f7851c5cffd395"
+          ],
+          "claimIds": ["figma:claim:d16bd9237ef923e1b082d1565919ccc9"]
+        }
+      ],
+      "families": [
+        {
+          "id": "figma:family:97e1c7ceedba93aace2559791fe25090",
+          "label": "Primary",
+          "colorIds": [
+            "figma:paint:208b5de7e0216acd08f5a1916643b58b",
+            "figma:paint:84b7ea39839361b8981650e6f2a37d00"
+          ],
+          "evidenceRefs": [
+            "figma:evidence:b40466d97dfd9cff7fd03d62c09dba2a",
+            "figma:evidence:e38885564f3cebce0e4a1bc770e9566d"
+          ],
+          "claimIds": ["figma:claim:c357bfc1cc8939bc99223c5085a8fbcf"]
+        }
+      ],
+      "scales": [
+        {
+          "id": "scale:4fdacb63-91f3-463e-93b5-7d6e0c034509",
+          "label": "Primary",
+          "familyId": "figma:family:97e1c7ceedba93aace2559791fe25090",
+          "slots": [
+            {
+              "id": "100",
+              "position": 0
+            },
+            {
+              "id": "900",
+              "position": 2
+            }
+          ],
+          "modes": [
+            {
+              "modeId": "figma:captured-paints",
+              "anchors": [
+                {
+                  "slotId": "100",
+                  "colorId": "figma:paint:84b7ea39839361b8981650e6f2a37d00"
+                },
+                {
+                  "slotId": "900",
+                  "colorId": "figma:paint:208b5de7e0216acd08f5a1916643b58b"
+                }
+              ]
+            }
+          ],
+          "evidenceRefs": [
+            "figma:evidence:b40466d97dfd9cff7fd03d62c09dba2a",
+            "figma:evidence:e38885564f3cebce0e4a1bc770e9566d"
+          ],
+          "claimIds": ["figma:claim:f530dfa74287f3ee59643eb43ced4997"]
+        }
+      ],
+      "contexts": [
+        {
+          "id": "brand",
+          "label": "brand",
+          "modeIds": ["figma:captured-paints"],
+          "evidenceRefs": [],
+          "claimIds": []
+        },
+        {
+          "id": "gradient:brand",
+          "label": "gradient:brand",
+          "modeIds": ["figma:captured-paints"],
+          "evidenceRefs": [],
+          "claimIds": []
+        },
+        {
+          "id": "gradient:product",
+          "label": "gradient:product",
+          "modeIds": ["figma:captured-paints"],
+          "evidenceRefs": [],
+          "claimIds": []
+        },
+        {
+          "id": "product",
+          "label": "product",
+          "modeIds": ["figma:captured-paints"],
+          "evidenceRefs": [],
+          "claimIds": []
+        }
+      ],
+      "brandConstraintsByContext": [],
+      "rules": [],
+      "adoptions": [],
+      "conflicts": [],
+      "modelHash": "sha256:7e309ae003165c2c459ea6cebb1ee58ab2c3a1c17510ec45078cc24994484d10"
+    },
+    "decision": {
+      "actor": {
+        "kind": "user",
+        "ref": "studio:figma-source-review"
+      },
+      "reviewedAt": "2026-09-26T00:05:15.720Z",
+      "draft": {
+        "schemaVersion": "teul.figma-review-draft.v1",
+        "captureHash": "sha256:c00962fee5b8155a07c04cf3e7b59d9218a9fcf708fac36331fc242d6cc3e5b7",
+        "modeIds": ["figma:captured-paints"],
+        "colors": [
+          {
+            "declarationId": "figma:paint:84b7ea39839361b8981650e6f2a37d00",
+            "label": "Light",
+            "family": "Primary"
+          },
+          {
+            "declarationId": "figma:paint:208b5de7e0216acd08f5a1916643b58b",
+            "label": "Dark",
+            "family": "Primary"
+          }
+        ],
+        "profileDecision": {
+          "actor": {
+            "kind": "user",
+            "ref": "studio:figma-source-review"
+          },
+          "captureHash": "sha256:c00962fee5b8155a07c04cf3e7b59d9218a9fcf708fac36331fc242d6cc3e5b7",
+          "decidedAt": "2026-09-26T00:05:15.354Z",
+          "interpretation": "srgb"
+        },
+        "scales": [
+          {
+            "id": "scale:4fdacb63-91f3-463e-93b5-7d6e0c034509",
+            "label": "Primary",
+            "family": "Primary",
+            "evidenceRefs": [
+              "figma:paint:84b7ea39839361b8981650e6f2a37d00",
+              "figma:paint:208b5de7e0216acd08f5a1916643b58b"
+            ],
+            "slots": [
+              {
+                "id": "100",
+                "position": 0
+              },
+              {
+                "id": "900",
+                "position": 2
+              }
+            ],
+            "modes": [
+              {
+                "modeId": "figma:captured-paints",
+                "anchors": [
+                  {
+                    "slotId": "100",
+                    "declarationId": "figma:paint:84b7ea39839361b8981650e6f2a37d00"
+                  },
+                  {
+                    "slotId": "900",
+                    "declarationId": "figma:paint:208b5de7e0216acd08f5a1916643b58b"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "statements": [
+          {
+            "observationId": "figma:statement:6281ba2509b4b4dc5564c932009b48a9",
+            "meaning": "no-gradients",
+            "scope": "product",
+            "modeIds": [],
+            "reason": "",
+            "definition": null
+          }
+        ],
+        "scopeDecision": {
+          "accepted": true,
+          "reason": "Synthetic selected primary scale for this proposal."
+        }
+      }
+    },
+    "reviewHash": "sha256:40841b25b1cd8eec6475a437ed1b56aab34954adc0edc870aac3bb2d347a8425"
+  },
+  "selection": {
+    "schemaVersion": "teul.guideline-mode-gradient.v1",
+    "kind": "gradient",
+    "scope": "brand",
+    "modeId": "figma:captured-paints",
+    "design": {
+      "sourceModelHash": "sha256:7e309ae003165c2c459ea6cebb1ee58ab2c3a1c17510ec45078cc24994484d10",
+      "briefHash": "sha256:e7a531e13bdd9d773fec3ee6345a53a3ad35bb3b1b6de4880547d1afe7dd1ab3",
+      "angleDegrees": 120,
+      "stops": [
+        {
+          "position": 0,
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#1A334D",
+            "components": {
+              "r": 0.1,
+              "g": 0.2,
+              "b": 0.3
+            },
+            "alpha": 1,
+            "representation": {
+              "kind": "native-srgb",
+              "exactValueHash": "sha256:88b3c17ce16f1c8b99d40a876a20c6d55d4c2183d22a895b0797d2b2b6728082"
+            }
+          },
+          "sourceColorId": "figma:paint:208b5de7e0216acd08f5a1916643b58b",
+          "locked": true
+        },
+        {
+          "position": 1,
+          "value": {
+            "colorSpace": "srgb",
+            "hex": "#D9E6F2",
+            "components": {
+              "r": 0.85,
+              "g": 0.9,
+              "b": 0.95
+            },
+            "alpha": 1,
+            "representation": {
+              "kind": "native-srgb",
+              "exactValueHash": "sha256:29b9e603ac27d7f4e7a35d045e9c82ae8ad22b92caaa180bc7bc4f6a671d7541"
+            }
+          },
+          "sourceColorId": "figma:paint:84b7ea39839361b8981650e6f2a37d00",
+          "locked": true
+        }
+      ],
+      "route": {
+        "space": "oklab"
+      },
+      "schemaVersion": "teul.gradient-design.v1",
+      "compiledPaint": {
+        "version": "teul.opaque-srgb-gradient.v1",
+        "interpolation": "srgb",
+        "stops": [
+          {
+            "position": 0,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#1A334D",
+              "components": {
+                "r": 0.1,
+                "g": 0.2,
+                "b": 0.3
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:88b3c17ce16f1c8b99d40a876a20c6d55d4c2183d22a895b0797d2b2b6728082"
+              }
+            }
+          },
+          {
+            "position": 0.452880859375,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#6A7F94",
+              "components": {
+                "r": 0.41707085402064925,
+                "g": 0.4973441665388964,
+                "b": 0.5808414332577388
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:bbe2edd2f0ecd9da55e714298c6b7eebe056e6a6fe451d4b7fe1bc25ea7a9a60"
+              }
+            }
+          },
+          {
+            "position": 1,
+            "value": {
+              "colorSpace": "srgb",
+              "hex": "#D9E6F2",
+              "components": {
+                "r": 0.85,
+                "g": 0.9,
+                "b": 0.95
+              },
+              "alpha": 1,
+              "representation": {
+                "kind": "native-srgb",
+                "exactValueHash": "sha256:29b9e603ac27d7f4e7a35d045e9c82ae8ad22b92caaa180bc7bc4f6a671d7541"
+              }
+            }
+          }
+        ],
+        "approximation": {
+          "method": "uniform-oracle",
+          "intervalsPerAuthoredSegment": 4096,
+          "maxObservedDeltaEOK": 0.0043232324808709375
+        }
+      },
+      "designHash": "sha256:c7c9b787d84822685edefe67b53f19d10e3b438e3fd0fb3792a216fca917ae4a"
+    }
+  },
+  "projectHash": "sha256:6b3f2d34e91ca2b6a6f240431b71c6293cf0157bcb012d1bced26f4a4000e7f1"
+}

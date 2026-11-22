@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "teul.local-check-receipt.v1",
+  "createdAt": "2026-09-25T23:47:24.847607+00:00",
+  "baseCommit": "29b7f210417ce0869ec5d427a20e183dada88bbb",
+  "scope": "TASK-005 pure native declaration inventory and explicit working model; pending semantic review and UI integration",
+  "commands": [
+    {
+      "command": "npm --prefix web test",
+      "node": "22.13.1",
+      "result": "26 files, 356 tests pass; 18 native model cases"
+    },
+    {
+      "command": "npm --prefix web test",
+      "node": "24.19.0",
+      "result": "26 files, 356 tests pass; 18 native model cases"
+    },
+    {
+      "command": "npm run test:run -- src/lib/__tests__/colorSystemModelSourceAdapterV1.test.ts src/lib/__tests__/colorSystemModelV1.compatibility.test.ts src/lib/__tests__/colorSystemProposalV1.test.ts src/lib/__tests__/colorSystemConstructionProposalV1.test.ts",
+      "node": "22.13.1",
+      "result": "4 files, 67 tests pass"
+    },
+    {
+      "command": "tsc -b web; npm --prefix web run lint; eslint src/lib/colorSystemValueProvenanceV1.ts --max-warnings=0",
+      "node": "22.13.1",
+      "result": "pass, zero warnings"
+    },
+    {
+      "command": "validate_prd.py --profile full --extension ai --extension refactor --stage ready --strict",
+      "result": "pass"
+    },
+    {
+      "command": "git diff --check",
+      "result": "pass"
+    }
+  ],
+  "reviews": {
+    "reuse": "Explicit invalid alpha/opacity and extra alias fields remain gaps; follow-up confirmed",
+    "quality": "Complete qualification text and selection-order-independent profile restrictions; follow-up confirmed",
+    "efficiency": "20,000 observation expansion cap before allocation and per-mode ID reuse; follow-up confirmed"
+  },
+  "boundaries": {
+    "realFigmaRequests": false,
+    "realModelRequests": false,
+    "nativeModelLocallyVerified": true,
+    "nativeReviewUiIntegrated": false,
+    "generationAuthorizedByInventory": false,
+    "sourceMutation": false,
+    "pushed": false,
+    "deployed": false,
+    "fullAcceptanceComplete": false
+  },
+  "sourceHashes": {
+    "web/src/lib/guideline/figmaInventory.ts": "sha256:5b01c9e890f1528653130ea7014cf3887533b7f8c0e7c50a36865be71aaa12ab",
+    "web/src/lib/guideline/figmaModel.ts": "sha256:0338f40a5f3e16e7235447d79c98db127f12fa33faa4166cd18c63accd70fced",
+    "web/src/lib/guideline/figmaModel.test.ts": "sha256:700c9c113d638e7f9ca7d2a8c23bcccb7995653d4fa0c9b23e5e6d6806374702",
+    "src/lib/colorSystemValueProvenanceV1.ts": "sha256:361f59114bb0f1c3bd569146cf8b809f9dc133e17202ba6be7c42662a3c7f8ef",
+    "docs/plans/2026-09-25-brand-guideline-import-plan.md": "sha256:49a92deba7c442a21e5d01454f43afc56d8f870f43f17036a64ac7d80b7937e3",
+    "docs/evidence/brand-guideline-import/figma-native-model.md": "sha256:2daa6df277b04dfa25b809e7fd64acf8978f7811f7d5e3896aa2d43c50cd4929"
+  }
+}

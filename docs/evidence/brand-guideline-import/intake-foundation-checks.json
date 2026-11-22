@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "teul.guideline-intake-foundation-checks.v1",
+  "status": "passed",
+  "checkedAt": "2026-09-25T21:48:36.182121+00:00",
+  "baseCommit": "7e316417bfad30f49150c8a946d3df81c478c300",
+  "scope": "Local TASK-003 service foundation and browser client; no live processors, authentication deployment or upload UI",
+  "sourceHashes": {
+    "services/guideline-intake/src/assets.test.ts": "sha256:00de2454aa78107b6ffa1f3488098eab920c52b756990212f0f95a1a9d594e40",
+    "services/guideline-intake/src/assets.ts": "sha256:80c1d63e0b73ce3eb030f869f8fa43be76b4a6987f94bd0f11b64edab2821015",
+    "services/guideline-intake/src/http.test.ts": "sha256:4b73c403e718f63aef1ea105b5c6c2e08b0d8c25889f3ca1231b8116ce8ec194",
+    "services/guideline-intake/src/http.ts": "sha256:e10efb6df38ad6e65eda4f91dce8bd2340f8870456c49b1dd9a609952c5834ba",
+    "services/guideline-intake/src/protocol.test.ts": "sha256:f1ed67c2fa14ca99e63a9673daa860c2ca19b60cb8a7e255499aaaa7328d36b5",
+    "services/guideline-intake/src/protocol.ts": "sha256:b33d671e9c6cbc60a31cb06644f8e6d32b7d6d1a98c1c41cc84a34bd537191a2",
+    "services/guideline-intake/src/restart-worker.fixture.ts": "sha256:d4a1521a846da68d9a29d2c33b6eb9330a8dce8860ffd075659e45e5f2e0e107",
+    "services/guideline-intake/src/restart.test.ts": "sha256:d07e171bc8f5386902883b37503c60e36cb0ab3e171204a8b640ee10cafd2da8",
+    "services/guideline-intake/src/service.test.ts": "sha256:3976d2284dbbf74ca896aaa29ba0beabd54f6c56b59d250e1cba650bff3cadc9",
+    "services/guideline-intake/src/service.ts": "sha256:9fd9ab3363cf5c653810cd787ef846be93f428c1f91e9ee69c88c6cbbb305c2f",
+    "services/guideline-intake/src/store.test.ts": "sha256:5b54bb203ada74a6f8e193ad7b22a3d2f04f21e1eb6791e0439d8abd3db8ff7e",
+    "services/guideline-intake/src/store.ts": "sha256:fd6d6778ddd6079534b6c40da5f392e8895167aaf618a2ca51bab9f1cefbceaa",
+    "services/guideline-intake/package.json": "sha256:dfd7bdb17ed1362256f8d5ccb9ce3865fa661c80a867765dda749b086ac6a205",
+    "services/guideline-intake/package-lock.json": "sha256:462bce921f2e48249457c1c5a83e3fcff78a21708c0058fcb3f9be90ad797c79",
+    "services/guideline-intake/tsconfig.json": "sha256:1fe1095facdc9f528582fa35e7d51cccea153e2625a94b5c70e6a71cf65e6fe2",
+    "services/guideline-intake/README.md": "sha256:66b61a773540e7f59372c72e0accb4352a1f3da06fe9f7684bff4871fba45928",
+    "web/src/lib/guideline/intakeClient.ts": "sha256:60fc678e563c1152cbbb55cd075afc9d79ad3396f10b843ccc4c00315648430a",
+    "web/src/lib/guideline/intakeClient.test.ts": "sha256:3a825c4dd7c5d6fd6df192c32eb031af91a9a9353211d538b8ad9adda86ba133",
+    "package.json": "sha256:5fba031dd69dd409a3cea8f245e33b55bfc30c23a76dfb858c26a28fb6c12d85",
+    "eslint.config.mjs": "sha256:360b23cd2875f217f0b8b6c604fd1854d14780ae3ed4c0f0c1e86c4b240f07cd"
+  },
+  "checks": [
+    {
+      "command": "npm run test:intake",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "52 service tests passed on each runtime, including real SIGKILL and independent process recovery"
+    },
+    {
+      "command": "npm --prefix web test -- src/lib/guideline/intakeClient.test.ts",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "20 client tests passed on each runtime after final shared-protocol edits"
+    },
+    {
+      "command": "npm --prefix web test",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "14 files; 121 tests passed on each runtime"
+    },
+    {
+      "command": "npm --prefix web run build",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "passed; existing 598.04 kB lazy guideline chunk advisory unchanged"
+    },
+    {
+      "command": "npm run lint:intake; npm --prefix web run lint",
+      "runtimes": ["22.13.1"],
+      "result": "passed"
+    },
+    {
+      "command": "npm --prefix services/guideline-intake audit --audit-level=moderate",
+      "runtimes": ["22.13.1"],
+      "result": "zero known vulnerabilities reported"
+    },
+    {
+      "command": "validate_prd.py --profile full --extension ai --extension refactor --stage ready --strict",
+      "result": "passed; complete stage remains open"
+    }
+  ],
+  "crashDrill": {
+    "source": "synthetic",
+    "killSignal": "SIGKILL",
+    "previousProcessExitConfirmed": true,
+    "independentRecoveryProcess": true,
+    "reservedMicros": 150000,
+    "recoveredStatus": "WORKER_RESTART_UNKNOWN",
+    "processorInvocationsAfterRestart": 0,
+    "crossOwnerDenied": true,
+    "ciphertextDeleted": true
+  },
+  "review": {
+    "reuse": "default asset capacity aligned with shared envelope bound; protocol types and ceiling reused",
+    "quality": "shutdown race, unaffordable retry, strict enum parsing and duplicate recovery under full storage resolved with regression tests",
+    "efficiency": "indexed read-only idle maintenance, owner-capacity queue selection and targeted cancellation cleanup",
+    "followup": "quality follow-up confirmed lifecycle fixes and identified final duplicate recovery case; added deterministic output-validator identity checks"
+  },
+  "providerCalls": 0,
+  "referenceWorkloadMeasured": false,
+  "releaseState": "implemented and locally verified; not integrated into main, pushed, deployed or live-observed",
+  "limitations": [
+    "Managed authentication and actual Figma, website and model adapters remain unimplemented in this package",
+    "Browser client is not wired to consent/upload UI",
+    "No hosted isolation, backup exclusion, retention or live-provider cost/latency proof",
+    "Single asset writer and dedicated OS user required; no distributed-worker or key-rotation implementation",
+    "Node SQLite experimental status on pinned Node22 remains a host qualification check",
+    "Full AC-012, AC-016, AC-017 and all other PRD acceptance gates remain open"
+  ]
+}

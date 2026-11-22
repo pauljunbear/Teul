@@ -1,0 +1,97 @@
+.guideline-source-set {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-block: 20px;
+}
+.guideline-source-set > summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.guideline-source-set section {
+  min-width: 0;
+}
+.guideline-source-set label {
+  display: grid;
+  gap: 6px;
+}
+.guideline-source-set .guideline-figma-choice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.guideline-source-set select {
+  width: 100%;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--background);
+  color: inherit;
+}
+.guideline-set-sources {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.guideline-set-sources li {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-block: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.guideline-set-sources strong {
+  flex: 1 1 160px;
+  overflow-wrap: anywhere;
+}
+.guideline-set-mappings {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: 12px;
+  margin-block: 16px;
+}
+.guideline-set-values {
+  display: grid;
+  gap: 16px;
+}
+.guideline-set-values article {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+}
+.guideline-set-member {
+  display: flex;
+  align-items: start;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.guideline-set-member > span:nth-child(2) {
+  flex: 1 1 180px;
+}
+.guideline-set-member details {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.guideline-set-member code {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+.guideline-set-swatch {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.guideline-source-set-add {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-block: 12px;
+}

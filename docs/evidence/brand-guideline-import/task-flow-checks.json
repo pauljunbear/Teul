@@ -1,0 +1,481 @@
+{
+  "schemaVersion": "teul.task-flow-verification.v1",
+  "status": "passed-local-verification",
+  "candidateBase": "cd528257a2c5fd816ce0cb1c3b63514087f770bb",
+  "requirements": ["DEC-026", "TASK-010", "NFR-004", "AC-018"],
+  "sources": {
+    "scripts/verify-local.mjs": "39c2a18425400b2c0bf03f962ccb83cf299e77b7c5a17c515288a97fed2d30b7",
+    "web/fixtures/guidelines/figma-project-v1.json": "698b20f9ba44c2613b09775a307dc98f482abadeedea1692de8cb494672573fa",
+    "web/fixtures/guidelines/harbor-native.pdf": "4a6b3f600697dbd46bed4988a07224fc8ed894da2429a0b57294712745dfec35",
+    "web/package.json": "6cdefa620ef64ea941c48ec0cfad463c48c4a776e59e5ca3b00dc29720dc6d38",
+    "web/scripts/guideline-accessibility.mjs": "68a0a2f81be2a3bd446e2da4632e157a256f5cb53680230269bc3e4f6c13cc15",
+    "web/scripts/guideline-assistance-smoke.mjs": "d084a79b0532afc1858f064ec835124f5d3a7bed324e59faa3f5fe67e1917d73",
+    "web/scripts/guideline-figma-review-smoke.mjs": "676e5bd7e6d4baf9c209cab09a978da79d49e98a74800faf19473c6e53bf0c73",
+    "web/scripts/guideline-gradient-assessment-smoke.mjs": "91c74d58cecc7b32e8b5812f623395d70853fe8dc9ee1c1e216222f2c52bddbf",
+    "web/scripts/guideline-gradient-catalog-smoke.mjs": "35511561f4ea81e8b36be06182bf227a475c6bd3da0b34c09478ac984a24661e",
+    "web/scripts/guideline-gradient-performance.mjs": "b673443a9112bbe96846306829431a16b9797fd42fac9da6f92820384c2a81ef",
+    "web/scripts/guideline-gradient-smoke.mjs": "1aebee4ffa9a3f065ef865bc5a13c3a469717051d80d066c218f331eeab42c1d",
+    "web/scripts/guideline-gradient-worker-smoke.mjs": "9c3977739f6bfb60bf7eefcff3693a36e1b712534b00043f8c444fbdbd46120f",
+    "web/scripts/guideline-manual-refresh-smoke.mjs": "2e5342048644a0c9bbb1699f541d1847fd4d6d5352cf1f3e01b998a8e88c1505",
+    "web/scripts/guideline-manual-smoke.mjs": "d715b59120f92a73046d3a218238b53a787d818f76b7f92c27684402bb3731f6",
+    "web/scripts/guideline-numeric-smoke.mjs": "783f67f67bcb919ef22c9d314be3b047e49d2b8bd583dbe5ef4acbddb65c937d",
+    "web/scripts/guideline-output-recovery-smoke.mjs": "a3da1ec89c7c96861bb151526c70bc67d5b5919a6c08ca379273cc8dc292d2fc",
+    "web/scripts/guideline-refresh-smoke.mjs": "97e8dbac9cf51c5fe72c016b846b91d1b3d18390d594ec2cd6dd634c5f310d98",
+    "web/scripts/guideline-smoke.mjs": "dc2889ef172e94a134012f5ec2ca022576bed7b1f7fc57b07a0f95806d840039",
+    "web/scripts/guideline-source-set-smoke.mjs": "4ab5678cbabc7422d6364637c235fede7c542cab1eeda8f584dd9812272b175e",
+    "web/scripts/guideline-source-set-storage-smoke.mjs": "aa4e6c0e46f82da6b9ff5ba6e2aa1bc4eef5a5aa395e5bf207673d2725ae9f13",
+    "web/scripts/guideline-supporting-smoke.mjs": "30448d81d28995e1bba3f7d16d468a1f46f85dc24016c467935c97431d444fde",
+    "web/scripts/guideline-task-flow.mjs": "76ceb631dddc67a612ecf914721a221ad61c0bdfb6cbe398e4ca7f89a59c009a",
+    "web/scripts/guideline-task-navigation.mjs": "5cddb113b1debfe3d32628d1e4d7b36abf2622a24bbd3830e1e98aa666d1e3e4",
+    "web/scripts/guideline-website-smoke.mjs": "552cf8be21b09828188a00009869ed1f60c72f57515f4d86911eb43a314345c0",
+    "web/src/components/GuidelineDesignWorkspace.tsx": "536b7f3ca8c4a81f767bd8673c829d3bf3c306486b88ef5679adbfe6d24f1e95",
+    "web/src/components/GuidelineSourceReview.tsx": "e2bd408ba81083ef86ee55ab50e3dc45da9abe86835fe575d425bd624375701d",
+    "web/src/components/GuidelineSourceSet.tsx": "bf32cfc8ebbee7f1f988e714f292f0e0b4a685cd2fe0ced8f55b0314c829c386",
+    "web/src/components/GuidelineWorkspace.css": "b86759aa3f1e9500f2f904a420eec7c8c17a971808e0e48f93893e6e54e13176",
+    "web/src/components/GuidelineWorkspace.tsx": "e829f5cf4bd2243e2d1bbcc7a5a5f84282f800343e9494cbf95402ce919803ab"
+  },
+  "runs": [
+    {
+      "node": "v22.13.1",
+      "passedSteps": 31,
+      "gates": [
+        {
+          "path": "docs/evidence/local-gates/2026-09-26T13-48-46Z-cd52825/receipt.json",
+          "bytes": 33519,
+          "sha256": "242c942d1b2d13d73c6416adee39a5eefbe605035d0443502ec86fcbc54eab69"
+        },
+        {
+          "path": "docs/evidence/local-gates/2026-09-26T13-51-00Z-cd52825/receipt.json",
+          "bytes": 12755,
+          "sha256": "776ba35fdfb94be222fb8170cae26dff065babff9e9081452014645effa32547"
+        },
+        {
+          "path": "docs/evidence/local-gates/2026-09-26T13-53-04Z-cd52825/receipt.json",
+          "bytes": 10229,
+          "sha256": "808460f4c321b75171073aa6504d40f716d550f3c50846ea337cd84d905def04"
+        }
+      ],
+      "archive": {
+        "directory": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z",
+        "artifacts": [
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-task-flow/node22-gradient-task.json",
+            "bytes": 631425,
+            "sha256": "32b45add1e64f27f562b0b05a4e2d04cd871c64384a0a97ac2680a49b34e7ba5"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-task-flow/node22-checks.json",
+            "bytes": 2790,
+            "sha256": "9b5dd27c8f1d0e1973b01108c3dd31d0f8156408f93987f00638838637a147cd"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-task-flow/node22-choose-task.json",
+            "bytes": 490745,
+            "sha256": "6e8fab9972d68cd1d0433de6b3f562faa9389ce19f4181004644dd24ae5889bd"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-task-flow/node22-gradient-task-mobile.json",
+            "bytes": 629808,
+            "sha256": "367a0158aa370cc7ad844353b61bcef63b7fb38afd8458370fa0bf02bde5cc5a"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-task-flow/node22-mobile.png",
+            "bytes": 153261,
+            "sha256": "54ca40a527e00c5688b5cbc1fe0bf08211b831ad1b8083f612fd1b00d4050be8"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-task-flow/node22-desktop.png",
+            "bytes": 61147,
+            "sha256": "4ed7e55d6329caa5c7343d1a6a4d78f76c4a7fb7f779bf9dea732c95afd93597"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-empty.json",
+            "bytes": 194692,
+            "sha256": "fb231e9c4ea21fa1b70a3e0598a1ad5da43ecfaac15ab8a3244856d15e7f697b"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-advanced-source-editors.json",
+            "bytes": 660403,
+            "sha256": "f240351c33bb7c242ef8779aee5d3855b58c516ff87f68d928205d82c1700743"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-pdf-review.json",
+            "bytes": 440386,
+            "sha256": "2336dc64adf66a8700e3c69ff648f5269b73039f247eccb6bfce912116538a48"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-checks.json",
+            "bytes": 13336,
+            "sha256": "f30efa9bda97d027bddf76a8283b9e4076bda1ed8d262601beead5f97ccd6c1b"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-visible-table-contrast-1.json",
+            "bytes": 2055,
+            "sha256": "32a92ca8c9aae3e868f9697ccd6bc27157d154dfe8a222dfeb13104a1a51b0d3"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-advanced-relationship-error.json",
+            "bytes": 663344,
+            "sha256": "a4f5ff2e0c8f5a0971f44e9ac2cc68595130f79ec43f64feeb7291c6c0c51f10"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-mobile-review-error.json",
+            "bytes": 683595,
+            "sha256": "3d978be76f90fb5c92a0010a54d5cb21defb24a2ba06c52b50cf61a895476cbe"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-pdf-ready.json",
+            "bytes": 237666,
+            "sha256": "62f55562ef7425bc4e26e1588fc4673a416f34ecf26ae2a13174975b29e037ee"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-gradient.json",
+            "bytes": 637825,
+            "sha256": "a0d90d1cbaf07677878e006c2415b3c2092860b08168a8793b3e786731edc0ce"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-import-error.json",
+            "bytes": 657791,
+            "sha256": "05cbdad7d81f556cca8a8f3aebec6a1148df0bcee612fd42f342409af9f87a07"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-saved.json",
+            "bytes": 644372,
+            "sha256": "d81b5b6b1213b2eff273dbe83a3518502ad6355d436a1a5e74a5fad1cc04b37a"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-advanced-source-mobile.png",
+            "bytes": 391121,
+            "sha256": "c20af5d5f150e6d381ceca54257ff1ba29af64ea50b88bf62490649bf51fbec8"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-visible-table-contrast-4.json",
+            "bytes": 2088,
+            "sha256": "cb0ee2c4abd7357fab574a15e49f897af1bb025f7cc1a3c48fe7be1d2bb28497"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-website-review.json",
+            "bytes": 599001,
+            "sha256": "9466ac8a3ed5ebc15da8b18d4294917e6060876600b236f99527fd6e50e38de3"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-mobile.png",
+            "bytes": 439831,
+            "sha256": "257c3ed0c632e08c149d0aead3a204125bc21173daf23eafede61a4b154f0f99"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-figma-review.json",
+            "bytes": 398207,
+            "sha256": "d60201d4fa4bf166e25bbb81c4994c3ae8b41af26e0b854a9fa41148a9bea2a9"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-figma-mobile-table.png",
+            "bytes": 8257,
+            "sha256": "624f904922cdc3b83263ac44edc8f45dca2773fe0d69115abb7bc3190edf1d68"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-advanced-gradient-constraints.json",
+            "bytes": 708120,
+            "sha256": "221b63534017333eb8f5876ae625a5b0b3c58d9944983e81f36ddc4c1f036671"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-advanced-invalid-position.json",
+            "bytes": 587833,
+            "sha256": "0d753826f8dc8471dfe31da682438613bfa9264224a501c43b508b451d05f961"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-desktop.png",
+            "bytes": 613027,
+            "sha256": "51a5466e6ca6319884352da4e2b3d819915ae90d9503b06c58a1babe7c54d3e8"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-figma-mobile-review.json",
+            "bytes": 400280,
+            "sha256": "e98f093e7657f7b1ea5546e6ce11d6c970ea4f153b39b8b21a4973f754e4187a"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-advanced-gradient-mobile.png",
+            "bytes": 424471,
+            "sha256": "796f887b96e780394e6fc0e3053819ad61cd072344707e719bb759044b008184"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-advanced-source-mobile.json",
+            "bytes": 659180,
+            "sha256": "ac41a870082bf64cbeb9d95cf5c6a2a0a3be96cf82d0b1bd2087faa9f0aa57b2"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-visible-table-contrast-2.json",
+            "bytes": 2117,
+            "sha256": "1eda7b4bc6ad40b1d053ba532418fade987d560bf7f88d4bd44c5830c88ce000"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-review-applied.json",
+            "bytes": 586562,
+            "sha256": "110d629f85bec08b6a6b0586d1151483f046a624450ca58905d81b37530d0f7c"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-website-mobile-review.json",
+            "bytes": 597406,
+            "sha256": "a85f976509715796c00d65a06f64d91e81e84e68d04cdc5f34c7a35d2f21f62d"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-visible-table-contrast-3.json",
+            "bytes": 2117,
+            "sha256": "4997ae6b18b81fea0f93a69a4a97dd873d95bbdb97f725fd69bd86afb48906bc"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-accessibility/node22-advanced-gradient-mobile.json",
+            "bytes": 706489,
+            "sha256": "ca99369595f9dc743761de9fba9c435e9b9f96897df11306b1925617aaa6cec9"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node22-2026-09-26T13-55-00Z/guideline-gradient-performance/node22-checks.json",
+            "bytes": 105433,
+            "sha256": "f37c94a6a5a5cd1ee07e902aeb0a031e83a909e50f8edda37739da2fd55a46bd"
+          }
+        ]
+      },
+      "summary": {
+        "path": "docs/evidence/brand-guideline-import/task-flow-node22.json",
+        "bytes": 3292,
+        "sha256": "d39afa033ae530e1a48b16538d1af73845790197b2fb6af6e117dbb7d696df00"
+      }
+    },
+    {
+      "node": "v24.19.0",
+      "passedSteps": 31,
+      "gates": [
+        {
+          "path": "docs/evidence/local-gates/2026-09-26T13-54-48Z-cd52825/receipt.json",
+          "bytes": 34220,
+          "sha256": "61d71d776f1240459c6d8c3faae7016e2109476b20f2ca51558edebb2473f50e"
+        }
+      ],
+      "archive": {
+        "directory": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z",
+        "artifacts": [
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-task-flow/node24-choose-task.json",
+            "bytes": 490745,
+            "sha256": "087351a9f630693237e45dc0a67748bc9e63f51a03d284eafd8fe0003261937e"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-task-flow/node24-checks.json",
+            "bytes": 2790,
+            "sha256": "39a9fd6e087ff72c609276bd5370bd41d65a94dc34f996a64ce4a7327f94f5ab"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-task-flow/node24-gradient-task-mobile.json",
+            "bytes": 629808,
+            "sha256": "e502d4398728b29aa47e85dc6fd6e01f75271dd9e618958bec29a0b23d89620c"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-task-flow/node24-gradient-task.json",
+            "bytes": 631425,
+            "sha256": "cd88e053749483288d42329c794e9b36bbc1f44621174d0cba0f6af3aed0b40b"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-task-flow/node24-mobile.png",
+            "bytes": 153261,
+            "sha256": "54ca40a527e00c5688b5cbc1fe0bf08211b831ad1b8083f612fd1b00d4050be8"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-task-flow/node24-desktop.png",
+            "bytes": 61147,
+            "sha256": "4ed7e55d6329caa5c7343d1a6a4d78f76c4a7fb7f779bf9dea732c95afd93597"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-figma-mobile-review.json",
+            "bytes": 400278,
+            "sha256": "833c8fa9a8cfeb7a7e402c859756063f2451f8d548a4ba0a1ac80c3e4b246f51"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-pdf-ready.json",
+            "bytes": 237666,
+            "sha256": "d313f78519f1fb2ac0d3157f86a13679bc599a3f6e51e9334bdd84643a538d70"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-advanced-source-mobile.png",
+            "bytes": 391121,
+            "sha256": "c20af5d5f150e6d381ceca54257ff1ba29af64ea50b88bf62490649bf51fbec8"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-advanced-source-mobile.json",
+            "bytes": 659180,
+            "sha256": "1773aeb3fe809fdea7ca8e710616058c2d87523df217d1ff76cf59228e038287"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-import-error.json",
+            "bytes": 657791,
+            "sha256": "291dd4477cba3e0ba371e5e7efc60f9614360f42fc4bc64c8336cdef546fe764"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-pdf-review.json",
+            "bytes": 440386,
+            "sha256": "e8f65bd5622f45fc62ee72a26641b33934219de0441a6a23f142938261c789d6"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-checks.json",
+            "bytes": 13336,
+            "sha256": "27de8ca0edc873bf2a5b48c17e12e110326dd6a1db95c748e99968b328b0faa9"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-visible-table-contrast-1.json",
+            "bytes": 2055,
+            "sha256": "616a4cc0fb29f2f59862a22969c3b5655132901d547e21fc56592e4516ceb242"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-advanced-source-editors.json",
+            "bytes": 660403,
+            "sha256": "fece780ec2f9809240708aec4e296c680f0affac0dd91e5489701ea637046052"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-mobile.png",
+            "bytes": 439831,
+            "sha256": "257c3ed0c632e08c149d0aead3a204125bc21173daf23eafede61a4b154f0f99"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-advanced-gradient-mobile.json",
+            "bytes": 706489,
+            "sha256": "c555fd8931e0890f8bf4571e99b97fb20be9e13b9b466363c846bf6c964b014c"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-advanced-gradient-constraints.json",
+            "bytes": 708120,
+            "sha256": "6d0be8f7b2f9806f4443d080efb25dd121f04ff19a4762d7cfa25a10344bf0dd"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-visible-table-contrast-3.json",
+            "bytes": 2117,
+            "sha256": "c27b7f6541c2d9b4315b5afb9736c80dbe2026c636b8d0239db9ffdd828db73f"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-advanced-gradient-mobile.png",
+            "bytes": 424471,
+            "sha256": "796f887b96e780394e6fc0e3053819ad61cd072344707e719bb759044b008184"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-advanced-invalid-position.json",
+            "bytes": 587833,
+            "sha256": "9b535d06c09346b168f9f9539cc05b34d1e784e80b8fb4813ce96db97a5b8249"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-visible-table-contrast-2.json",
+            "bytes": 2117,
+            "sha256": "ae62f02d1e71117483c81740661e8739ac7bcde4337aaf827fda33d6de69aec5"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-saved.json",
+            "bytes": 644372,
+            "sha256": "af78f59c6a9af458c88122fea54eeb2eadfab982bae537f7cf95b96e44e41e89"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-website-review.json",
+            "bytes": 599001,
+            "sha256": "2045b5b1b5ad8940bcd07b4ab5d023f65775a2f2e4ba71d6180a44701ce31dc5"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-website-mobile-review.json",
+            "bytes": 597406,
+            "sha256": "44196c225bed631f4c6cba2ac8dba0de45fd67867fe9d74ec2c4de7fa0e9cf5b"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-figma-mobile-table.png",
+            "bytes": 8257,
+            "sha256": "624f904922cdc3b83263ac44edc8f45dca2773fe0d69115abb7bc3190edf1d68"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-review-applied.json",
+            "bytes": 586562,
+            "sha256": "4296d34089a5ae702a76db8700ec9fe86197dd5dbcb22f5c7c8f7360bd34c8e3"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-figma-review.json",
+            "bytes": 398207,
+            "sha256": "189c4d0e2a3ea436d6933dde6d105d75dcb84d0b50e47efbb28eb33c218f6fd3"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-empty.json",
+            "bytes": 194692,
+            "sha256": "6b48b3d6e8e52f1e40fa2b3665e86475c9339f1e9c6c6e109ab83de0a996052b"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-gradient.json",
+            "bytes": 637825,
+            "sha256": "2f5b046f2034d2d50a5e8ade272342ec9c986aa8f0b9b198c921bd7f6b7bdfea"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-advanced-relationship-error.json",
+            "bytes": 663344,
+            "sha256": "690d50b170720bfc4fed98b77c584ae78b3d9d2d33df2d4f9cc8a67a11068ee6"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-desktop.png",
+            "bytes": 613027,
+            "sha256": "51a5466e6ca6319884352da4e2b3d819915ae90d9503b06c58a1babe7c54d3e8"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-visible-table-contrast-4.json",
+            "bytes": 2088,
+            "sha256": "63c85a31f1710fb62461db9a628edf66285eff56538808da907d8ebb0834bf30"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-accessibility/node24-mobile-review-error.json",
+            "bytes": 683595,
+            "sha256": "2e3a4a0ea87acfae616e7747d24ac37e58fc6b290068531c4331455a99905b1a"
+          },
+          {
+            "path": "release/guideline-task-flow/verified-node24-2026-09-26T13-59-59Z/guideline-gradient-performance/node24-checks.json",
+            "bytes": 105565,
+            "sha256": "1e9de8c83dbc32aa9bd9667070ab0af1026298bc53f200c1494b341e03e13351"
+          }
+        ]
+      },
+      "summary": {
+        "path": "docs/evidence/brand-guideline-import/task-flow-node24.json",
+        "bytes": 3292,
+        "sha256": "c7adb808809b5584975f30ade0aea34f1d5fb428a8f6dcdfeec4d4335ef0a9dd"
+      }
+    }
+  ],
+  "remaining": [
+    "Human usability and design acceptance",
+    "Actual screen-reader and OS file-picker observation",
+    "Full real-source and held-out evaluation",
+    "Configured live service and provider qualification"
+  ],
+  "affectedProfile": {
+    "path": "release/guideline-task-flow/affected-profile.mjs",
+    "bytes": 1037,
+    "sha256": "3d12656d3b05d3b6da6a9709d18a02b7c5c7cb3a420854331fe770901dfd20de"
+  },
+  "runnerTests": [
+    {
+      "path": "release/guideline-task-flow/node22-runner.log",
+      "bytes": 2587,
+      "sha256": "cec188fc0ded7a5c78a2a4e710063db67ba2733f14217bb348a4069ae1586cc3"
+    },
+    {
+      "path": "release/guideline-task-flow/node24-runner.log",
+      "bytes": 1234,
+      "sha256": "934246007452f36ffc41c79c77fb3ebc671881840322be0478a6d8352d18ceeb"
+    }
+  ],
+  "failedAttempts": [
+    {
+      "path": "release/guideline-task-flow/failed-attempts/figma-navigation.log",
+      "bytes": 39210,
+      "sha256": "e42e142bc0b466f91f4a30d3ca31c8aa4b30e95c86dc0e89c57602d7c3c926c2"
+    },
+    {
+      "path": "release/guideline-task-flow/failed-attempts/initial-navigation.log",
+      "bytes": 630,
+      "sha256": "3ed8ddf816e2b39844cc1cab948ed90913ea6971c0a4cec770b2fe7d0db3d723"
+    },
+    {
+      "path": "release/guideline-task-flow/failed-attempts/manual-refresh-navigation.log",
+      "bytes": 18116,
+      "sha256": "3b53b8cc7f8ab1993073d8c8195cdba3a6d48dabd1d63e10f65b18896ac72092"
+    }
+  ]
+}

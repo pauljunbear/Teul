@@ -1,0 +1,138 @@
+Notices for clipper-lib 6.4.2 (embedded implementation version 6.4.2.2)
+
+Sources retrieved 2026-09-28:
+- node_modules/clipper-lib/clipper.js, unmodified notice preamble
+- https://www.boost.org/LICENSE_1_0.txt
+- https://raw.githubusercontent.com/creationix/jsbn/master/LICENSE
+  (upstream distribution of Tom Wu JSBN; original Stanford URL unavailable)
+
+/*******************************************************************************
+ *                                                                              *
+ * Author    :  Angus Johnson                                                   *
+ * Version   :  6.4.2                                                           *
+ * Date      :  27 February 2017                                                *
+ * Website   :  http://www.angusj.com                                           *
+ * Copyright :  Angus Johnson 2010-2017                                         *
+ *                                                                              *
+ * License:                                                                     *
+ * Use, modification & distribution is subject to Boost Software License Ver 1. *
+ * http://www.boost.org/LICENSE_1_0.txt                                         *
+ *                                                                              *
+ * Attributions:                                                                *
+ * The code in this library is an extension of Bala Vatti's clipping algorithm: *
+ * "A generic solution to polygon clipping"                                     *
+ * Communications of the ACM, Vol 35, Issue 7 (July 1992) pp 56-63.             *
+ * http://portal.acm.org/citation.cfm?id=129906                                 *
+ *                                                                              *
+ * Computer graphics and geometric modeling: implementation and algorithms      *
+ * By Max K. Agoston                                                            *
+ * Springer; 1 edition (January 4, 2005)                                        *
+ * http://books.google.com/books?q=vatti+clipping+agoston                       *
+ *                                                                              *
+ * See also:                                                                    *
+ * "Polygon Offsetting by Computing Winding Numbers"                            *
+ * Paper no. DETC2005-85513 pp. 565-575                                         *
+ * ASME 2005 International Design Engineering Technical Conferences             *
+ * and Computers and Information in Engineering Conference (IDETC/CIE2005)      *
+ * September 24-28, 2005 , Long Beach, California, USA                          *
+ * http://www.me.berkeley.edu/~mcmains/pubs/DAC05OffsetPolygon.pdf              *
+ *                                                                              *
+ *******************************************************************************/
+/*******************************************************************************
+ *                                                                              *
+ * Author    :  Timo                                                            *
+ * Version   :  6.4.2.2                                                         *
+ * Date      :  8 September 2017                                                 *
+ *                                                                              *
+ * This is a translation of the C# Clipper library to Javascript.               *
+ * Int128 struct of C# is implemented using JSBN of Tom Wu.                     *
+ * Because Javascript lacks support for 64-bit integers, the space              *
+ * is a little more restricted than in C# version.                              *
+ *                                                                              *
+ * C# version has support for coordinate space:                                 *
+ * +-4611686018427387903 ( sqrt(2^127 -1)/2 )                                   *
+ * while Javascript version has support for space:                              *
+ * +-4503599627370495 ( sqrt(2^106 -1)/2 )                                      *
+ *                                                                              *
+ * Tom Wu's JSBN proved to be the fastest big integer library:                  *
+ * http://jsperf.com/big-integer-library-test                                   *
+ *                                                                              *
+ * This class can be made simpler when (if ever) 64-bit integer support comes   *
+ * or floating point Clipper is released.                                       *
+ *                                                                              *
+ *******************************************************************************/
+/*******************************************************************************
+ *                                                                              *
+ * Basic JavaScript BN library - subset useful for RSA encryption.              *
+ * http://www-cs-students.stanford.edu/~tjw/jsbn/                               *
+ * Copyright (c) 2005  Tom Wu                                                   *
+ * All Rights Reserved.                                                         *
+ * See "LICENSE" for details:                                                   *
+ * http://www-cs-students.stanford.edu/~tjw/jsbn/LICENSE                        *
+ *                                                                              *
+ *******************************************************************************/
+
+Boost Software License - Version 1.0 - August 17th, 2003
+
+Permission is hereby granted, free of charge, to any person or organization
+obtaining a copy of the software and accompanying documentation covered by
+this license (the "Software") to use, reproduce, display, distribute,
+execute, and transmit the Software, and to prepare derivative works of the
+Software, and to permit third-parties to whom the Software is furnished to
+do so, all subject to the following:
+
+The copyright notices in the Software and this entire statement, including
+the above license grant, this restriction and the following disclaimer,
+must be included in all copies of the Software, in whole or in part, and
+all derivative works of the Software, unless such copies or derivative
+works are solely in the form of machine-executable object code generated by
+a source language processor.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT
+SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
+FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
+ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+
+Licensing
+---------
+
+This software is covered under the following copyright:
+
+/*
+ * Copyright (c) 2003-2005  Tom Wu
+ * All Rights Reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND, 
+ * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
+ * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  
+ *
+ * IN NO EVENT SHALL TOM WU BE LIABLE FOR ANY SPECIAL, INCIDENTAL,
+ * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF
+ * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT
+ * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ * In addition, the following condition applies:
+ *
+ * All redistributions must retain an intact copy of this copyright notice
+ * and disclaimer.
+ */
+
+Address all questions regarding this license to:
+
+  Tom Wu
+  tjw@cs.Stanford.EDU

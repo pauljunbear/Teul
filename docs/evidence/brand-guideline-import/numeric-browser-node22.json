@@ -1,0 +1,70 @@
+{
+  "startedAt": "2026-09-25T22:33:16.171Z",
+  "node": "v22.13.1",
+  "fixtureHashes": {
+    "harbor-numeric.pdf": "b583664ade57f7a03a825a97f0d68e148eba2d5b25cb7c2aebcee6e925465925",
+    "harbor-encrypted.pdf": "45f96f8c2eea91adc51f2bcf6ecdfb086025b1942f541d4a20fec464466da828"
+  },
+  "status": "passed",
+  "finishedAt": "2026-09-25T22:33:22.677Z",
+  "url": "http://127.0.0.1:50308/",
+  "checks": [
+    "Nine native observations and reviewed model colors preserve exact components, alpha, literals and separate identities despite equal rounded HEX previews.",
+    "CMYK, Pantone and Display-P3 specifications remain source text without invented sRGB tokens; differing stated HEX/RGB values both survive with page-three provenance.",
+    "Four adjacent native PDF text items form one color with all four citations and a union highlight; unrelated multiline numbers produce no extra color. Keyboard activation reveals page two.",
+    "Source text and location controls remain keyboard-operable at 390px, with no horizontal document overflow.",
+    "V3 project and source review reopen byte-for-byte after browser reload while offline, without the PDF; native precision and alpha survive.",
+    "Encrypted PDF requests an unlocked copy, exposes no password field, and preserves the existing reviewed project exactly.",
+    "All ten invalid or ambiguous page-four declarations remain text, yield zero exact colors, and cannot be reviewed as a palette; page five is never captured.",
+    "Opaque HEX source generation, contrast proof, SVG/CSS/JSON exports and offline selected-design replay remain compatible through the new capture/project versions."
+  ],
+  "failures": [],
+  "diagnostics": [],
+  "externalRequests": [],
+  "artifacts": [
+    {
+      "file": "node22-numeric-source-desktop.png",
+      "sha256": "e30aa5ca1d0855059e333c12dff91f05868509f3e83e4857ed880034923d734a"
+    },
+    {
+      "file": "node22-numeric-mobile-keyboard.png",
+      "sha256": "3fa3eeee2a8b5f5e34f77f13cd22d31e56158bd81401575fd18b33784451a430"
+    },
+    {
+      "file": "node22-numeric-mobile-source.png",
+      "sha256": "fc16a2cbcdcb878caf5f8ffc39604b6aa2438ecdac851ff5e9063e4ad9b3f3df"
+    },
+    {
+      "file": "node22-numeric-mobile-highlight.png",
+      "sha256": "926c2cff1a58cf9d5e9b6df86f5df173e49f450f745da881bc98f3cf20a18afd"
+    },
+    {
+      "file": "node22-source-review.json",
+      "sha256": "5894e4276f1be73dfcfaf850461346358ddd2915eeff1db8fa74055255e6ce1c"
+    },
+    {
+      "file": "node22-project.json",
+      "sha256": "11a27d87e3d714039f246c9edacda42f9782d918865d020d77af773c0eaf39db"
+    },
+    {
+      "file": "node22-encrypted-preserves-work.png",
+      "sha256": "90d3346386ede028f8f29d03825afc94bd3cb88cd0bd7343d7470dfe9117f162"
+    },
+    {
+      "file": "node22-invalid-source-project.json",
+      "sha256": "d7d57579b3043f02322389298674dc6308fef13805a463b4761fac4f227b5747"
+    },
+    {
+      "file": "node22-opaque-gradient.css",
+      "sha256": "3fe19aa0fd1cd7c6b3e6a0dce31be91fefb55371d962b21438a2c30456b58a84"
+    },
+    {
+      "file": "node22-opaque-gradient.svg",
+      "sha256": "684153e3d8d313b4a73c1de29e5d880cf5b5737af6dbcda7630c5131e10de7b4"
+    },
+    {
+      "file": "node22-opaque-gradient.json",
+      "sha256": "d5ce05df859f13c151457220652f5ba82cb21a83aed897bf235eb96ebce91437"
+    }
+  ]
+}

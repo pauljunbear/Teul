@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-09-25T19:02:51.405Z",
+  "checks": [
+    "Concurrent first access migrates once and preserves exact legacy/future bytes",
+    "Deleted legacy rows cannot return through a stale save or repeated migration",
+    "Concurrent tab inserts preserve both palettes and broadcast a refresh",
+    "Concurrent updates and update/delete races reject stale revisions without resurrection",
+    "Two tabs racing for the final slot enforce the 24-palette limit atomically",
+    "Unknown envelopes remain recoverable and aggregate byte limits fail without eviction",
+    "Aborted transactions and unavailable IndexedDB return failure without claiming a save",
+    "Full selected recipe survives exact-byte save/replay; malformed, mismatched and future inputs never replace valid work",
+    "A full library of product recipes validates in responsive batches and local subscribers receive the committed snapshot"
+  ],
+  "errors": [],
+  "timings": [
+    {
+      "status": "listed",
+      "count": 24,
+      "elapsedMs": 1760,
+      "maximumLongTaskMs": 125,
+      "updated": "saved",
+      "notificationRevision": 2
+    }
+  ]
+}

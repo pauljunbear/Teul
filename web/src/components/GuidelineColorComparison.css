@@ -1,0 +1,171 @@
+.guideline-scale-comparison {
+  margin: 20px 0;
+}
+.guideline-scale-comparison summary {
+  cursor: pointer;
+}
+.guideline-scale-comparison table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+.guideline-scale-comparison caption {
+  text-align: left;
+  margin: 16px 0 8px;
+}
+.guideline-scale-comparison th,
+.guideline-scale-comparison td {
+  text-align: left;
+  vertical-align: top;
+  padding: 10px;
+  border-bottom: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+.guideline-scale-comparison th:first-child {
+  width: 20%;
+}
+.guideline-scale-comparison code,
+.guideline-scale-comparison td > span {
+  display: block;
+  font-size: 12px;
+}
+.guideline-comparison-chip {
+  height: 36px;
+  border-radius: 4px;
+  margin-bottom: 5px;
+  box-shadow: inset 0 0 0 1px #0002;
+}
+.guideline-gradient-comparison {
+  margin: 20px 0;
+}
+.guideline-gradient-baseline-control {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0;
+}
+.guideline-gradient-baseline-control select {
+  max-width: 100%;
+  min-width: 0;
+}
+.guideline-gradient-comparison-pair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+.guideline-gradient-comparison[data-comparing='true'] .guideline-gradient-comparison-pair {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.guideline-gradient-comparison-pair > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.guideline-gradient-comparison-pair h4 {
+  margin: 0;
+}
+.guideline-gradient-comparison-pair .guideline-gradient-preview {
+  margin-top: 12px;
+  position: relative;
+}
+.guideline-gradient-context {
+  margin: 0;
+}
+.guideline-gradient-context [data-gradient-text-sample] {
+  position: absolute;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.guideline-gradient-context figcaption {
+  margin-top: 8px;
+}
+.guideline-gradient-text-context {
+  margin-top: 16px;
+}
+.guideline-gradient-text-context p {
+  margin: 6px 0;
+}
+.guideline-gradient-coverage-axis {
+  position: relative;
+  height: 6px;
+  margin: 10px 0;
+  border-radius: 3px;
+  background: var(--muted);
+}
+.guideline-gradient-coverage-axis span {
+  position: absolute;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--foreground);
+}
+@media (max-width: 600px) {
+  .guideline-gradient-comparison[data-comparing='true'] .guideline-gradient-comparison-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .guideline-scale-comparison th,
+  .guideline-scale-comparison td {
+    padding: 8px 4px;
+  }
+}
+
+.guideline-comparison-exact {
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+.guideline-native-gradient-comparison {
+  margin: 24px 0;
+}
+.guideline-native-gradient-comparison summary {
+  cursor: pointer;
+}
+.guideline-native-gradient-comparison section {
+  margin-top: 16px;
+}
+.guideline-native-gradient-comparison p {
+  overflow-wrap: anywhere;
+}
+.guideline-native-gradient-frame {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  max-width: 400px;
+}
+.guideline-native-gradient-frame label {
+  display: grid;
+  gap: 8px;
+}
+.guideline-native-gradient-interpretation {
+  display: flex;
+  align-items: start;
+  gap: 8px;
+  margin-top: 16px;
+}
+.guideline-native-gradient-interpretation input {
+  margin-top: 5px;
+}
+.guideline-native-gradient-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 16px 0;
+}
+.guideline-native-gradient-pair figure {
+  margin: 0;
+  min-width: 0;
+}
+.guideline-native-gradient-pair figcaption {
+  margin-bottom: 8px;
+}
+.guideline-native-gradient-pair img,
+.guideline-native-gradient-pair svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 12px;
+}
+@media (max-width: 600px) {
+  .guideline-native-gradient-pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

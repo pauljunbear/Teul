@@ -1,0 +1,513 @@
+/**
+ * Tests for colorBlindness.ts
+ *
+ * Validates CVD simulation algorithms against known behaviors
+ * and color science principles.
+ */
+
+import { describe, it, expect } from 'vitest';
+import {
+  CVD_INFO,
+  type CVDType,
+  rgbToLinear,
+  linearToRgb,
+  getMachadoMatrix,
+  simulateCVD,
+  simulateCVDHex,
+  simulateProtanopia,
+  simulateDeuteranopia,
+  simulateTritanopia,
+  simulateAchromatopsia,
+  simulateAnomaly,
+} from '../colorBlindness';
+import type { RGB } from '../utils';
+
+// ============================================
+// Helper Functions
+// ============================================
+
+const WHITE: RGB = { r: 255, g: 255, b: 255 };
+const BLACK: RGB = { r: 0, g: 0, b: 0 };
+const RED: RGB = { r: 255, g: 0, b: 0 };
+const GREEN: RGB = { r: 0, g: 255, b: 0 };
+const BLUE: RGB = { r: 0, g: 0, b: 255 };
+const GRAY: RGB = { r: 128, g: 128, b: 128 };
+const colorDistance = (first: RGB, second: RGB): number =>
+  Math.sqrt(
+    Math.pow(first.r - second.r, 2) +
+      Math.pow(first.g - second.g, 2) +
+      Math.pow(first.b - second.b, 2)
+  );
+
+// ============================================
+// CVD Info Tests
+// ============================================
+
+describe('CVD_INFO', () => {
+  it('contains all CVD types', () => {
+    const types: CVDType[] = [
+      'normal',
+      'protanopia',
+      'protanomaly',
+      'deuteranopia',
+      'deuteranomaly',
+      'tritanopia',
+      'tritanomaly',
+      'achromatopsia',
+    ];
+    for (const type of types) {
+      expect(CVD_INFO[type]).toBeDefined();
+      expect(CVD_INFO[type].type).toBe(type);
+      expect(CVD_INFO[type].name).toBeTruthy();
+      expect(CVD_INFO[type].description).toBeTruthy();
+    }
+  });
+
+  it('identifies affected cones correctly', () => {
+    expect(CVD_INFO.protanopia.affectedCone).toBe('L');
+    expect(CVD_INFO.protanomaly.affectedCone).toBe('L');
+    expect(CVD_INFO.deuteranopia.affectedCone).toBe('M');
+    expect(CVD_INFO.deuteranomaly.affectedCone).toBe('M');
+    expect(CVD_INFO.tritanopia.affectedCone).toBe('S');
+    expect(CVD_INFO.tritanomaly.affectedCone).toBe('S');
+    expect(CVD_INFO.achromatopsia.affectedCone).toBe('all');
+    expect(CVD_INFO.normal.affectedCone).toBe('none');
+  });
+
+  it('does not present male prevalence as a population-wide normal-vision statistic', () => {
+    expect(CVD_INFO.normal.prevalence).not.toContain('%');
+    expect(CVD_INFO.protanopia.prevalence).toContain('males');
+    expect(CVD_INFO.deuteranomaly.prevalence).toContain('males');
+  });
+
+  it('describes simulations without biologically absolute perception claims', () => {
+    expect(CVD_INFO.protanopia.description).not.toContain('Cannot perceive');
+    expect(CVD_INFO.deuteranopia.description).not.toContain('Complete absence');
+    expect(CVD_INFO.achromatopsia.description).toContain('approximation');
+    expect(CVD_INFO.tritanopia.name).toBe('Severe tritanomaly approximation');
+    expect(CVD_INFO.tritanopia.description).toContain('not validated for tritanopia');
+  });
+});
+
+// ============================================
+// Color Space Conversion Tests
+// ============================================
+
+describe('rgbToLinear / linearToRgb', () => {
+  it('converts white correctly', () => {
+    const linear = rgbToLinear(WHITE);
+    expect(linear[0]).toBeCloseTo(1, 2);
+    expect(linear[1]).toBeCloseTo(1, 2);
+    expect(linear[2]).toBeCloseTo(1, 2);
+  });
+
+  it('converts black correctly', () => {
+    const linear = rgbToLinear(BLACK);
+    expect(linear[0]).toBe(0);
+    expect(linear[1]).toBe(0);
+    expect(linear[2]).toBe(0);
+  });
+
+  it('round-trips through conversion', () => {
+    const colors = [WHITE, BLACK, RED, GREEN, BLUE, GRAY];
+    for (const color of colors) {
+      const linear = rgbToLinear(color);
+      const back = linearToRgb(linear);
+      expect(back.r).toBeCloseTo(color.r, 0);
+      expect(back.g).toBeCloseTo(color.g, 0);
+      expect(back.b).toBeCloseTo(color.b, 0);
+    }
+  });
+
+  it('handles low sRGB values correctly', () => {
+    const lowColor = { r: 10, g: 10, b: 10 };
+    const linear = rgbToLinear(lowColor);
+    expect(linear[0]).toBeGreaterThan(0);
+    expect(linear[0]).toBeLessThan(0.01);
+  });
+});
+
+// ============================================
+// Machado Matrix Tests
+// ============================================
+
+describe('getMachadoMatrix', () => {
+  it('returns identity for normal vision', () => {
+    const matrix = getMachadoMatrix('normal', 1.0);
+    expect(matrix[0][0]).toBe(1);
+    expect(matrix[1][1]).toBe(1);
+    expect(matrix[2][2]).toBe(1);
+  });
+
+  it('returns full matrix for dichromacy types at any severity', () => {
+    const protan = getMachadoMatrix('protanopia', 0.5);
+    expect(protan[0][0]).not.toBe(1); // Should be the full matrix, not interpolated
+  });
+
+  it("uses the authors' precomputed matrices at exact 0.1 severity steps", () => {
+    expect(getMachadoMatrix('protanomaly', 0.1)).toEqual([
+      [0.856167, 0.182038, -0.038205],
+      [0.029342, 0.955115, 0.015544],
+      [-0.00288, -0.001563, 1.004443],
+    ]);
+    expect(getMachadoMatrix('deuteranomaly', 0.5)).toEqual([
+      [0.547494, 0.607765, -0.155259],
+      [0.181692, 0.781742, 0.036566],
+      [-0.01041, 0.027275, 0.983136],
+    ]);
+    expect(getMachadoMatrix('tritanomaly', 0.9)).toEqual([
+      [1.278864, -0.125333, -0.153531],
+      [-0.084748, 0.957674, 0.127074],
+      [-0.000989, 0.601151, 0.399838],
+    ]);
+  });
+
+  it('interpolates between the nearest precomputed matrices', () => {
+    const matrix = getMachadoMatrix('protanomaly', 0.873);
+
+    // The source supplement's example: interpolate 0.8 and 0.9 with weight 0.73.
+    expect(matrix[0][0]).toBeCloseTo(0.21887045, 8);
+    expect(matrix[0][1]).toBeCloseTo(0.9721589, 8);
+  });
+
+  it('preserves identity and full-severity endpoints', () => {
+    const severityZero = getMachadoMatrix('protanomaly', 0);
+    const severityFull = getMachadoMatrix('protanomaly', 1.0);
+
+    expect(severityZero[0][0]).toBeCloseTo(1, 3);
+    expect(severityZero[1][1]).toBeCloseTo(1, 3);
+    expect(severityFull[0][0]).toBe(0.152286);
+  });
+
+  it('clamps severity to 0-1', () => {
+    const neg = getMachadoMatrix('protanomaly', -0.5);
+    const over = getMachadoMatrix('protanomaly', 1.5);
+    const zero = getMachadoMatrix('protanomaly', 0);
+    const one = getMachadoMatrix('protanomaly', 1);
+
+    expect(neg).toEqual(zero);
+    expect(over).toEqual(one);
+  });
+});
+
+// ============================================
+// Dichromacy Simulation Tests
+// ============================================
+
+describe('simulateProtanopia', () => {
+  it('uses the Machado full-severity protan matrix', () => {
+    expect(simulateProtanopia(RED)).toEqual(simulateAnomaly(RED, 'protanopia', 1));
+  });
+
+  it('preserves white', () => {
+    const result = simulateProtanopia(WHITE);
+    expect(result.r).toBeCloseTo(255, 0);
+    expect(result.g).toBeCloseTo(255, 0);
+    expect(result.b).toBeCloseTo(255, 0);
+  });
+
+  it('preserves black', () => {
+    const result = simulateProtanopia(BLACK);
+    expect(result.r).toBeCloseTo(0, 0);
+    expect(result.g).toBeCloseTo(0, 0);
+    expect(result.b).toBeCloseTo(0, 0);
+  });
+
+  it('reduces red perception', () => {
+    const result = simulateProtanopia(RED);
+    // Red should appear darker and shifted
+    expect(result.r + result.g + result.b).toBeLessThan(255 * 3);
+  });
+
+  it('makes red and green more similar', () => {
+    const simRed = simulateProtanopia(RED);
+    const simGreen = simulateProtanopia(GREEN);
+    const originalDist = colorDistance(RED, GREEN);
+    const simDist = colorDistance(simRed, simGreen);
+    // Distance should decrease after simulation
+    expect(simDist).toBeLessThan(originalDist);
+  });
+
+  it('preserves blue relatively well', () => {
+    const result = simulateProtanopia(BLUE);
+    // Blue should still be recognizably blue
+    expect(result.b).toBeGreaterThan(result.r);
+    expect(result.b).toBeGreaterThan(result.g);
+  });
+});
+
+describe('simulateDeuteranopia', () => {
+  it('uses the Machado full-severity deutan matrix', () => {
+    expect(simulateDeuteranopia(RED)).toEqual(simulateAnomaly(RED, 'deuteranopia', 1));
+  });
+
+  it('preserves white', () => {
+    const result = simulateDeuteranopia(WHITE);
+    expect(result.r).toBeCloseTo(255, 0);
+    expect(result.g).toBeCloseTo(255, 0);
+    expect(result.b).toBeCloseTo(255, 0);
+  });
+
+  it('preserves black', () => {
+    const result = simulateDeuteranopia(BLACK);
+    expect(result.r).toBeCloseTo(0, 0);
+    expect(result.g).toBeCloseTo(0, 0);
+    expect(result.b).toBeCloseTo(0, 0);
+  });
+
+  it('makes red and green more similar', () => {
+    const simRed = simulateDeuteranopia(RED);
+    const simGreen = simulateDeuteranopia(GREEN);
+    const originalDist = colorDistance(RED, GREEN);
+    const simDist = colorDistance(simRed, simGreen);
+    expect(simDist).toBeLessThan(originalDist);
+  });
+
+  it('is the most common form - preserves blue', () => {
+    const result = simulateDeuteranopia(BLUE);
+    expect(result.b).toBeGreaterThan(result.r);
+  });
+});
+
+describe('simulateTritanopia', () => {
+  it('uses the Machado full-severity tritan matrix', () => {
+    expect(simulateTritanopia(BLUE)).toEqual(simulateAnomaly(BLUE, 'tritanopia', 1));
+  });
+
+  it('preserves white', () => {
+    const result = simulateTritanopia(WHITE);
+    expect(result.r).toBeCloseTo(255, 0);
+    expect(result.g).toBeCloseTo(255, 0);
+    expect(result.b).toBeCloseTo(255, 0);
+  });
+
+  it('preserves black', () => {
+    const result = simulateTritanopia(BLACK);
+    expect(result.r).toBeCloseTo(0, 0);
+    expect(result.g).toBeCloseTo(0, 0);
+    expect(result.b).toBeCloseTo(0, 0);
+  });
+
+  it('affects blue perception', () => {
+    const result = simulateTritanopia(BLUE);
+    // Blue should be significantly altered
+    const original = BLUE.b;
+    expect(Math.abs(result.b - original)).toBeGreaterThan(0);
+  });
+
+  it('makes blue and yellow more similar', () => {
+    const yellow: RGB = { r: 255, g: 255, b: 0 };
+    const simBlue = simulateTritanopia(BLUE);
+    const simYellow = simulateTritanopia(yellow);
+    const originalDist = colorDistance(BLUE, yellow);
+    const simDist = colorDistance(simBlue, simYellow);
+    expect(simDist).toBeLessThan(originalDist);
+  });
+});
+
+describe('simulateAchromatopsia', () => {
+  it('converts to grayscale', () => {
+    const result = simulateAchromatopsia(RED);
+    expect(result.r).toBe(result.g);
+    expect(result.g).toBe(result.b);
+  });
+
+  it('preserves white', () => {
+    const result = simulateAchromatopsia(WHITE);
+    expect(result.r).toBe(255);
+    expect(result.g).toBe(255);
+    expect(result.b).toBe(255);
+  });
+
+  it('preserves black', () => {
+    const result = simulateAchromatopsia(BLACK);
+    expect(result.r).toBe(0);
+    expect(result.g).toBe(0);
+    expect(result.b).toBe(0);
+  });
+
+  it('preserves gray', () => {
+    const result = simulateAchromatopsia(GRAY);
+    expect(result.r).toBeCloseTo(128, 0);
+  });
+
+  it('uses linear-light BT.709 luminance and re-encodes to sRGB', () => {
+    const redResult = simulateAchromatopsia(RED);
+    expect(redResult.r).toBeCloseTo(127, 0);
+
+    const greenResult = simulateAchromatopsia(GREEN);
+    expect(greenResult.r).toBeCloseTo(220, 0);
+
+    const blueResult = simulateAchromatopsia(BLUE);
+    expect(blueResult.r).toBeCloseTo(76, 0);
+  });
+});
+
+// ============================================
+// Anomaly Simulation Tests
+// ============================================
+
+describe('simulateAnomaly', () => {
+  it('at severity 0, returns original color', () => {
+    const result = simulateAnomaly(RED, 'protanomaly', 0);
+    expect(result.r).toBeCloseTo(RED.r, 0);
+    expect(result.g).toBeCloseTo(RED.g, 0);
+    expect(result.b).toBeCloseTo(RED.b, 0);
+  });
+
+  it('at severity 1, matches dichromacy closely', () => {
+    const anomalyResult = simulateAnomaly(RED, 'deuteranomaly', 1.0);
+    // At full severity, anomaly should significantly alter the color
+    expect(colorDistance(anomalyResult, RED)).toBeGreaterThan(10);
+  });
+
+  it('severity 0.5 is between 0 and 1', () => {
+    const original = RED;
+    const half = simulateAnomaly(RED, 'protanomaly', 0.5);
+    const full = simulateAnomaly(RED, 'protanomaly', 1.0);
+
+    const distHalf = colorDistance(original, half);
+    const distFull = colorDistance(original, full);
+
+    expect(distHalf).toBeLessThan(distFull);
+    expect(distHalf).toBeGreaterThan(0);
+  });
+});
+
+// ============================================
+// Main Simulation Function Tests
+// ============================================
+
+describe('simulateCVD', () => {
+  it('returns original for normal type', () => {
+    const result = simulateCVD(RED, { type: 'normal' });
+    expect(result.r).toBe(RED.r);
+    expect(result.g).toBe(RED.g);
+    expect(result.b).toBe(RED.b);
+  });
+
+  it('handles all CVD types', () => {
+    const types: CVDType[] = [
+      'normal',
+      'protanopia',
+      'protanomaly',
+      'deuteranopia',
+      'deuteranomaly',
+      'tritanopia',
+      'tritanomaly',
+      'achromatopsia',
+    ];
+
+    for (const type of types) {
+      const result = simulateCVD(RED, { type });
+      expect(result).toHaveProperty('r');
+      expect(result).toHaveProperty('g');
+      expect(result).toHaveProperty('b');
+      expect(result.r).toBeGreaterThanOrEqual(0);
+      expect(result.r).toBeLessThanOrEqual(255);
+    }
+  });
+
+  it('passes severity to anomaly types', () => {
+    const noSeverity = simulateCVD(RED, { type: 'protanomaly' });
+    const halfSeverity = simulateCVD(RED, { type: 'protanomaly', severity: 0.5 });
+    const fullSeverity = simulateCVD(RED, { type: 'protanomaly', severity: 1.0 });
+
+    // Default should be 1.0
+    expect(colorDistance(noSeverity, fullSeverity)).toBeLessThan(1);
+
+    // Half severity should be different from full
+    expect(colorDistance(halfSeverity, fullSeverity)).toBeGreaterThan(10);
+  });
+});
+
+describe('simulateCVDHex', () => {
+  it('converts hex correctly', () => {
+    const result = simulateCVDHex('#ff0000', { type: 'normal' });
+    expect(result).toBe('#ff0000');
+  });
+
+  it('handles lowercase hex', () => {
+    const result = simulateCVDHex('#aabbcc', { type: 'normal' });
+    expect(result).toBe('#aabbcc');
+  });
+
+  it('handles uppercase hex', () => {
+    const result = simulateCVDHex('#AABBCC', { type: 'normal' });
+    expect(result.toLowerCase()).toBe('#aabbcc');
+  });
+});
+
+// ============================================
+// Edge Cases
+// ============================================
+
+describe('edge cases', () => {
+  it('handles colors at RGB boundaries', () => {
+    const corners = [
+      { r: 0, g: 0, b: 0 },
+      { r: 255, g: 0, b: 0 },
+      { r: 0, g: 255, b: 0 },
+      { r: 0, g: 0, b: 255 },
+      { r: 255, g: 255, b: 0 },
+      { r: 255, g: 0, b: 255 },
+      { r: 0, g: 255, b: 255 },
+      { r: 255, g: 255, b: 255 },
+    ];
+
+    for (const color of corners) {
+      const result = simulateCVD(color, { type: 'deuteranopia' });
+      expect(result.r).toBeGreaterThanOrEqual(0);
+      expect(result.r).toBeLessThanOrEqual(255);
+      expect(result.g).toBeGreaterThanOrEqual(0);
+      expect(result.g).toBeLessThanOrEqual(255);
+      expect(result.b).toBeGreaterThanOrEqual(0);
+      expect(result.b).toBeLessThanOrEqual(255);
+    }
+  });
+
+  it('clamps out-of-gamut results', () => {
+    // Some simulations might produce values slightly out of range
+    // The implementation should clamp them
+    const saturated: RGB = { r: 255, g: 0, b: 128 };
+    const result = simulateCVD(saturated, { type: 'protanopia' });
+    expect(result.r).toBeGreaterThanOrEqual(0);
+    expect(result.r).toBeLessThanOrEqual(255);
+  });
+});
+
+// ============================================
+// Known Confusion Line Tests
+// ============================================
+
+describe('known confusion lines', () => {
+  it('protan confusion: red and brown become similar', () => {
+    const red: RGB = { r: 220, g: 50, b: 50 };
+    const brown: RGB = { r: 139, g: 90, b: 43 };
+    const simRed = simulateCVD(red, { type: 'protanopia' });
+    const simBrown = simulateCVD(brown, { type: 'protanopia' });
+    const simDist = colorDistance(simRed, simBrown);
+    const origDist = colorDistance(red, brown);
+    expect(simDist).toBeLessThan(origDist);
+  });
+
+  it('deutan confusion: red and green traffic lights', () => {
+    const trafficRed: RGB = { r: 230, g: 50, b: 50 };
+    const trafficGreen: RGB = { r: 50, g: 200, b: 50 };
+    const simRed = simulateCVD(trafficRed, { type: 'deuteranopia' });
+    const simGreen = simulateCVD(trafficGreen, { type: 'deuteranopia' });
+    const simDist = colorDistance(simRed, simGreen);
+    const origDist = colorDistance(trafficRed, trafficGreen);
+    expect(simDist).toBeLessThan(origDist);
+  });
+
+  it('tritan confusion: blue and green become similar', () => {
+    const blue: RGB = { r: 50, g: 50, b: 200 };
+    const teal: RGB = { r: 50, g: 150, b: 150 };
+    const simBlue = simulateCVD(blue, { type: 'tritanopia' });
+    const simTeal = simulateCVD(teal, { type: 'tritanopia' });
+    const simDist = colorDistance(simBlue, simTeal);
+    const origDist = colorDistance(blue, teal);
+    expect(simDist).toBeLessThan(origDist);
+  });
+});

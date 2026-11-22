@@ -1,0 +1,54 @@
+{
+  "sourceCommit": "ed08c0f6c9adddbe1f964345b396a4d36d4941ea",
+  "runtime": "Node 24.20.0",
+  "cases": [
+    {
+      "name": "neutral:interior",
+      "hash": "06b87d337a843625dd83f51ae4c011143f5ea02f296394254f34f513fcd1f195"
+    },
+    {
+      "name": "neutral:new",
+      "hash": "3d74b7edb80bd59251ce61c86d60ee7324c0e1c0d3b798f716c90b9045a9c0b9"
+    },
+    {
+      "name": "near-neutral:interior",
+      "hash": "da942dde48a9ae643646d43c02a34b15c6f1076776a5c3a340a8302a82d38774"
+    },
+    {
+      "name": "near-neutral:new",
+      "hash": "ca3da4121f495984b189704ce62397d9d21ca7802e8b2f6d24297c7a20c178a7"
+    },
+    {
+      "name": "chromatic:interior",
+      "hash": "59d2510c6a290aca181f929fc9682ad70e9eae86fc24d4ec285b86642f494d54"
+    },
+    {
+      "name": "chromatic:new",
+      "hash": "ff9972f382a238ea34b93912f769dbcccca5ffbf2e9b63fa618dc5be00ec222e"
+    },
+    {
+      "name": "warm:interior",
+      "hash": "33271155c5162e35b6e8ddb4464ffa70f7078229bbb598ae9dedc086f7517f87"
+    },
+    {
+      "name": "warm:new",
+      "hash": "0e038247f6cb5ffa5862a15bce6468e2e63f1cd6e0cb9d973730bdb90fd536c4"
+    },
+    {
+      "name": "black:interior",
+      "hash": "e363c381ad98a264f705cff35052cc9ad70fd6dd2f7e052cf00bc22625c414c4"
+    },
+    {
+      "name": "black:new",
+      "hash": "f5b97d38c0ce8329b6e2fe1c93e9911e5378d3108d7927ad2c293426b14141fb"
+    },
+    {
+      "name": "white:interior",
+      "hash": "ce8a94913160cea7f3ae1ea82839585f32c6db6af4637aaea13a175eac4722fc"
+    },
+    {
+      "name": "white:new",
+      "hash": "f2a2bde851458698ebb996da069bdee656c701207bf13df74a66518f0808d64b"
+    }
+  ]
+}

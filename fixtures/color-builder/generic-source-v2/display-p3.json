@@ -1,0 +1,75 @@
+{
+  "capturedAt": "2026-08-21T12:00:00.000Z",
+  "scope": {
+    "kind": "current-file",
+    "usageScope": "current-page",
+    "selectedNodeIds": [],
+    "loadedPageIds": ["page-p3"],
+    "excludedPageIds": [],
+    "coverage": "complete-supported-scope"
+  },
+  "documentProfile": "display-p3",
+  "collections": [
+    {
+      "collectionId": "collection-p3",
+      "name": "Wide gamut",
+      "defaultModeId": "mode-p3",
+      "modes": [
+        { "collectionId": "collection-p3", "modeId": "mode-p3", "name": "Default", "order": 1 }
+      ]
+    }
+  ],
+  "variables": [
+    {
+      "variableId": "variable-p3",
+      "name": "Primary/Wide gamut",
+      "description": "Exact Display P3 components; no sRGB conversion.",
+      "collectionId": "collection-p3",
+      "scopes": ["ALL_FILLS"],
+      "valuesByMode": [
+        {
+          "modeId": "mode-p3",
+          "modeName": "Default",
+          "rawValue": {
+            "kind": "color",
+            "value": { "colorSpace": "display-p3", "components": [0.97, 0.1, 0.2], "alpha": 1 }
+          },
+          "resolvedValue": {
+            "colorSpace": "display-p3",
+            "components": [0.97, 0.1, 0.2],
+            "alpha": 1
+          },
+          "resolution": "literal"
+        }
+      ],
+      "evidenceIds": ["e-variable-p3"]
+    }
+  ],
+  "paintStyles": [],
+  "paletteStructures": [],
+  "usageEvidence": [],
+  "unsupported": [
+    {
+      "gapId": "gap-p3-engine",
+      "kind": "unsupported-profile",
+      "status": "unsupported",
+      "summary": "Display P3 is preserved but blocked from the current sRGB recommendation engine.",
+      "evidenceIds": ["e-profile-p3"],
+      "consumerIds": ["accessibility", "color-math"]
+    }
+  ],
+  "evidence": [
+    {
+      "evidenceId": "e-profile-p3",
+      "kind": "audit-observation",
+      "locator": "document-profile",
+      "detail": "display-p3"
+    },
+    { "evidenceId": "e-variable-p3", "kind": "figma-resource", "locator": "variable:variable-p3" }
+  ],
+  "enabledLibraryDescriptors": [],
+  "libraryBoundaryNote": "No enabled-library metadata was requested.",
+  "scannedNodeCount": 0,
+  "cancelled": false,
+  "partial": false
+}

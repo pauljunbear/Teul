@@ -1,0 +1,179 @@
+{
+  "schemaVersion": "teul.local-check-receipt.v1",
+  "createdAt": "2026-09-26T00:26:57.131317+00:00",
+  "baseCommit": "b5922ed7ff9feb9251c2e72c57fb6bcfe4d58c5c",
+  "scope": "TASK-006 website capture, rendered evidence and owner-bound job integration; partial local slice",
+  "commands": [
+    {
+      "command": "npm --prefix services/guideline-intake test",
+      "nodes": ["22.13.1", "24.19.0"],
+      "result": "185 tests pass on each runtime; includes 15 actual Chromium renderer and 3 HTTP/service cases, with controlled synthetic transport"
+    },
+    {
+      "command": "npm run lint:intake",
+      "node": "22.13.1",
+      "result": "pass; zero warnings"
+    },
+    {
+      "command": "npm --prefix services/guideline-intake audit --audit-level=moderate",
+      "node": "22.13.1",
+      "result": "zero reported vulnerabilities"
+    },
+    {
+      "command": "npm --prefix web test -- src/lib/guideline/assistance.test.ts src/lib/guideline/assistanceNumeric.test.ts src/lib/guideline/intakeClient.test.ts",
+      "nodes": ["22.13.1", "24.19.0"],
+      "result": "3 files; 41 tests pass on each runtime"
+    },
+    {
+      "command": "VITE_GUIDELINE_IMPORT=true npm --prefix web run build",
+      "nodes": ["22.13.1", "24.19.0"],
+      "result": "pass including TypeScript; existing 760.60kB lazy guideline chunk advisory remains"
+    },
+    {
+      "command": "validate_prd.py --profile full --extension ai --extension refactor --stage ready --strict",
+      "result": "pass; complete stage not claimed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "pass"
+    }
+  ],
+  "review": {
+    "scope": "Exact task diff against baseCommit, including new files",
+    "reuse": "No material duplication; shared PNG envelope validation preserves interpretation contract",
+    "quality": "SVG animation, visible display-contents text and explicit gap overflow fixed; focused follow-up passed on Node22/24",
+    "efficiency": "Tiny-chunk accumulation, bounded browser awaits and aggregate DOM evidence limits fixed; focused follow-up passed on Node22/24"
+  },
+  "fixture": {
+    "browser": {
+      "animations": "css-cancelled-svg-paused",
+      "deviceScaleFactor": 1,
+      "name": "chromium",
+      "pageScripts": "enabled",
+      "state": "rest",
+      "version": "153.0.8010.12"
+    },
+    "documentHash": "sha256:0c7608d2f1c19805eb4c0245ad81d6de7ee6012c963c5b1a61298f1721e3fb95",
+    "captureHash": "sha256:67ee9130ea3558560a429aa35b9c4cfd84a787d489cd270dd6db38a412ab6558",
+    "visualInspection": "Synthetic viewport inspected; no brand visual acceptance",
+    "network": "No public source requests; fake byte transport. Network broker separately tested with adversarial injected DNS and sockets."
+  },
+  "files": [
+    {
+      "path": "docs/evidence/brand-guideline-import/website-capture.md",
+      "bytes": 7307,
+      "sha256": "sha256:44a9452b350096e1a23d8d1520225b29aef7a54744bf689a749775f2315dfae4"
+    },
+    {
+      "path": "docs/plans/2026-09-25-brand-guideline-import-plan.md",
+      "bytes": 61198,
+      "sha256": "sha256:4b22a100a533e50771d196f65b5addabc80336d906764f5a7570a2ee24459c6f"
+    },
+    {
+      "path": "services/guideline-intake/README.md",
+      "bytes": 33980,
+      "sha256": "sha256:0a00930623b9b4ef61861f81c7f40b70e6a959fffd675e9df820c1b865d59109"
+    },
+    {
+      "path": "services/guideline-intake/package-lock.json",
+      "bytes": 2034,
+      "sha256": "sha256:d13b1da733b59539a798cacf1ab6339fc7968ccc860702ed66f69af88ea51082"
+    },
+    {
+      "path": "services/guideline-intake/package.json",
+      "bytes": 430,
+      "sha256": "sha256:5fcbb739a2c2407ea135fd0b40d3a9bf527baa3bb6d0d329054c7d7a3ba91404"
+    },
+    {
+      "path": "services/guideline-intake/src/interpretation.ts",
+      "bytes": 21292,
+      "sha256": "sha256:3e6a0aaa9afb5e65214b39b1ce591548466e4396d3b02f5678fbf15afbb3668f"
+    },
+    {
+      "path": "services/guideline-intake/src/png.ts",
+      "bytes": 2585,
+      "sha256": "sha256:b6bfd66a621b9c9d68c076bf12b961dcbb92ea02d98aa3abcc088cc3ae7100d6"
+    },
+    {
+      "path": "services/guideline-intake/src/websiteCapture.test.ts",
+      "bytes": 17139,
+      "sha256": "sha256:8bdaccdf0a9e4426048ca9528abb21df81a61a948eef4b078e23525942068659"
+    },
+    {
+      "path": "services/guideline-intake/src/websiteCapture.ts",
+      "bytes": 14082,
+      "sha256": "sha256:96871b6675b11e1b77a60970f14876ab866bc94e34a09b2995eb496b2f5afe9d"
+    },
+    {
+      "path": "services/guideline-intake/src/websiteCaptureService.test.ts",
+      "bytes": 14116,
+      "sha256": "sha256:cb9b52bcde0c103159ed4e500fda66ff22c6126b4e095568a1d77a931560bbcf"
+    },
+    {
+      "path": "services/guideline-intake/src/websiteDom.ts",
+      "bytes": 10447,
+      "sha256": "sha256:6c1beb8577233b5adc14ef75cf5896544c993f4a8ff1fe2666be02c2e144df12"
+    },
+    {
+      "path": "services/guideline-intake/src/websiteNetwork.test.ts",
+      "bytes": 20679,
+      "sha256": "sha256:7eb8799f29bc685eee1938c1e22237aa8b691dd83d9f63f16590e07e835b6a0e"
+    },
+    {
+      "path": "services/guideline-intake/src/websiteNetwork.ts",
+      "bytes": 13344,
+      "sha256": "sha256:26f2a87a4082872ecae0f7276582ef01fe93656586fe1cc8bd5ebaad13e20d3a"
+    },
+    {
+      "path": "services/guideline-intake/src/websiteProtocol.test.ts",
+      "bytes": 15681,
+      "sha256": "sha256:44d978448bb69a19c6bdb6e669982c3d0671005390e63d8254ecf96ae39f9540"
+    },
+    {
+      "path": "services/guideline-intake/src/websiteProtocol.ts",
+      "bytes": 13841,
+      "sha256": "sha256:7e89b6d154de0f6d0d1ff2ea34c8f1c364a6a2fc2faf2cf7644932f9b71bee35"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "release/guideline-website-capture/service-node22.log",
+      "bytes": 43090,
+      "sha256": "sha256:c55f79baef63db82586757e8d9e2e2aa05ee061c18c7951195d12998a1d7e74b"
+    },
+    {
+      "path": "release/guideline-website-capture/service-node24.log",
+      "bytes": 18581,
+      "sha256": "sha256:c116ec89618fc37a4a0f6bed69be27aabc0718b7b2bcf7a0771d97abca21853c"
+    },
+    {
+      "path": "release/guideline-website-capture/studio-build-node24.log",
+      "bytes": 3188,
+      "sha256": "sha256:fc38c25e34c43e2acf6175eb22761353a963b02fee0ecb850766d96bedc2913d"
+    },
+    {
+      "path": "release/guideline-website-capture/website-capture.png",
+      "bytes": 17266,
+      "sha256": "sha256:aa2f5595aa742aaec1258fab9fa9250338795d3d63a1acaf5ee593708198eff5"
+    },
+    {
+      "path": "release/guideline-website-capture/website-capture.json",
+      "bytes": 42110,
+      "sha256": "sha256:d6569afbe35531ee0572f87d9fe5e53b86635b319702cae91c4cce10bed6f69b"
+    }
+  ],
+  "remaining": [
+    "Website source normalization and Studio review/generation/project path",
+    "PDF/Figma/HTML convergence and real-source evaluation",
+    "OS-confined public-renderer host and actual host qualification",
+    "Integrated feature/release gates and human visual acceptance"
+  ],
+  "claims": {
+    "locallyVerified": true,
+    "integratedMain": false,
+    "pushed": false,
+    "deployed": false,
+    "livePublicCaptureObserved": false,
+    "fullAcceptance": false
+  }
+}

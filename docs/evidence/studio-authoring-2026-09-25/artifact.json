@@ -1,0 +1,9 @@
+{
+  "recordedAt": "2026-09-25T19:03:53.958181+00:00",
+  "sourceCommit": "8689261c62875da9b5b7b72ed715d3c11915f883",
+  "archive": "release/teul-studio-authoring/teul-studio.zip",
+  "sha256": "b5790a0ec76dadfe8b7a4ad6da99f329bcb6871042cffa23a0dc38f2b71b3b6f",
+  "bytes": 342065,
+  "files": 20,
+  "state": "packaged and verified locally; not hosted"
+}

@@ -1,0 +1,203 @@
+.guideline-supporting {
+  margin-top: 32px;
+  padding-top: 28px;
+  border-top: 1px solid var(--border);
+}
+.guideline-supporting h2 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+.guideline-supporting p {
+  line-height: 1.5;
+}
+.guideline-supporting fieldset {
+  min-width: 0;
+}
+.guideline-supporting-references legend {
+  font-size: 13px;
+  font-weight: 600;
+}
+.guideline-supporting-references p,
+.guideline-supporting-caption {
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.guideline-supporting-references > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.guideline-supporting-references label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.guideline-supporting-references label:has(input:checked) {
+  background: var(--muted);
+  border-color: var(--foreground);
+}
+.guideline-supporting-references i {
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+}
+.guideline-supporting select:focus-visible,
+.guideline-supporting textarea:focus-visible,
+.guideline-supporting input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+.guideline-supporting input[type='range'] {
+  min-height: 32px;
+  accent-color: var(--foreground);
+}
+.guideline-supporting-directions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr));
+  gap: 20px;
+  margin-top: 24px;
+}
+.guideline-supporting-directions article {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  min-width: 0;
+}
+.guideline-supporting-directions article[data-selected='true'] {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+.guideline-supporting-directions article:has([data-comparing='true']) {
+  grid-column: 1 / -1;
+}
+.guideline-supporting-comparison > button {
+  margin: 10px 0 14px;
+}
+.guideline-supporting-comparison-controls label {
+  display: grid;
+  gap: 6px;
+  max-width: 320px;
+  font-size: 13px;
+}
+.guideline-supporting-comparison-controls select {
+  width: 100%;
+  min-width: 0;
+}
+.guideline-supporting-comparison-controls p {
+  max-width: 680px;
+}
+.guideline-supporting-comparison-pair {
+  display: grid;
+  gap: 20px;
+}
+.guideline-supporting-comparison-pair > div {
+  min-width: 0;
+}
+.guideline-supporting-comparison-pair h4 {
+  font-size: 13px;
+  margin: 4px 0 10px;
+}
+@media (min-width: 760px) {
+  [data-comparing='true'] > .guideline-supporting-comparison-pair {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.guideline-supporting-boards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.guideline-supporting-boards figure {
+  margin: 0;
+}
+.guideline-supporting-boards figure:first-child {
+  grid-column: 1 / -1;
+}
+.guideline-supporting-boards svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--border);
+}
+.guideline-supporting-boards figcaption {
+  font-size: 11px;
+  margin-top: 4px;
+  color: var(--muted-foreground);
+  text-transform: capitalize;
+}
+.guideline-supporting-directions details,
+.guideline-supporting-export {
+  font-size: 12px;
+  margin: 16px 0;
+  overflow-wrap: anywhere;
+}
+.guideline-supporting summary {
+  cursor: pointer;
+  padding: 8px 0;
+}
+.guideline-supporting ul {
+  padding-left: 18px;
+}
+.guideline-supporting-export {
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.guideline-supporting-refinement fieldset,
+.guideline-supporting-refinement label {
+  display: grid;
+  gap: 8px;
+}
+.guideline-supporting-refinement fieldset {
+  gap: 14px;
+}
+.guideline-supporting-refinement select,
+.guideline-supporting-refinement textarea {
+  width: 100%;
+  min-width: 0;
+}
+.guideline-supporting-refinement textarea {
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--background);
+  color: var(--foreground);
+  resize: vertical;
+}
+.guideline-supporting-feedback {
+  margin: 24px 0;
+  border-top: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+.guideline-supporting-feedback article {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.guideline-supporting-feedback-swatch {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  vertical-align: text-bottom;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+.guideline-supporting .guideline-actions {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+@media (max-width: 520px) {
+  .guideline-supporting button,
+  .guideline-supporting select {
+    min-height: 44px;
+  }
+}

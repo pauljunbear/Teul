@@ -1,0 +1,225 @@
+import * as React from 'react';
+import { act } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { GridLibrary } from '../GridLibrary';
+import { getGridPresetCatalog } from '../../backend/gridPresetCatalog';
+import type { GetGridPresetCatalogMessage } from '../../types/gridPresetCatalog';
+
+vi.mock('../GridPresetCard', () => ({
+  GridPresetCard: ({
+    preset,
+    onClick,
+  }: {
+    preset: { id: string; name: string };
+    onClick: () => void;
+  }) => (
+    <button type="button" data-preset-id={preset.id} onClick={onClick}>
+      {preset.name}
+    </button>
+  ),
+}));
+
+/** Opens a preset's detail sheet and presses its primary Apply action. */
+function applyFromSheet(container: HTMLElement, presetId: string): void {
+  const card = container.querySelector<HTMLButtonElement>(`[data-preset-id="${presetId}"]`);
+  expect(card).not.toBeNull();
+  act(() => card?.click());
+  const apply = Array.from(
+    container.querySelectorAll<HTMLButtonElement>('[data-teul-sheet] button')
+  ).find(button => button.textContent?.startsWith('Apply'));
+  expect(apply).toBeDefined();
+  act(() => apply?.click());
+}
+
+vi.mock('../SaveGridModal', () => ({
+  SaveGridModal: () => null,
+}));
+
+interface PostedPayload {
+  pluginMessage?: {
+    type?: string;
+    requestId?: string;
+    expectedTargetIds?: string[];
+    replaceExisting?: boolean;
+    sourceConfig?: {
+      columns?: {
+        margin?: number;
+      };
+    };
+  };
+}
+
+type PostMessageCall = [PostedPayload, string];
+
+function sendSelectionInfo(
+  width: number,
+  height: number,
+  requestId?: string,
+  layoutGridCount = 0
+): void {
+  window.dispatchEvent(
+    new MessageEvent('message', {
+      data: {
+        pluginMessage: {
+          type: 'selection-info',
+          hasSelection: true,
+          isFrame: true,
+          selectedCount: 1,
+          eligibleTargets: [{ id: 'frame-1', name: 'Frame 1', width, height, layoutGridCount }],
+          ineligibleCount: 0,
+          width,
+          height,
+          name: 'Frame 1',
+          ...(requestId ? { requestId } : {}),
+        },
+      },
+    })
+  );
+}
+
+describe('GridLibrary live fit validation', () => {
+  let container: HTMLDivElement;
+  let root: Root;
+  let postMessage: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+    postMessage = vi.spyOn(window.parent, 'postMessage').mockImplementation(payload => {
+      const request = payload.pluginMessage as GetGridPresetCatalogMessage;
+      if (request.type === 'get-grid-preset-catalog')
+        window.dispatchEvent(
+          new MessageEvent('message', {
+            source: window.parent,
+            data: { pluginMessage: getGridPresetCatalog(request) },
+          })
+        );
+    });
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    root = createRoot(container);
+  });
+
+  afterEach(() => {
+    act(() => root.unmount());
+    container.remove();
+    postMessage.mockRestore();
+    (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = false;
+  });
+
+  it('requests fresh geometry and blocks apply when the resized target no longer fits', async () => {
+    await act(async () => {
+      root.render(<GridLibrary isDark={false} />);
+    });
+
+    act(() => sendSelectionInfo(1440, 900));
+    postMessage.mockClear();
+
+    applyFromSheet(container, 'web-12col');
+
+    const refreshRequest = (postMessage.mock.calls as unknown as PostMessageCall[]).find(
+      ([payload]) => payload.pluginMessage?.requestId
+    );
+    expect(refreshRequest?.[0].pluginMessage?.type).toBe('get-selection-for-grid');
+    expect(
+      (postMessage.mock.calls as unknown as PostMessageCall[]).some(
+        ([payload]) => payload.pluginMessage?.type === 'apply-grid'
+      )
+    ).toBe(false);
+
+    act(() => sendSelectionInfo(40, 40));
+    expect(
+      (postMessage.mock.calls as unknown as PostMessageCall[]).some(
+        ([payload]) => payload.pluginMessage?.type === 'apply-grid'
+      )
+    ).toBe(false);
+
+    act(() => sendSelectionInfo(40, 40, refreshRequest?.[0].pluginMessage?.requestId));
+
+    const calls = postMessage.mock.calls as unknown as PostMessageCall[];
+    expect(calls.some(([payload]) => payload.pluginMessage?.type === 'apply-grid')).toBe(false);
+    expect(container.querySelector('[role="alert"]')?.textContent).toBeTruthy();
+  });
+
+  it('builds the apply message from the fresh snapshot rather than cached geometry', async () => {
+    await act(async () => {
+      root.render(<GridLibrary isDark={false} />);
+    });
+
+    act(() => sendSelectionInfo(600, 600));
+    postMessage.mockClear();
+
+    applyFromSheet(container, 'swiss-4col');
+    const refreshRequest = (postMessage.mock.calls as unknown as PostMessageCall[]).find(
+      ([payload]) => payload.pluginMessage?.requestId
+    );
+    act(() => sendSelectionInfo(1200, 800, refreshRequest?.[0].pluginMessage?.requestId));
+
+    const applyCall = (postMessage.mock.calls as unknown as PostMessageCall[]).find(
+      ([payload]) => payload.pluginMessage?.type === 'apply-grid'
+    );
+
+    expect(applyCall?.[0].pluginMessage?.sourceConfig?.columns?.margin).toBe(7);
+    expect(applyCall?.[0].pluginMessage?.expectedTargetIds).toEqual(['frame-1']);
+    expect(applyCall?.[0].pluginMessage?.requestId).toBe(
+      refreshRequest?.[0].pluginMessage?.requestId
+    );
+  });
+
+  it('requires an explicit replace choice when the target already has grids', async () => {
+    await act(async () => root.render(<GridLibrary isDark={false} />));
+    act(() => sendSelectionInfo(1200, 800));
+    postMessage.mockClear();
+
+    applyFromSheet(container, 'swiss-4col');
+    const refreshRequest = (postMessage.mock.calls as unknown as PostMessageCall[]).find(
+      ([payload]) => payload.pluginMessage?.type === 'get-selection-for-grid'
+    );
+    act(() => sendSelectionInfo(1200, 800, refreshRequest?.[0].pluginMessage?.requestId, 2));
+
+    expect(container.querySelector('[role="dialog"]')?.textContent).toContain(
+      'Existing layout grids found'
+    );
+    expect(
+      (postMessage.mock.calls as unknown as PostMessageCall[]).some(
+        ([payload]) => payload.pluginMessage?.type === 'apply-grid'
+      )
+    ).toBe(false);
+
+    const replaceButton = Array.from(container.querySelectorAll('button')).find(
+      button => button.textContent === 'Replace'
+    );
+    act(() => replaceButton?.click());
+
+    const applyCall = (postMessage.mock.calls as unknown as PostMessageCall[]).find(
+      ([payload]) => payload.pluginMessage?.type === 'apply-grid'
+    );
+    expect(applyCall?.[0].pluginMessage?.replaceExisting).toBe(true);
+  });
+
+  it('preflights and confirms Clear for the current selection', async () => {
+    await act(async () => root.render(<GridLibrary isDark={false} />));
+    act(() => sendSelectionInfo(1200, 800, undefined, 1));
+    postMessage.mockClear();
+
+    const clearButton = Array.from(container.querySelectorAll('button')).find(
+      button => button.textContent === 'Clear'
+    );
+    act(() => clearButton?.click());
+    const selectionRequest = (postMessage.mock.calls as unknown as PostMessageCall[]).find(
+      ([payload]) =>
+        payload.pluginMessage?.type === 'get-selection-for-grid' &&
+        typeof payload.pluginMessage.requestId === 'string'
+    );
+    act(() => sendSelectionInfo(1200, 800, selectionRequest?.[0].pluginMessage?.requestId, 1));
+    const confirm = Array.from(
+      container.querySelectorAll<HTMLButtonElement>('[role="alertdialog"] button')
+    ).find(button => button.textContent === 'Clear');
+    act(() => confirm?.click());
+
+    const clearCall = (postMessage.mock.calls as unknown as PostMessageCall[]).find(
+      ([payload]) => payload.pluginMessage?.type === 'clear-grid'
+    );
+    expect(clearCall?.[0].pluginMessage?.expectedTargetIds).toEqual(['frame-1']);
+  });
+});

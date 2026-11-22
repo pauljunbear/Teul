@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "teul.guideline-project-checks.v1",
+  "status": "passed",
+  "checkedAt": "2026-09-25T20:49:46.760833+00:00",
+  "baseCommit": "7dd5c293d7685291df863def72daa1c929c6c481",
+  "scope": "TASK-002 local file download/reopen only; full acceptance remains planned",
+  "sourceHashes": {
+    "web/src/lib/guideline/project.ts": "sha256:9e131058c3e9664e80260b0a4a59fe7730d5a5b33ef3d2b60541daf29f3e4916",
+    "web/src/lib/guideline/project.test.ts": "sha256:2ebb9b21864b8c0968eaa6930f1d0f14c47bb1b31f49b467945ed90b82fc0149",
+    "web/src/lib/guideline/review.ts": "sha256:a6854ec9103c05bcedf4be08ac914276baf7085102905222dece727739a1f1c1",
+    "web/src/lib/download.ts": "sha256:f2f6e569d7d70abe4bdb346e2c54fd23f481b1cc190171a3d286ae6b7f177d62",
+    "web/src/components/GuidelineWorkspace.tsx": "sha256:5666fe4a6ac88c827fef68a1c60465aaaab63ed9ab691259ec11b5aaecfec3a7",
+    "web/src/components/GuidelineWorkspace.css": "sha256:7a3c97cabca2d62af72fd79121c077e36f02dabfaca74459c0de75954e321724",
+    "web/scripts/guideline-smoke.mjs": "sha256:2aca93c517e0d0036cc1b9ccff4e9a7b5b014aed1aa54c75daa844366e1a5dac"
+  },
+  "checks": [
+    {
+      "command": "npm --prefix web test",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "8 files, 53 tests passed"
+    },
+    {
+      "command": "npm --prefix web run test:guidelines",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "15 browser scenarios passed; zero page errors or remote requests"
+    },
+    {
+      "command": "npm --prefix web run build",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "passed; guideline lazy chunk 532.27 kB warning retained"
+    },
+    {
+      "command": "npm --prefix web run test:browser",
+      "runtimes": ["22.13.1"],
+      "result": "9 scenarios passed"
+    },
+    {
+      "command": "npm --prefix web run lint; npm run lint; npm run typecheck",
+      "runtimes": ["22.13.1"],
+      "result": "passed"
+    },
+    {
+      "command": "validate_prd.py --profile full --extension ai --extension refactor --stage ready --strict",
+      "result": "passed"
+    }
+  ],
+  "reviews": {
+    "reuse": "Shared exact-byte Blob download helper",
+    "quality": "Strict timestamp type; operation-aware PDF cancellation; late reads cannot replace newer edits",
+    "efficiency": "Removed duplicate full-packet snapshot; preserved trusted capture replay; added progress yield"
+  },
+  "limits": [
+    "Not a complete release gate for this later slice",
+    "Not deployed; production default remains disabled",
+    "No provider calls or private-source uploads",
+    "No Figma destination verification",
+    "No human quality acceptance",
+    "No automatic project storage or refresh"
+  ]
+}

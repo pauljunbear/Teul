@@ -1,0 +1,229 @@
+{
+  "recordedAt": "2026-09-25T19:02:34.564Z",
+  "environment": {
+    "url": "http://127.0.0.1:52381",
+    "browser": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "asset": "authoring-DLS0JqnN.js",
+    "assetSha256": "bc42369011046f4c4f74e0a2b394d507265236a76d1a79166fbdd4973b4bd88b"
+  },
+  "method": "Import the actual minified lazy production chunk after the production UI is idle; run seven frozen inputs twice, observe main-thread long tasks, then request cancellation with a zero-delay timer while generation is active. Module download/parse is excluded from generation duration. Full-page responsiveness and visual behavior are covered by separate UI checks.",
+  "limits": {
+    "generationMs": 2000,
+    "maxMainThreadTaskMs": 200,
+    "cancellationResponseMs": 500
+  },
+  "bundle": {
+    "authoringChunkBytes": 67830,
+    "authoringChunkGzipBytes": 21168,
+    "allJavaScriptBytes": 751001,
+    "allJavaScriptGzipBytes": 235899,
+    "note": "Authoring chunk may reuse shared loaded modules; these figures do not claim it is the full dependency cost or initial-download size."
+  },
+  "corpus": [
+    {
+      "id": "blue",
+      "expected": "ready",
+      "deterministic": true,
+      "attempts": [
+        {
+          "status": "ready",
+          "durationMs": 494.19999998807907,
+          "maxLongTaskMs": 0,
+          "contentHashes": [
+            "sha256:67713040f7793d7f6d58ea4d20f0791057ad12a53a1f6109b63789f2fdbc7479",
+            "sha256:817c6bb637943c349516805b7f40dd96702846a05526abbe1f60ac972140b3c4",
+            "sha256:088e4a851471318318cf3553bf396e0628eee049765480755001845d829dc749"
+          ],
+          "directionCount": 3
+        },
+        {
+          "status": "ready",
+          "durationMs": 547.6000000238419,
+          "maxLongTaskMs": 0,
+          "contentHashes": [
+            "sha256:67713040f7793d7f6d58ea4d20f0791057ad12a53a1f6109b63789f2fdbc7479",
+            "sha256:817c6bb637943c349516805b7f40dd96702846a05526abbe1f60ac972140b3c4",
+            "sha256:088e4a851471318318cf3553bf396e0628eee049765480755001845d829dc749"
+          ],
+          "directionCount": 3
+        }
+      ]
+    },
+    {
+      "id": "solar-with-endpoints",
+      "expected": "ready",
+      "deterministic": true,
+      "attempts": [
+        {
+          "status": "ready",
+          "durationMs": 523.0999999940395,
+          "maxLongTaskMs": 0,
+          "contentHashes": [
+            "sha256:3f7aab89a1443dfc6f072ff16df889a3605030ed36412acc9e108baac7959b39",
+            "sha256:f74396173fc6c2467d2e5579f1148273a69636a2062c3c16fad5bebdade133c2",
+            "sha256:bc9ef41f2597f0c2d888df9081662f0ddf1d5a2e83adbf4b01704170ac594cb5"
+          ],
+          "directionCount": 3
+        },
+        {
+          "status": "ready",
+          "durationMs": 541.5,
+          "maxLongTaskMs": 0,
+          "contentHashes": [
+            "sha256:3f7aab89a1443dfc6f072ff16df889a3605030ed36412acc9e108baac7959b39",
+            "sha256:f74396173fc6c2467d2e5579f1148273a69636a2062c3c16fad5bebdade133c2",
+            "sha256:bc9ef41f2597f0c2d888df9081662f0ddf1d5a2e83adbf4b01704170ac594cb5"
+          ],
+          "directionCount": 3
+        }
+      ]
+    },
+    {
+      "id": "recorded-four-colors",
+      "expected": "ready",
+      "deterministic": true,
+      "attempts": [
+        {
+          "status": "ready",
+          "durationMs": 544.1999999880791,
+          "maxLongTaskMs": 0,
+          "contentHashes": [
+            "sha256:5fd3e0941c08606f22a8617081fcd75e1db4e05dc501bbd15a12e4b4065d3d4a",
+            "sha256:407c651a6db492007671a1e8c95331965136cdcb54bc19bba3810fce2facb899",
+            "sha256:e642fd82f7da2e7bf065eab7578553e60e4fd550aca2aa083446e88ba917c1b4"
+          ],
+          "directionCount": 3
+        },
+        {
+          "status": "ready",
+          "durationMs": 544.1999999880791,
+          "maxLongTaskMs": 0,
+          "contentHashes": [
+            "sha256:5fd3e0941c08606f22a8617081fcd75e1db4e05dc501bbd15a12e4b4065d3d4a",
+            "sha256:407c651a6db492007671a1e8c95331965136cdcb54bc19bba3810fce2facb899",
+            "sha256:e642fd82f7da2e7bf065eab7578553e60e4fd550aca2aa083446e88ba917c1b4"
+          ],
+          "directionCount": 3
+        }
+      ]
+    },
+    {
+      "id": "dark-blue",
+      "expected": "ready",
+      "deterministic": true,
+      "attempts": [
+        {
+          "status": "ready",
+          "durationMs": 543,
+          "maxLongTaskMs": 0,
+          "contentHashes": [
+            "sha256:b37b2ead0fa9f135db4ffd779e0c24e0f5b175428736f37401a80991d381e2aa",
+            "sha256:1ecd165e05c52283bbb2bb01e7ab513925d4251db2af9bc913a09e30969102e7",
+            "sha256:800da71fe7f63fd9efe6c738417ca7de3a63408a2c4a20d180d2551cdfba0dd7"
+          ],
+          "directionCount": 3
+        },
+        {
+          "status": "ready",
+          "durationMs": 544.3000000119209,
+          "maxLongTaskMs": 0,
+          "contentHashes": [
+            "sha256:b37b2ead0fa9f135db4ffd779e0c24e0f5b175428736f37401a80991d381e2aa",
+            "sha256:1ecd165e05c52283bbb2bb01e7ab513925d4251db2af9bc913a09e30969102e7",
+            "sha256:800da71fe7f63fd9efe6c738417ca7de3a63408a2c4a20d180d2551cdfba0dd7"
+          ],
+          "directionCount": 3
+        }
+      ]
+    },
+    {
+      "id": "neutral-midtone",
+      "expected": "ready",
+      "deterministic": true,
+      "attempts": [
+        {
+          "status": "ready",
+          "durationMs": 541.7000000178814,
+          "maxLongTaskMs": 0,
+          "contentHashes": [
+            "sha256:9b1963fdf5b33457383a1b5d8c3a2a583024bf8d67c73f8b2d5403d26b13fc3e",
+            "sha256:c5c24b41e1f26fa89f95464b81f315a504d49cde4bd5b76e8d205081ea0e6026",
+            "sha256:d3b8a2929ba5f1255b8e2bd2086828c3debf2f4d9077a79ca667f53aaa1905bb"
+          ],
+          "directionCount": 3
+        },
+        {
+          "status": "ready",
+          "durationMs": 518,
+          "maxLongTaskMs": 0,
+          "contentHashes": [
+            "sha256:9b1963fdf5b33457383a1b5d8c3a2a583024bf8d67c73f8b2d5403d26b13fc3e",
+            "sha256:c5c24b41e1f26fa89f95464b81f315a504d49cde4bd5b76e8d205081ea0e6026",
+            "sha256:d3b8a2929ba5f1255b8e2bd2086828c3debf2f4d9077a79ca667f53aaa1905bb"
+          ],
+          "directionCount": 3
+        }
+      ]
+    },
+    {
+      "id": "six-sources",
+      "expected": "ready",
+      "deterministic": true,
+      "attempts": [
+        {
+          "status": "ready",
+          "durationMs": 546.8000000119209,
+          "maxLongTaskMs": 0,
+          "contentHashes": [
+            "sha256:21a0004e313c78dcbc58b45a56a098356ceb7ea9d8254593ecb3bba36b3c4086",
+            "sha256:350bd0daafecd382679be6c2126cd21d97c58cf338c448ee1770a48ab59c345d",
+            "sha256:2117bd65fd8f736704ecb0087f6097e5ed916270ce5ed116ba0178f2b16bd0f0"
+          ],
+          "directionCount": 3
+        },
+        {
+          "status": "ready",
+          "durationMs": 547.5,
+          "maxLongTaskMs": 0,
+          "contentHashes": [
+            "sha256:21a0004e313c78dcbc58b45a56a098356ceb7ea9d8254593ecb3bba36b3c4086",
+            "sha256:350bd0daafecd382679be6c2126cd21d97c58cf338c448ee1770a48ab59c345d",
+            "sha256:2117bd65fd8f736704ecb0087f6097e5ed916270ce5ed116ba0178f2b16bd0f0"
+          ],
+          "directionCount": 3
+        }
+      ]
+    },
+    {
+      "id": "endpoint-only",
+      "expected": "blocked",
+      "deterministic": true,
+      "attempts": [
+        {
+          "status": "blocked",
+          "durationMs": 0.09999999403953552,
+          "maxLongTaskMs": 0,
+          "contentHashes": [],
+          "directionCount": 0
+        },
+        {
+          "status": "blocked",
+          "durationMs": 0,
+          "maxLongTaskMs": 0,
+          "contentHashes": [],
+          "directionCount": 0
+        }
+      ]
+    }
+  ],
+  "cancellation": {
+    "status": "cancelled",
+    "directionCount": 0,
+    "elapsedMs": 67.2999999821186,
+    "requestDelayMs": 62.19999998807907,
+    "responseMs": 5.0999999940395355,
+    "requestedDuringWork": true
+  },
+  "status": "passed",
+  "failures": []
+}

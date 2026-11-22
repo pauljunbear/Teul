@@ -1,0 +1,29 @@
+# Make a scale from imported brand swatches
+
+Studio can now create a proposed twelve-position scale directly from a reviewed PDF, Figma, website or combined-source color. A guideline no longer needs to contain its own scale first. The existing source-scale planner supplies the endpoints and construction engine; Studio places the exact original color by lightness. Near-white and near-black sources replace an outer endpoint when necessary. Other source values, source modes and source evidence remain unchanged.
+
+The designer chooses the anchor, its existing family when present, the intended use, source mode and shade order. An ungrouped anchor can create a proposed family; a grouped anchor cannot discard its family to avoid the associated rules. Unresolved meaning, closed palettes and unsupported transparency still block generation. Changed family rules require explicit review against the new proposal. Existing scales retain their original interior-extension behavior.
+
+The result remains a proposal. The same workflow can use its colors in actual layouts and assess the painted foreground/background pairs and source rules. That assessment does not establish state distinctness, full WCAG compliance or visual quality. SVG, CSS and application JSON export use the checked application; the complete project retains the original source, proposed scale and decisions.
+
+## Saving and source updates
+
+New scale requests use workspace V8, refresh history V7, combined-source project V3, combined-source refresh V2 and application V2. Older requests keep their original formats. Downgrading a new request to an older format is rejected before expensive replay. Compatible files are recomputed and compared with their retained exact values and outcomes.
+
+Source refresh remaps the original anchor, family and mode. It restores a result only when dependencies and generated paint remain equivalent. Changed anchors invalidate it. Refresh clears the former proposal decision and requires affected rules to be reviewed again. The combined-source check preserves a scale from an unchanged source when another source changes.
+
+## Verification
+
+The [bound verification receipt](source-scale-checks.json) records all 33 affected checks passing on Node 22.13.1 and Node 24.19.0, with 675 Studio tests per runtime. Node 22 completed in two segments after its final accessibility test encountered the renamed task option; Node 24 passed the entire profile in one run. Eleven local verification-runner tests also pass on each runtime. The reproducible [affected profile](source-scale-profile.mjs) runs the existing local gate with four Vitest workers, preserving all test deadlines. It covers the normal and enabled Studio builds, manual authoring, the full Studio test suite and all guideline browser checks except the unchanged capacity and repeated-gradient performance workloads. No shared plugin mathematics or intake-service implementation changed.
+
+Run `node docs/evidence/brand-guideline-import/source-scale-profile.mjs` once on Node 22 and once on Node 24. After both runs have produced their browser projects, run the [cross-runtime replay](source-scale-cross-runtime.mjs) on each runtime with the other input (`node22` or `node24`). It compares the retained data and exported SVG/CSS, ignoring JavaScript object prototypes that are not part of the saved JSON contract.
+
+The focused production-browser journey starts with the fictional Harbor PDF's four swatches and no source scale. It creates eleven new shades around one unchanged original, assesses product paint, exports SVG/CSS/application JSON, saves to IndexedDB, reloads, and separately opens the project file from an empty editor. The chosen output must remain byte-identical. It also verifies source modes, original values, reopening controls and invalidation after editing, with three full-page desktop/mobile accessibility scans. Raw screenshots were inspected; they are synthetic engineering evidence, not design approval.
+
+Independent reuse, quality and efficiency reviews identified three improvements: repair interior-scale selection after reopening a derived scale, handle extreme source anchors at endpoints, and reject incompatible formats before replay. All are implemented. The reviewer also caught a browser assertion that could pass using previously open work; file reopening now starts from an empty editor. The automated scan waits for actual export completion and control opacity to settle, retaining all contrast rules.
+
+The initial local gate hit two existing five-second test deadlines under unbounded parallel workers. The failed receipt is retained. The affected profile now bounds test workers to four without raising timeouts or changing assertions. The subsequent Node 22 run passed 32 checks before the older accessibility test expected “Extend a scale”; correcting that expectation to “Make or extend a scale” passed the final check. Both failed receipts remain linked in the [Node 22 record](source-scale-node22.json). The [Node 24 record](source-scale-node24.json) passes in one run. Cross-runtime replay in both directions reproduces the actual browser project and identical SVG/CSS bytes. All 24 page scans per runtime report zero automated violations; the pre-existing clipped Figma table finding remains incomplete, with its four visible-target checks passing. No performance or human-acceptance threshold was changed.
+
+## Acceptance boundary
+
+This implements DEC-027 and advances TASK-007 / REQ-007, REQ-010–012 / AC-006, AC-009–011. Single-anchor scale creation complements the existing multi-anchor source-scale extension; it does not establish every multi-family or human-quality acceptance case. The source/design corpus, independent designer acceptance, actual screen-reader use and live-service qualification remain open. Studio remains the primary tool; Figma plugin execution is optional. This is local work, not a deployment.

@@ -1,0 +1,286 @@
+{
+  "node": "v24.19.0",
+  "passedSteps": 33,
+  "studioTests": 675,
+  "vitestMaxWorkers": 4,
+  "scriptTests": 11,
+  "gates": [
+    {
+      "path": "docs/evidence/local-gates/2026-09-26T14-18-17Z-c08fb81/receipt.json",
+      "bytes": 34893,
+      "sha256": "4553ccb3028706c054c6395213476ba07ad4ad9b1b166b5b7b3916f2feaf093b"
+    }
+  ],
+  "archive": {
+    "directory": "release/guideline-source-scale/verified-node24",
+    "artifacts": [
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-advanced-gradient-constraints.json",
+        "bytes": 712458,
+        "sha256": "161a13b978d36fa19bdd598583519a481dab0b7d5362b53ace1c0ac68f13b90f"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-advanced-gradient-mobile.json",
+        "bytes": 710827,
+        "sha256": "3b847c0ee09a74ef60d7e052b0beffde66d6dd7d49149e56d0cbf8c8d5f97e76"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-advanced-gradient-mobile.png",
+        "bytes": 424471,
+        "sha256": "796f887b96e780394e6fc0e3053819ad61cd072344707e719bb759044b008184"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-advanced-invalid-position.json",
+        "bytes": 587833,
+        "sha256": "4c1a6fac68c25d9373090d61249a0e77c48ab172f69d7d5916054f7c46a62e42"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-advanced-relationship-error.json",
+        "bytes": 663344,
+        "sha256": "3705c127bbdb83fba5e500db5e38403f315468da5678471caae22474e1d3de88"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-advanced-source-editors.json",
+        "bytes": 660403,
+        "sha256": "b2609ce4c23c89fbf59bd88705eccebce440e9ee871c19656c2ebf75b02e8353"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-advanced-source-mobile.json",
+        "bytes": 659180,
+        "sha256": "ff0e3b295f2dd5f70de877b82b1343a652139860cfdf4f8129b2d50280a07654"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-advanced-source-mobile.png",
+        "bytes": 394911,
+        "sha256": "fdc3b903afc464d77ee9ac116d7db9cbc8716e65bd44494f71b4f89b0e0ac409"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-checks.json",
+        "bytes": 13330,
+        "sha256": "0f223c1fc118b44049d0a8a181452cd5d54cbd0916dfc611e5e731849ecfe63c"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-desktop.png",
+        "bytes": 613027,
+        "sha256": "51a5466e6ca6319884352da4e2b3d819915ae90d9503b06c58a1babe7c54d3e8"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-empty.json",
+        "bytes": 194692,
+        "sha256": "7a3adc2d6a2f367a8dbb210adae5e3e8f187d198180f47f1dfaf832d8748258a"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-figma-mobile-review.json",
+        "bytes": 400280,
+        "sha256": "f6763fd57202edfe95a377aa91d8c94d03aff66e959741bf20e0b8d44faa3e9f"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-figma-mobile-table.png",
+        "bytes": 8257,
+        "sha256": "624f904922cdc3b83263ac44edc8f45dca2773fe0d69115abb7bc3190edf1d68"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-figma-review.json",
+        "bytes": 398207,
+        "sha256": "d14c58fb3d71533a5816cc6aa8a8cbf8d730e4c10ba41becf572ac9e1bd7a2a1"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-gradient.json",
+        "bytes": 642163,
+        "sha256": "be0376e2ab903a1fa85d264c2c2bcc0ad0d14fd3b781a166368294f1f443aed4"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-import-error.json",
+        "bytes": 662129,
+        "sha256": "4311a77e33abfae69c7c51036704a836c1622903780a9733b5103eafe47a5968"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-mobile-review-error.json",
+        "bytes": 687944,
+        "sha256": "3e398f6dae31c656ff202f45a39d981f33f5719a64faa96ce58a58d26a101221"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-mobile.png",
+        "bytes": 439831,
+        "sha256": "257c3ed0c632e08c149d0aead3a204125bc21173daf23eafede61a4b154f0f99"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-pdf-ready.json",
+        "bytes": 237666,
+        "sha256": "b498c1af31f3fe2b9400a8681fed67815e9772690fcef84536bef77396c52276"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-pdf-review.json",
+        "bytes": 440386,
+        "sha256": "a3d40566b549ba2b0d2aa5abc6e6626d03015aa3e87c7006d3408e53a7d96115"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-review-applied.json",
+        "bytes": 590900,
+        "sha256": "eb30269acde911ad52e3840cc89320c5bcf810f9c4757569d425170b5f0c0f31"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-saved.json",
+        "bytes": 648710,
+        "sha256": "7e97b5ba543b3f17daf2e52a9507ad7ea7ae75bd8cbd9eb05ac493fbd0210edd"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-visible-table-contrast-1.json",
+        "bytes": 2055,
+        "sha256": "462643885d937ec21da99f8aa896582c90f3181bd6de12184c06fec1bdaf7494"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-visible-table-contrast-2.json",
+        "bytes": 2117,
+        "sha256": "2f8fa21f2a1b74311a361235059fa52ae062d7e0205e378a3960288a296f4413"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-visible-table-contrast-3.json",
+        "bytes": 2117,
+        "sha256": "2e3c1a398558c9f1182e23343228eda2be5cdf98fe6611600df0f00b068973b5"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-visible-table-contrast-4.json",
+        "bytes": 2088,
+        "sha256": "18618644b79a9009cf625748b763958a06c406cdf54d8c0393ff5ec260395950"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-website-mobile-review.json",
+        "bytes": 597404,
+        "sha256": "eb7a2d35d0f86d7d07ab3947accd841036d65f470f6b798724dbb85da516d3ab"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-accessibility/node24-website-review.json",
+        "bytes": 599001,
+        "sha256": "648250f0e913c6e4be627cc28f479f758f756bf66ca1863dafd7180311674560"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-source-scale/node24-application.css",
+        "bytes": 3665,
+        "sha256": "3a2b32c592d73d5d2269cdb0bb143217c56f702044e44d40a924796cb699b79b"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-source-scale/node24-application.png",
+        "bytes": 114726,
+        "sha256": "b3f93d92d22d046aa5863c82235c4b75404946ad1cb088b175568162c76beed1"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-source-scale/node24-checks.json",
+        "bytes": 2733,
+        "sha256": "4b44e7542f0bfec2f5de104ed40b5aceb11f792a742c9707f477e705f3ea5cd8"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-source-scale/node24-derived-application.json",
+        "bytes": 838499,
+        "sha256": "99a792b0ae09030869cb028bc7ed23ebd2a8bbb0dc992c57940f83d5a695ebc8"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-source-scale/node24-derived-scale-mobile.json",
+        "bytes": 610861,
+        "sha256": "b25533c43c2c0d54e1cecc2a5a1fedc063e6495f49403db5e4854a0afadf237d"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-source-scale/node24-derived-scale.json",
+        "bytes": 620745,
+        "sha256": "f8c557a0681e63a1f23e304ff2e44004dfff5f7aa0be0ddbab3f6e00c514508c"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-source-scale/node24-mobile.png",
+        "bytes": 104251,
+        "sha256": "e5941897875e1a655a81b7d9efc478b92568f4a987b8d7d89e004b2df177c2d4"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-source-scale/node24-project.json",
+        "bytes": 506902,
+        "sha256": "2dc7edc903b8e77639db8af008022c836fa2f5c8e7a0962eb25a896e23f1740b"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-source-scale/node24-rest.svg",
+        "bytes": 11305,
+        "sha256": "739ae5486d5170743aff22f287c6c16082538b88b8c30ef9b07f89d3f52c3141"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-source-scale/node24-scale.png",
+        "bytes": 102012,
+        "sha256": "554c8370677e25d30650894cebc259b779daba6c3bd1e2964aeb888f64417687"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-source-scale/node24-to-node22.json",
+        "bytes": 261,
+        "sha256": "4c548d445a2feedf019ace78e836dfbf698089146adc7cc503f110260357448e"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-task-flow/node24-checks.json",
+        "bytes": 2789,
+        "sha256": "7e12c42049bf17405618a6a36221c067641d55e043e3ef5c4da93c8ef4717552"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-task-flow/node24-choose-task.json",
+        "bytes": 495083,
+        "sha256": "bd8fc55d1cd5b98566e2d13e9a4d393a49a007d0f0bc35e47dc8ecf96dfa6fac"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-task-flow/node24-desktop.png",
+        "bytes": 64818,
+        "sha256": "7bd4de967ae80a725ad1a5fbec10097aa3be18b9b6015d6893471fcfe2743e43"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-task-flow/node24-gradient-task-mobile.json",
+        "bytes": 634146,
+        "sha256": "ec5d18fc2e76f9273734a8ca6b8e83f57516d5822b272e8a635074de6fee1a83"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-task-flow/node24-gradient-task.json",
+        "bytes": 635763,
+        "sha256": "a94d4fe11ba7cce353d6b35e0a33b8ccadd4269cb135a15cb8bb4cf27b3e011f"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-task-flow/node24-mobile.png",
+        "bytes": 153261,
+        "sha256": "54ca40a527e00c5688b5cbc1fe0bf08211b831ad1b8083f612fd1b00d4050be8"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/guideline-task-flow/node24-runner.log",
+        "bytes": 1234,
+        "sha256": "934246007452f36ffc41c79c77fb3ebc671881840322be0478a6d8352d18ceeb"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/teul-source-scale-cross22.log",
+        "bytes": 231,
+        "sha256": "6f4f27d429cbc045a368ff0bc07fb0c8c5be266f5624391eda0faf10d9c409e4"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/teul-source-scale-cross24.log",
+        "bytes": 231,
+        "sha256": "ef0cef8a5cd8b3d61ef91c4639f238ebbedbeb3c631cd34b0cf20e18cbfa671c"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/teul-source-scale-node24-runner.log",
+        "bytes": 1240,
+        "sha256": "efa2cb0bafb5eb4591586da24f2fb6188fd7d0f969b47779dac5b839dd9bdfea"
+      },
+      {
+        "path": "release/guideline-source-scale/verified-node24/teul-source-scale-node24.log",
+        "bytes": 55824,
+        "sha256": "040b70a5d9a80b23559a08888e7d2d84c1d72369015c794425b334f235f9d671"
+      }
+    ]
+  },
+  "focusedScans": [
+    {
+      "name": "derived-scale",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "derived-application",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "derived-scale-mobile",
+      "violations": 0,
+      "incomplete": 0
+    }
+  ]
+}

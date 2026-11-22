@@ -1,0 +1,709 @@
+{
+  "status": "locally-verified-catalog-gradient-suggestions",
+  "baseCommit": "68ba34eb479d468c4c664e80bdf685fbf577a565",
+  "scope": "Partial TASK-008 / REQ-009-010 and TASK-009: catalog suggestions, distinct source/proposed stop origins, shared Studio comparison, strict saved replay, source refresh and portable exports.",
+  "runtimeChecks": [
+    {
+      "node": "22.13.1",
+      "studioTests": 498,
+      "studioFiles": 44,
+      "rootTests": 3031,
+      "rootFiles": 159,
+      "newCatalogLookupTests": 2,
+      "newGradientSuggestionTests": 7,
+      "browserCases": 32,
+      "lint": "passed",
+      "typecheckAndBuild": "passed"
+    },
+    {
+      "node": "24.19.0",
+      "studioTests": 498,
+      "studioFiles": 44,
+      "rootTests": 3031,
+      "rootFiles": 159,
+      "newCatalogLookupTests": 2,
+      "newGradientSuggestionTests": 7,
+      "browserCases": 32,
+      "lint": "passed",
+      "typecheckAndBuild": "passed"
+    }
+  ],
+  "commands": [
+    "npm run release-gate (Node 22 and Node 24)",
+    "npm ci (Node 24)",
+    "npm --prefix web test",
+    "npm --prefix web run lint",
+    "npm --prefix web run build",
+    "npm --prefix web run test:guideline-gradient-catalog",
+    "npm --prefix web run test:guideline-gradients",
+    "npm --prefix web run test:guideline-gradient-assessment",
+    "npm --prefix web run test:guideline-supporting",
+    "npm --prefix web run test:guideline-output-recovery",
+    "validate_prd.py --profile full --extension ai --extension refactor --stage ready --strict"
+  ],
+  "initialFailures": [
+    "Invalid synthetic rule/claim coverage was corrected before passing tests.",
+    "A combined two-provider integration test exceeded five seconds during competing suites; split by provider and rerun without competing heavy work, with the same default timeout.",
+    "The first Node 22 gate caught a readonly assignment in a mutation-isolation test. The explicit runtime mutation now typechecks; the failed gate receipt is retained.",
+    "Browser harness corrected the existing Figma source-open control; application behavior was unchanged.",
+    "The first Node 24 full gate hit an existing 20-second orchestrator timeout. Its 11-test file passed in isolation in 18.38 seconds total; the full gate was rerun with unchanged timeout and product code."
+  ],
+  "verificationOrder": "Final Node 22 Studio suite and catalog browser harness and all Node 24 checks ran after product source edits. Initial Node 22 legacy browser regressions overlapped removal of an unreachable empty-rule-scope branch; the final Node 24 regressions repeat those cases.",
+  "reviews": [
+    "Reuse: applied source-distinctness policy across all source colors and deterministic compareText ordering; shared operation-context cancellation helper.",
+    "Quality: preserved sibling selection through own context changes, normalized decorative policy keys, and qualified catalog exactness as authored stops only. Narrow follow-up found no remaining actionable issue.",
+    "Efficiency: capture the model once for a search; reuse private validated source snapshots through constructor/read paths."
+  ],
+  "deadCode": {
+    "unconsumedExports": 48,
+    "outsideEntryGraphs": 1,
+    "change": "unchanged"
+  },
+  "releaseGateReceipts": [
+    {
+      "path": "docs/evidence/gates/2026-09-26T06-48-49Z-68ba34e/receipt.json",
+      "bytes": 5507,
+      "sha256": "664ac7aa7e6b1bfd0bfdad64ebd7b28e2a578d310ceebe8591d50f9fec0907c0",
+      "status": "failed"
+    },
+    {
+      "path": "docs/evidence/gates/2026-09-26T06-53-15Z-68ba34e/receipt.json",
+      "bytes": 5493,
+      "sha256": "7be2dd50c795fb926300c86815c4906a2709a90766c95e69a2170a9fbc9b2d2c",
+      "status": "passed"
+    },
+    {
+      "path": "docs/evidence/gates/2026-09-26T06-58-29Z-68ba34e/receipt.json",
+      "bytes": 5509,
+      "sha256": "feb1c2103da2f4a9f6a1c0ebd283535c14be97e7772e08438d2c44784142e213",
+      "status": "failed"
+    },
+    {
+      "path": "docs/evidence/gates/2026-09-26T07-03-29Z-68ba34e/receipt.json",
+      "bytes": 5492,
+      "sha256": "b92fdb612705aee4e5bf444b59879cc6686fa8e1a6ac7faeb4706f404c85ea4b",
+      "status": "passed"
+    }
+  ],
+  "browserChecks": [
+    {
+      "path": "release/guideline-gradient-catalog/node22-checks.json",
+      "bytes": 1025,
+      "sha256": "0bee32cbcb8d9a0b08dab81c8d2494f1b16c8643287d3c8a934d3f55e09f80fe",
+      "status": "passed",
+      "checks": [
+        "Actual PDF review requires explicit library permission, presents at most three checked gradients, fits at 390px, and distinguishes locked original source colors from editable proposed stops.",
+        "Workspace V6 reopens offline with identical source/proposed origins and byte-identical browser/Node SVG, CSS and JSON; the original review is unchanged.",
+        "Editing retains catalog permission and exact source identity; changing use cannot silently expand permission, and returning to source colors removes proposed stops.",
+        "The same suggestion/editor/export path works for a retained Figma source and keeps its native source-mode identity.",
+        "Cancelling a search preserves the current design; a later Figma project open invalidates pending suggestions and retains the newly opened exact paint.",
+        "A reviewed website snapshot uses the same catalog suggestion/editor path without a network or provider call."
+      ]
+    },
+    {
+      "path": "release/guideline-gradients/node22-checks.json",
+      "bytes": 728,
+      "sha256": "914bd0274b6427adeeb5a82471918270f6f6b14f08cce067ffffcb8c3b15b4cf",
+      "status": "passed",
+      "checks": [
+        "Actual PDF review supplies five exact source stops; positions, angle, hue route, stop locks, limits and scoped restrictions are enforced without resetting intent.",
+        "Workspace V3, offline reopen and independent Node replay preserve exact paint, controls, locks and export bytes; CSS/SVG renders differ by at most 2/255 per channel.",
+        "Controls fit at 390px with keyboard focus; edits remove stale exports, duplicate positions fail closed, and removal preserves two endpoints.",
+        "Legacy projects open/save without migration. A held gradient callback cannot cancel a newer local open or historical-revision open."
+      ]
+    },
+    {
+      "path": "release/guideline-gradient-assessment/node22-checks.json",
+      "bytes": 980,
+      "sha256": "6d9d50a9ba98590115ca65c5f8a94d06147a335e5a8ddabd05a9fc299ece3a28",
+      "status": "passed",
+      "checks": [
+        "An actual PDF review retains failed text use in workspace V5; offline reopen recomputes the same failure, blocks SVG/CSS/clipboard, and preserves JSON recovery including exact foreground.",
+        "Correcting the foreground removes stale output, proves full-range contrast, and produces byte-identical browser/Node SVG, CSS and assessed JSON.",
+        "The same light-to-dark gradient fails with full text coverage and passes only when the actual foreground is scoped to its dark end.",
+        "The excluded middle-lightness region passes for source stops but fails across the gradient interior; the visible witness identifies where.",
+        "A narrow rendered limit remains unresolved because of rendering allowance; uncertainty never becomes an exportable pass.",
+        "Advanced controls fit at 390px, retain keyboard focus, and reject reversed limits without stale preview or export."
+      ]
+    },
+    {
+      "path": "release/guideline-supporting/node22-checks.json",
+      "bytes": 1226,
+      "sha256": "991ffe9dbd0705872684bc00e464ff08d3f5af6c8b654a263fec273ea09922eb",
+      "status": "passed",
+      "checks": [
+        "PDF import and explicit source review generate up to three measured brand compositions; keeping a direction enables exact SVG/CSS/JSON and clipboard delivery.",
+        "Selected work survives offline workspace and browser-library reopen; editing removes stale export. Controls fit at 390px and receive keyboard focus.",
+        "Wrong-source supporting files preserve current work; exclusions remain clearable after they invalidate the comparison.",
+        "A product search with no feasible fixed source paints stays blocked and cannot export an unchecked direction.",
+        "Figma reviewed capture uses the same comparison and selected-direction save/reopen flow without a Figma plugin.",
+        "An older supporting replay cannot cancel or overwrite a newer local project open.",
+        "A newer native project download survives completion of an older supporting import.",
+        "Website reviewed capture uses the same comparison and selected-direction save/reopen flow without a Figma plugin.",
+        "A suitable synthetic source yields exact Radix paints in five actual product states; selected JSON retains the complete application set."
+      ]
+    },
+    {
+      "path": "release/guideline-output-recovery/node22-checks.json",
+      "bytes": 680,
+      "sha256": "a98f6c7bcb56e889a76dcf45a5436023ad9afdaaf7f8e7fd0c8419f2a7109f8c",
+      "status": "passed",
+      "checks": [
+        "Browser/Node bundle replay preserves extension, gradient and exact component SVG",
+        "Actual IndexedDB save, reload and reopen restores selected controls and checked exports",
+        "Corrupt and future bundles leave the selected application and source intact",
+        "Completed failed paint assessment restores visibly and remains nonexportable",
+        "Re-applying source review and editing extension controls invalidate visible and retained results",
+        "Cancelling replay prevents the subsequent local write",
+        "Desktop and 390px restored composition render without page errors or source/provider requests"
+      ]
+    },
+    {
+      "path": "release/guideline-gradient-catalog/node24-checks.json",
+      "bytes": 1025,
+      "sha256": "badee5de44cd2dd190d4272aa5d3105e319d68d265f0a267b413e76dd9978211",
+      "status": "passed",
+      "checks": [
+        "Actual PDF review requires explicit library permission, presents at most three checked gradients, fits at 390px, and distinguishes locked original source colors from editable proposed stops.",
+        "Workspace V6 reopens offline with identical source/proposed origins and byte-identical browser/Node SVG, CSS and JSON; the original review is unchanged.",
+        "Editing retains catalog permission and exact source identity; changing use cannot silently expand permission, and returning to source colors removes proposed stops.",
+        "The same suggestion/editor/export path works for a retained Figma source and keeps its native source-mode identity.",
+        "Cancelling a search preserves the current design; a later Figma project open invalidates pending suggestions and retains the newly opened exact paint.",
+        "A reviewed website snapshot uses the same catalog suggestion/editor path without a network or provider call."
+      ]
+    },
+    {
+      "path": "release/guideline-gradients/node24-checks.json",
+      "bytes": 728,
+      "sha256": "7aa4d49e5a16a400a953d277fa47338021ed1273359c08fa042c332dad8fe5f7",
+      "status": "passed",
+      "checks": [
+        "Actual PDF review supplies five exact source stops; positions, angle, hue route, stop locks, limits and scoped restrictions are enforced without resetting intent.",
+        "Workspace V3, offline reopen and independent Node replay preserve exact paint, controls, locks and export bytes; CSS/SVG renders differ by at most 2/255 per channel.",
+        "Controls fit at 390px with keyboard focus; edits remove stale exports, duplicate positions fail closed, and removal preserves two endpoints.",
+        "Legacy projects open/save without migration. A held gradient callback cannot cancel a newer local open or historical-revision open."
+      ]
+    },
+    {
+      "path": "release/guideline-gradient-assessment/node24-checks.json",
+      "bytes": 980,
+      "sha256": "18175c77ec94af587d1362201a0304d8fb951524365e7e65bf74ebfb3938473f",
+      "status": "passed",
+      "checks": [
+        "An actual PDF review retains failed text use in workspace V5; offline reopen recomputes the same failure, blocks SVG/CSS/clipboard, and preserves JSON recovery including exact foreground.",
+        "Correcting the foreground removes stale output, proves full-range contrast, and produces byte-identical browser/Node SVG, CSS and assessed JSON.",
+        "The same light-to-dark gradient fails with full text coverage and passes only when the actual foreground is scoped to its dark end.",
+        "The excluded middle-lightness region passes for source stops but fails across the gradient interior; the visible witness identifies where.",
+        "A narrow rendered limit remains unresolved because of rendering allowance; uncertainty never becomes an exportable pass.",
+        "Advanced controls fit at 390px, retain keyboard focus, and reject reversed limits without stale preview or export."
+      ]
+    },
+    {
+      "path": "release/guideline-supporting/node24-checks.json",
+      "bytes": 1226,
+      "sha256": "931315a210def541221cd455e756bd3024fa253946ec96257240146fd2a593ad",
+      "status": "passed",
+      "checks": [
+        "PDF import and explicit source review generate up to three measured brand compositions; keeping a direction enables exact SVG/CSS/JSON and clipboard delivery.",
+        "Selected work survives offline workspace and browser-library reopen; editing removes stale export. Controls fit at 390px and receive keyboard focus.",
+        "Wrong-source supporting files preserve current work; exclusions remain clearable after they invalidate the comparison.",
+        "A product search with no feasible fixed source paints stays blocked and cannot export an unchecked direction.",
+        "Figma reviewed capture uses the same comparison and selected-direction save/reopen flow without a Figma plugin.",
+        "An older supporting replay cannot cancel or overwrite a newer local project open.",
+        "A newer native project download survives completion of an older supporting import.",
+        "Website reviewed capture uses the same comparison and selected-direction save/reopen flow without a Figma plugin.",
+        "A suitable synthetic source yields exact Radix paints in five actual product states; selected JSON retains the complete application set."
+      ]
+    },
+    {
+      "path": "release/guideline-output-recovery/node24-checks.json",
+      "bytes": 680,
+      "sha256": "dc7df88667383143677d4a60bfc09bdb2c3807b73b015d0694e059a5217bb8cd",
+      "status": "passed",
+      "checks": [
+        "Browser/Node bundle replay preserves extension, gradient and exact component SVG",
+        "Actual IndexedDB save, reload and reopen restores selected controls and checked exports",
+        "Corrupt and future bundles leave the selected application and source intact",
+        "Completed failed paint assessment restores visibly and remains nonexportable",
+        "Re-applying source review and editing extension controls invalidate visible and retained results",
+        "Cancelling replay prevents the subsequent local write",
+        "Desktop and 390px restored composition render without page errors or source/provider requests"
+      ]
+    }
+  ],
+  "files": [
+    {
+      "path": "STATUS.md",
+      "bytes": 1383,
+      "sha256": "3b660517d205018fc89e242c488a47d549ab11351d75fafd0a633465e252e45e"
+    },
+    {
+      "path": "dist/code.js",
+      "bytes": 236883,
+      "sha256": "9ac3fe34ff9b6f01d904d8cbaa94264580c8474006605f222314b1cf9d45e8bf"
+    },
+    {
+      "path": "dist/ui.html",
+      "bytes": 306985,
+      "sha256": "855247b1774b7c6e7337271295a396579f48466fbe798e1478b5d57b8271b827"
+    },
+    {
+      "path": "docs/evidence/brand-guideline-import/gradient-catalog.md",
+      "bytes": 6857,
+      "sha256": "57b795c710822ef1e64dbd1796e5f5d21bce2d4886e34292e4330cb4c5f031ab"
+    },
+    {
+      "path": "docs/plans/2026-09-25-brand-guideline-import-plan.md",
+      "bytes": 102640,
+      "sha256": "a4756f4762e9fc849ebe2b019b283197f3065da938bbfa91450b9b33f6aeace9"
+    },
+    {
+      "path": "docs/prds/2026-09-25-brand-guideline-import.md",
+      "bytes": 120575,
+      "sha256": "708d0c681b8c273ef7c15e6621796a01d42860e3ad2d25a8820557be1f234e4b"
+    },
+    {
+      "path": "figma-candidate/dist/code.js",
+      "bytes": 1575702,
+      "sha256": "fc8177572a6c85a8e2948367c42c7116520ef7b303c5b374f95580e9906262e4"
+    },
+    {
+      "path": "figma-candidate/dist/ui.html",
+      "bytes": 429847,
+      "sha256": "0b55cdb99f95f7e366be6f77146cecdefd65d8417fe07e8c4b546431c008f27f"
+    },
+    {
+      "path": "release/guideline-gradient-assessment/node22-desktop.png",
+      "bytes": 162441,
+      "sha256": "9cf9ef0838ec2902e6364c3381e7d3c72f9246657f2e8845e5a2ac612570f60d"
+    },
+    {
+      "path": "release/guideline-gradient-assessment/node22-mobile.png",
+      "bytes": 160252,
+      "sha256": "0e01b5aee1b45f4bf89541d180457537422f9af2420b57509105085029e6fe7f"
+    },
+    {
+      "path": "release/guideline-gradient-assessment/node24-bounded-budget.json",
+      "bytes": 360,
+      "sha256": "359b944e63056e0c87dbae2a7b977abf1007c0c56c019e2afb65a3fb23896543"
+    },
+    {
+      "path": "release/guideline-gradient-assessment/node24-desktop.png",
+      "bytes": 162441,
+      "sha256": "9cf9ef0838ec2902e6364c3381e7d3c72f9246657f2e8845e5a2ac612570f60d"
+    },
+    {
+      "path": "release/guideline-gradient-assessment/node24-mobile.png",
+      "bytes": 160252,
+      "sha256": "0e01b5aee1b45f4bf89541d180457537422f9af2420b57509105085029e6fe7f"
+    },
+    {
+      "path": "release/guideline-gradient-catalog/node22-mobile.png",
+      "bytes": 314011,
+      "sha256": "c5d8d728efccfb046d9eee59979bb7e79efcab6043a2be0493a052d25f9c3b68"
+    },
+    {
+      "path": "release/guideline-gradient-catalog/node22-suggestions.png",
+      "bytes": 348548,
+      "sha256": "714775277106bf55e152e4c2e6fe6c19868026dcf1c739fe66f82a21f4ccb214"
+    },
+    {
+      "path": "release/guideline-gradient-catalog/node24-mobile.png",
+      "bytes": 314011,
+      "sha256": "c5d8d728efccfb046d9eee59979bb7e79efcab6043a2be0493a052d25f9c3b68"
+    },
+    {
+      "path": "release/guideline-gradient-catalog/node24-suggestions.png",
+      "bytes": 348548,
+      "sha256": "714775277106bf55e152e4c2e6fe6c19868026dcf1c739fe66f82a21f4ccb214"
+    },
+    {
+      "path": "src/colors.json",
+      "bytes": 69829,
+      "sha256": "3d39593817059e5f6675b1629072ae64554f122b143446383a97b1839959280a"
+    },
+    {
+      "path": "src/lib/__tests__/colorSystemCatalogCandidatesV1.test.ts",
+      "bytes": 26589,
+      "sha256": "3343933f03626235e57329cf0a2e273663ff473cd81d968627d8225307a12db2"
+    },
+    {
+      "path": "src/lib/__tests__/colorSystemGradientAssessmentV1.test.ts",
+      "bytes": 10136,
+      "sha256": "3f4ec6bd4899d0b8ef9d9c2c33fb63de65eee849bb569a4c36d8835caf7ff1b4"
+    },
+    {
+      "path": "src/lib/colorSystemAuthoredCandidatesV1.ts",
+      "bytes": 21126,
+      "sha256": "4428e69f2d541c5ff25f9baac8703d118249ea20a8f5a171d4445e9670c5a536"
+    },
+    {
+      "path": "src/lib/colorSystemCatalogCandidatesV1.ts",
+      "bytes": 22453,
+      "sha256": "0662efb06ef9578a6e52d0c043c1a483caf1cd607788aaf06a7308a3f067e337"
+    },
+    {
+      "path": "src/lib/colorSystemGradientAssessmentV1.ts",
+      "bytes": 16588,
+      "sha256": "f1f308602d63253e6a93a9cf1faf22816379fd4eeeef63f858a030e751d6d513"
+    },
+    {
+      "path": "src/lib/colorSystemGradientV1.ts",
+      "bytes": 15888,
+      "sha256": "6e4e2ff71114489e8170dbcefcc48e05d4037eca0d7f06b41ba1da3f243da930"
+    },
+    {
+      "path": "src/lib/colorSystemModelV1.ts",
+      "bytes": 65051,
+      "sha256": "4d13f8baca8c5113d3bf708a0af0d0287f61ebb5580f86c70740ce3535d2707b"
+    },
+    {
+      "path": "src/lib/colorSystemSrgbValueV1.ts",
+      "bytes": 5954,
+      "sha256": "bf36394d6a8c59fcce176dd5a60c756cbe5c93909951248eef8d0de4f593ce91"
+    },
+    {
+      "path": "src/lib/radixColors.ts",
+      "bytes": 15927,
+      "sha256": "0b017561ddda12907bd09f0df0f2038f3cbf08b9850fcecdbc8d3f0fc3c8f98c"
+    },
+    {
+      "path": "src/lib/utils.ts",
+      "bytes": 5788,
+      "sha256": "310d5b7beda90ab475498e4af92c819a8d54a5f2f472d115d8c087e1deb8d49d"
+    },
+    {
+      "path": "src/wernerColors.json",
+      "bytes": 41107,
+      "sha256": "28b2c5f194ea45964ef1ef43a82fc36cf8aa7dd37d5dc29432749d1afd3de997"
+    },
+    {
+      "path": "web/dist/APCA_LICENSE.md",
+      "bytes": 9808,
+      "sha256": "45822a7b8120d9792a1233b602839b66184beca222d0771672d773eafe26a438"
+    },
+    {
+      "path": "web/dist/LICENSE",
+      "bytes": 1065,
+      "sha256": "6a6cd7dbd93f5795289a29771445d25bd12115530d5b9fb4175abf3c7b01e6a0"
+    },
+    {
+      "path": "web/dist/THIRD_PARTY_LICENSES.txt",
+      "bytes": 142313,
+      "sha256": "95497389b7c8c8f87ccac227d97bb47549f6c5da77a25a878cfd602624f3ae59"
+    },
+    {
+      "path": "web/dist/THIRD_PARTY_NOTICES.md",
+      "bytes": 5685,
+      "sha256": "0ff6af03ae96b7c3b5433f8317040d1d0e3b68d92e565af929e8063f29639275"
+    },
+    {
+      "path": "web/dist/assets/ProductSystemView-DJMb3_3z.css",
+      "bytes": 5952,
+      "sha256": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764"
+    },
+    {
+      "path": "web/dist/assets/download-Bic2EQq1.js",
+      "bytes": 45624,
+      "sha256": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6"
+    },
+    {
+      "path": "web/dist/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2",
+      "bytes": 7420,
+      "sha256": "2317fa4bb293c9c0b110e18315d529235c47a0ddd3338cea3d8c7955e927899e"
+    },
+    {
+      "path": "web/dist/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2",
+      "bytes": 15084,
+      "sha256": "6894439694946a589d157ece003086960a6a4013d74a813dab7602efdb3d8c09"
+    },
+    {
+      "path": "web/dist/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2",
+      "bytes": 16512,
+      "sha256": "824f485b5d26e2f2da3c2b236132ece1bc8e4e43373452950bb0e40548b4313f"
+    },
+    {
+      "path": "web/dist/assets/geist-latin-wght-normal-BgDaEnEv.woff2",
+      "bytes": 29400,
+      "sha256": "19f9c92546aa300c312235e3125af1b81394d8db9a4bc4a425cd5b641d2d54e1"
+    },
+    {
+      "path": "web/dist/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2",
+      "bytes": 8004,
+      "sha256": "8fa40e5d248247735eb97a0bd593b8852440430600d6ba01364c31fe0abc1fe1"
+    },
+    {
+      "path": "web/dist/assets/index-DqZwDzbM.css",
+      "bytes": 57437,
+      "sha256": "b390d285db969f0ef874b31cd0d191b798ad63ec29ebc6faaac63b7aa9378bde"
+    },
+    {
+      "path": "web/dist/assets/pdf.worker.min-BmVo14Nb.mjs",
+      "bytes": 1317034,
+      "sha256": "a33cfe728c584fdba4fcc1fd54bcdc2f9f2f13889ddbb5b2bd1d0f8cbe49b84e"
+    },
+    {
+      "path": "web/dist/assets/sourceProvenanceDisclosureData-BcglXYc9.js",
+      "bytes": 166316,
+      "sha256": "4f6227af4b91f1518b3c43588279d1303a5df5b3309bb00db07ad5ff208393ed"
+    },
+    {
+      "path": "web/dist/healthcheck",
+      "bytes": 36,
+      "sha256": "43a2a50c8f51e8b1118184d9ce279895c7cdbc66a0f04b9f153f66415fa3dcb7"
+    },
+    {
+      "path": "web/dist/index.html",
+      "bytes": 810,
+      "sha256": "205abce8a1cef4c99f9045e4e76eb5bcdf0f182c4780caab925bd7d87349d2ed"
+    },
+    {
+      "path": "web/dist/mark.svg",
+      "bytes": 186,
+      "sha256": "b97988e0bfce860215e7b03be59c3ba5586efb8e640ba0bd22088b6a9eb37881"
+    },
+    {
+      "path": "web/dist/pdf-fonts/FoxitDingbats.pfb",
+      "bytes": 29513,
+      "sha256": "845c752392b6c914fb989c75a08b7792b88f542d2499042ef2889f8c814a16ed"
+    },
+    {
+      "path": "web/dist/pdf-fonts/FoxitFixed.pfb",
+      "bytes": 17597,
+      "sha256": "b6c8fe53f134b8b6d4578cd2d544df4cee9624c4efa8d51a560fb40ea296101b"
+    },
+    {
+      "path": "web/dist/pdf-fonts/FoxitFixedBold.pfb",
+      "bytes": 18055,
+      "sha256": "f1b7159702973f54fc86254ea38bcf3712b2a736eb3a0995751e9f4bb45ad603"
+    },
+    {
+      "path": "web/dist/pdf-fonts/FoxitFixedBoldItalic.pfb",
+      "bytes": 19151,
+      "sha256": "8a000945843bd31add06aee63bf9fd41b7578b4f3242a4b7cd46349ad9d24d4d"
+    },
+    {
+      "path": "web/dist/pdf-fonts/FoxitFixedItalic.pfb",
+      "bytes": 18746,
+      "sha256": "5007faf8320fa1fcc08b8894b356ad976f60b992ba29ee5272578bbdebaf3876"
+    },
+    {
+      "path": "web/dist/pdf-fonts/FoxitSerif.pfb",
+      "bytes": 19469,
+      "sha256": "4f57d2b9d884af8f907bf22df6019b52d86cbf6214fdbd02b1ae05472a543f35"
+    },
+    {
+      "path": "web/dist/pdf-fonts/FoxitSerifBold.pfb",
+      "bytes": 19395,
+      "sha256": "0bdf4b04e964139818d51eda03d566ba999fc3ba2421b1c6c51f9dc969022e80"
+    },
+    {
+      "path": "web/dist/pdf-fonts/FoxitSerifBoldItalic.pfb",
+      "bytes": 20733,
+      "sha256": "a406cac82583bf98175cb62c87ed5e95c45fbb34eece63a10b0a13e793cb2e10"
+    },
+    {
+      "path": "web/dist/pdf-fonts/FoxitSerifItalic.pfb",
+      "bytes": 21227,
+      "sha256": "610ae0687198045c4db5d1a6650fd5e92536631706382eb8b72e38df578d0ae9"
+    },
+    {
+      "path": "web/dist/pdf-fonts/FoxitSymbol.pfb",
+      "bytes": 16729,
+      "sha256": "47967d055530e7357088a08403115425643ec2cdfd6201ba8af0fbd7116c1539"
+    },
+    {
+      "path": "web/dist/pdf-fonts/LiberationSans-Bold.ttf",
+      "bytes": 137052,
+      "sha256": "361c61b82d575c5c35fd9157fda8b0194bcfcd0d88ea8521a4fb5dd53d33dddc"
+    },
+    {
+      "path": "web/dist/pdf-fonts/LiberationSans-BoldItalic.ttf",
+      "bytes": 135124,
+      "sha256": "a224075ac17495ad0a3af3bc0a419ac0704a8b3fd1095456201fb9b095fc281d"
+    },
+    {
+      "path": "web/dist/pdf-fonts/LiberationSans-Italic.ttf",
+      "bytes": 162036,
+      "sha256": "832b4406dbef23628800d3aaad21048534ac84d7e3ad955be83b8172ed8ef512"
+    },
+    {
+      "path": "web/dist/pdf-fonts/LiberationSans-Regular.ttf",
+      "bytes": 139512,
+      "sha256": "f8ace1f892b2bd9dc1792ba7f097fa7588f84fed48321480e04de5390828221f"
+    },
+    {
+      "path": "web/fixtures/guidelines/figma-project-v1.json",
+      "bytes": 22943,
+      "sha256": "698b20f9ba44c2613b09775a307dc98f482abadeedea1692de8cb494672573fa"
+    },
+    {
+      "path": "web/fixtures/guidelines/harbor-native.pdf",
+      "bytes": 3035,
+      "sha256": "4a6b3f600697dbd46bed4988a07224fc8ed894da2429a0b57294712745dfec35"
+    },
+    {
+      "path": "web/fixtures/guidelines/website-capture.json",
+      "bytes": 41535,
+      "sha256": "bd7433bd71b11e21ecd7466992b43da5bdcc9773167c3d70f8a57531c0886346"
+    },
+    {
+      "path": "web/package.json",
+      "bytes": 3198,
+      "sha256": "23c42b02faa15d3e602c4ed088912d3e96a19a21c2d18087a94af70a8e75007f"
+    },
+    {
+      "path": "web/scripts/guideline-gradient-assessment-smoke.mjs",
+      "bytes": 9216,
+      "sha256": "71d0ad1168de30eab8007f036c7ccbbdeb00b44f2f0b1f6f9b5fa35a8fa36b6a"
+    },
+    {
+      "path": "web/scripts/guideline-gradient-catalog-smoke.mjs",
+      "bytes": 12059,
+      "sha256": "fb65a5ea44b921846997f5378382aa24346e1c49a6df34471fc3a28d32b81740"
+    },
+    {
+      "path": "web/scripts/guideline-gradient-smoke.mjs",
+      "bytes": 13793,
+      "sha256": "74e780f1e46d5547ee0b3bb659ad8849b8ec78e953e0fe10006688fca5c6742b"
+    },
+    {
+      "path": "web/scripts/guideline-output-recovery-smoke.mjs",
+      "bytes": 8756,
+      "sha256": "4835fdc8ef7622f931c64e61d3d44a81fd8cf32de658f441656f97dfe154ea17"
+    },
+    {
+      "path": "web/scripts/guideline-supporting-smoke.mjs",
+      "bytes": 17452,
+      "sha256": "e4edaeb933f0f455f8bde547ade9ddfbc73817a8649be8366a3ed54698185b8e"
+    },
+    {
+      "path": "web/src/components/GuidelineGradientSuggestions.tsx",
+      "bytes": 9950,
+      "sha256": "1d050d8bed5e8283b17419319703b60c9cb6cdf004f1b509f20f10b32204b458"
+    },
+    {
+      "path": "web/src/components/GuidelineGradientUseEditor.tsx",
+      "bytes": 12063,
+      "sha256": "3df8d4e135b187f1612673a6912aabf5935ea96fbad8c39b3d23c66a2c60ac61"
+    },
+    {
+      "path": "web/src/components/GuidelineModeGradientEditor.tsx",
+      "bytes": 23286,
+      "sha256": "8e65af8073b87e43cbfd9ba6a484a88e6f274f9274b938827407640faa77fa1c"
+    },
+    {
+      "path": "web/src/components/GuidelineSupportingStudio.tsx",
+      "bytes": 23427,
+      "sha256": "15de49a467893fde1a02d26e0eeb1757a319db551ff49351da9c5316fb2e93bd"
+    },
+    {
+      "path": "web/src/components/GuidelineWorkspace.css",
+      "bytes": 10256,
+      "sha256": "a1e8f09ce252e379d53c9cd28cca575a399fb2662c540e9a8c589f71452af0e2"
+    },
+    {
+      "path": "web/src/lib/guideline/authoredGradient.test.ts",
+      "bytes": 14137,
+      "sha256": "6f367fcf2df2adac0510a8355f72e13a8863d6a553ca4e55392c338907f7ee6f"
+    },
+    {
+      "path": "web/src/lib/guideline/authoredGradient.ts",
+      "bytes": 13186,
+      "sha256": "63ff6727ffd3b5104f5266c58df2411aed9bd578945f51715805257df6736d47"
+    },
+    {
+      "path": "web/src/lib/guideline/gradientCatalog.ts",
+      "bytes": 6603,
+      "sha256": "6d419d84aa22e4231bc826762c13890491bf73bdc1eae90ab812a6b5f213c53b"
+    },
+    {
+      "path": "web/src/lib/guideline/gradientExport.ts",
+      "bytes": 4967,
+      "sha256": "021f895aae637e8321ac268a15a288f00372291f1dd0829e7daf50912a8fd468"
+    },
+    {
+      "path": "web/src/lib/guideline/gradientSuggestions.test.ts",
+      "bytes": 12379,
+      "sha256": "280d6873d1462fd96bf50ca3a229cef47b58f6cacac311a4d5c99effdade3bd0"
+    },
+    {
+      "path": "web/src/lib/guideline/gradientSuggestions.ts",
+      "bytes": 10824,
+      "sha256": "25f0585363dce54c57e6a96255c0f69843fd70d94845eb4863f71bd4a2367249"
+    },
+    {
+      "path": "web/src/lib/guideline/operationContext.ts",
+      "bytes": 708,
+      "sha256": "01a45dd7006bedcf1f90b3ec094fa5cb1730d717b1f421f38ec93ab703f2fd8a"
+    },
+    {
+      "path": "web/src/lib/guideline/projectCodec.ts",
+      "bytes": 10639,
+      "sha256": "0bac900a4db0a04d588a39a545db98414e42103ba84f0d1cbdfea620c3b25a7f"
+    },
+    {
+      "path": "web/src/lib/guideline/refreshLineage.ts",
+      "bytes": 13087,
+      "sha256": "df641485e84b565054300351f5b40c0930b8f1aea67b5d6cb56cf9ebf0940398"
+    },
+    {
+      "path": "web/src/lib/guideline/refreshReplay.test.ts",
+      "bytes": 18564,
+      "sha256": "23a992cb28f84d24d54ac7e77593950556944a2062a67741d5520e28403a05c1"
+    },
+    {
+      "path": "web/src/lib/guideline/refreshReplay.ts",
+      "bytes": 18085,
+      "sha256": "454b68e8e0cebcb6c10916574cf25f1a7745e26474cbcfd32d11dead46b97f85"
+    }
+  ],
+  "logs": [
+    {
+      "path": "/tmp/teul-gradient-catalog-gate-node22.log",
+      "bytes": 29820,
+      "sha256": "a568c4be55ca1aaed0a0734654ce27c3c21750016e9e1a0a22abcf3cacc6b7f1"
+    },
+    {
+      "path": "/tmp/teul-gradient-catalog-gate-node24.log",
+      "bytes": 27493,
+      "sha256": "ea2d3ffc7c68936a0e8e8f15d77b3bdc8bfdbc54064486bb3a53f3496e424abd"
+    },
+    {
+      "path": "/tmp/teul-gradient-catalog-ci-node24.log",
+      "bytes": 312,
+      "sha256": "fc317af65b5a3ab1c2b8ab27c29fd94847668abfc627f7fa299f6be8baa8c35b"
+    },
+    {
+      "path": "/tmp/teul-gradient-catalog-studio-node24.log",
+      "bytes": 438,
+      "sha256": "cddbbefac458bb59a29d0cbddf5abbd9e311889eee2c336fedd29fb262f30d9b"
+    },
+    {
+      "path": "/tmp/teul-gradient-catalog-build-node24.log",
+      "bytes": 3188,
+      "sha256": "1b173ca85abc45ae4f60a45fe7d60c131fc947af45606fb724fda33918eb9f4e"
+    },
+    {
+      "path": "/tmp/teul-gradient-catalog-lint-node24.log",
+      "bytes": 56,
+      "sha256": "a08f059342d318275b9a38c2435399fa289a5f083ea5e1e8ed765022b7132c56"
+    },
+    {
+      "path": "/tmp/teul-gradient-catalog-gate-node24-timeout.log",
+      "bytes": 16683,
+      "sha256": "843c559061e70a68f475eddc25c81f189517a2b60f1939d2cf45a60d5cca1a3b"
+    },
+    {
+      "path": "/tmp/teul-gradient-catalog-isolated-node24.log",
+      "bytes": 327,
+      "sha256": "32ccad79510d4614384439aa7ed6a6384c220754a8ae122dce6f048fa8654598"
+    }
+  ],
+  "limitations": [
+    "Numerical checks do not establish visual quality, brand approval or the held-out benchmark.",
+    "Continuous ideal-path fidelity remains uncertified; final compiled-paint constraints use the existing continuous assessment.",
+    "No connector/provider, native Figma destination or deployed release is qualified by synthetic fixtures.",
+    "This slice is local only: not integrated, pushed or deployed."
+  ]
+}

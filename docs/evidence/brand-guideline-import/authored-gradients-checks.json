@@ -1,0 +1,433 @@
+{
+  "status": "locally-verified",
+  "baseCommit": "3e6eb9e0424be649f24b3cd308a42bd7c775c3de",
+  "scope": "Two-to-five reviewed source stops, shared editor, workspace V3 and refresh lineage V2; partial TASK-008 and AC-008/009/010",
+  "runtimeChecks": [
+    {
+      "node": "22.13.1",
+      "studioTests": 472,
+      "studioFiles": 41,
+      "foundationGradientTests": 6,
+      "browserScenarios": {
+        "gradient": 4,
+        "pdf": 25,
+        "figmaReview": 9,
+        "website": 11,
+        "pdfRefresh": 12,
+        "nativeRefresh": 16,
+        "numeric": 8,
+        "manual": 10,
+        "storage": 25,
+        "outputRecovery": 7,
+        "paletteRegression": 9
+      },
+      "renderDifference": {
+        "maximum": 1,
+        "mean": 0.09084244791666667
+      },
+      "proofBuild": "passed"
+    },
+    {
+      "node": "24.19.0",
+      "studioTests": 472,
+      "studioFiles": 41,
+      "foundationGradientTests": 6,
+      "browserScenarios": {
+        "gradient": 4,
+        "pdf": 25,
+        "figmaReview": 9,
+        "website": 11,
+        "pdfRefresh": 12,
+        "nativeRefresh": 16,
+        "numeric": 8,
+        "manual": 10,
+        "storage": 25,
+        "outputRecovery": 7,
+        "paletteRegression": 9
+      },
+      "renderDifference": {
+        "maximum": 1,
+        "mean": 0.09084244791666667
+      },
+      "proofBuild": "passed"
+    }
+  ],
+  "otherChecks": {
+    "studioLint": "oxlint passed; root ESLint does not configure web files",
+    "typecheck": "passed through both proof builds",
+    "strictPrdReady": "passed; complete stage not claimed",
+    "diffWhitespace": "passed",
+    "deadExports": 48,
+    "deadFiles": 1,
+    "newDeadExports": 0,
+    "visualInspection": "Desktop and 390px controls inspected; mobile interpolation readable; fixture is not a palette recommendation"
+  },
+  "review": {
+    "reuse": "Source qualifications retained in JSON; one editor replaces the PDF duplicate; browser replay uses strict workspace codec",
+    "quality": "Scope preserves stops; malformed scope/mode types rejected; queued generation guarded against newer local opens and source context",
+    "efficiency": "Cache misses parse model once; bounded compiler and memoized replay/contrast reused"
+  },
+  "limitations": [
+    "Stops currently bind reviewed opaque source colors; supporting directions and derived gradient stops remain open",
+    "Full ideal-path certification, visual benchmark, human acceptance and assistive-technology qualification remain open",
+    "Synthetic local sources; no live connector or provider qualification",
+    "Full release gate not claimed; not integrated, pushed or deployed",
+    "Existing Studio chunk-size advisory remains"
+  ],
+  "sourceFiles": [
+    {
+      "path": "docs/evidence/brand-guideline-import/authored-gradients.md",
+      "bytes": 4341,
+      "sha256": "e342adc36ca0c1dbfc11a894b6725a0545c719d9eb55cd0afe6d72d4d6a9ce3d"
+    },
+    {
+      "path": "docs/plans/2026-09-25-brand-guideline-import-plan.md",
+      "bytes": 92790,
+      "sha256": "499a9ffe73ce6690d922af931e5ab775984d5729f6d3bcc0a026b7523a0c2270"
+    },
+    {
+      "path": "docs/prds/2026-09-25-brand-guideline-import.md",
+      "bytes": 116442,
+      "sha256": "09c05e8bbf16f8886407b52ef0c3831989256631820921e842afe718144b6651"
+    },
+    {
+      "path": "src/lib/__tests__/colorSystemGradientV1.test.ts",
+      "bytes": 5935,
+      "sha256": "e5ec856b90c8570238b3fa202c2d73c68e6705569a091df908071ee8b9d0ef4a"
+    },
+    {
+      "path": "src/lib/colorSystemGradientV1.ts",
+      "bytes": 15888,
+      "sha256": "6e4e2ff71114489e8170dbcefcc48e05d4037eca0d7f06b41ba1da3f243da930"
+    },
+    {
+      "path": "web/README.md",
+      "bytes": 26500,
+      "sha256": "f43a973259f75a75af8971bf37163716d80ed1ed248c89737284f3fa69d7982b"
+    },
+    {
+      "path": "web/package.json",
+      "bytes": 2928,
+      "sha256": "8337704738c4c96fc35d9c54bbde7b3b84b304d1f25d082e28583955b01f7638"
+    },
+    {
+      "path": "web/scripts/guideline-figma-review-smoke.mjs",
+      "bytes": 19147,
+      "sha256": "cbf4b9f53afa11c5b785290d8d4b3cddaf3e910c77b4a0706416e45ab17b1edd"
+    },
+    {
+      "path": "web/scripts/guideline-gradient-smoke.mjs",
+      "bytes": 13793,
+      "sha256": "74e780f1e46d5547ee0b3bb659ad8849b8ec78e953e0fe10006688fca5c6742b"
+    },
+    {
+      "path": "web/scripts/guideline-manual-smoke.mjs",
+      "bytes": 19633,
+      "sha256": "ebd7607f142dbbd17e1c956ab4d92bbf4f48d206422144c009fe2d090835019d"
+    },
+    {
+      "path": "web/scripts/guideline-numeric-smoke.mjs",
+      "bytes": 18289,
+      "sha256": "286f47b930742a583440382b16768d714beb312c406dd9820ce6099cb4d38eb3"
+    },
+    {
+      "path": "web/scripts/guideline-project-view.mjs",
+      "bytes": 388,
+      "sha256": "298b57ba4c2e5529fa0a0c7c682107b7aaeb26bab2851087ed9a87c0206e9a12"
+    },
+    {
+      "path": "web/scripts/guideline-refresh-smoke.mjs",
+      "bytes": 15675,
+      "sha256": "a55406bda683f8b3534e4f280b4fc4f79e7d1cae80987239a1a0cd44a718e29f"
+    },
+    {
+      "path": "web/scripts/guideline-smoke.mjs",
+      "bytes": 34884,
+      "sha256": "b3abe617a3e8546b810a778d44c33ccd7bb2a1a53000e15d614a3270348b2f7d"
+    },
+    {
+      "path": "web/scripts/guideline-website-smoke.mjs",
+      "bytes": 25505,
+      "sha256": "978f7d0e7e3e21867582a996ed781f73a696cc7a11a3671003a646fe858a0553"
+    },
+    {
+      "path": "web/src/components/GuidelineFigmaPanel.tsx",
+      "bytes": 33432,
+      "sha256": "814bceaa547010280fdda6000f18de3b1f81b1059ed0c9337abe19c0c11d0888"
+    },
+    {
+      "path": "web/src/components/GuidelineFigmaReview.tsx",
+      "bytes": 4726,
+      "sha256": "bfc2660f145b290c5f8dac5becc28b720b0a1a023fcea7768bddccb5e06a215d"
+    },
+    {
+      "path": "web/src/components/GuidelineModeGradientEditor.tsx",
+      "bytes": 16643,
+      "sha256": "6f7e3bc1baf0e50122530960e74935e4dcb275a52f743dd3d6574687e1a99186"
+    },
+    {
+      "path": "web/src/components/GuidelineSourceReview.tsx",
+      "bytes": 35935,
+      "sha256": "20e588529910e8132fdf1aabf57e6b8c36acea1403ab43391842d2bdc5783511"
+    },
+    {
+      "path": "web/src/components/GuidelineWebsitePanel.tsx",
+      "bytes": 26261,
+      "sha256": "ebaebe959ab34098312063dfd9e10f994023b8497a05e48b15e39d72d48d51cf"
+    },
+    {
+      "path": "web/src/components/GuidelineWebsiteReview.tsx",
+      "bytes": 5028,
+      "sha256": "2471ad78bcf77128959defee93ee24cb261cd6b23ad4af6e92013e6a5b59d286"
+    },
+    {
+      "path": "web/src/components/GuidelineWorkspace.css",
+      "bytes": 9306,
+      "sha256": "3cb375f1e4018ef4c8933498da9fbde95d56da7aeb20dc3493b23397ccdc98e1"
+    },
+    {
+      "path": "web/src/components/GuidelineWorkspace.tsx",
+      "bytes": 54849,
+      "sha256": "41a7df47eae2ac1896e595c3ed8b1bdbb0ffcff22cc60327b2f58fff3c47d763"
+    },
+    {
+      "path": "web/src/lib/guideline/authoredGradient.test.ts",
+      "bytes": 7868,
+      "sha256": "679a6e81f0cc2a0d4582794f656ebb4c51c0461ac0fc3a8cd572ac5fc00ea467"
+    },
+    {
+      "path": "web/src/lib/guideline/authoredGradient.ts",
+      "bytes": 5967,
+      "sha256": "3ddb3628952e6a4136e5ce42e0893d40f3b45129476bee9f529a8c372dcb6dd6"
+    },
+    {
+      "path": "web/src/lib/guideline/gradientExport.ts",
+      "bytes": 3255,
+      "sha256": "53e79fb522be49778a18d375153c1119f1f5e4751310098b104acc941a300faa"
+    },
+    {
+      "path": "web/src/lib/guideline/projectCodec.ts",
+      "bytes": 7448,
+      "sha256": "7684a5be907a7a3be724fc0a031e53ffff85c990c3ea561e19609d5e89ef086b"
+    },
+    {
+      "path": "web/src/lib/guideline/refreshLineage.ts",
+      "bytes": 9826,
+      "sha256": "d49e68a1552701e5c3ed8c9eeac87ef735ce375d6f9a697f258f65417e9d35ff"
+    },
+    {
+      "path": "web/src/lib/guideline/refreshReplay.ts",
+      "bytes": 14983,
+      "sha256": "59a4ef0830a78e64a9df8fae11d460b478428bf143d385469cc434e5781a1fc5"
+    },
+    {
+      "path": "web/src/lib/guideline/useLocalProject.ts",
+      "bytes": 7677,
+      "sha256": "ad2e8491125b11a4c10d9084aafe229a87e0dd5c218e4d083385d0cf789b4e58"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "release/guideline-gradients/node22-checks.json",
+      "bytes": 728,
+      "sha256": "914bd0274b6427adeeb5a82471918270f6f6b14f08cce067ffffcb8c3b15b4cf"
+    },
+    {
+      "path": "release/guideline-gradients/node22-pdf-regression.json",
+      "bytes": 2845,
+      "sha256": "3c3ed1d5d1354664f5d6721ef11fb3cd18d066ff5a6b7cdeb69c89f135daa281"
+    },
+    {
+      "path": "release/guideline-figma-review/browser-receipt-node22.json",
+      "bytes": 2640,
+      "sha256": "29b99703f58de4461f2c4c09963045e78d7c26401a10822d091643de337d20e0"
+    },
+    {
+      "path": "release/guideline-website-review/node22-receipt.json",
+      "bytes": 5556,
+      "sha256": "1664b102c54a8a2bc7f43652081db750e30d1b9c9f23babce8f14d07d51a4d19"
+    },
+    {
+      "path": "release/guideline-refresh/node22-checks.json",
+      "bytes": 1573,
+      "sha256": "46983c5fa92d2eca2ae31625e851f384f03d6f1a8726acbc05ebfdba55b196c9"
+    },
+    {
+      "path": "release/guideline-native-refresh/receipt-node22.json",
+      "bytes": 1880,
+      "sha256": "afc50389cc0a40a23dc8c854daad45e46437bf833c3351a69e6c3e0e8352cb19"
+    },
+    {
+      "path": "release/guideline-numeric/browser-receipt-node22.json",
+      "bytes": 3317,
+      "sha256": "934b72c329a087dc06151eb460f8cd04409644b810c141f2fa4fab10ec913d63"
+    },
+    {
+      "path": "release/guideline-manual/browser-receipt-node22.json",
+      "bytes": 3314,
+      "sha256": "75d97254cc8f6d7ca03c64d1443f36954488b613a28c5342d140d356b43e77c6"
+    },
+    {
+      "path": "release/guideline-storage/node22-receipt.json",
+      "bytes": 3014,
+      "sha256": "fb5dfb2e24883180d525f522c46e171642c7ac85cda90207db41239645c933d0"
+    },
+    {
+      "path": "release/guideline-output-recovery/node22-checks.json",
+      "bytes": 680,
+      "sha256": "a98f6c7bcb56e889a76dcf45a5436023ad9afdaaf7f8e7fd0c8419f2a7109f8c"
+    },
+    {
+      "path": "release/guideline-storage/node22-palette-regression/storage-browser.json",
+      "bytes": 1127,
+      "sha256": "d1eea8265829185df83f9cc3c63a8c7f7883a34c3dc18a29ce05c46030ef8346"
+    },
+    {
+      "path": "release/guideline-gradients/node22-pixels.json",
+      "bytes": 49,
+      "sha256": "c46529cf193d2436812739f93b7f625647d7be9de11d7aed0821fc9a345d0f82"
+    },
+    {
+      "path": "release/guideline-gradients/node22-desktop.png",
+      "bytes": 227807,
+      "sha256": "4d92fc3c801e926a13c90fb00b7f6c2e15b4a6dadbd48480463a8abc8baf52df"
+    },
+    {
+      "path": "release/guideline-gradients/node22-mobile.png",
+      "bytes": 133285,
+      "sha256": "986c3e9aae33c4be053540518a6fd829adab54d9dc246301fdd9045ee9e13e0f"
+    },
+    {
+      "path": "release/guideline-gradients/node22-css.png",
+      "bytes": 110428,
+      "sha256": "209170ed2c4fa3cdaa41fd3c8caddf34864cc9a58fc1d1549a117c054542fb12"
+    },
+    {
+      "path": "release/guideline-gradients/node22-svg.png",
+      "bytes": 109745,
+      "sha256": "0d85cd285be6ae2235667030c6a679827e3913c546271facc04e3efd2e3adcb1"
+    },
+    {
+      "path": "release/guideline-gradients/node22-five-stop.svg",
+      "bytes": 3378,
+      "sha256": "264adbce33b0a6f7d22948620fb0938120ab4739de28ead87db02a8f907a703e"
+    },
+    {
+      "path": "release/guideline-gradients/node22-five-stop.css",
+      "bytes": 2278,
+      "sha256": "3dfba10ed21ae182ea02a8190a290f61641a13a11d288b44c2e63ed25b518828"
+    },
+    {
+      "path": "release/guideline-gradients/node22-five-stop.json",
+      "bytes": 17459,
+      "sha256": "7099cea6468a16704988d90dbcc43551804ed7e724164a12b5247c07fd44fe19"
+    },
+    {
+      "path": "release/guideline-gradients/node24-checks.json",
+      "bytes": 728,
+      "sha256": "7aa4d49e5a16a400a953d277fa47338021ed1273359c08fa042c332dad8fe5f7"
+    },
+    {
+      "path": "release/guideline-gradients/node24-pdf-regression.json",
+      "bytes": 2845,
+      "sha256": "846317f1570d94c36f05ae742a7faacf5c6fbd5125fd894257a02c347716ec66"
+    },
+    {
+      "path": "release/guideline-figma-review/browser-receipt-node24.json",
+      "bytes": 2640,
+      "sha256": "0f9c969bd3cf54a2c8f7100452e36eb64d57a6c21dadcff2f1845b95b8664a56"
+    },
+    {
+      "path": "release/guideline-website-review/node24-receipt.json",
+      "bytes": 5556,
+      "sha256": "9cb6370632751581e5429ba13e68fee44370bfe955ad654b6d2cb65e6f56e722"
+    },
+    {
+      "path": "release/guideline-refresh/node24-checks.json",
+      "bytes": 1573,
+      "sha256": "66efc3cb7ec7b19b37d70a3fd6dd07a433c5ea82d6df4ff270c31259dcd91e42"
+    },
+    {
+      "path": "release/guideline-native-refresh/receipt-node24.json",
+      "bytes": 1880,
+      "sha256": "c06480e3bcf43031b637bdffd8830cc0eee894f08543e5e3f3a693978f32e8e8"
+    },
+    {
+      "path": "release/guideline-numeric/browser-receipt-node24.json",
+      "bytes": 3317,
+      "sha256": "75faf6935ef94cf1be98c876a50c4863d1c0fd7f1f4c2c7b0dd264cec0a540d4"
+    },
+    {
+      "path": "release/guideline-manual/browser-receipt-node24.json",
+      "bytes": 3314,
+      "sha256": "d7a788aa56ed9a6e0ee19b4b35d146c514008654af1fbe5448d46fea81ede958"
+    },
+    {
+      "path": "release/guideline-storage/node24-receipt.json",
+      "bytes": 3014,
+      "sha256": "3a970eb004d9abfe58d1bb6e26568d42b3b31122944cc6f757c416574deb3ff9"
+    },
+    {
+      "path": "release/guideline-output-recovery/node24-checks.json",
+      "bytes": 680,
+      "sha256": "dc7df88667383143677d4a60bfc09bdb2c3807b73b015d0694e059a5217bb8cd"
+    },
+    {
+      "path": "release/guideline-storage/node24-palette-regression/storage-browser.json",
+      "bytes": 1142,
+      "sha256": "9d006fc504730efe136732c2e17756ee73a307e344d4f97e694648a8cc442ace"
+    },
+    {
+      "path": "release/guideline-gradients/node24-pixels.json",
+      "bytes": 49,
+      "sha256": "c46529cf193d2436812739f93b7f625647d7be9de11d7aed0821fc9a345d0f82"
+    },
+    {
+      "path": "release/guideline-gradients/node24-desktop.png",
+      "bytes": 227807,
+      "sha256": "4d92fc3c801e926a13c90fb00b7f6c2e15b4a6dadbd48480463a8abc8baf52df"
+    },
+    {
+      "path": "release/guideline-gradients/node24-mobile.png",
+      "bytes": 133285,
+      "sha256": "986c3e9aae33c4be053540518a6fd829adab54d9dc246301fdd9045ee9e13e0f"
+    },
+    {
+      "path": "release/guideline-gradients/node24-css.png",
+      "bytes": 110428,
+      "sha256": "209170ed2c4fa3cdaa41fd3c8caddf34864cc9a58fc1d1549a117c054542fb12"
+    },
+    {
+      "path": "release/guideline-gradients/node24-svg.png",
+      "bytes": 109745,
+      "sha256": "0d85cd285be6ae2235667030c6a679827e3913c546271facc04e3efd2e3adcb1"
+    },
+    {
+      "path": "release/guideline-gradients/node24-five-stop.svg",
+      "bytes": 3378,
+      "sha256": "264adbce33b0a6f7d22948620fb0938120ab4739de28ead87db02a8f907a703e"
+    },
+    {
+      "path": "release/guideline-gradients/node24-five-stop.css",
+      "bytes": 2278,
+      "sha256": "3dfba10ed21ae182ea02a8190a290f61641a13a11d288b44c2e63ed25b518828"
+    },
+    {
+      "path": "release/guideline-gradients/node24-five-stop.json",
+      "bytes": 17459,
+      "sha256": "07a47c9c0d3f5bb60adce4ab7555894c09a9e6ab034d8561d7101bbd15cac2e0"
+    }
+  ],
+  "productionAssets": [
+    {
+      "path": "web/dist/assets/GuidelineWorkspace-BCev-93T.js",
+      "bytes": 881831,
+      "sha256": "311a6bc8e7bf2f5cc3e7ee4a2d471b02d6c00561a084e48d5f813dc0a324b910"
+    },
+    {
+      "path": "web/dist/assets/GuidelineWorkspace-CvBeMYuP.css",
+      "bytes": 24816,
+      "sha256": "ca697689d819558c79442f1d3e4d8a4f65ce06ff184c129e59820e941352d0f4"
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "startedAt": "2026-09-26T12:51:48.182Z",
+  "node": "v22.13.1",
+  "fixtureHashes": {
+    "harbor-numeric.pdf": "b583664ade57f7a03a825a97f0d68e148eba2d5b25cb7c2aebcee6e925465925",
+    "harbor-encrypted.pdf": "45f96f8c2eea91adc51f2bcf6ecdfb086025b1942f541d4a20fec464466da828",
+    "harbor-table.pdf": "7bccbd9fb0e504944f33ec54528e1a45463c6cb030726b66c412657b6f96fcf8"
+  },
+  "buildHashes": {
+    "assets/GuidelineWorkspace-BQYYCRG-.css": "d1cf4cfcf62a767dbcea2bdb53827f531fe151868f6d4ea98e857c613506439c",
+    "assets/GuidelineWorkspace-DCi7Sw2d.js": "8aa575a271623f3d9de74cd0412da99ce8721215d5f4cdd81cfea3b4cfd92f57",
+    "assets/ProductSystemView-CYEmbNaf.js": "98777e01cc23c90d23918dd1f7d4caeb679a4a167cd36c063988ed415ee1acab",
+    "assets/ProductSystemView-DJMb3_3z.css": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764",
+    "assets/authoring-StdIcNjh.js": "6d25f8fa5fd86edd7462c8a97f46a71763c4b16eba1ecabd6007adf2305b1914",
+    "assets/authoringControlOutlinesV1-Tg8I41R7.js": "f170f6a06c7d903ace92aa57651b32142668e9ef2145fe12efcbaab4976652bb",
+    "assets/colorSystemRecipeV1-DdGXMA_g.js": "2775cc6db5ac0fa3a01acc43d3620e8b0196c3000f6e97435b8f4d54bbb2779c",
+    "assets/download-Bic2EQq1.js": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6",
+    "assets/index-CmWmBKFd.css": "e7cc8392595df99b39d33040f9348105d04d68b80d01d83e7bf4e0e7115df33f",
+    "assets/index-Co6IzyXG.js": "a0cdf86b9b77952a76f9a72ff2d1ac94dfd173b5fa8d55be417b94835d7bfee4",
+    "assets/sourceProvenanceDisclosureData-CxLfFIWs.js": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361",
+    "index.html": "9bbd91afc6682cda00ad6ff9f962a2fad7c58aa41825d4cbd3fe28da2a05103e"
+  },
+  "surface": "enabled production Studio",
+  "status": "passed",
+  "finishedAt": "2026-09-26T12:51:55.671Z",
+  "url": "http://127.0.0.1:62536/",
+  "checks": [
+    "Nine native observations and reviewed model colors preserve exact components, alpha, literals and separate identities despite equal rounded HEX previews.",
+    "CMYK, Pantone and Display-P3 specifications remain source text without invented sRGB tokens; differing stated HEX/RGB values both survive with page-three provenance.",
+    "Four adjacent native PDF text items form one color with all four citations and a union highlight; unrelated multiline numbers produce no extra color. Keyboard activation reveals page two.",
+    "Source text and location controls remain keyboard-operable at 390px, with no horizontal document overflow.",
+    "V3 project and source review reopen byte-for-byte after browser reload while offline, without the PDF; native precision and alpha survive.",
+    "Encrypted PDF requests an unlocked copy, exposes no password field, and preserves the existing reviewed project exactly.",
+    "All ten invalid or ambiguous page-four declarations remain text, yield zero exact colors, and cannot be reviewed as a palette; page five is never captured.",
+    "Opaque HEX source generation, continuous V2 route fidelity, SVG/CSS/JSON exports and offline selected-design replay remain compatible through the new capture/project versions.",
+    "Nonconsecutive table RGB cells retain both source references and conflicting channel values; ambiguous/nonhorizontal rows show gaps. Keyboard source highlighting, 390px layout and exact offline project replay pass without granting review approval."
+  ],
+  "failures": [],
+  "diagnostics": [],
+  "externalRequests": [],
+  "artifacts": [
+    {
+      "file": "node22-numeric-source-desktop.png",
+      "sha256": "2cfc2fe2fc402a9e1b7139dae2445f85366bde39e5f3fac90f62574713215ebc"
+    },
+    {
+      "file": "node22-numeric-mobile-keyboard.png",
+      "sha256": "4886259508eda5667224aee01bfca875c634eb07301b51bef4d9cd86e5afa932"
+    },
+    {
+      "file": "node22-numeric-mobile-source.png",
+      "sha256": "645f4a1dc1993a7dda17fd74d157ddf3aefa5473deb45df1f9cf9ec7f468d859"
+    },
+    {
+      "file": "node22-numeric-mobile-highlight.png",
+      "sha256": "053d3a5c6e91bcd4737e042505d9d45c7cc68728ceee0791daee7f14bd39c886"
+    },
+    {
+      "file": "node22-source-review.json",
+      "sha256": "46468b7e4fc1ac0761e8370258fccf311eb1c8ab9b54096f56e438ce5204e440"
+    },
+    {
+      "file": "node22-project.json",
+      "sha256": "2018ea803ea797005ac38dda18d0c5a570bfe45933a0c18b3e3d529a1c4ff623"
+    },
+    {
+      "file": "node22-encrypted-preserves-work.png",
+      "sha256": "aaeb51c2f1b8989aec980709608471559f9eb0a87fa09713e4701a44073002d8"
+    },
+    {
+      "file": "node22-invalid-source-project.json",
+      "sha256": "bb610a44e56c7b73c992381d464db2b30bde2645782515e34f70cca738471f0c"
+    },
+    {
+      "file": "node22-opaque-gradient.css",
+      "sha256": "860d9fb4682f139c3df93c1dac0e9f3a365c3a431528f851bbad4ff5784904b7"
+    },
+    {
+      "file": "node22-opaque-gradient.svg",
+      "sha256": "cf659e37f78336b3487f5500f554411bb5a01cdd27342a41ddff278ee9ccfbb6"
+    },
+    {
+      "file": "node22-opaque-gradient.json",
+      "sha256": "8a02611af8133349f3b81de7be9f50ba78711b33198ce8cc4238913f6f1d7399"
+    },
+    {
+      "file": "node22-table-source-desktop.png",
+      "sha256": "45eeae905540c8f38dad4f3aae00da61f046d25b5dc3d254d4d8b082ba9a69a8"
+    },
+    {
+      "file": "node22-table-source-mobile.png",
+      "sha256": "c43cb9bab00288e8174a3f0b2c728bb5750d83c25b3c474614fd0f86779d53df"
+    },
+    {
+      "file": "node22-table-source-project.json",
+      "sha256": "bd88d0f3a62a8f3eaaee6b40410bb4500aacc0fb5356bf17c5d38c18395ca692"
+    }
+  ]
+}

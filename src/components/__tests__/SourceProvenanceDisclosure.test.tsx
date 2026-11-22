@@ -1,0 +1,72 @@
+import * as React from 'react';
+import { act } from 'react';
+import { createRoot, Root } from 'react-dom/client';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import {
+  type HistoricalSourceProvenance,
+  WADA_SOURCE_PROVENANCE,
+  WERNER_SOURCE_PROVENANCE,
+} from '../../lib/sourceProvenance';
+import { SourceProvenanceDisclosure } from '../SourceProvenanceDisclosure';
+
+const disclosureCases: Array<[string, HistoricalSourceProvenance]> = [
+  ['Wada', WADA_SOURCE_PROVENANCE],
+  ['Werner', WERNER_SOURCE_PROVENANCE],
+];
+
+describe('SourceProvenanceDisclosure', () => {
+  let container: HTMLDivElement;
+  let root: Root;
+
+  beforeEach(() => {
+    container = document.createElement('div');
+    document.body.appendChild(container);
+    root = createRoot(container);
+  });
+
+  afterEach(() => {
+    act(() => root.unmount());
+    container.remove();
+  });
+
+  it.each(disclosureCases)(
+    'preserves the %s disclosure wording, accessibility label, and credit',
+    (_, provenance) => {
+      act(() => {
+        root.render(<SourceProvenanceDisclosure provenance={provenance} isDark={false} />);
+      });
+
+      const summary = container.querySelector('summary');
+      expect(summary?.getAttribute('aria-label')).toBe(
+        `${provenance.source.title} source provenance`
+      );
+      expect(summary?.textContent).toContain(provenance.disclosure.label);
+      expect(summary?.textContent).toContain(provenance.disclosure.compact);
+
+      const rows = Array.from(container.querySelectorAll('details > div > div'));
+      const expectedLabels = [
+        'Disclosure:',
+        'Source:',
+        'Profile:',
+        ...(provenance.transcription ? ['Text review:'] : []),
+        'Derivation:',
+        'Uncertainty:',
+        'Credit:',
+      ];
+      expect(rows.map(row => row.querySelector('strong')?.textContent)).toEqual(expectedLabels);
+      expect(container.textContent).toContain(provenance.disclosure.detail);
+      expect(container.textContent).toContain(provenance.credit.full);
+      if (provenance.transcription) {
+        expect(container.textContent).toContain(provenance.transcription.summary);
+      }
+    }
+  );
+
+  it('uses the requested theme', () => {
+    act(() => {
+      root.render(<SourceProvenanceDisclosure provenance={WADA_SOURCE_PROVENANCE} isDark={true} />);
+    });
+
+    expect(container.querySelector('details')?.style.backgroundColor).toBe('rgb(44, 44, 44)');
+  });
+});

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "teul.cross-format-fixture.v1",
+  "status": "synthetic engineering fixture; explicit test review, not human or brand approval",
+  "pdf": {
+    "file": "harbor-native.pdf",
+    "pages": [1, 2],
+    "omittedPage": 3,
+    "omittedHex": "#AD1234"
+  },
+  "colors": [
+    { "label": "Ocean", "hex": "#126E78", "rgb": [18, 110, 120], "family": "Ocean" },
+    { "label": "Sand", "hex": "#ECBF74", "rgb": [236, 191, 116], "family": "Sand" },
+    { "label": "Paper", "hex": "#F4EFE6", "rgb": [244, 239, 230], "family": "Ground" },
+    { "label": "Ink", "hex": "#182E34", "rgb": [24, 46, 52], "family": "Text" }
+  ],
+  "websiteDifference": {
+    "label": "Ocean",
+    "hex": "#1B7C86",
+    "rgb": [27, 124, 134],
+    "purpose": "An intentional conflict must remain unresolved until an explicit working-value choice."
+  },
+  "rules": {
+    "pair": "Do not use Ocean and Sand together for text and background.",
+    "productGradient": "Do not use gradients in product controls.",
+    "brandPermission": "Gradients between existing colors may be used in brand artwork.",
+    "proposalNotice": "New supporting colors are proposals; keep existing values unchanged."
+  },
+  "review": {
+    "pair": "Adopt the unordered Ocean/Sand foreground-background prohibition in all contexts.",
+    "productGradient": "Adopt the product-only gradient ban.",
+    "brandPermission": "Retain the permission as evidence; do not turn it into a hard requirement or use it to override another restriction.",
+    "proposalNotice": "Retain the proposal/unchanged-value notice; do not infer a closed palette. All source values remain immutable.",
+    "modes": "Bind one declared PDF source mode, one Figma captured-paint mode and one website observed state explicitly to Working; do not claim authored mode equivalence.",
+    "resolution": "Choose PDF Ocean for this working set; retain the website value and its governing rules."
+  }
+}

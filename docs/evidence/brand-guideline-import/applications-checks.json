@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "teul.guideline-application-checks.v1",
+  "status": "passed",
+  "checkedAt": "2026-09-25T21:23:43.539243+00:00",
+  "baseCommit": "52defe0a11e832328e14f478a7e43451eb912ae2",
+  "scope": "Source-bound actual application assessment and replay; full PRD acceptance remains open",
+  "sourceHashes": {
+    "web/src/lib/guideline/application.ts": "sha256:6ed20d4672046d984e15a8c4b8f45fb8bdbd66104f080dc71993fbca696d628d",
+    "web/src/lib/guideline/application.test.ts": "sha256:90820865e1cbc939f8e9df80867e3a4924c74f8b6cd32e93c22ef1528343a670",
+    "web/src/lib/guideline/applicationGeometry.ts": "sha256:161defe0958181f94ebec85ffe9b685bb2dee199a4053fcc1c9b4173c979a468",
+    "web/src/lib/guideline/applicationGeometry.test.ts": "sha256:0adfa3d863a94d03ddb31a0bb48e5a1980c9f1e68474b90657296fd28c7aefc8",
+    "web/src/lib/guideline/extension.ts": "sha256:cb6cfe2deee409d8195584662c9913aa0be6a17cdd095b9adece171146ea1b0b",
+    "web/src/components/GuidelineApplicationStudio.tsx": "sha256:90bb0cf9c921d3fb3a7138b43318dd8012a122a02d6745d9ec903e7de0df56f8",
+    "web/src/components/GuidelineApplicationStudio.css": "sha256:91a5d73db4e3d859e97fd591acdf639396122951da4910ab8b6b446d6cb7ce7a",
+    "web/src/components/GuidelineDesignWorkspace.tsx": "sha256:fa4d6f62fe77da516df97d2ac704f41e89572cded860cb832abf2c4e4c740f76",
+    "web/src/components/GuidelineExtensionPreview.tsx": "sha256:3dcf3bdcacee3eab5f25b11296399a712a27f4b5f2f5598ad3b7c634bf868338",
+    "web/src/components/GuidelineWorkspace.tsx": "sha256:c5c8517127e82ed2ea1ebcda7ad5cf96b536ef9356c9f933560f52916529918c",
+    "web/scripts/guideline-smoke.mjs": "sha256:8430c5afd0181586364c97715239f7ef0cad08f95b08181814e7f906c9a23bdd",
+    "src/data/authoringControlOutlinesV1.json": "sha256:68f84eaba7a44c24fbb6c4d10ee13c47420ed62de412fd6e1bc4ea36263fbad2",
+    "web/fixtures/guidelines/harbor-scale.pdf": "sha256:0a88ecc879b30c20f823a29580a2d331a4969331e76d293c4dc757badbad6824",
+    "web/fixtures/guidelines/harbor-native.pdf": "sha256:4a6b3f600697dbd46bed4988a07224fc8ed894da2429a0b57294712745dfec35"
+  },
+  "checks": [
+    {
+      "command": "npm --prefix web test",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "13 files; 101 tests passed"
+    },
+    {
+      "command": "npm --prefix web run test:guidelines",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "24 scenarios; zero page errors and remote requests; product rest and generated brand preview/export SVG render comparisons byte-identical"
+    },
+    {
+      "command": "npm --prefix web run build",
+      "runtimes": ["22.13.1", "24.19.0"],
+      "result": "passed; lazy guideline chunk 598.04 kB advisory warning remains"
+    },
+    {
+      "command": "npm --prefix web run test:browser",
+      "runtimes": ["22.13.1"],
+      "result": "9 existing Studio scenarios passed"
+    },
+    {
+      "command": "npm run lint; npm run typecheck; npm --prefix web run lint",
+      "runtimes": ["22.13.1"],
+      "result": "passed"
+    },
+    {
+      "command": "validate_prd.py --profile full --extension ai --extension refactor --stage ready --strict",
+      "result": "passed; complete stage not claimed"
+    }
+  ],
+  "browserScenarios": [
+    "Selected native PDF -> source-linked colors -> reviewed model -> gradient, without plugin",
+    "SVG/CSS/JSON downloads preserve authored anchors; render images captured for independent pixel comparison",
+    "Clipboard denial offers identical download; tab navigation retains work and hides inactive workspace",
+    "Downloaded project reopens after reload with no PDF, offline; source/model/design and exports remain identical",
+    "Malformed and future files cannot replace current work; future original bytes remain downloadable",
+    "Earlier review downloads and unfinished drafts reopen without implying a newly approved review",
+    "Reattaching the matching source restores page previews without changing the selected design",
+    "Cancel keeps a live PDF preview; delayed project completion cannot overwrite a newer review edit",
+    "An invalid import interrupting capture detaches the closed PDF and retains the prior design for recovery",
+    "New source scope invalidates prior design; unresolved source ban blocks generation",
+    "390px flow has no horizontal document overflow and key actions receive keyboard focus",
+    "Cancel and reopen retain prior source edits and the downloadable review",
+    "Oversized recapture fails atomically and preserves previous reviewed evidence",
+    "Scanned source remains an explicit gap and cannot be adopted as exact values",
+    "A scanned-source gap survives project download and reopening without invented source values",
+    "Source scale names, irregular positions and an unfinished relationship survive review/project recovery",
+    "Generic Studio extension preserves source anchors, paints native generated values and requires explicit affected-rule renewal",
+    "Original colors produce five separately checked product states and replayed SVG/CSS/token/application exports",
+    "Bad hover contrast remains visible and blocks export; saved applications replay exactly and a wrong-source file preserves existing work",
+    "Reviewed new shades enter an actual brand layout through original construction replay; removing the required partner blocks delivery",
+    "Application roles, source failures and measured layouts remain usable at 390px with keyboard focus",
+    "Relationship-constrained gradients fail closed in the affected scope; unrelated scope remains available",
+    "Changing requested positions clears old proposals; replacing a source slot or excluding a rule anchor cannot apply silently",
+    "Richer projects replay exactly; source anchor lookup, keyboard focus and 390px layout remain usable"
+  ],
+  "review": {
+    "reuse": "Reuse utf8ByteLength; resolved",
+    "quality": "Reopened shared controls restored with actual overrides; browser regression passed",
+    "efficiency": "Closed state controls lazy-mounted; reviewer measured 256-color option count reduction from 6173 to 2318"
+  },
+  "releaseState": "locally verified; not pushed or deployed",
+  "limitations": [
+    "Synthetic browser fixtures; no human brand-quality acceptance",
+    "Static state samples; no interaction/state-distinction or complete WCAG audit",
+    "Separate source project and application file; integrated storage/refresh pending",
+    "Chromium render comparison only; Figma SVG observation not performed",
+    "No full final release gate for this slice; TASK-010 remains open"
+  ]
+}

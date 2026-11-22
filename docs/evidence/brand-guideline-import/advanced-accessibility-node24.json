@@ -1,0 +1,506 @@
+{
+  "startedAt": "2026-09-26T13:40:35.646Z",
+  "node": "v24.19.0",
+  "scope": "Built Studio automated accessibility scans and keyboard journey with local synthetic sources. No screen-reader or full WCAG conformance claim.",
+  "scans": [
+    {
+      "name": "empty",
+      "file": "node24-empty.json",
+      "sha256": "604c311f3c0c40a8c46cc2cf2279ef63a7108f5b02791c16ea9146c7badfb2d9",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "pdf-ready",
+      "file": "node24-pdf-ready.json",
+      "sha256": "9add4385cb62d07ffb7ce2ceaaa3400c75547c05b089a9ebdafed6efd0b69f69",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "pdf-review",
+      "file": "node24-pdf-review.json",
+      "sha256": "4ef6b134308253eed013685ac00ccddd5179b94cc9af025171a116bec70de92a",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "review-applied",
+      "file": "node24-review-applied.json",
+      "sha256": "199b11220bb65822bd0c4a7681b0753d032ee045d10d9640265eb1c84da9dfe0",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "gradient",
+      "file": "node24-gradient.json",
+      "sha256": "c341c6ae9fb7b539c12605618b22f7b6e9d49e390d232935686e615a0d98e6f6",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "saved",
+      "file": "node24-saved.json",
+      "sha256": "d0858a5f0798e77bed9c45875a0bcb3508c8ecfe03fd67b2442d8f47abc0d8a7",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "import-error",
+      "file": "node24-import-error.json",
+      "sha256": "23522c6c31bf5ffe40c5858f94c51aff57eafddddf07a493e357da1bc85fd4f9",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "mobile-review-error",
+      "file": "node24-mobile-review-error.json",
+      "sha256": "568b2c45357b1dfbeedbb83657eb723f8c702f692d855f6609a13842df7f947b",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "figma-review",
+      "file": "node24-figma-review.json",
+      "sha256": "f27dc2004a564ac268057da90c2b06eb18c083e2165800510cac34807f665081",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "figma-mobile-review",
+      "file": "node24-figma-mobile-review.json",
+      "sha256": "73eeaa617a03ea25a1acd2a4ac564475b183c632367dad52bacead0318de4d58",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            ["th:nth-child(3)"],
+            ["tr:nth-child(2) > td:nth-child(2) > details > summary"],
+            ["tr:nth-child(3) > td:nth-child(2) > details > summary"],
+            ["td:nth-child(3) > span"]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "website-review",
+      "file": "node24-website-review.json",
+      "sha256": "8c1f1b510d890105c74a8f928624fad8dc0e0d93cbebf31bcadc0b1766e58de1",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "website-mobile-review",
+      "file": "node24-website-mobile-review.json",
+      "sha256": "612fa4d1ad32009554bfc22ec3f1c07048bd85eea256bfcefa8fb94188cb875a",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "advanced-invalid-position",
+      "file": "node24-advanced-invalid-position.json",
+      "sha256": "b3edacdd42d72916ea343f3c3be19dcfe80f1dc26b6ca4e27d889fb96d84087a",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "advanced-relationship-error",
+      "file": "node24-advanced-relationship-error.json",
+      "sha256": "5db173875096802491e33fbd24a661ec8d16d534cbd7652732a7881a214c947e",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "advanced-source-editors",
+      "file": "node24-advanced-source-editors.json",
+      "sha256": "d8153327a0cef2ebe36ed5bf5c6fdc8217c2ec196a1cb30642dc9007f188373c",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "advanced-source-mobile",
+      "file": "node24-advanced-source-mobile.json",
+      "sha256": "79e7caf233ba4220b84acc89dd37f77f620aed4bc2c4865a5525bb5799f8cfb8",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "advanced-gradient-constraints",
+      "file": "node24-advanced-gradient-constraints.json",
+      "sha256": "7c7b0c4f8654828bba82a95b56d9c9d56b79c2e810399fa9d5e83e45c7d757ca",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "advanced-gradient-mobile",
+      "file": "node24-advanced-gradient-mobile.json",
+      "sha256": "5719f5f3f709ec2a0775bb0ad6dc80cdc3b6bc4c5895cd620f189ef6711a85fe",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    }
+  ],
+  "contrastFollowups": [
+    {
+      "target": ["th:nth-child(3)"],
+      "file": "node24-visible-table-contrast-1.json",
+      "sha256": "21ec285515ce8beba94da0702b004eedff3601bfa579a3c96b344cfa43d4f356",
+      "violations": [],
+      "incomplete": [],
+      "passes": [["th:nth-child(3)"]]
+    },
+    {
+      "target": ["tr:nth-child(2) > td:nth-child(2) > details > summary"],
+      "file": "node24-visible-table-contrast-2.json",
+      "sha256": "36bde9833fb20be23901a0bbfd2621170e1398f8394ac3fc18633f32fbe89f41",
+      "violations": [],
+      "incomplete": [],
+      "passes": [["tr:nth-child(2) > td:nth-child(2) > details > summary"]]
+    },
+    {
+      "target": ["tr:nth-child(3) > td:nth-child(2) > details > summary"],
+      "file": "node24-visible-table-contrast-3.json",
+      "sha256": "8da168b1fdcc3b340f13f9a6723085b2f320c854acb39fbb792e6f21bf6783d1",
+      "violations": [],
+      "incomplete": [],
+      "passes": [["tr:nth-child(3) > td:nth-child(2) > details > summary"]]
+    },
+    {
+      "target": ["td:nth-child(3) > span"],
+      "file": "node24-visible-table-contrast-4.json",
+      "sha256": "86ddceb1fa4faf28a7d9c107ee6fb422b17c63f61b5b92da4bae2d5bcecfc3be",
+      "violations": [],
+      "incomplete": [],
+      "passes": [["td:nth-child(3) > span"]]
+    }
+  ],
+  "keyboard": [
+    {
+      "name": "Current Studio tab",
+      "tabs": 2
+    },
+    {
+      "name": "Choose guideline PDF",
+      "tabs": 3
+    },
+    {
+      "name": "Read selected pages",
+      "tabs": 10
+    },
+    {
+      "name": "Apply my review",
+      "tabs": 26
+    },
+    {
+      "name": "Make gradient",
+      "tabs": 38
+    },
+    {
+      "name": "Export gradient SVG",
+      "tabs": 3
+    },
+    {
+      "name": "Save on this device",
+      "tabs": 13
+    },
+    {
+      "name": "Current Studio tab",
+      "tabs": 2
+    },
+    {
+      "name": "figma input",
+      "tabs": 8
+    },
+    {
+      "name": "figma review",
+      "tabs": 7
+    },
+    {
+      "name": "Mobile Figma source table",
+      "tabs": 15
+    },
+    {
+      "name": "Scroll mobile Figma source table horizontally"
+    },
+    {
+      "name": "Current Studio tab",
+      "tabs": 2
+    },
+    {
+      "name": "website input",
+      "tabs": 9
+    },
+    {
+      "name": "website review",
+      "tabs": 8
+    },
+    {
+      "name": "Current Studio tab",
+      "tabs": 2
+    },
+    {
+      "name": "Read scale source",
+      "tabs": 12
+    },
+    {
+      "name": "Name Dawn",
+      "tabs": 4
+    },
+    {
+      "name": "Family Dawn",
+      "tabs": 2
+    },
+    {
+      "name": "Name Tide",
+      "tabs": 3
+    },
+    {
+      "name": "Family Tide",
+      "tabs": 2
+    },
+    {
+      "name": "Name Deep",
+      "tabs": 3
+    },
+    {
+      "name": "Family Deep",
+      "tabs": 2
+    },
+    {
+      "name": "Add source scale",
+      "tabs": 2
+    },
+    {
+      "name": "Name source scale",
+      "tabs": 1
+    },
+    {
+      "name": "Choose scale family",
+      "tabs": 1
+    },
+    {
+      "name": "Add Dawn slot",
+      "tabs": 1
+    },
+    {
+      "name": "Name Dawn slot",
+      "tabs": 47
+    },
+    {
+      "name": "Position Dawn slot",
+      "tabs": 1
+    },
+    {
+      "name": "Anchor Dawn slot",
+      "tabs": 1
+    },
+    {
+      "name": "Add Tide slot",
+      "tabs": 4
+    },
+    {
+      "name": "Name Tide slot",
+      "tabs": 52
+    },
+    {
+      "name": "Position Tide slot",
+      "tabs": 1
+    },
+    {
+      "name": "Anchor Tide slot",
+      "tabs": 1
+    },
+    {
+      "name": "Add Deep slot",
+      "tabs": 4
+    },
+    {
+      "name": "Name Deep slot",
+      "tabs": 57
+    },
+    {
+      "name": "Position Deep slot",
+      "tabs": 1
+    },
+    {
+      "name": "Anchor Deep slot",
+      "tabs": 1
+    },
+    {
+      "name": "Invalid source position",
+      "tabs": 52
+    },
+    {
+      "name": "Interpret source rule",
+      "tabs": 17
+    },
+    {
+      "name": "Scope source rule",
+      "tabs": 1
+    },
+    {
+      "name": "Choose relationship",
+      "tabs": 2
+    },
+    {
+      "name": "Add relationship subject",
+      "tabs": 2
+    },
+    {
+      "name": "Choose relationship subject",
+      "tabs": 67
+    },
+    {
+      "name": "Add relationship partner",
+      "tabs": 3
+    },
+    {
+      "name": "Reject incomplete relationship",
+      "tabs": 2
+    },
+    {
+      "name": "Correct relationship partner",
+      "tabs": 67
+    },
+    {
+      "name": "Apply corrected relationship",
+      "tabs": 4
+    },
+    {
+      "name": "Current Studio tab",
+      "tabs": 2
+    },
+    {
+      "name": "Read gradient source",
+      "tabs": 13
+    },
+    {
+      "name": "Apply gradient source",
+      "tabs": 26
+    },
+    {
+      "name": "Declare gradient use",
+      "tabs": 36
+    },
+    {
+      "name": "Choose gradient placement",
+      "tabs": 1
+    },
+    {
+      "name": "Set contrast requirement",
+      "tabs": 2
+    },
+    {
+      "name": "Set coverage start",
+      "tabs": 1
+    },
+    {
+      "name": "Set coverage end",
+      "tabs": 1
+    },
+    {
+      "name": "Add gradient color limit",
+      "tabs": 1
+    },
+    {
+      "name": "Add gradient hue range",
+      "tabs": 99
+    },
+    {
+      "name": "Edit added hue range",
+      "tabs": 102
+    }
+  ],
+  "errors": [],
+  "cleanupErrors": [],
+  "status": "passed",
+  "scriptSha256": "3923ba57a823d32c15df17d152e5b0988af0f8e80bbf1cc779e420db37aa49a6",
+  "buildHashes": {
+    "assets/GuidelineWorkspace-9kpjsbiT.js": "2b4d0c9708eeac453a7efac69f385a80ddd18cf57db1f01ea2c570d1d3498ef7",
+    "assets/GuidelineWorkspace-Cmt5gytF.css": "6f58fead3396bb6c80af7ac9adbb4f499924748fb93151970b9fc2b8641eb437",
+    "assets/ProductSystemView-BqL_Dsi3.js": "0d9cd14dbda9bf65ffa87446c79fc599517b2147d2d70469a6f4a8a62a263b9d",
+    "assets/ProductSystemView-DJMb3_3z.css": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764",
+    "assets/authoring-Do7RBWAY.js": "87a9eb8c2bc319ae11fc42309f5ca827f4e943374c6ccb8303e191b76ffb48c1",
+    "assets/authoringControlOutlinesV1-ClN2K6pn.js": "bf8f1ed561f96b32aa717521bd5dc0e43bd52251bfdda1f05b93eb719d41aafc",
+    "assets/colorSystemRecipeV1-CM-rH2R-.js": "d577a0842976654519006ae14d22d07ae4df8e39bbf3f73fca906b840c72a7cc",
+    "assets/download-Bic2EQq1.js": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6",
+    "assets/index-jbToPzfh.js": "8a894372024fcd0df080de571d7136e56757eb4f9ea94e347c0a5da5fee5bb74",
+    "assets/index-k7qUNtEA.css": "c6a9c1c3d28d901d3d3c8b3ce7f514a8cff466d531752d1aedae65b2e0c53e0d",
+    "assets/sourceProvenanceDisclosureData-CxLfFIWs.js": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361",
+    "index.html": "eff4ce93f5937b44dc5e8ec835f1223d989881290f0894a71fa0f7248445e506"
+  },
+  "browser": "153.0.8010.12",
+  "completedAt": "2026-09-26T13:40:55.115Z"
+}

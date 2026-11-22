@@ -1,0 +1,230 @@
+{
+  "startedAt": "2026-09-26T12:24:26.377Z",
+  "node": "v24.19.0",
+  "scope": "Built Studio automated accessibility scans and keyboard journey with local synthetic sources. No screen-reader or full WCAG conformance claim.",
+  "scans": [
+    {
+      "name": "empty",
+      "file": "node24-empty.json",
+      "sha256": "9fd734431606a7af27dfc92f174e5274f031c93de566438de9a152d6efc58296",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "pdf-ready",
+      "file": "node24-pdf-ready.json",
+      "sha256": "da92fe987a48e3a728593ca860b19e2de4b605f94d70a9f67bb975666ee7e293",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "pdf-review",
+      "file": "node24-pdf-review.json",
+      "sha256": "24212e1f02e04882f9e104e1aa854d351104262661de88d3f0f5fc83b7a46404",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "review-applied",
+      "file": "node24-review-applied.json",
+      "sha256": "e9a1c431333c974c0af936f02c764088888636da9ebc8b46b725728a84d7fa46",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "gradient",
+      "file": "node24-gradient.json",
+      "sha256": "15b6275d7b21d7f11955016506e0a0e7e00fdb3cb8a87516428952675176ecf9",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "saved",
+      "file": "node24-saved.json",
+      "sha256": "053bc1fa776eee21d17939f3c07c49f44f59d1071bd6352c24082b687f95e745",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "import-error",
+      "file": "node24-import-error.json",
+      "sha256": "0d7c697126e930507573ea810e18cb05d9620d38e42266f16091b5ddbc4bbf72",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "mobile-review-error",
+      "file": "node24-mobile-review-error.json",
+      "sha256": "e815e3a8024962e2d58ca4dc3a1a0fe242e1ce8e8581f055f3dcce66d92943ce",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "figma-review",
+      "file": "node24-figma-review.json",
+      "sha256": "e8c5fb8628b0f69e766fa667542202ba792b637c4cc7afd2db5c0b00e8b2dd74",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "figma-mobile-review",
+      "file": "node24-figma-mobile-review.json",
+      "sha256": "544a67a55e27c4b9ae331bc0290b71af8948a6517f363c22a890236361a6a7af",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "targets": [
+            ["th:nth-child(3)"],
+            ["tr:nth-child(2) > td:nth-child(2) > details > summary"],
+            ["tr:nth-child(3) > td:nth-child(2) > details > summary"],
+            ["td:nth-child(3) > span"]
+          ]
+        }
+      ]
+    },
+    {
+      "name": "website-review",
+      "file": "node24-website-review.json",
+      "sha256": "57fa9a4aa36e59f285366e71ad807cb187958a3b8a23747c4d5fa531a75756e7",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    },
+    {
+      "name": "website-mobile-review",
+      "file": "node24-website-mobile-review.json",
+      "sha256": "32eefb8a286698d8dbcff8ae41f4ea914a28d9c0e6f3c10d559d5aeb5fe05db6",
+      "engine": {
+        "name": "axe-core",
+        "version": "4.13.0"
+      },
+      "violations": [],
+      "incomplete": []
+    }
+  ],
+  "keyboard": [
+    {
+      "name": "Current Studio tab",
+      "tabs": 2
+    },
+    {
+      "name": "Choose guideline PDF",
+      "tabs": 3
+    },
+    {
+      "name": "Read selected pages",
+      "tabs": 10
+    },
+    {
+      "name": "Apply my review",
+      "tabs": 26
+    },
+    {
+      "name": "Make gradient",
+      "tabs": 38
+    },
+    {
+      "name": "Export gradient SVG",
+      "tabs": 3
+    },
+    {
+      "name": "Save on this device",
+      "tabs": 13
+    },
+    {
+      "name": "Current Studio tab",
+      "tabs": 2
+    },
+    {
+      "name": "figma input",
+      "tabs": 8
+    },
+    {
+      "name": "figma review",
+      "tabs": 7
+    },
+    {
+      "name": "Mobile Figma source table",
+      "tabs": 14
+    },
+    {
+      "name": "Scroll mobile Figma source table horizontally"
+    },
+    {
+      "name": "Current Studio tab",
+      "tabs": 2
+    },
+    {
+      "name": "website input",
+      "tabs": 9
+    },
+    {
+      "name": "website review",
+      "tabs": 8
+    }
+  ],
+  "errors": [],
+  "cleanupErrors": [],
+  "status": "passed",
+  "scriptSha256": "bb361bedefaf4d1e7fa6a435c9160200b7ad2758a19278e8ade29bf56d690ba9",
+  "buildHashes": {
+    "assets/GuidelineWorkspace-BQYYCRG-.css": "d1cf4cfcf62a767dbcea2bdb53827f531fe151868f6d4ea98e857c613506439c",
+    "assets/GuidelineWorkspace-DMkC5hzy.js": "6d27ee5ce0eec6ba5da54b66e5a0b5b37b0e30aea4fa427842cf28447dff2290",
+    "assets/ProductSystemView-DJMb3_3z.css": "85ca900b7bcd986f0158b69e746209a6f3e4ae5148ea01da5dd0e9e29a399764",
+    "assets/ProductSystemView-hgAFoYY2.js": "fac85e572c000d024f6038edb30440c9b530230d3cea043f5907ce17f0122ad5",
+    "assets/authoring-bKQQsT9e.js": "48ea18e2126303afccfcafe7f95dc4951dd691ebbd9efd429bb278d4cd39d6b1",
+    "assets/authoringControlOutlinesV1-ClVfddzl.js": "6bcd5749a704b9bcaced083ac8ee872c4ab8d3f29adceab8dafcede4202f6324",
+    "assets/colorSystemRecipeV1-BXd2z5RH.js": "5ee03fe014c7554dc4f0fff12fa15217748203a8e3982dc7cd381a30a70c1fe4",
+    "assets/download-Bic2EQq1.js": "8d18ecd045a7917254b430cd5a859d79f320bee61465b8ee9e89693173bb66a6",
+    "assets/index-B5UD1zmf.js": "596355607434deaf8ba0a740e58f42d720820cf510d03c79c03749795d2e947b",
+    "assets/index-CmWmBKFd.css": "e7cc8392595df99b39d33040f9348105d04d68b80d01d83e7bf4e0e7115df33f",
+    "assets/sourceProvenanceDisclosureData-CxLfFIWs.js": "241207bdce6d07d0395e406bb55e536fff5051466a9d52287ebe70ddb6fa4361",
+    "index.html": "763bddd3a0d36836536c21ac4a4378e0c9bc7e999f835afc91608dca893f3990"
+  },
+  "browser": "153.0.8010.12",
+  "completedAt": "2026-09-26T12:24:34.672Z"
+}

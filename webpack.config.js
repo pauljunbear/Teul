@@ -1,0 +1,296 @@
+const path = require('path');
+const fs = require('fs');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
+const webpack = require('webpack');
+
+function genericColorBuilderChannel(env) {
+  return env?.genericColorBuilder === true || env?.genericColorBuilder === 'true'
+    ? 'candidate'
+    : 'disabled';
+}
+
+// Module boundaries per generic channel: the disabled channel must not bundle
+// the V2 builder runtime, and the candidate channel must bundle it and not the
+// disabled stubs. The V2 builder keeps one dependency on the former V1 audit
+// program, colorSystemAuditInventory.ts, through
+// colorSystemGenericSourceInventoryV2.ts; the rest of that program was removed
+// from the tree on 2026-09-08 and remains in git history.
+const GENERIC_CHANNEL_MODULE_BOUNDARIES = {
+  disabled: {
+    required: [
+      'src/backend/colorSystemBuilderDisabledRuntime.ts',
+      'src/components/ColorSystemReleaseDisabledTab.tsx',
+    ],
+    forbidden: [
+      'src/backend/colorSystemBuilderCandidateRuntime.ts',
+      'src/backend/colorSystemBuilderV2Controller.ts',
+      'src/backend/colorSystemModelControllerV1.ts',
+      'src/lib/colorSystemModelV1.ts',
+      'src/components/ColorSystemModelIntakeV1.tsx',
+      'src/backend/colorSystemCreateJournalV2.ts',
+      'src/backend/colorSystemFigmaHostV2.ts',
+      'src/backend/colorSystemResourceRendererV2.ts',
+      'src/components/ColorSystemReleaseTab.tsx',
+    ],
+  },
+  candidate: {
+    required: [
+      'src/backend/colorSystemBuilderCandidateRuntime.ts',
+      'src/backend/colorSystemBuilderV2Controller.ts',
+      'src/backend/colorSystemModelControllerV1.ts',
+      'src/lib/colorSystemModelV1.ts',
+      'src/components/ColorSystemModelIntakeV1.tsx',
+      'src/backend/colorSystemCreateJournalV2.ts',
+      'src/backend/colorSystemFigmaHostV2.ts',
+      'src/backend/colorSystemResourceRendererV2.ts',
+      'src/components/ColorSystemReleaseTab.tsx',
+    ],
+    forbidden: [
+      'src/backend/colorSystemBuilderDisabledRuntime.ts',
+      'src/components/ColorSystemReleaseDisabledTab.tsx',
+    ],
+  },
+};
+
+class EnforceGenericChannelIsolationPlugin {
+  constructor(genericChannel) {
+    this.genericChannel = genericChannel;
+  }
+
+  apply(compiler) {
+    compiler.hooks.thisCompilation.tap('EnforceGenericChannelIsolationPlugin', compilation => {
+      compilation.hooks.finishModules.tap('EnforceGenericChannelIsolationPlugin', modules => {
+        const resources = new Set(
+          [...modules]
+            .map(module => module.resource)
+            .filter(Boolean)
+            .map(resource => path.relative(__dirname, resource).split(path.sep).join('/'))
+        );
+        const boundary = GENERIC_CHANNEL_MODULE_BOUNDARIES[this.genericChannel];
+        const missing = boundary.required.filter(resource => !resources.has(resource));
+        const leaked = boundary.forbidden.filter(resource => resources.has(resource));
+        if (missing.length > 0 || leaked.length > 0) {
+          throw new Error(
+            `Generic ${this.genericChannel} build isolation failed; missing ${JSON.stringify(
+              missing
+            )}; leaked ${JSON.stringify(leaked)}.`
+          );
+        }
+      });
+    });
+  }
+}
+
+class InlineUiChunkHtmlPlugin {
+  apply(compiler) {
+    const pluginName = 'InlineUiChunkHtmlPlugin';
+
+    compiler.hooks.compilation.tap(pluginName, compilation => {
+      const inlineUiScript = tag => {
+        if (tag.tagName !== 'script' || !tag.attributes?.src) {
+          return tag;
+        }
+
+        const scriptName = String(tag.attributes.src).split(/[?#]/, 1)[0].split('/').pop();
+
+        if (scriptName !== 'ui.js') {
+          return tag;
+        }
+
+        const asset = compilation.getAsset(scriptName);
+        if (!asset) {
+          throw new Error(`${pluginName} could not find ${scriptName} in the compilation.`);
+        }
+
+        return {
+          tagName: 'script',
+          innerHTML: asset.source.source(),
+          closeTag: true,
+        };
+      };
+
+      const hooks = HtmlWebpackPlugin.getHooks(compilation);
+      hooks.alterAssetTagGroups.tap(pluginName, assets => {
+        assets.headTags = assets.headTags.map(inlineUiScript);
+        assets.bodyTags = assets.bodyTags.map(inlineUiScript);
+      });
+    });
+  }
+}
+
+class RemoveInlinedUiAssetPlugin {
+  apply(compiler) {
+    compiler.hooks.thisCompilation.tap('RemoveInlinedUiAssetPlugin', compilation => {
+      compilation.hooks.processAssets.tap(
+        {
+          name: 'RemoveInlinedUiAssetPlugin',
+          stage: compiler.webpack.Compilation.PROCESS_ASSETS_STAGE_SUMMARIZE,
+        },
+        () => {
+          compilation.deleteAsset('ui.js');
+        }
+      );
+    });
+  }
+}
+
+class EmitLegalArtifactsPlugin {
+  constructor(genericChannel) {
+    this.genericChannel = genericChannel;
+  }
+
+  apply(compiler) {
+    compiler.hooks.thisCompilation.tap('EmitLegalArtifactsPlugin', compilation => {
+      compilation.hooks.processAssets.tap(
+        {
+          name: 'EmitLegalArtifactsPlugin',
+          stage: compiler.webpack.Compilation.PROCESS_ASSETS_STAGE_ADDITIONAL,
+        },
+        () => {
+          const artifacts = [
+            { source: 'LICENSE', output: 'LICENSE' },
+            { source: 'THIRD_PARTY_NOTICES.md', output: 'THIRD_PARTY_NOTICES.md' },
+            { source: 'APCA_LICENSE.md', output: 'APCA_LICENSE.md' },
+            { source: 'docs/SOURCE_PROVENANCE.md', output: 'SOURCE_PROVENANCE.md' },
+          ];
+
+          for (const artifact of artifacts) {
+            const contents = fs.readFileSync(path.resolve(__dirname, artifact.source), 'utf8');
+            compilation.emitAsset(
+              artifact.output,
+              new compiler.webpack.sources.RawSource(contents)
+            );
+          }
+          compilation.emitAsset(
+            'GENERIC_COLOR_BUILDER_CHANNEL.json',
+            new compiler.webpack.sources.RawSource(
+              `${JSON.stringify(
+                {
+                  schemaVersion: 'teul.color-system.generic-release-channel.v2',
+                  channel: this.genericChannel,
+                  qualified: this.genericChannel === 'qualified',
+                },
+                null,
+                2
+              )}\n`
+            )
+          );
+        }
+      );
+    });
+  }
+}
+
+module.exports = (env, argv) => ({
+  mode: argv.mode === 'production' ? 'production' : 'development',
+
+  devtool: argv.mode === 'production' ? false : 'inline-source-map',
+
+  entry: {
+    code: './src/code.ts',
+    ui: './src/ui.tsx',
+  },
+
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      },
+      {
+        test: /(?:colors|wernerColors|transcription-audit)\.json$/,
+        type: 'javascript/auto',
+        use: path.resolve(__dirname, 'scripts/compact-color-json-loader.js'),
+      },
+      {
+        test: /\.json$/,
+        exclude: /(?:colors|wernerColors|transcription-audit)\.json$/,
+        type: 'json',
+        parser: {
+          parse: JSON.parse,
+        },
+      },
+    ],
+  },
+
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js', '.json'],
+    alias: {
+      './backend/colorSystemBuilderReleaseRuntime$': path.resolve(
+        __dirname,
+        genericColorBuilderChannel(env) === 'candidate'
+          ? 'src/backend/colorSystemBuilderCandidateRuntime.ts'
+          : 'src/backend/colorSystemBuilderDisabledRuntime.ts'
+      ),
+      './components/ColorSystemReleaseTab$': path.resolve(
+        __dirname,
+        genericColorBuilderChannel(env) === 'candidate'
+          ? 'src/components/ColorSystemReleaseTab.tsx'
+          : 'src/components/ColorSystemReleaseDisabledTab.tsx'
+      ),
+      ...(argv.mode === 'production'
+        ? {
+            react$: 'preact/compat',
+            'react-dom$': 'preact/compat',
+            'react-dom/client$': 'preact/compat/client',
+          }
+        : {}),
+    },
+  },
+
+  output: {
+    filename: '[name].js',
+    path: path.resolve(
+      __dirname,
+      genericColorBuilderChannel(env) === 'candidate' ? 'figma-candidate/dist' : 'dist'
+    ),
+    clean: true,
+  },
+
+  // Figma requires the complete UI runtime inside one HTML file. Keep a
+  // realistic explicit budget for that artifact instead of Webpack's generic
+  // 244 KiB web-page recommendation.
+  performance: {
+    hints: 'warning',
+    maxAssetSize: 400 * 1024,
+    maxEntrypointSize: 400 * 1024,
+  },
+
+  optimization: {
+    minimizer: [
+      new TerserPlugin({
+        extractComments: false,
+        terserOptions: {
+          compress: {
+            passes: 5,
+          },
+          format: {
+            comments: false,
+          },
+        },
+      }),
+    ],
+  },
+
+  plugins: [
+    new EnforceGenericChannelIsolationPlugin(genericColorBuilderChannel(env)),
+    new webpack.DefinePlugin({
+      __TEUL_GENERIC_COLOR_BUILDER_V2_CHANNEL__: JSON.stringify(genericColorBuilderChannel(env)),
+    }),
+    new HtmlWebpackPlugin({
+      template: './src/ui.html',
+      filename: 'ui.html',
+      chunks: ['ui'],
+      cache: false,
+      inject: 'body',
+    }),
+    new InlineUiChunkHtmlPlugin(),
+    new RemoveInlinedUiAssetPlugin(),
+    new EmitLegalArtifactsPlugin(genericColorBuilderChannel(env)),
+  ],
+});
+
+// Exposed so tests can assert the channel boundaries without running a build.
+module.exports.GENERIC_CHANNEL_MODULE_BOUNDARIES = GENERIC_CHANNEL_MODULE_BOUNDARIES;

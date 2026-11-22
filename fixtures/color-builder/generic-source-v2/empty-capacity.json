@@ -1,0 +1,54 @@
+{
+  "capturedAt": "2026-08-21T12:00:00.000Z",
+  "scope": {
+    "kind": "current-file",
+    "usageScope": "current-page",
+    "selectedNodeIds": [],
+    "loadedPageIds": ["page-empty"],
+    "excludedPageIds": [],
+    "coverage": "capacity-blocked"
+  },
+  "documentProfile": "srgb",
+  "collections": [],
+  "variables": [],
+  "paintStyles": [],
+  "paletteStructures": [],
+  "usageEvidence": [],
+  "unsupported": [
+    {
+      "gapId": "gap-capacity",
+      "kind": "capacity",
+      "status": "unsupported",
+      "summary": "The selected source exceeded a bounded evidence capacity and cannot govern a handoff.",
+      "evidenceIds": ["e-analysis-capacity"],
+      "consumerIds": ["source-policy"]
+    },
+    {
+      "gapId": "gap-empty",
+      "kind": "empty",
+      "status": "unsupported",
+      "summary": "No supported local color declaration or labeled palette structure was retained.",
+      "evidenceIds": ["e-analysis-empty"],
+      "consumerIds": ["source-policy"]
+    }
+  ],
+  "evidence": [
+    {
+      "evidenceId": "e-analysis-capacity",
+      "kind": "audit-observation",
+      "locator": "analysis-status",
+      "detail": "capacity"
+    },
+    {
+      "evidenceId": "e-analysis-empty",
+      "kind": "audit-observation",
+      "locator": "analysis-status",
+      "detail": "empty"
+    }
+  ],
+  "enabledLibraryDescriptors": [],
+  "libraryBoundaryNote": "No enabled-library metadata was requested.",
+  "scannedNodeCount": 100000,
+  "cancelled": false,
+  "partial": true
+}

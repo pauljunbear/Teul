@@ -1,0 +1,1469 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`non-presentation frames stay unchanged > detailed custom output for Wada combination 243 1`] = `
+"FRAME "Color System - Raw Sienna Palette, Set 1 (Teul Generated, source sRGB, document srgb)" 100x100 HORIZONTAL/32
+  FRAME "Color System (light)" 100x100 VERTICAL/24 fill 0.9800,0.9800,0.9800
+    FRAME "Raw Sienna Scale" 100x100 VERTICAL/4
+      TEXT "PRIMARY" Bold 10 fill 0.3000,0.3000,0.3000
+      TEXT "Teul OKLCH v3 · sRGB" Regular 7 fill 0.3000,0.3000,0.3000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 40x100 VERTICAL/2
+          RECTANGLE "#fcfaf8" 40x40 fill 0.9882,0.9804,0.9725
+          TEXT "FCFAF8" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 2" 40x100 VERTICAL/2
+          RECTANGLE "#eeeae7" 40x40 fill 0.9333,0.9176,0.9059
+          TEXT "EEEAE7" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 3" 40x100 VERTICAL/2
+          RECTANGLE "#e2dad3" 40x40 fill 0.8863,0.8549,0.8275
+          TEXT "E2DAD3" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 4" 40x100 VERTICAL/2
+          RECTANGLE "#d8cabf" 40x40 fill 0.8471,0.7922,0.7490
+          TEXT "D8CABF" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 5" 40x100 VERTICAL/2
+          RECTANGLE "#cebaaa" 40x40 fill 0.8078,0.7294,0.6667
+          TEXT "CEBAAA" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 6" 40x100 VERTICAL/2
+          RECTANGLE "#c6aa93" 40x40 fill 0.7765,0.6667,0.5765
+          TEXT "C6AA93" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 7" 40x100 VERTICAL/2
+          RECTANGLE "#c09877" 40x40 fill 0.7529,0.5961,0.4667
+          TEXT "C09877" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 8" 40x100 VERTICAL/2
+          RECTANGLE "#bc8657" 40x40 fill 0.7373,0.5255,0.3412
+          TEXT "BC8657" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 9" 40x100 VERTICAL/2
+          RECTANGLE "#bb7125" 40x40 fill 0.7333,0.4431,0.1451
+          TEXT "BB7125" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 10" 40x100 VERTICAL/2
+          RECTANGLE "#8d4c00" 40x40 fill 0.5529,0.2980,0.0000
+          TEXT "8D4C00" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 11" 40x100 VERTICAL/2
+          RECTANGLE "#5c2d00" 40x40 fill 0.3608,0.1765,0.0000
+          TEXT "5C2D00" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 12" 40x100 VERTICAL/2
+          RECTANGLE "#2f1100" 40x40 fill 0.1843,0.0667,0.0000
+          TEXT "2F1100" Regular 7 fill 0.5000,0.5000,0.5000
+    FRAME "Ivory Buff Scale" 100x100 VERTICAL/4
+      TEXT "SECONDARY" Bold 10 fill 0.3000,0.3000,0.3000
+      TEXT "Teul OKLCH v3 · sRGB" Regular 7 fill 0.3000,0.3000,0.3000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 40x100 VERTICAL/2
+          RECTANGLE "#fefdfc" 40x40 fill 0.9961,0.9922,0.9882
+          TEXT "FEFDFC" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 2" 40x100 VERTICAL/2
+          RECTANGLE "#f9f8f6" 40x40 fill 0.9765,0.9725,0.9647
+          TEXT "F9F8F6" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 3" 40x100 VERTICAL/2
+          RECTANGLE "#f5f3ee" 40x40 fill 0.9608,0.9529,0.9333
+          TEXT "F5F3EE" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 4" 40x100 VERTICAL/2
+          RECTANGLE "#f2eee6" 40x40 fill 0.9490,0.9333,0.9020
+          TEXT "F2EEE6" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 5" 40x100 VERTICAL/2
+          RECTANGLE "#efe9dd" 40x40 fill 0.9373,0.9137,0.8667
+          TEXT "EFE9DD" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 6" 40x100 VERTICAL/2
+          RECTANGLE "#ece4d2" 40x40 fill 0.9255,0.8941,0.8235
+          TEXT "ECE4D2" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 7" 40x100 VERTICAL/2
+          RECTANGLE "#ebdec5" 40x40 fill 0.9216,0.8706,0.7725
+          TEXT "EBDEC5" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 8" 40x100 VERTICAL/2
+          RECTANGLE "#ead9b6" 40x40 fill 0.9176,0.8510,0.7137
+          TEXT "EAD9B6" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 9" 40x100 VERTICAL/2
+          RECTANGLE "#ebd3a2" 40x40 fill 0.9216,0.8275,0.6353
+          TEXT "EBD3A2" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 10" 40x100 VERTICAL/2
+          RECTANGLE "#a38f64" 40x40 fill 0.6392,0.5608,0.3922
+          TEXT "A38F64" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 11" 40x100 VERTICAL/2
+          RECTANGLE "#5f5031" 40x40 fill 0.3725,0.3137,0.1922
+          TEXT "5F5031" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 12" 40x100 VERTICAL/2
+          RECTANGLE "#221905" 40x40 fill 0.1333,0.0980,0.0196
+          TEXT "221905" Regular 7 fill 0.5000,0.5000,0.5000
+    FRAME "Olive Green Scale" 100x100 VERTICAL/4
+      TEXT "TERTIARY" Bold 10 fill 0.3000,0.3000,0.3000
+      TEXT "Teul OKLCH v3 · sRGB" Regular 7 fill 0.3000,0.3000,0.3000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 40x100 VERTICAL/2
+          RECTANGLE "#fafaf9" 40x40 fill 0.9804,0.9804,0.9765
+          TEXT "FAFAF9" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 2" 40x100 VERTICAL/2
+          RECTANGLE "#e7e7e5" 40x40 fill 0.9059,0.9059,0.8980
+          TEXT "E7E7E5" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 3" 40x100 VERTICAL/2
+          RECTANGLE "#d4d5d0" 40x40 fill 0.8314,0.8353,0.8157
+          TEXT "D4D5D0" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 4" 40x100 VERTICAL/2
+          RECTANGLE "#c2c3bb" 40x40 fill 0.7608,0.7647,0.7333
+          TEXT "C2C3BB" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 5" 40x100 VERTICAL/2
+          RECTANGLE "#b0b2a5" 40x40 fill 0.6902,0.6980,0.6471
+          TEXT "B0B2A5" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 6" 40x100 VERTICAL/2
+          RECTANGLE "#9ea18f" 40x40 fill 0.6196,0.6314,0.5608
+          TEXT "9EA18F" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 7" 40x100 VERTICAL/2
+          RECTANGLE "#8d9077" 40x40 fill 0.5529,0.5647,0.4667
+          TEXT "8D9077" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 8" 40x100 VERTICAL/2
+          RECTANGLE "#7c805e" 40x40 fill 0.4863,0.5020,0.3686
+          TEXT "7C805E" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 9" 40x100 VERTICAL/2
+          RECTANGLE "#6b7140" 40x40 fill 0.4196,0.4431,0.2510
+          TEXT "6B7140" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 10" 40x100 VERTICAL/2
+          RECTANGLE "#4e5327" 40x40 fill 0.3059,0.3255,0.1529
+          TEXT "4E5327" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 11" 40x100 VERTICAL/2
+          RECTANGLE "#333717" 40x40 fill 0.2000,0.2157,0.0902
+          TEXT "333717" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 12" 40x100 VERTICAL/2
+          RECTANGLE "#1a1c07" 40x40 fill 0.1020,0.1098,0.0275
+          TEXT "1A1C07" Regular 7 fill 0.5000,0.5000,0.5000
+    FRAME "Slate Color Scale" 100x100 VERTICAL/4
+      TEXT "ACCENT" Bold 10 fill 0.3000,0.3000,0.3000
+      TEXT "Teul OKLCH v3 · sRGB" Regular 7 fill 0.3000,0.3000,0.3000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 40x100 VERTICAL/2
+          RECTANGLE "#fafafa" 40x40 fill 0.9804,0.9804,0.9804
+          TEXT "FAFAFA" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 2" 40x100 VERTICAL/2
+          RECTANGLE "#e0e1e1" 40x40 fill 0.8784,0.8824,0.8824
+          TEXT "E0E1E1" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 3" 40x100 VERTICAL/2
+          RECTANGLE "#c7c9c9" 40x40 fill 0.7804,0.7882,0.7882
+          TEXT "C7C9C9" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 4" 40x100 VERTICAL/2
+          RECTANGLE "#aeb1b2" 40x40 fill 0.6824,0.6941,0.6980
+          TEXT "AEB1B2" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 5" 40x100 VERTICAL/2
+          RECTANGLE "#959a9c" 40x40 fill 0.5843,0.6039,0.6118
+          TEXT "959A9C" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 6" 40x100 VERTICAL/2
+          RECTANGLE "#7d8386" 40x40 fill 0.4902,0.5137,0.5255
+          TEXT "7D8386" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 7" 40x100 VERTICAL/2
+          RECTANGLE "#646e71" 40x40 fill 0.3922,0.4314,0.4431
+          TEXT "646E71" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 8" 40x100 VERTICAL/2
+          RECTANGLE "#4c595e" 40x40 fill 0.2980,0.3490,0.3686
+          TEXT "4C595E" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 9" 40x100 VERTICAL/2
+          RECTANGLE "#34454c" 40x40 fill 0.2039,0.2706,0.2980
+          TEXT "34454C" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 10" 40x100 VERTICAL/2
+          RECTANGLE "#213036" 40x40 fill 0.1294,0.1882,0.2118
+          TEXT "213036" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 11" 40x100 VERTICAL/2
+          RECTANGLE "#111c21" 40x40 fill 0.0667,0.1098,0.1294
+          TEXT "111C21" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 12" 40x100 VERTICAL/2
+          RECTANGLE "#040a0d" 40x40 fill 0.0157,0.0392,0.0510
+          TEXT "040A0D" Regular 7 fill 0.5000,0.5000,0.5000
+    FRAME "Sand Scale" 100x100 VERTICAL/4
+      TEXT "NEUTRAL" Bold 10 fill 0.3000,0.3000,0.3000
+      TEXT "Radix Colors · sRGB" Regular 7 fill 0.3000,0.3000,0.3000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 40x100 VERTICAL/2
+          RECTANGLE "#fdfdfc" 40x40 fill 0.9922,0.9922,0.9882
+          TEXT "FDFDFC" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 2" 40x100 VERTICAL/2
+          RECTANGLE "#f9f9f8" 40x40 fill 0.9765,0.9765,0.9725
+          TEXT "F9F9F8" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 3" 40x100 VERTICAL/2
+          RECTANGLE "#f1f0ef" 40x40 fill 0.9451,0.9412,0.9373
+          TEXT "F1F0EF" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 4" 40x100 VERTICAL/2
+          RECTANGLE "#e9e8e6" 40x40 fill 0.9137,0.9098,0.9020
+          TEXT "E9E8E6" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 5" 40x100 VERTICAL/2
+          RECTANGLE "#e2e1de" 40x40 fill 0.8863,0.8824,0.8706
+          TEXT "E2E1DE" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 6" 40x100 VERTICAL/2
+          RECTANGLE "#dad9d6" 40x40 fill 0.8549,0.8510,0.8392
+          TEXT "DAD9D6" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 7" 40x100 VERTICAL/2
+          RECTANGLE "#cfceca" 40x40 fill 0.8118,0.8078,0.7922
+          TEXT "CFCECA" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 8" 40x100 VERTICAL/2
+          RECTANGLE "#bcbbb5" 40x40 fill 0.7373,0.7333,0.7098
+          TEXT "BCBBB5" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 9" 40x100 VERTICAL/2
+          RECTANGLE "#8d8d86" 40x40 fill 0.5529,0.5529,0.5255
+          TEXT "8D8D86" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 10" 40x100 VERTICAL/2
+          RECTANGLE "#82827c" 40x40 fill 0.5098,0.5098,0.4863
+          TEXT "82827C" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 11" 40x100 VERTICAL/2
+          RECTANGLE "#63635e" 40x40 fill 0.3882,0.3882,0.3686
+          TEXT "63635E" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 12" 40x100 VERTICAL/2
+          RECTANGLE "#21201c" 40x40 fill 0.1294,0.1255,0.1098
+          TEXT "21201C" Regular 7 fill 0.5000,0.5000,0.5000
+  FRAME "Color System (dark)" 100x100 VERTICAL/24 fill 0.1000,0.1000,0.1000
+    FRAME "Raw Sienna Scale" 100x100 VERTICAL/4
+      TEXT "PRIMARY" Bold 10 fill 0.9000,0.9000,0.9000
+      TEXT "Teul OKLCH v3 · sRGB" Regular 7 fill 0.9000,0.9000,0.9000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 40x100 VERTICAL/2
+          RECTANGLE "#040303" 40x40 fill 0.0157,0.0118,0.0118
+          TEXT "040303" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 2" 40x100 VERTICAL/2
+          RECTANGLE "#100e0b" 40x40 fill 0.0627,0.0549,0.0431
+          TEXT "100E0B" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 3" 40x100 VERTICAL/2
+          RECTANGLE "#211b17" 40x40 fill 0.1294,0.1059,0.0902
+          TEXT "211B17" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 4" 40x100 VERTICAL/2
+          RECTANGLE "#342a21" 40x40 fill 0.2039,0.1647,0.1294
+          TEXT "342A21" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 5" 40x100 VERTICAL/2
+          RECTANGLE "#49392c" 40x40 fill 0.2863,0.2235,0.1725
+          TEXT "49392C" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 6" 40x100 VERTICAL/2
+          RECTANGLE "#604834" 40x40 fill 0.3765,0.2824,0.2039
+          TEXT "604834" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 7" 40x100 VERTICAL/2
+          RECTANGLE "#7b5738" 40x40 fill 0.4824,0.3412,0.2196
+          TEXT "7B5738" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 8" 40x100 VERTICAL/2
+          RECTANGLE "#996536" 40x40 fill 0.6000,0.3961,0.2118
+          TEXT "996536" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 9" 40x100 VERTICAL/2
+          RECTANGLE "#bb7125" 40x40 fill 0.7333,0.4431,0.1451
+          TEXT "BB7125" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 10" 40x100 VERTICAL/2
+          RECTANGLE "#da9353" 40x40 fill 0.8549,0.5765,0.3255
+          TEXT "DA9353" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 11" 40x100 VERTICAL/2
+          RECTANGLE "#f2b988" 40x40 fill 0.9490,0.7255,0.5333
+          TEXT "F2B988" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 12" 40x100 VERTICAL/2
+          RECTANGLE "#ffdfbc" 40x40 fill 1.0000,0.8745,0.7373
+          TEXT "FFDFBC" Regular 7 fill 0.6000,0.6000,0.6000
+    FRAME "Ivory Buff Scale" 100x100 VERTICAL/4
+      TEXT "SECONDARY" Bold 10 fill 0.9000,0.9000,0.9000
+      TEXT "Teul OKLCH v3 · sRGB" Regular 7 fill 0.9000,0.9000,0.9000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 40x100 VERTICAL/2
+          RECTANGLE "#030303" 40x40 fill 0.0118,0.0118,0.0118
+          TEXT "030303" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 2" 40x100 VERTICAL/2
+          RECTANGLE "#161514" 40x40 fill 0.0863,0.0824,0.0784
+          TEXT "161514" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 3" 40x100 VERTICAL/2
+          RECTANGLE "#2e2c28" 40x40 fill 0.1804,0.1725,0.1569
+          TEXT "2E2C28" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 4" 40x100 VERTICAL/2
+          RECTANGLE "#48453e" 40x40 fill 0.2824,0.2706,0.2431
+          TEXT "48453E" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 5" 40x100 VERTICAL/2
+          RECTANGLE "#645f55" 40x40 fill 0.3922,0.3725,0.3333
+          TEXT "645F55" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 6" 40x100 VERTICAL/2
+          RECTANGLE "#827b6b" 40x40 fill 0.5098,0.4824,0.4196
+          TEXT "827B6B" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 7" 40x100 VERTICAL/2
+          RECTANGLE "#a39780" 40x40 fill 0.6392,0.5922,0.5020
+          TEXT "A39780" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 8" 40x100 VERTICAL/2
+          RECTANGLE "#c6b593" 40x40 fill 0.7765,0.7098,0.5765
+          TEXT "C6B593" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 9" 40x100 VERTICAL/2
+          RECTANGLE "#ebd3a2" 40x40 fill 0.9216,0.8275,0.6353
+          TEXT "EBD3A2" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 10" 40x100 VERTICAL/2
+          RECTANGLE "#f6dfb2" 40x40 fill 0.9647,0.8745,0.6980
+          TEXT "F6DFB2" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 11" 40x100 VERTICAL/2
+          RECTANGLE "#feecc9" 40x40 fill 0.9961,0.9255,0.7882
+          TEXT "FEECC9" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 12" 40x100 VERTICAL/2
+          RECTANGLE "#fff9df" 40x40 fill 1.0000,0.9765,0.8745
+          TEXT "FFF9DF" Regular 7 fill 0.6000,0.6000,0.6000
+    FRAME "Olive Green Scale" 100x100 VERTICAL/4
+      TEXT "TERTIARY" Bold 10 fill 0.9000,0.9000,0.9000
+      TEXT "Teul OKLCH v3 · sRGB" Regular 7 fill 0.9000,0.9000,0.9000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 40x100 VERTICAL/2
+          RECTANGLE "#030303" 40x40 fill 0.0118,0.0118,0.0118
+          TEXT "030303" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 2" 40x100 VERTICAL/2
+          RECTANGLE "#0c0c0a" 40x40 fill 0.0471,0.0471,0.0392
+          TEXT "0C0C0A" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 3" 40x100 VERTICAL/2
+          RECTANGLE "#181815" 40x40 fill 0.0941,0.0941,0.0824
+          TEXT "181815" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 4" 40x100 VERTICAL/2
+          RECTANGLE "#24251f" 40x40 fill 0.1412,0.1451,0.1216
+          TEXT "24251F" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 5" 40x100 VERTICAL/2
+          RECTANGLE "#313329" 40x40 fill 0.1922,0.2000,0.1608
+          TEXT "313329" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 6" 40x100 VERTICAL/2
+          RECTANGLE "#3f4132" 40x40 fill 0.2471,0.2549,0.1961
+          TEXT "3F4132" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 7" 40x100 VERTICAL/2
+          RECTANGLE "#4d5139" 40x40 fill 0.3020,0.3176,0.2235
+          TEXT "4D5139" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 8" 40x100 VERTICAL/2
+          RECTANGLE "#5c603f" 40x40 fill 0.3608,0.3765,0.2471
+          TEXT "5C603F" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 9" 40x100 VERTICAL/2
+          RECTANGLE "#6b7140" 40x40 fill 0.4196,0.4431,0.2510
+          TEXT "6B7140" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 10" 40x100 VERTICAL/2
+          RECTANGLE "#92986a" 40x40 fill 0.5725,0.5961,0.4157
+          TEXT "92986A" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 11" 40x100 VERTICAL/2
+          RECTANGLE "#bbc19c" 40x40 fill 0.7333,0.7569,0.6118
+          TEXT "BBC19C" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 12" 40x100 VERTICAL/2
+          RECTANGLE "#e7ebd0" 40x40 fill 0.9059,0.9216,0.8157
+          TEXT "E7EBD0" Regular 7 fill 0.6000,0.6000,0.6000
+    FRAME "Slate Color Scale" 100x100 VERTICAL/4
+      TEXT "ACCENT" Bold 10 fill 0.9000,0.9000,0.9000
+      TEXT "Teul OKLCH v3 · sRGB" Regular 7 fill 0.9000,0.9000,0.9000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 40x100 VERTICAL/2
+          RECTANGLE "#030303" 40x40 fill 0.0118,0.0118,0.0118
+          TEXT "030303" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 2" 40x100 VERTICAL/2
+          RECTANGLE "#080808" 40x40 fill 0.0314,0.0314,0.0314
+          TEXT "080808" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 3" 40x100 VERTICAL/2
+          RECTANGLE "#0e1010" 40x40 fill 0.0549,0.0627,0.0627
+          TEXT "0E1010" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 4" 40x100 VERTICAL/2
+          RECTANGLE "#151718" 40x40 fill 0.0824,0.0902,0.0941
+          TEXT "151718" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 5" 40x100 VERTICAL/2
+          RECTANGLE "#1c2021" 40x40 fill 0.1098,0.1255,0.1294
+          TEXT "1C2021" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 6" 40x100 VERTICAL/2
+          RECTANGLE "#23282b" 40x40 fill 0.1373,0.1569,0.1686
+          TEXT "23282B" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 7" 40x100 VERTICAL/2
+          RECTANGLE "#293235" 40x40 fill 0.1608,0.1961,0.2078
+          TEXT "293235" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 8" 40x100 VERTICAL/2
+          RECTANGLE "#2f3b40" 40x40 fill 0.1843,0.2314,0.2510
+          TEXT "2F3B40" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 9" 40x100 VERTICAL/2
+          RECTANGLE "#34454c" 40x40 fill 0.2039,0.2706,0.2980
+          TEXT "34454C" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 10" 40x100 VERTICAL/2
+          RECTANGLE "#67787f" 40x40 fill 0.4039,0.4706,0.4980
+          TEXT "67787F" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 11" 40x100 VERTICAL/2
+          RECTANGLE "#a1afb5" 40x40 fill 0.6314,0.6863,0.7098
+          TEXT "A1AFB5" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 12" 40x100 VERTICAL/2
+          RECTANGLE "#dfeaee" 40x40 fill 0.8745,0.9176,0.9333
+          TEXT "DFEAEE" Regular 7 fill 0.6000,0.6000,0.6000
+    FRAME "Sand Scale" 100x100 VERTICAL/4
+      TEXT "NEUTRAL" Bold 10 fill 0.9000,0.9000,0.9000
+      TEXT "Radix Colors · sRGB" Regular 7 fill 0.9000,0.9000,0.9000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 40x100 VERTICAL/2
+          RECTANGLE "#111110" 40x40 fill 0.0667,0.0667,0.0627
+          TEXT "111110" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 2" 40x100 VERTICAL/2
+          RECTANGLE "#191918" 40x40 fill 0.0980,0.0980,0.0941
+          TEXT "191918" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 3" 40x100 VERTICAL/2
+          RECTANGLE "#222221" 40x40 fill 0.1333,0.1333,0.1294
+          TEXT "222221" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 4" 40x100 VERTICAL/2
+          RECTANGLE "#2a2a28" 40x40 fill 0.1647,0.1647,0.1569
+          TEXT "2A2A28" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 5" 40x100 VERTICAL/2
+          RECTANGLE "#31312e" 40x40 fill 0.1922,0.1922,0.1804
+          TEXT "31312E" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 6" 40x100 VERTICAL/2
+          RECTANGLE "#3b3a37" 40x40 fill 0.2314,0.2275,0.2157
+          TEXT "3B3A37" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 7" 40x100 VERTICAL/2
+          RECTANGLE "#494844" 40x40 fill 0.2863,0.2824,0.2667
+          TEXT "494844" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 8" 40x100 VERTICAL/2
+          RECTANGLE "#62605b" 40x40 fill 0.3843,0.3765,0.3569
+          TEXT "62605B" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 9" 40x100 VERTICAL/2
+          RECTANGLE "#6f6d66" 40x40 fill 0.4353,0.4275,0.4000
+          TEXT "6F6D66" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 10" 40x100 VERTICAL/2
+          RECTANGLE "#7c7b74" 40x40 fill 0.4863,0.4824,0.4549
+          TEXT "7C7B74" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 11" 40x100 VERTICAL/2
+          RECTANGLE "#b5b3ad" 40x40 fill 0.7098,0.7020,0.6784
+          TEXT "B5B3AD" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 12" 40x100 VERTICAL/2
+          RECTANGLE "#eeeeec" 40x40 fill 0.9333,0.9333,0.9255
+          TEXT "EEEEEC" Regular 7 fill 0.6000,0.6000,0.6000"
+`;
+
+exports[`non-presentation frames stay unchanged > detailed radix-match output for Wada combination 243 1`] = `
+"FRAME "Color System - Raw Sienna Palette, Set 1 (Exact Radix sRGB Solid, source sRGB, document srgb)" 100x100 HORIZONTAL/32
+  FRAME "Color System (light)" 100x100 VERTICAL/24 fill 0.9800,0.9800,0.9800
+    FRAME "Amber Scale" 100x100 VERTICAL/4
+      TEXT "PRIMARY" Bold 10 fill 0.3000,0.3000,0.3000
+      TEXT "Radix Colors · sRGB" Regular 7 fill 0.3000,0.3000,0.3000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 40x100 VERTICAL/2
+          RECTANGLE "#fefdfb" 40x40 fill 0.9961,0.9922,0.9843
+          TEXT "FEFDFB" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 2" 40x100 VERTICAL/2
+          RECTANGLE "#fefbe9" 40x40 fill 0.9961,0.9843,0.9137
+          TEXT "FEFBE9" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 3" 40x100 VERTICAL/2
+          RECTANGLE "#fff7c2" 40x40 fill 1.0000,0.9686,0.7608
+          TEXT "FFF7C2" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 4" 40x100 VERTICAL/2
+          RECTANGLE "#ffee9c" 40x40 fill 1.0000,0.9333,0.6118
+          TEXT "FFEE9C" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 5" 40x100 VERTICAL/2
+          RECTANGLE "#fbe577" 40x40 fill 0.9843,0.8980,0.4667
+          TEXT "FBE577" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 6" 40x100 VERTICAL/2
+          RECTANGLE "#f3d673" 40x40 fill 0.9529,0.8392,0.4510
+          TEXT "F3D673" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 7" 40x100 VERTICAL/2
+          RECTANGLE "#e9c162" 40x40 fill 0.9137,0.7569,0.3843
+          TEXT "E9C162" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 8" 40x100 VERTICAL/2
+          RECTANGLE "#e2a336" 40x40 fill 0.8863,0.6392,0.2118
+          TEXT "E2A336" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 9" 40x100 VERTICAL/2
+          RECTANGLE "#ffc53d" 40x40 fill 1.0000,0.7725,0.2392
+          TEXT "FFC53D" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 10" 40x100 VERTICAL/2
+          RECTANGLE "#ffba18" 40x40 fill 1.0000,0.7294,0.0941
+          TEXT "FFBA18" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 11" 40x100 VERTICAL/2
+          RECTANGLE "#ab6400" 40x40 fill 0.6706,0.3922,0.0000
+          TEXT "AB6400" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 12" 40x100 VERTICAL/2
+          RECTANGLE "#4f3422" 40x40 fill 0.3098,0.2039,0.1333
+          TEXT "4F3422" Regular 7 fill 0.5000,0.5000,0.5000
+      FRAME "Semantic Labels" 100x100 HORIZONTAL/2
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "App BG" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Subtle BG" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Element BG" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Hovered" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Active" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Subtle Border" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Border" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Focus Ring" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Solid" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Solid Hover" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Text Low" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Text High" Regular 6 fill 0.6000,0.6000,0.6000
+    FRAME "Orange Scale" 100x100 VERTICAL/4
+      TEXT "SECONDARY" Bold 10 fill 0.3000,0.3000,0.3000
+      TEXT "Radix Colors · sRGB" Regular 7 fill 0.3000,0.3000,0.3000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 40x100 VERTICAL/2
+          RECTANGLE "#fefcfb" 40x40 fill 0.9961,0.9882,0.9843
+          TEXT "FEFCFB" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 2" 40x100 VERTICAL/2
+          RECTANGLE "#fff7ed" 40x40 fill 1.0000,0.9686,0.9294
+          TEXT "FFF7ED" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 3" 40x100 VERTICAL/2
+          RECTANGLE "#ffefd6" 40x40 fill 1.0000,0.9373,0.8392
+          TEXT "FFEFD6" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 4" 40x100 VERTICAL/2
+          RECTANGLE "#ffdfb5" 40x40 fill 1.0000,0.8745,0.7098
+          TEXT "FFDFB5" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 5" 40x100 VERTICAL/2
+          RECTANGLE "#ffd19a" 40x40 fill 1.0000,0.8196,0.6039
+          TEXT "FFD19A" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 6" 40x100 VERTICAL/2
+          RECTANGLE "#ffc182" 40x40 fill 1.0000,0.7569,0.5098
+          TEXT "FFC182" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 7" 40x100 VERTICAL/2
+          RECTANGLE "#f5ae73" 40x40 fill 0.9608,0.6824,0.4510
+          TEXT "F5AE73" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 8" 40x100 VERTICAL/2
+          RECTANGLE "#ec9455" 40x40 fill 0.9255,0.5804,0.3333
+          TEXT "EC9455" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 9" 40x100 VERTICAL/2
+          RECTANGLE "#f76b15" 40x40 fill 0.9686,0.4196,0.0824
+          TEXT "F76B15" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 10" 40x100 VERTICAL/2
+          RECTANGLE "#ef5f00" 40x40 fill 0.9373,0.3725,0.0000
+          TEXT "EF5F00" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 11" 40x100 VERTICAL/2
+          RECTANGLE "#cc4e00" 40x40 fill 0.8000,0.3059,0.0000
+          TEXT "CC4E00" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 12" 40x100 VERTICAL/2
+          RECTANGLE "#582d1d" 40x40 fill 0.3451,0.1765,0.1137
+          TEXT "582D1D" Regular 7 fill 0.5000,0.5000,0.5000
+      FRAME "Semantic Labels" 100x100 HORIZONTAL/2
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "App BG" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Subtle BG" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Element BG" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Hovered" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Active" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Subtle Border" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Border" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Focus Ring" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Solid" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Solid Hover" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Text Low" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Text High" Regular 6 fill 0.6000,0.6000,0.6000
+    FRAME "Lime Scale" 100x100 VERTICAL/4
+      TEXT "TERTIARY" Bold 10 fill 0.3000,0.3000,0.3000
+      TEXT "Radix Colors · sRGB" Regular 7 fill 0.3000,0.3000,0.3000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 40x100 VERTICAL/2
+          RECTANGLE "#fcfdfa" 40x40 fill 0.9882,0.9922,0.9804
+          TEXT "FCFDFA" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 2" 40x100 VERTICAL/2
+          RECTANGLE "#f8faf3" 40x40 fill 0.9725,0.9804,0.9529
+          TEXT "F8FAF3" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 3" 40x100 VERTICAL/2
+          RECTANGLE "#eef6d6" 40x40 fill 0.9333,0.9647,0.8392
+          TEXT "EEF6D6" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 4" 40x100 VERTICAL/2
+          RECTANGLE "#e2f0bd" 40x40 fill 0.8863,0.9412,0.7412
+          TEXT "E2F0BD" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 5" 40x100 VERTICAL/2
+          RECTANGLE "#d3e7a6" 40x40 fill 0.8275,0.9059,0.6510
+          TEXT "D3E7A6" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 6" 40x100 VERTICAL/2
+          RECTANGLE "#c2da91" 40x40 fill 0.7608,0.8549,0.5686
+          TEXT "C2DA91" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 7" 40x100 VERTICAL/2
+          RECTANGLE "#abc978" 40x40 fill 0.6706,0.7882,0.4706
+          TEXT "ABC978" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 8" 40x100 VERTICAL/2
+          RECTANGLE "#8db654" 40x40 fill 0.5529,0.7137,0.3294
+          TEXT "8DB654" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 9" 40x100 VERTICAL/2
+          RECTANGLE "#bdee63" 40x40 fill 0.7412,0.9333,0.3882
+          TEXT "BDEE63" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 10" 40x100 VERTICAL/2
+          RECTANGLE "#b0e64c" 40x40 fill 0.6902,0.9020,0.2980
+          TEXT "B0E64C" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 11" 40x100 VERTICAL/2
+          RECTANGLE "#5c7c2f" 40x40 fill 0.3608,0.4863,0.1843
+          TEXT "5C7C2F" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 12" 40x100 VERTICAL/2
+          RECTANGLE "#37401c" 40x40 fill 0.2157,0.2510,0.1098
+          TEXT "37401C" Regular 7 fill 0.5000,0.5000,0.5000
+      FRAME "Semantic Labels" 100x100 HORIZONTAL/2
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "App BG" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Subtle BG" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Element BG" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Hovered" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Active" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Subtle Border" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Border" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Focus Ring" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Solid" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Solid Hover" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Text Low" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Text High" Regular 6 fill 0.6000,0.6000,0.6000
+    FRAME "Gold Scale" 100x100 VERTICAL/4
+      TEXT "ACCENT" Bold 10 fill 0.3000,0.3000,0.3000
+      TEXT "Radix Colors · sRGB" Regular 7 fill 0.3000,0.3000,0.3000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 40x100 VERTICAL/2
+          RECTANGLE "#fdfdfc" 40x40 fill 0.9922,0.9922,0.9882
+          TEXT "FDFDFC" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 2" 40x100 VERTICAL/2
+          RECTANGLE "#faf9f2" 40x40 fill 0.9804,0.9765,0.9490
+          TEXT "FAF9F2" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 3" 40x100 VERTICAL/2
+          RECTANGLE "#f2f0e7" 40x40 fill 0.9490,0.9412,0.9059
+          TEXT "F2F0E7" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 4" 40x100 VERTICAL/2
+          RECTANGLE "#eae6db" 40x40 fill 0.9176,0.9020,0.8588
+          TEXT "EAE6DB" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 5" 40x100 VERTICAL/2
+          RECTANGLE "#e1dccf" 40x40 fill 0.8824,0.8627,0.8118
+          TEXT "E1DCCF" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 6" 40x100 VERTICAL/2
+          RECTANGLE "#d8d0bf" 40x40 fill 0.8471,0.8157,0.7490
+          TEXT "D8D0BF" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 7" 40x100 VERTICAL/2
+          RECTANGLE "#cbc0aa" 40x40 fill 0.7961,0.7529,0.6667
+          TEXT "CBC0AA" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 8" 40x100 VERTICAL/2
+          RECTANGLE "#b9a88d" 40x40 fill 0.7255,0.6588,0.5529
+          TEXT "B9A88D" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 9" 40x100 VERTICAL/2
+          RECTANGLE "#978365" 40x40 fill 0.5922,0.5137,0.3961
+          TEXT "978365" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 10" 40x100 VERTICAL/2
+          RECTANGLE "#8c7a5e" 40x40 fill 0.5490,0.4784,0.3686
+          TEXT "8C7A5E" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 11" 40x100 VERTICAL/2
+          RECTANGLE "#71624b" 40x40 fill 0.4431,0.3843,0.2941
+          TEXT "71624B" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 12" 40x100 VERTICAL/2
+          RECTANGLE "#3b352b" 40x40 fill 0.2314,0.2078,0.1686
+          TEXT "3B352B" Regular 7 fill 0.5000,0.5000,0.5000
+      FRAME "Semantic Labels" 100x100 HORIZONTAL/2
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "App BG" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Subtle BG" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Element BG" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Hovered" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Active" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Subtle Border" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Border" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Focus Ring" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Solid" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Solid Hover" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Text Low" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Text High" Regular 6 fill 0.6000,0.6000,0.6000
+    FRAME "Sand Scale" 100x100 VERTICAL/4
+      TEXT "NEUTRAL" Bold 10 fill 0.3000,0.3000,0.3000
+      TEXT "Radix Colors · sRGB" Regular 7 fill 0.3000,0.3000,0.3000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 40x100 VERTICAL/2
+          RECTANGLE "#fdfdfc" 40x40 fill 0.9922,0.9922,0.9882
+          TEXT "FDFDFC" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 2" 40x100 VERTICAL/2
+          RECTANGLE "#f9f9f8" 40x40 fill 0.9765,0.9765,0.9725
+          TEXT "F9F9F8" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 3" 40x100 VERTICAL/2
+          RECTANGLE "#f1f0ef" 40x40 fill 0.9451,0.9412,0.9373
+          TEXT "F1F0EF" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 4" 40x100 VERTICAL/2
+          RECTANGLE "#e9e8e6" 40x40 fill 0.9137,0.9098,0.9020
+          TEXT "E9E8E6" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 5" 40x100 VERTICAL/2
+          RECTANGLE "#e2e1de" 40x40 fill 0.8863,0.8824,0.8706
+          TEXT "E2E1DE" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 6" 40x100 VERTICAL/2
+          RECTANGLE "#dad9d6" 40x40 fill 0.8549,0.8510,0.8392
+          TEXT "DAD9D6" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 7" 40x100 VERTICAL/2
+          RECTANGLE "#cfceca" 40x40 fill 0.8118,0.8078,0.7922
+          TEXT "CFCECA" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 8" 40x100 VERTICAL/2
+          RECTANGLE "#bcbbb5" 40x40 fill 0.7373,0.7333,0.7098
+          TEXT "BCBBB5" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 9" 40x100 VERTICAL/2
+          RECTANGLE "#8d8d86" 40x40 fill 0.5529,0.5529,0.5255
+          TEXT "8D8D86" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 10" 40x100 VERTICAL/2
+          RECTANGLE "#82827c" 40x40 fill 0.5098,0.5098,0.4863
+          TEXT "82827C" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 11" 40x100 VERTICAL/2
+          RECTANGLE "#63635e" 40x40 fill 0.3882,0.3882,0.3686
+          TEXT "63635E" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 12" 40x100 VERTICAL/2
+          RECTANGLE "#21201c" 40x40 fill 0.1294,0.1255,0.1098
+          TEXT "21201C" Regular 7 fill 0.5000,0.5000,0.5000
+      FRAME "Semantic Labels" 100x100 HORIZONTAL/2
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "App BG" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Subtle BG" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Element BG" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Hovered" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Active" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Subtle Border" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Border" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Focus Ring" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Solid" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Solid Hover" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Text Low" Regular 6 fill 0.6000,0.6000,0.6000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Text High" Regular 6 fill 0.6000,0.6000,0.6000
+  FRAME "Color System (dark)" 100x100 VERTICAL/24 fill 0.1000,0.1000,0.1000
+    FRAME "Amber Scale" 100x100 VERTICAL/4
+      TEXT "PRIMARY" Bold 10 fill 0.9000,0.9000,0.9000
+      TEXT "Radix Colors · sRGB" Regular 7 fill 0.9000,0.9000,0.9000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 40x100 VERTICAL/2
+          RECTANGLE "#16120c" 40x40 fill 0.0863,0.0706,0.0471
+          TEXT "16120C" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 2" 40x100 VERTICAL/2
+          RECTANGLE "#1d180f" 40x40 fill 0.1137,0.0941,0.0588
+          TEXT "1D180F" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 3" 40x100 VERTICAL/2
+          RECTANGLE "#302008" 40x40 fill 0.1882,0.1255,0.0314
+          TEXT "302008" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 4" 40x100 VERTICAL/2
+          RECTANGLE "#3f2700" 40x40 fill 0.2471,0.1529,0.0000
+          TEXT "3F2700" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 5" 40x100 VERTICAL/2
+          RECTANGLE "#4d3000" 40x40 fill 0.3020,0.1882,0.0000
+          TEXT "4D3000" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 6" 40x100 VERTICAL/2
+          RECTANGLE "#5c3d05" 40x40 fill 0.3608,0.2392,0.0196
+          TEXT "5C3D05" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 7" 40x100 VERTICAL/2
+          RECTANGLE "#714f19" 40x40 fill 0.4431,0.3098,0.0980
+          TEXT "714F19" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 8" 40x100 VERTICAL/2
+          RECTANGLE "#8f6424" 40x40 fill 0.5608,0.3922,0.1412
+          TEXT "8F6424" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 9" 40x100 VERTICAL/2
+          RECTANGLE "#ffc53d" 40x40 fill 1.0000,0.7725,0.2392
+          TEXT "FFC53D" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 10" 40x100 VERTICAL/2
+          RECTANGLE "#ffd60a" 40x40 fill 1.0000,0.8392,0.0392
+          TEXT "FFD60A" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 11" 40x100 VERTICAL/2
+          RECTANGLE "#ffca16" 40x40 fill 1.0000,0.7922,0.0863
+          TEXT "FFCA16" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 12" 40x100 VERTICAL/2
+          RECTANGLE "#ffe7b3" 40x40 fill 1.0000,0.9059,0.7020
+          TEXT "FFE7B3" Regular 7 fill 0.6000,0.6000,0.6000
+      FRAME "Semantic Labels" 100x100 HORIZONTAL/2
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "App BG" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Subtle BG" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Element BG" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Hovered" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Active" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Subtle Border" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Border" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Focus Ring" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Solid" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Solid Hover" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Text Low" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Text High" Regular 6 fill 0.5000,0.5000,0.5000
+    FRAME "Orange Scale" 100x100 VERTICAL/4
+      TEXT "SECONDARY" Bold 10 fill 0.9000,0.9000,0.9000
+      TEXT "Radix Colors · sRGB" Regular 7 fill 0.9000,0.9000,0.9000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 40x100 VERTICAL/2
+          RECTANGLE "#17120e" 40x40 fill 0.0902,0.0706,0.0549
+          TEXT "17120E" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 2" 40x100 VERTICAL/2
+          RECTANGLE "#1e160f" 40x40 fill 0.1176,0.0863,0.0588
+          TEXT "1E160F" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 3" 40x100 VERTICAL/2
+          RECTANGLE "#331e0b" 40x40 fill 0.2000,0.1176,0.0431
+          TEXT "331E0B" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 4" 40x100 VERTICAL/2
+          RECTANGLE "#462100" 40x40 fill 0.2745,0.1294,0.0000
+          TEXT "462100" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 5" 40x100 VERTICAL/2
+          RECTANGLE "#562800" 40x40 fill 0.3373,0.1569,0.0000
+          TEXT "562800" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 6" 40x100 VERTICAL/2
+          RECTANGLE "#66350c" 40x40 fill 0.4000,0.2078,0.0471
+          TEXT "66350C" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 7" 40x100 VERTICAL/2
+          RECTANGLE "#7e451d" 40x40 fill 0.4941,0.2706,0.1137
+          TEXT "7E451D" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 8" 40x100 VERTICAL/2
+          RECTANGLE "#a35829" 40x40 fill 0.6392,0.3451,0.1608
+          TEXT "A35829" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 9" 40x100 VERTICAL/2
+          RECTANGLE "#f76b15" 40x40 fill 0.9686,0.4196,0.0824
+          TEXT "F76B15" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 10" 40x100 VERTICAL/2
+          RECTANGLE "#ff801f" 40x40 fill 1.0000,0.5020,0.1216
+          TEXT "FF801F" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 11" 40x100 VERTICAL/2
+          RECTANGLE "#ffa057" 40x40 fill 1.0000,0.6275,0.3412
+          TEXT "FFA057" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 12" 40x100 VERTICAL/2
+          RECTANGLE "#ffe0c2" 40x40 fill 1.0000,0.8784,0.7608
+          TEXT "FFE0C2" Regular 7 fill 0.6000,0.6000,0.6000
+      FRAME "Semantic Labels" 100x100 HORIZONTAL/2
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "App BG" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Subtle BG" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Element BG" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Hovered" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Active" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Subtle Border" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Border" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Focus Ring" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Solid" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Solid Hover" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Text Low" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Text High" Regular 6 fill 0.5000,0.5000,0.5000
+    FRAME "Lime Scale" 100x100 VERTICAL/4
+      TEXT "TERTIARY" Bold 10 fill 0.9000,0.9000,0.9000
+      TEXT "Radix Colors · sRGB" Regular 7 fill 0.9000,0.9000,0.9000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 40x100 VERTICAL/2
+          RECTANGLE "#11130c" 40x40 fill 0.0667,0.0745,0.0471
+          TEXT "11130C" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 2" 40x100 VERTICAL/2
+          RECTANGLE "#151a10" 40x40 fill 0.0824,0.1020,0.0627
+          TEXT "151A10" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 3" 40x100 VERTICAL/2
+          RECTANGLE "#1f2917" 40x40 fill 0.1216,0.1608,0.0902
+          TEXT "1F2917" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 4" 40x100 VERTICAL/2
+          RECTANGLE "#29371d" 40x40 fill 0.1608,0.2157,0.1137
+          TEXT "29371D" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 5" 40x100 VERTICAL/2
+          RECTANGLE "#334423" 40x40 fill 0.2000,0.2667,0.1373
+          TEXT "334423" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 6" 40x100 VERTICAL/2
+          RECTANGLE "#3d522a" 40x40 fill 0.2392,0.3216,0.1647
+          TEXT "3D522A" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 7" 40x100 VERTICAL/2
+          RECTANGLE "#496231" 40x40 fill 0.2863,0.3843,0.1922
+          TEXT "496231" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 8" 40x100 VERTICAL/2
+          RECTANGLE "#577538" 40x40 fill 0.3412,0.4588,0.2196
+          TEXT "577538" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 9" 40x100 VERTICAL/2
+          RECTANGLE "#bdee63" 40x40 fill 0.7412,0.9333,0.3882
+          TEXT "BDEE63" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 10" 40x100 VERTICAL/2
+          RECTANGLE "#d4ff70" 40x40 fill 0.8314,1.0000,0.4392
+          TEXT "D4FF70" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 11" 40x100 VERTICAL/2
+          RECTANGLE "#bde56c" 40x40 fill 0.7412,0.8980,0.4235
+          TEXT "BDE56C" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 12" 40x100 VERTICAL/2
+          RECTANGLE "#e3f7ba" 40x40 fill 0.8902,0.9686,0.7294
+          TEXT "E3F7BA" Regular 7 fill 0.6000,0.6000,0.6000
+      FRAME "Semantic Labels" 100x100 HORIZONTAL/2
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "App BG" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Subtle BG" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Element BG" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Hovered" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Active" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Subtle Border" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Border" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Focus Ring" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Solid" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Solid Hover" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Text Low" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Text High" Regular 6 fill 0.5000,0.5000,0.5000
+    FRAME "Gold Scale" 100x100 VERTICAL/4
+      TEXT "ACCENT" Bold 10 fill 0.9000,0.9000,0.9000
+      TEXT "Radix Colors · sRGB" Regular 7 fill 0.9000,0.9000,0.9000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 40x100 VERTICAL/2
+          RECTANGLE "#121211" 40x40 fill 0.0706,0.0706,0.0667
+          TEXT "121211" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 2" 40x100 VERTICAL/2
+          RECTANGLE "#1b1a17" 40x40 fill 0.1059,0.1020,0.0902
+          TEXT "1B1A17" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 3" 40x100 VERTICAL/2
+          RECTANGLE "#24231f" 40x40 fill 0.1412,0.1373,0.1216
+          TEXT "24231F" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 4" 40x100 VERTICAL/2
+          RECTANGLE "#2d2b26" 40x40 fill 0.1765,0.1686,0.1490
+          TEXT "2D2B26" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 5" 40x100 VERTICAL/2
+          RECTANGLE "#38352e" 40x40 fill 0.2196,0.2078,0.1804
+          TEXT "38352E" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 6" 40x100 VERTICAL/2
+          RECTANGLE "#444039" 40x40 fill 0.2667,0.2510,0.2235
+          TEXT "444039" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 7" 40x100 VERTICAL/2
+          RECTANGLE "#544f46" 40x40 fill 0.3294,0.3098,0.2745
+          TEXT "544F46" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 8" 40x100 VERTICAL/2
+          RECTANGLE "#696256" 40x40 fill 0.4118,0.3843,0.3373
+          TEXT "696256" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 9" 40x100 VERTICAL/2
+          RECTANGLE "#978365" 40x40 fill 0.5922,0.5137,0.3961
+          TEXT "978365" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 10" 40x100 VERTICAL/2
+          RECTANGLE "#a39073" 40x40 fill 0.6392,0.5647,0.4510
+          TEXT "A39073" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 11" 40x100 VERTICAL/2
+          RECTANGLE "#cbb99f" 40x40 fill 0.7961,0.7255,0.6235
+          TEXT "CBB99F" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 12" 40x100 VERTICAL/2
+          RECTANGLE "#e8e2d9" 40x40 fill 0.9098,0.8863,0.8510
+          TEXT "E8E2D9" Regular 7 fill 0.6000,0.6000,0.6000
+      FRAME "Semantic Labels" 100x100 HORIZONTAL/2
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "App BG" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Subtle BG" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Element BG" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Hovered" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Active" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Subtle Border" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Border" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Focus Ring" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Solid" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Solid Hover" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Text Low" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Text High" Regular 6 fill 0.5000,0.5000,0.5000
+    FRAME "Sand Scale" 100x100 VERTICAL/4
+      TEXT "NEUTRAL" Bold 10 fill 0.9000,0.9000,0.9000
+      TEXT "Radix Colors · sRGB" Regular 7 fill 0.9000,0.9000,0.9000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 40x100 VERTICAL/2
+          RECTANGLE "#111110" 40x40 fill 0.0667,0.0667,0.0627
+          TEXT "111110" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 2" 40x100 VERTICAL/2
+          RECTANGLE "#191918" 40x40 fill 0.0980,0.0980,0.0941
+          TEXT "191918" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 3" 40x100 VERTICAL/2
+          RECTANGLE "#222221" 40x40 fill 0.1333,0.1333,0.1294
+          TEXT "222221" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 4" 40x100 VERTICAL/2
+          RECTANGLE "#2a2a28" 40x40 fill 0.1647,0.1647,0.1569
+          TEXT "2A2A28" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 5" 40x100 VERTICAL/2
+          RECTANGLE "#31312e" 40x40 fill 0.1922,0.1922,0.1804
+          TEXT "31312E" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 6" 40x100 VERTICAL/2
+          RECTANGLE "#3b3a37" 40x40 fill 0.2314,0.2275,0.2157
+          TEXT "3B3A37" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 7" 40x100 VERTICAL/2
+          RECTANGLE "#494844" 40x40 fill 0.2863,0.2824,0.2667
+          TEXT "494844" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 8" 40x100 VERTICAL/2
+          RECTANGLE "#62605b" 40x40 fill 0.3843,0.3765,0.3569
+          TEXT "62605B" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 9" 40x100 VERTICAL/2
+          RECTANGLE "#6f6d66" 40x40 fill 0.4353,0.4275,0.4000
+          TEXT "6F6D66" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 10" 40x100 VERTICAL/2
+          RECTANGLE "#7c7b74" 40x40 fill 0.4863,0.4824,0.4549
+          TEXT "7C7B74" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 11" 40x100 VERTICAL/2
+          RECTANGLE "#b5b3ad" 40x40 fill 0.7098,0.7020,0.6784
+          TEXT "B5B3AD" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 12" 40x100 VERTICAL/2
+          RECTANGLE "#eeeeec" 40x40 fill 0.9333,0.9333,0.9255
+          TEXT "EEEEEC" Regular 7 fill 0.6000,0.6000,0.6000
+      FRAME "Semantic Labels" 100x100 HORIZONTAL/2
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "App BG" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Subtle BG" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Element BG" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Hovered" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Active" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Subtle Border" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Border" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Focus Ring" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Solid" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Solid Hover" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Text Low" Regular 6 fill 0.5000,0.5000,0.5000
+        FRAME "" 40x14 VERTICAL/undefined
+          TEXT "Text High" Regular 6 fill 0.5000,0.5000,0.5000"
+`;
+
+exports[`non-presentation frames stay unchanged > minimal custom output for Wada combination 243 1`] = `
+"FRAME "Color System - Raw Sienna Palette, Set 1 (Teul Generated, source sRGB, document srgb)" 100x100 HORIZONTAL/32
+  FRAME "Color Scales (light)" 100x100 VERTICAL/16 fill 0.9800,0.9800,0.9800
+    FRAME "Raw Sienna Scale" 100x100 VERTICAL/4
+      TEXT "PRIMARY" Bold 10 fill 0.3000,0.3000,0.3000
+      TEXT "Teul OKLCH v3 · sRGB" Regular 7 fill 0.3000,0.3000,0.3000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 36x100 VERTICAL/2
+          RECTANGLE "#fcfaf8" 36x36 fill 0.9882,0.9804,0.9725
+          TEXT "FCFAF8" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 2" 36x100 VERTICAL/2
+          RECTANGLE "#eeeae7" 36x36 fill 0.9333,0.9176,0.9059
+          TEXT "EEEAE7" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 3" 36x100 VERTICAL/2
+          RECTANGLE "#e2dad3" 36x36 fill 0.8863,0.8549,0.8275
+          TEXT "E2DAD3" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 4" 36x100 VERTICAL/2
+          RECTANGLE "#d8cabf" 36x36 fill 0.8471,0.7922,0.7490
+          TEXT "D8CABF" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 5" 36x100 VERTICAL/2
+          RECTANGLE "#cebaaa" 36x36 fill 0.8078,0.7294,0.6667
+          TEXT "CEBAAA" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 6" 36x100 VERTICAL/2
+          RECTANGLE "#c6aa93" 36x36 fill 0.7765,0.6667,0.5765
+          TEXT "C6AA93" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 7" 36x100 VERTICAL/2
+          RECTANGLE "#c09877" 36x36 fill 0.7529,0.5961,0.4667
+          TEXT "C09877" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 8" 36x100 VERTICAL/2
+          RECTANGLE "#bc8657" 36x36 fill 0.7373,0.5255,0.3412
+          TEXT "BC8657" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 9" 36x100 VERTICAL/2
+          RECTANGLE "#bb7125" 36x36 fill 0.7333,0.4431,0.1451
+          TEXT "BB7125" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 10" 36x100 VERTICAL/2
+          RECTANGLE "#8d4c00" 36x36 fill 0.5529,0.2980,0.0000
+          TEXT "8D4C00" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 11" 36x100 VERTICAL/2
+          RECTANGLE "#5c2d00" 36x36 fill 0.3608,0.1765,0.0000
+          TEXT "5C2D00" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 12" 36x100 VERTICAL/2
+          RECTANGLE "#2f1100" 36x36 fill 0.1843,0.0667,0.0000
+          TEXT "2F1100" Regular 7 fill 0.5000,0.5000,0.5000
+    FRAME "Ivory Buff Scale" 100x100 VERTICAL/4
+      TEXT "SECONDARY" Bold 10 fill 0.3000,0.3000,0.3000
+      TEXT "Teul OKLCH v3 · sRGB" Regular 7 fill 0.3000,0.3000,0.3000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 36x100 VERTICAL/2
+          RECTANGLE "#fefdfc" 36x36 fill 0.9961,0.9922,0.9882
+          TEXT "FEFDFC" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 2" 36x100 VERTICAL/2
+          RECTANGLE "#f9f8f6" 36x36 fill 0.9765,0.9725,0.9647
+          TEXT "F9F8F6" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 3" 36x100 VERTICAL/2
+          RECTANGLE "#f5f3ee" 36x36 fill 0.9608,0.9529,0.9333
+          TEXT "F5F3EE" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 4" 36x100 VERTICAL/2
+          RECTANGLE "#f2eee6" 36x36 fill 0.9490,0.9333,0.9020
+          TEXT "F2EEE6" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 5" 36x100 VERTICAL/2
+          RECTANGLE "#efe9dd" 36x36 fill 0.9373,0.9137,0.8667
+          TEXT "EFE9DD" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 6" 36x100 VERTICAL/2
+          RECTANGLE "#ece4d2" 36x36 fill 0.9255,0.8941,0.8235
+          TEXT "ECE4D2" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 7" 36x100 VERTICAL/2
+          RECTANGLE "#ebdec5" 36x36 fill 0.9216,0.8706,0.7725
+          TEXT "EBDEC5" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 8" 36x100 VERTICAL/2
+          RECTANGLE "#ead9b6" 36x36 fill 0.9176,0.8510,0.7137
+          TEXT "EAD9B6" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 9" 36x100 VERTICAL/2
+          RECTANGLE "#ebd3a2" 36x36 fill 0.9216,0.8275,0.6353
+          TEXT "EBD3A2" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 10" 36x100 VERTICAL/2
+          RECTANGLE "#a38f64" 36x36 fill 0.6392,0.5608,0.3922
+          TEXT "A38F64" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 11" 36x100 VERTICAL/2
+          RECTANGLE "#5f5031" 36x36 fill 0.3725,0.3137,0.1922
+          TEXT "5F5031" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 12" 36x100 VERTICAL/2
+          RECTANGLE "#221905" 36x36 fill 0.1333,0.0980,0.0196
+          TEXT "221905" Regular 7 fill 0.5000,0.5000,0.5000
+    FRAME "Olive Green Scale" 100x100 VERTICAL/4
+      TEXT "TERTIARY" Bold 10 fill 0.3000,0.3000,0.3000
+      TEXT "Teul OKLCH v3 · sRGB" Regular 7 fill 0.3000,0.3000,0.3000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 36x100 VERTICAL/2
+          RECTANGLE "#fafaf9" 36x36 fill 0.9804,0.9804,0.9765
+          TEXT "FAFAF9" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 2" 36x100 VERTICAL/2
+          RECTANGLE "#e7e7e5" 36x36 fill 0.9059,0.9059,0.8980
+          TEXT "E7E7E5" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 3" 36x100 VERTICAL/2
+          RECTANGLE "#d4d5d0" 36x36 fill 0.8314,0.8353,0.8157
+          TEXT "D4D5D0" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 4" 36x100 VERTICAL/2
+          RECTANGLE "#c2c3bb" 36x36 fill 0.7608,0.7647,0.7333
+          TEXT "C2C3BB" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 5" 36x100 VERTICAL/2
+          RECTANGLE "#b0b2a5" 36x36 fill 0.6902,0.6980,0.6471
+          TEXT "B0B2A5" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 6" 36x100 VERTICAL/2
+          RECTANGLE "#9ea18f" 36x36 fill 0.6196,0.6314,0.5608
+          TEXT "9EA18F" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 7" 36x100 VERTICAL/2
+          RECTANGLE "#8d9077" 36x36 fill 0.5529,0.5647,0.4667
+          TEXT "8D9077" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 8" 36x100 VERTICAL/2
+          RECTANGLE "#7c805e" 36x36 fill 0.4863,0.5020,0.3686
+          TEXT "7C805E" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 9" 36x100 VERTICAL/2
+          RECTANGLE "#6b7140" 36x36 fill 0.4196,0.4431,0.2510
+          TEXT "6B7140" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 10" 36x100 VERTICAL/2
+          RECTANGLE "#4e5327" 36x36 fill 0.3059,0.3255,0.1529
+          TEXT "4E5327" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 11" 36x100 VERTICAL/2
+          RECTANGLE "#333717" 36x36 fill 0.2000,0.2157,0.0902
+          TEXT "333717" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 12" 36x100 VERTICAL/2
+          RECTANGLE "#1a1c07" 36x36 fill 0.1020,0.1098,0.0275
+          TEXT "1A1C07" Regular 7 fill 0.5000,0.5000,0.5000
+    FRAME "Slate Color Scale" 100x100 VERTICAL/4
+      TEXT "ACCENT" Bold 10 fill 0.3000,0.3000,0.3000
+      TEXT "Teul OKLCH v3 · sRGB" Regular 7 fill 0.3000,0.3000,0.3000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 36x100 VERTICAL/2
+          RECTANGLE "#fafafa" 36x36 fill 0.9804,0.9804,0.9804
+          TEXT "FAFAFA" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 2" 36x100 VERTICAL/2
+          RECTANGLE "#e0e1e1" 36x36 fill 0.8784,0.8824,0.8824
+          TEXT "E0E1E1" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 3" 36x100 VERTICAL/2
+          RECTANGLE "#c7c9c9" 36x36 fill 0.7804,0.7882,0.7882
+          TEXT "C7C9C9" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 4" 36x100 VERTICAL/2
+          RECTANGLE "#aeb1b2" 36x36 fill 0.6824,0.6941,0.6980
+          TEXT "AEB1B2" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 5" 36x100 VERTICAL/2
+          RECTANGLE "#959a9c" 36x36 fill 0.5843,0.6039,0.6118
+          TEXT "959A9C" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 6" 36x100 VERTICAL/2
+          RECTANGLE "#7d8386" 36x36 fill 0.4902,0.5137,0.5255
+          TEXT "7D8386" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 7" 36x100 VERTICAL/2
+          RECTANGLE "#646e71" 36x36 fill 0.3922,0.4314,0.4431
+          TEXT "646E71" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 8" 36x100 VERTICAL/2
+          RECTANGLE "#4c595e" 36x36 fill 0.2980,0.3490,0.3686
+          TEXT "4C595E" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 9" 36x100 VERTICAL/2
+          RECTANGLE "#34454c" 36x36 fill 0.2039,0.2706,0.2980
+          TEXT "34454C" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 10" 36x100 VERTICAL/2
+          RECTANGLE "#213036" 36x36 fill 0.1294,0.1882,0.2118
+          TEXT "213036" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 11" 36x100 VERTICAL/2
+          RECTANGLE "#111c21" 36x36 fill 0.0667,0.1098,0.1294
+          TEXT "111C21" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 12" 36x100 VERTICAL/2
+          RECTANGLE "#040a0d" 36x36 fill 0.0157,0.0392,0.0510
+          TEXT "040A0D" Regular 7 fill 0.5000,0.5000,0.5000
+    FRAME "Sand Scale" 100x100 VERTICAL/4
+      TEXT "NEUTRAL" Bold 10 fill 0.3000,0.3000,0.3000
+      TEXT "Radix Colors · sRGB" Regular 7 fill 0.3000,0.3000,0.3000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 36x100 VERTICAL/2
+          RECTANGLE "#fdfdfc" 36x36 fill 0.9922,0.9922,0.9882
+          TEXT "FDFDFC" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 2" 36x100 VERTICAL/2
+          RECTANGLE "#f9f9f8" 36x36 fill 0.9765,0.9765,0.9725
+          TEXT "F9F9F8" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 3" 36x100 VERTICAL/2
+          RECTANGLE "#f1f0ef" 36x36 fill 0.9451,0.9412,0.9373
+          TEXT "F1F0EF" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 4" 36x100 VERTICAL/2
+          RECTANGLE "#e9e8e6" 36x36 fill 0.9137,0.9098,0.9020
+          TEXT "E9E8E6" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 5" 36x100 VERTICAL/2
+          RECTANGLE "#e2e1de" 36x36 fill 0.8863,0.8824,0.8706
+          TEXT "E2E1DE" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 6" 36x100 VERTICAL/2
+          RECTANGLE "#dad9d6" 36x36 fill 0.8549,0.8510,0.8392
+          TEXT "DAD9D6" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 7" 36x100 VERTICAL/2
+          RECTANGLE "#cfceca" 36x36 fill 0.8118,0.8078,0.7922
+          TEXT "CFCECA" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 8" 36x100 VERTICAL/2
+          RECTANGLE "#bcbbb5" 36x36 fill 0.7373,0.7333,0.7098
+          TEXT "BCBBB5" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 9" 36x100 VERTICAL/2
+          RECTANGLE "#8d8d86" 36x36 fill 0.5529,0.5529,0.5255
+          TEXT "8D8D86" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 10" 36x100 VERTICAL/2
+          RECTANGLE "#82827c" 36x36 fill 0.5098,0.5098,0.4863
+          TEXT "82827C" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 11" 36x100 VERTICAL/2
+          RECTANGLE "#63635e" 36x36 fill 0.3882,0.3882,0.3686
+          TEXT "63635E" Regular 7 fill 0.5000,0.5000,0.5000
+        FRAME "Step 12" 36x100 VERTICAL/2
+          RECTANGLE "#21201c" 36x36 fill 0.1294,0.1255,0.1098
+          TEXT "21201C" Regular 7 fill 0.5000,0.5000,0.5000
+  FRAME "Color Scales (dark)" 100x100 VERTICAL/16 fill 0.1000,0.1000,0.1000
+    FRAME "Raw Sienna Scale" 100x100 VERTICAL/4
+      TEXT "PRIMARY" Bold 10 fill 0.9000,0.9000,0.9000
+      TEXT "Teul OKLCH v3 · sRGB" Regular 7 fill 0.9000,0.9000,0.9000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 36x100 VERTICAL/2
+          RECTANGLE "#040303" 36x36 fill 0.0157,0.0118,0.0118
+          TEXT "040303" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 2" 36x100 VERTICAL/2
+          RECTANGLE "#100e0b" 36x36 fill 0.0627,0.0549,0.0431
+          TEXT "100E0B" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 3" 36x100 VERTICAL/2
+          RECTANGLE "#211b17" 36x36 fill 0.1294,0.1059,0.0902
+          TEXT "211B17" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 4" 36x100 VERTICAL/2
+          RECTANGLE "#342a21" 36x36 fill 0.2039,0.1647,0.1294
+          TEXT "342A21" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 5" 36x100 VERTICAL/2
+          RECTANGLE "#49392c" 36x36 fill 0.2863,0.2235,0.1725
+          TEXT "49392C" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 6" 36x100 VERTICAL/2
+          RECTANGLE "#604834" 36x36 fill 0.3765,0.2824,0.2039
+          TEXT "604834" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 7" 36x100 VERTICAL/2
+          RECTANGLE "#7b5738" 36x36 fill 0.4824,0.3412,0.2196
+          TEXT "7B5738" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 8" 36x100 VERTICAL/2
+          RECTANGLE "#996536" 36x36 fill 0.6000,0.3961,0.2118
+          TEXT "996536" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 9" 36x100 VERTICAL/2
+          RECTANGLE "#bb7125" 36x36 fill 0.7333,0.4431,0.1451
+          TEXT "BB7125" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 10" 36x100 VERTICAL/2
+          RECTANGLE "#da9353" 36x36 fill 0.8549,0.5765,0.3255
+          TEXT "DA9353" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 11" 36x100 VERTICAL/2
+          RECTANGLE "#f2b988" 36x36 fill 0.9490,0.7255,0.5333
+          TEXT "F2B988" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 12" 36x100 VERTICAL/2
+          RECTANGLE "#ffdfbc" 36x36 fill 1.0000,0.8745,0.7373
+          TEXT "FFDFBC" Regular 7 fill 0.6000,0.6000,0.6000
+    FRAME "Ivory Buff Scale" 100x100 VERTICAL/4
+      TEXT "SECONDARY" Bold 10 fill 0.9000,0.9000,0.9000
+      TEXT "Teul OKLCH v3 · sRGB" Regular 7 fill 0.9000,0.9000,0.9000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 36x100 VERTICAL/2
+          RECTANGLE "#030303" 36x36 fill 0.0118,0.0118,0.0118
+          TEXT "030303" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 2" 36x100 VERTICAL/2
+          RECTANGLE "#161514" 36x36 fill 0.0863,0.0824,0.0784
+          TEXT "161514" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 3" 36x100 VERTICAL/2
+          RECTANGLE "#2e2c28" 36x36 fill 0.1804,0.1725,0.1569
+          TEXT "2E2C28" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 4" 36x100 VERTICAL/2
+          RECTANGLE "#48453e" 36x36 fill 0.2824,0.2706,0.2431
+          TEXT "48453E" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 5" 36x100 VERTICAL/2
+          RECTANGLE "#645f55" 36x36 fill 0.3922,0.3725,0.3333
+          TEXT "645F55" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 6" 36x100 VERTICAL/2
+          RECTANGLE "#827b6b" 36x36 fill 0.5098,0.4824,0.4196
+          TEXT "827B6B" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 7" 36x100 VERTICAL/2
+          RECTANGLE "#a39780" 36x36 fill 0.6392,0.5922,0.5020
+          TEXT "A39780" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 8" 36x100 VERTICAL/2
+          RECTANGLE "#c6b593" 36x36 fill 0.7765,0.7098,0.5765
+          TEXT "C6B593" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 9" 36x100 VERTICAL/2
+          RECTANGLE "#ebd3a2" 36x36 fill 0.9216,0.8275,0.6353
+          TEXT "EBD3A2" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 10" 36x100 VERTICAL/2
+          RECTANGLE "#f6dfb2" 36x36 fill 0.9647,0.8745,0.6980
+          TEXT "F6DFB2" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 11" 36x100 VERTICAL/2
+          RECTANGLE "#feecc9" 36x36 fill 0.9961,0.9255,0.7882
+          TEXT "FEECC9" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 12" 36x100 VERTICAL/2
+          RECTANGLE "#fff9df" 36x36 fill 1.0000,0.9765,0.8745
+          TEXT "FFF9DF" Regular 7 fill 0.6000,0.6000,0.6000
+    FRAME "Olive Green Scale" 100x100 VERTICAL/4
+      TEXT "TERTIARY" Bold 10 fill 0.9000,0.9000,0.9000
+      TEXT "Teul OKLCH v3 · sRGB" Regular 7 fill 0.9000,0.9000,0.9000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 36x100 VERTICAL/2
+          RECTANGLE "#030303" 36x36 fill 0.0118,0.0118,0.0118
+          TEXT "030303" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 2" 36x100 VERTICAL/2
+          RECTANGLE "#0c0c0a" 36x36 fill 0.0471,0.0471,0.0392
+          TEXT "0C0C0A" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 3" 36x100 VERTICAL/2
+          RECTANGLE "#181815" 36x36 fill 0.0941,0.0941,0.0824
+          TEXT "181815" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 4" 36x100 VERTICAL/2
+          RECTANGLE "#24251f" 36x36 fill 0.1412,0.1451,0.1216
+          TEXT "24251F" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 5" 36x100 VERTICAL/2
+          RECTANGLE "#313329" 36x36 fill 0.1922,0.2000,0.1608
+          TEXT "313329" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 6" 36x100 VERTICAL/2
+          RECTANGLE "#3f4132" 36x36 fill 0.2471,0.2549,0.1961
+          TEXT "3F4132" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 7" 36x100 VERTICAL/2
+          RECTANGLE "#4d5139" 36x36 fill 0.3020,0.3176,0.2235
+          TEXT "4D5139" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 8" 36x100 VERTICAL/2
+          RECTANGLE "#5c603f" 36x36 fill 0.3608,0.3765,0.2471
+          TEXT "5C603F" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 9" 36x100 VERTICAL/2
+          RECTANGLE "#6b7140" 36x36 fill 0.4196,0.4431,0.2510
+          TEXT "6B7140" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 10" 36x100 VERTICAL/2
+          RECTANGLE "#92986a" 36x36 fill 0.5725,0.5961,0.4157
+          TEXT "92986A" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 11" 36x100 VERTICAL/2
+          RECTANGLE "#bbc19c" 36x36 fill 0.7333,0.7569,0.6118
+          TEXT "BBC19C" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 12" 36x100 VERTICAL/2
+          RECTANGLE "#e7ebd0" 36x36 fill 0.9059,0.9216,0.8157
+          TEXT "E7EBD0" Regular 7 fill 0.6000,0.6000,0.6000
+    FRAME "Slate Color Scale" 100x100 VERTICAL/4
+      TEXT "ACCENT" Bold 10 fill 0.9000,0.9000,0.9000
+      TEXT "Teul OKLCH v3 · sRGB" Regular 7 fill 0.9000,0.9000,0.9000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 36x100 VERTICAL/2
+          RECTANGLE "#030303" 36x36 fill 0.0118,0.0118,0.0118
+          TEXT "030303" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 2" 36x100 VERTICAL/2
+          RECTANGLE "#080808" 36x36 fill 0.0314,0.0314,0.0314
+          TEXT "080808" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 3" 36x100 VERTICAL/2
+          RECTANGLE "#0e1010" 36x36 fill 0.0549,0.0627,0.0627
+          TEXT "0E1010" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 4" 36x100 VERTICAL/2
+          RECTANGLE "#151718" 36x36 fill 0.0824,0.0902,0.0941
+          TEXT "151718" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 5" 36x100 VERTICAL/2
+          RECTANGLE "#1c2021" 36x36 fill 0.1098,0.1255,0.1294
+          TEXT "1C2021" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 6" 36x100 VERTICAL/2
+          RECTANGLE "#23282b" 36x36 fill 0.1373,0.1569,0.1686
+          TEXT "23282B" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 7" 36x100 VERTICAL/2
+          RECTANGLE "#293235" 36x36 fill 0.1608,0.1961,0.2078
+          TEXT "293235" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 8" 36x100 VERTICAL/2
+          RECTANGLE "#2f3b40" 36x36 fill 0.1843,0.2314,0.2510
+          TEXT "2F3B40" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 9" 36x100 VERTICAL/2
+          RECTANGLE "#34454c" 36x36 fill 0.2039,0.2706,0.2980
+          TEXT "34454C" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 10" 36x100 VERTICAL/2
+          RECTANGLE "#67787f" 36x36 fill 0.4039,0.4706,0.4980
+          TEXT "67787F" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 11" 36x100 VERTICAL/2
+          RECTANGLE "#a1afb5" 36x36 fill 0.6314,0.6863,0.7098
+          TEXT "A1AFB5" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 12" 36x100 VERTICAL/2
+          RECTANGLE "#dfeaee" 36x36 fill 0.8745,0.9176,0.9333
+          TEXT "DFEAEE" Regular 7 fill 0.6000,0.6000,0.6000
+    FRAME "Sand Scale" 100x100 VERTICAL/4
+      TEXT "NEUTRAL" Bold 10 fill 0.9000,0.9000,0.9000
+      TEXT "Radix Colors · sRGB" Regular 7 fill 0.9000,0.9000,0.9000
+      FRAME "Swatches" 100x100 HORIZONTAL/2
+        FRAME "Step 1" 36x100 VERTICAL/2
+          RECTANGLE "#111110" 36x36 fill 0.0667,0.0667,0.0627
+          TEXT "111110" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 2" 36x100 VERTICAL/2
+          RECTANGLE "#191918" 36x36 fill 0.0980,0.0980,0.0941
+          TEXT "191918" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 3" 36x100 VERTICAL/2
+          RECTANGLE "#222221" 36x36 fill 0.1333,0.1333,0.1294
+          TEXT "222221" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 4" 36x100 VERTICAL/2
+          RECTANGLE "#2a2a28" 36x36 fill 0.1647,0.1647,0.1569
+          TEXT "2A2A28" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 5" 36x100 VERTICAL/2
+          RECTANGLE "#31312e" 36x36 fill 0.1922,0.1922,0.1804
+          TEXT "31312E" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 6" 36x100 VERTICAL/2
+          RECTANGLE "#3b3a37" 36x36 fill 0.2314,0.2275,0.2157
+          TEXT "3B3A37" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 7" 36x100 VERTICAL/2
+          RECTANGLE "#494844" 36x36 fill 0.2863,0.2824,0.2667
+          TEXT "494844" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 8" 36x100 VERTICAL/2
+          RECTANGLE "#62605b" 36x36 fill 0.3843,0.3765,0.3569
+          TEXT "62605B" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 9" 36x100 VERTICAL/2
+          RECTANGLE "#6f6d66" 36x36 fill 0.4353,0.4275,0.4000
+          TEXT "6F6D66" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 10" 36x100 VERTICAL/2
+          RECTANGLE "#7c7b74" 36x36 fill 0.4863,0.4824,0.4549
+          TEXT "7C7B74" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 11" 36x100 VERTICAL/2
+          RECTANGLE "#b5b3ad" 36x36 fill 0.7098,0.7020,0.6784
+          TEXT "B5B3AD" Regular 7 fill 0.6000,0.6000,0.6000
+        FRAME "Step 12" 36x100 VERTICAL/2
+          RECTANGLE "#eeeeec" 36x36 fill 0.9333,0.9333,0.9255
+          TEXT "EEEEEC" Regular 7 fill 0.6000,0.6000,0.6000"
+`;

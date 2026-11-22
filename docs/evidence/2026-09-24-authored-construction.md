@@ -1,0 +1,50 @@
+# Family construction and complete application assessment
+
+TASK-005 extends the candidate engine with source-preserving construction, distinct catalog providers and complete application gates. It does not establish owner approval or Figma-host acceptance. Production remains disabled and every new result retains `qualified: false`.
+
+## What changed
+
+The engine now fills only explicitly permitted scale gaps at their authored positions, preserves multiple scales within a family and keeps each requested mode separate. New source-derived scales use the existing color constructor with exact source pins. Missing source values, incompatible pins and unpermitted additions return explicit failures.
+
+Wada contributes whole documented combinations, Werner contributes individual references, and Radix contributes unchanged twelve-step families. Their source identities and actual influence survive materialization. Generated values carry their construction and source bindings; source colors retain native channels and alpha rather than being rounded to display hex.
+
+A direction is assessed against complete applications: actual paints, backgrounds, states, pair thresholds, chart counts and exact locks. Failed requirements exclude it before ranking. The batch runner compares complete outputs under one brief, returning at most three materially different feasible directions. Preferred interaction states cannot hide other permitted combinations: the bounded fallback search evaluates coherent alternatives through the same complete gates and reports truncation honestly.
+
+## Acceptance evidence
+
+| Criterion | Executed proof                                                                                                            | Result and limit                                                                                                                                                                                                                                                                                                                    |
+| --------- | ------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AC-005    | Proposal, construction and executor apply/extend tests; original-source versus working-proposal assessments               | Apply cannot add values or edits. Extension requires explicit permission and fresh review of affected rules. The original source stays inspectable. The designer-facing refinement workflow follows in TASK-006.                                                                                                                    |
+| AC-006    | Multi-anchor/mode tests, source-derived planner tests, related-scale tests and independently inspected scale/curve images | Fourteen original pins and ten generated gaps remain separate across four Day/Night panels. Native values, alpha, slot positions, partner relationships and incompatible cases are checked.                                                                                                                                         |
+| AC-007    | Catalog retrieval/materialization and source-ablation tests; independently inspected actual catalog applications          | Whole Wada combination, one Werner reference and all twelve Radix steps per requested mode reach 34 applications and 68 paints. Removing each provider blocks its proposal without changing remaining providers. Minimum checked pair contrast is 5.164139. Historical approximations and proposed adaptations retain their labels. |
+| AC-008    | Application requirements, complete composition, authored candidate, interaction and batch-run suites                      | Missing uses/states/modes, reduced counts, weakened contrast, wrong grounds, impossible locks and incomplete candidates cannot rank as feasible. Alternatives remain bounded and cancellation returns no partial candidate.                                                                                                         |
+| AC-014    | Frozen 100-color/50-rule/two-mode workload, independent receipt audit and separate fresh build budgets                    | Attempt 1 failed; attempt 2 passed narrowly; final TASK-005 source passes at 1,885.33 ms p95 and 139.04 ms maximum cancellation with unchanged completed output. See the [performance ledger](2026-09-24-authoring-performance.md). The TASK-008 integrated repetition remains required.                                            |
+
+The synthetic visual reviews establish exact technical behavior and inspectable construction. They do not substitute for the frozen real-brand evaluation or human judgment of design quality.
+
+## Verification and independent review
+
+Before final review repairs, the complete Node 22 suite passed 2,291 tests across 129 files. After the final source fixes, 113 affected authoring tests passed on both Node 22.13.1 and Node 24.19.0, and the construction suite passed 29 tests on both runtimes. Whole-repository lint and typecheck pass. Final release gates remain in TASK-008.
+
+The benchmark driver adds retained bundle/input evidence and a separate cancellation-only input that forces actual interaction fallback enumeration. All six focused script tests pass on both supported runtimes, with none skipped. The warm workload and its review decisions are unchanged.
+
+Cross-runtime diagnostics distinguish source creation from replay. Regenerating the synthetic source formula on Node 24 changes 42 native channels by at most `2.22e-16`; its frozen review therefore correctly fails. The script regression instead supplies the exact serialized Node 22 source and plan to both runtimes. Both return the same native generation and selected paints. Thirty repeated computed contrast values differ by at most `1.78e-15`, changing 24 dependent hashes/IDs; raw cross-runtime receipt parity is not claimed. TASK-006 separates durable design identity from fresh execution receipts. These diagnostics change no source value, threshold or frozen review.
+
+Independent reviews checked the exact TASK-005 diff, including untracked modules and tests, against a 48-file manifest. The frozen diff SHA-256 is `d0e2b95b205eb462eae8e4ed8ac131da6e1dcaa7ffc1e88a6670dd39347f2e6a`. The review ownership record distinguishes modules authored by a reviewer from separate independent reviews of those modules.
+
+| Review     | Finding                                                                                    | Resolution                                                                                                                                                                                                |
+| ---------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Reuse      | Proposal and execution duplicated the shared inert JSON traversal                          | Reused the bounded helper, retaining 1,024-entry proposal arrays, 32,768-entry execution arrays, 1,024 object keys, 2 MiB, depth 24 and 100,000-node limits. Schema and authority checks remain local.    |
+| Quality    | A partial-scope exception rejected its original rule globally in the exposed working model | Added mode and context regression witnesses. Such exceptions now fail explicitly; full-scope replacement still requires paired, attributed rejection and acceptance. No implicit broadening is permitted. |
+| Quality    | A construction-result JSON round trip changed accepted source `-0` to `+0`                 | Detached only the escaping native source values and returned the otherwise freshly allocated result. Regression verifies signed channels/alpha, nested mutation isolation and stable replay hashes.       |
+| Efficiency | No additional material finding                                                             | Independent arithmetic, workload, stage and receipt checks preserve the narrow performance conclusion and missing-artifact limitation.                                                                    |
+
+The follow-up independent review reconstructed the frozen source files from the reviewed diff before comparing the repairs. It found no remaining material issue in those deltas. Scope/authority checks, cancellation, source hashes and legacy outputs remain enforced.
+
+A further reviewed optimization skips draft reconstruction and adoption reprobing for a proposal with no source-structure changes. The source has already passed full parsing; all new/stale review data is still validated and the returned working model remains detached. Changed proposals retain the original invalidation path. The 113 affected tests passed again on both runtimes before the final measurement.
+
+Private technical evidence lives under `implementation-baseline/task005/` in the task evidence directory: `synthetic-scales-v1`, `catalog-ablation-v1`, `relationship-replay-v1`, `model-snapshot-reuse-v1`, `simplify-review-v1` and `performance-v1`. The exact source/preview identities are recorded there. No private guideline assets or donor values were added to public fixtures.
+
+## Remaining gates
+
+TASK-006 adds refinement and acknowledged recipe storage. TASK-007 binds reviewed output to preview/export/native geometry and the existing creation safeguards. TASK-008 performs the sealed evaluation, final Node 22/24 release gates, artifact-bound review and owner packet. No source Figma writes, hosted release or owner approval occurred in this task.

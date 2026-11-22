@@ -1,0 +1,2 @@
+# Preserve the verbatim upstream license text, including its original spacing.
+APCA_LICENSE.md -whitespace

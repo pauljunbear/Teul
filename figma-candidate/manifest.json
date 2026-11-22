@@ -1,0 +1,15 @@
+{
+  "name": "Teul Candidate",
+  "id": "1289773781827405727",
+  "api": "1.0.0",
+  "main": "dist/code.js",
+  "ui": "dist/ui.html",
+  "documentAccess": "dynamic-page",
+  "permissions": ["teamlibrary"],
+  "networkAccess": {
+    "allowedDomains": ["none"]
+  },
+  "capabilities": [],
+  "enableProposedApi": false,
+  "editorType": ["figma"]
+}

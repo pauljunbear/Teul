@@ -1,0 +1,584 @@
+{
+  "type": "generate-color-system",
+  "requestId": "color-system-1795283256455-1",
+  "createStyles": true,
+  "createVariables": true,
+  "collisionPolicy": "cancel",
+  "config": {
+    "sourceColors": [
+      { "hex": "#bb7125", "name": "Raw Sienna" },
+      { "hex": "#f37f94", "name": "Eosine Pink" },
+      { "hex": "#c2ae93", "name": "Ecru" },
+      { "hex": "#c0a9b3", "name": "Grayish Lavender - B" }
+    ],
+    "roleAssignments": [
+      { "hex": "#bb7125", "name": "Raw Sienna", "role": "primary", "roles": ["primary"] },
+      { "hex": "#f37f94", "name": "Eosine Pink", "role": "secondary", "roles": ["secondary"] },
+      { "hex": "#c2ae93", "name": "Ecru", "role": "tertiary", "roles": ["tertiary"] },
+      { "hex": "#c0a9b3", "name": "Grayish Lavender - B", "role": "accent", "roles": ["accent"] }
+    ],
+    "scaleMethod": "custom",
+    "neutralFamily": "auto",
+    "detailLevel": "detailed",
+    "includeDarkMode": true,
+    "systemName": "Raw Sienna Palette, Set 19",
+    "documentColorProfile": "srgb"
+  },
+  "scales": {
+    "systemName": "Raw Sienna Palette, Set 19",
+    "documentColorProfile": "srgb",
+    "detailLevel": "detailed",
+    "includeDarkMode": true,
+    "scaleMethod": "custom",
+    "multiSelectMode": false,
+    "scales": {
+      "light": {
+        "neutral": {
+          "name": "Sand",
+          "role": "Neutral",
+          "profile": "sRGB",
+          "method": "Radix Colors",
+          "mode": "light",
+          "sourceVersion": "3.0.0",
+          "sourceFamily": "sand",
+          "steps": [
+            { "step": 1, "hex": "#fdfdfc" },
+            { "step": 2, "hex": "#f9f9f8" },
+            { "step": 3, "hex": "#f1f0ef" },
+            { "step": 4, "hex": "#e9e8e6" },
+            { "step": 5, "hex": "#e2e1de" },
+            { "step": 6, "hex": "#dad9d6" },
+            { "step": 7, "hex": "#cfceca" },
+            { "step": 8, "hex": "#bcbbb5" },
+            { "step": 9, "hex": "#8d8d86" },
+            { "step": 10, "hex": "#82827c" },
+            { "step": 11, "hex": "#63635e" },
+            { "step": 12, "hex": "#21201c" }
+          ]
+        },
+        "primary": {
+          "name": "Raw Sienna",
+          "role": "Primary",
+          "steps": [
+            { "step": 1, "hex": "#fcfaf8" },
+            { "step": 2, "hex": "#eeeae7" },
+            { "step": 3, "hex": "#e2dad3" },
+            { "step": 4, "hex": "#d8cabf" },
+            { "step": 5, "hex": "#cebaaa" },
+            { "step": 6, "hex": "#c6aa93" },
+            { "step": 7, "hex": "#c09877" },
+            { "step": 8, "hex": "#bc8657" },
+            { "step": 9, "hex": "#bb7125" },
+            { "step": 10, "hex": "#8d4c00" },
+            { "step": 11, "hex": "#5c2d00" },
+            { "step": 12, "hex": "#2f1100" }
+          ],
+          "profile": "sRGB",
+          "method": "Teul OKLCH v3",
+          "mode": "light",
+          "validation": {
+            "valid": true,
+            "anchorPreserved": true,
+            "finite": true,
+            "inSrgbGamut": true,
+            "monotonicLightness": true,
+            "monotonicRelativeLuminance": true,
+            "uniqueAdjacentSteps": true,
+            "requiredContrastPass": true,
+            "gamutMappedSteps": [10, 11, 12],
+            "contrast": [
+              {
+                "foregroundStep": 9,
+                "backgroundStep": 1,
+                "useCase": "Solid control on app background",
+                "minimumRatio": 3,
+                "required": false,
+                "ratio": 3.6659042197316896,
+                "pass": true
+              },
+              {
+                "foregroundStep": 11,
+                "backgroundStep": 1,
+                "useCase": "Body text on app background",
+                "minimumRatio": 4.5,
+                "required": true,
+                "ratio": 11.018690291532204,
+                "pass": true
+              },
+              {
+                "foregroundStep": 12,
+                "backgroundStep": 1,
+                "useCase": "Enhanced text on app background",
+                "minimumRatio": 7,
+                "required": true,
+                "ratio": 16.79267648159672,
+                "pass": true
+              }
+            ],
+            "issues": []
+          }
+        },
+        "secondary": {
+          "name": "Eosine Pink",
+          "role": "Secondary",
+          "steps": [
+            { "step": 1, "hex": "#fcf9f9" },
+            { "step": 2, "hex": "#f4eeee" },
+            { "step": 3, "hex": "#eee1e3" },
+            { "step": 4, "hex": "#ead5d7" },
+            { "step": 5, "hex": "#e7c7cb" },
+            { "step": 6, "hex": "#e5b9bf" },
+            { "step": 7, "hex": "#e7a9b1" },
+            { "step": 8, "hex": "#eb96a3" },
+            { "step": 9, "hex": "#f37f94" },
+            { "step": 10, "hex": "#b34f63" },
+            { "step": 11, "hex": "#712939" },
+            { "step": 12, "hex": "#350613" }
+          ],
+          "profile": "sRGB",
+          "method": "Teul OKLCH v3",
+          "mode": "light",
+          "validation": {
+            "valid": true,
+            "anchorPreserved": true,
+            "finite": true,
+            "inSrgbGamut": true,
+            "monotonicLightness": true,
+            "monotonicRelativeLuminance": true,
+            "uniqueAdjacentSteps": true,
+            "requiredContrastPass": true,
+            "gamutMappedSteps": [],
+            "contrast": [
+              {
+                "foregroundStep": 9,
+                "backgroundStep": 1,
+                "useCase": "Solid control on app background",
+                "minimumRatio": 3,
+                "required": false,
+                "ratio": 2.424041814237518,
+                "pass": false
+              },
+              {
+                "foregroundStep": 11,
+                "backgroundStep": 1,
+                "useCase": "Body text on app background",
+                "minimumRatio": 4.5,
+                "required": true,
+                "ratio": 9.650348099715586,
+                "pass": true
+              },
+              {
+                "foregroundStep": 12,
+                "backgroundStep": 1,
+                "useCase": "Enhanced text on app background",
+                "minimumRatio": 7,
+                "required": true,
+                "ratio": 16.899867869729434,
+                "pass": true
+              }
+            ],
+            "issues": []
+          }
+        },
+        "tertiary": {
+          "name": "Ecru",
+          "role": "Tertiary",
+          "steps": [
+            { "step": 1, "hex": "#fafaf9" },
+            { "step": 2, "hex": "#f2f0ef" },
+            { "step": 3, "hex": "#e9e7e4" },
+            { "step": 4, "hex": "#e1ded9" },
+            { "step": 5, "hex": "#d9d4cd" },
+            { "step": 6, "hex": "#d2cbc1" },
+            { "step": 7, "hex": "#ccc1b3" },
+            { "step": 8, "hex": "#c6b8a4" },
+            { "step": 9, "hex": "#c2ae93" },
+            { "step": 10, "hex": "#897860" },
+            { "step": 11, "hex": "#524635" },
+            { "step": 12, "hex": "#21190e" }
+          ],
+          "profile": "sRGB",
+          "method": "Teul OKLCH v3",
+          "mode": "light",
+          "validation": {
+            "valid": true,
+            "anchorPreserved": true,
+            "finite": true,
+            "inSrgbGamut": true,
+            "monotonicLightness": true,
+            "monotonicRelativeLuminance": true,
+            "uniqueAdjacentSteps": true,
+            "requiredContrastPass": true,
+            "gamutMappedSteps": [],
+            "contrast": [
+              {
+                "foregroundStep": 9,
+                "backgroundStep": 1,
+                "useCase": "Solid control on app background",
+                "minimumRatio": 3,
+                "required": false,
+                "ratio": 2.058113250751095,
+                "pass": false
+              },
+              {
+                "foregroundStep": 11,
+                "backgroundStep": 1,
+                "useCase": "Body text on app background",
+                "minimumRatio": 4.5,
+                "required": true,
+                "ratio": 8.79477066812918,
+                "pass": true
+              },
+              {
+                "foregroundStep": 12,
+                "backgroundStep": 1,
+                "useCase": "Enhanced text on app background",
+                "minimumRatio": 7,
+                "required": true,
+                "ratio": 16.6164899971249,
+                "pass": true
+              }
+            ],
+            "issues": []
+          }
+        },
+        "accent": {
+          "name": "Grayish Lavender - B",
+          "role": "Accent",
+          "steps": [
+            { "step": 1, "hex": "#fafafa" },
+            { "step": 2, "hex": "#f1f0f1" },
+            { "step": 3, "hex": "#e9e6e7" },
+            { "step": 4, "hex": "#e1dcde" },
+            { "step": 5, "hex": "#d9d3d5" },
+            { "step": 6, "hex": "#d1c9cc" },
+            { "step": 7, "hex": "#cbbec4" },
+            { "step": 8, "hex": "#c5b4bb" },
+            { "step": 9, "hex": "#c0a9b3" },
+            { "step": 10, "hex": "#87737c" },
+            { "step": 11, "hex": "#514349" },
+            { "step": 12, "hex": "#20181c" }
+          ],
+          "profile": "sRGB",
+          "method": "Teul OKLCH v3",
+          "mode": "light",
+          "validation": {
+            "valid": true,
+            "anchorPreserved": true,
+            "finite": true,
+            "inSrgbGamut": true,
+            "monotonicLightness": true,
+            "monotonicRelativeLuminance": true,
+            "uniqueAdjacentSteps": true,
+            "requiredContrastPass": true,
+            "gamutMappedSteps": [],
+            "contrast": [
+              {
+                "foregroundStep": 9,
+                "backgroundStep": 1,
+                "useCase": "Solid control on app background",
+                "minimumRatio": 3,
+                "required": false,
+                "ratio": 2.10291568349558,
+                "pass": false
+              },
+              {
+                "foregroundStep": 11,
+                "backgroundStep": 1,
+                "useCase": "Body text on app background",
+                "minimumRatio": 4.5,
+                "required": true,
+                "ratio": 8.946216533825615,
+                "pass": true
+              },
+              {
+                "foregroundStep": 12,
+                "backgroundStep": 1,
+                "useCase": "Enhanced text on app background",
+                "minimumRatio": 7,
+                "required": true,
+                "ratio": 16.643657540921893,
+                "pass": true
+              }
+            ],
+            "issues": []
+          }
+        }
+      },
+      "dark": {
+        "neutral": {
+          "name": "Sand",
+          "role": "Neutral",
+          "profile": "sRGB",
+          "method": "Radix Colors",
+          "mode": "dark",
+          "sourceVersion": "3.0.0",
+          "sourceFamily": "sand",
+          "steps": [
+            { "step": 1, "hex": "#111110" },
+            { "step": 2, "hex": "#191918" },
+            { "step": 3, "hex": "#222221" },
+            { "step": 4, "hex": "#2a2a28" },
+            { "step": 5, "hex": "#31312e" },
+            { "step": 6, "hex": "#3b3a37" },
+            { "step": 7, "hex": "#494844" },
+            { "step": 8, "hex": "#62605b" },
+            { "step": 9, "hex": "#6f6d66" },
+            { "step": 10, "hex": "#7c7b74" },
+            { "step": 11, "hex": "#b5b3ad" },
+            { "step": 12, "hex": "#eeeeec" }
+          ]
+        },
+        "primary": {
+          "name": "Raw Sienna",
+          "role": "Primary",
+          "steps": [
+            { "step": 1, "hex": "#040303" },
+            { "step": 2, "hex": "#100e0b" },
+            { "step": 3, "hex": "#211b17" },
+            { "step": 4, "hex": "#342a21" },
+            { "step": 5, "hex": "#49392c" },
+            { "step": 6, "hex": "#604834" },
+            { "step": 7, "hex": "#7b5738" },
+            { "step": 8, "hex": "#996536" },
+            { "step": 9, "hex": "#bb7125" },
+            { "step": 10, "hex": "#da9353" },
+            { "step": 11, "hex": "#f2b988" },
+            { "step": 12, "hex": "#ffdfbc" }
+          ],
+          "profile": "sRGB",
+          "method": "Teul OKLCH v3",
+          "mode": "dark",
+          "validation": {
+            "valid": true,
+            "anchorPreserved": true,
+            "finite": true,
+            "inSrgbGamut": true,
+            "monotonicLightness": true,
+            "monotonicRelativeLuminance": true,
+            "uniqueAdjacentSteps": true,
+            "requiredContrastPass": true,
+            "gamutMappedSteps": [12],
+            "contrast": [
+              {
+                "foregroundStep": 9,
+                "backgroundStep": 1,
+                "useCase": "Solid control on app background",
+                "minimumRatio": 3,
+                "required": false,
+                "ratio": 5.396480986542037,
+                "pass": true
+              },
+              {
+                "foregroundStep": 11,
+                "backgroundStep": 1,
+                "useCase": "Body text on app background",
+                "minimumRatio": 4.5,
+                "required": true,
+                "ratio": 11.83964916321274,
+                "pass": true
+              },
+              {
+                "foregroundStep": 12,
+                "backgroundStep": 1,
+                "useCase": "Enhanced text on app background",
+                "minimumRatio": 7,
+                "required": true,
+                "ratio": 16.21697165255342,
+                "pass": true
+              }
+            ],
+            "issues": []
+          }
+        },
+        "secondary": {
+          "name": "Eosine Pink",
+          "role": "Secondary",
+          "steps": [
+            { "step": 1, "hex": "#040303" },
+            { "step": 2, "hex": "#141011" },
+            { "step": 3, "hex": "#2a2122" },
+            { "step": 4, "hex": "#433234" },
+            { "step": 5, "hex": "#5e4448" },
+            { "step": 6, "hex": "#7c565b" },
+            { "step": 7, "hex": "#9f666f" },
+            { "step": 8, "hex": "#c67582" },
+            { "step": 9, "hex": "#f37f94" },
+            { "step": 10, "hex": "#ff9cae" },
+            { "step": 11, "hex": "#ffc6cf" },
+            { "step": 12, "hex": "#ffecf0" }
+          ],
+          "profile": "sRGB",
+          "method": "Teul OKLCH v3",
+          "mode": "dark",
+          "validation": {
+            "valid": true,
+            "anchorPreserved": true,
+            "finite": true,
+            "inSrgbGamut": true,
+            "monotonicLightness": true,
+            "monotonicRelativeLuminance": true,
+            "uniqueAdjacentSteps": true,
+            "requiredContrastPass": true,
+            "gamutMappedSteps": [10, 11, 12],
+            "contrast": [
+              {
+                "foregroundStep": 9,
+                "backgroundStep": 1,
+                "useCase": "Solid control on app background",
+                "minimumRatio": 3,
+                "required": false,
+                "ratio": 8.116029156021296,
+                "pass": true
+              },
+              {
+                "foregroundStep": 11,
+                "backgroundStep": 1,
+                "useCase": "Body text on app background",
+                "minimumRatio": 4.5,
+                "required": true,
+                "ratio": 13.958412216647773,
+                "pass": true
+              },
+              {
+                "foregroundStep": 12,
+                "backgroundStep": 1,
+                "useCase": "Enhanced text on app background",
+                "minimumRatio": 7,
+                "required": true,
+                "ratio": 18.154384461540033,
+                "pass": true
+              }
+            ],
+            "issues": []
+          }
+        },
+        "tertiary": {
+          "name": "Ecru",
+          "role": "Tertiary",
+          "steps": [
+            { "step": 1, "hex": "#030303" },
+            { "step": 2, "hex": "#131211" },
+            { "step": 3, "hex": "#262523" },
+            { "step": 4, "hex": "#3c3936" },
+            { "step": 5, "hex": "#534f49" },
+            { "step": 6, "hex": "#6c665d" },
+            { "step": 7, "hex": "#877d70" },
+            { "step": 8, "hex": "#a39583" },
+            { "step": 9, "hex": "#c2ae93" },
+            { "step": 10, "hex": "#d9c6ad" },
+            { "step": 11, "hex": "#eedfcb" },
+            { "step": 12, "hex": "#fff8ea" }
+          ],
+          "profile": "sRGB",
+          "method": "Teul OKLCH v3",
+          "mode": "dark",
+          "validation": {
+            "valid": true,
+            "anchorPreserved": true,
+            "finite": true,
+            "inSrgbGamut": true,
+            "monotonicLightness": true,
+            "monotonicRelativeLuminance": true,
+            "uniqueAdjacentSteps": true,
+            "requiredContrastPass": true,
+            "gamutMappedSteps": [12],
+            "contrast": [
+              {
+                "foregroundStep": 9,
+                "backgroundStep": 1,
+                "useCase": "Solid control on app background",
+                "minimumRatio": 3,
+                "required": false,
+                "ratio": 9.594866307425926,
+                "pass": true
+              },
+              {
+                "foregroundStep": 11,
+                "backgroundStep": 1,
+                "useCase": "Body text on app background",
+                "minimumRatio": 4.5,
+                "required": true,
+                "ratio": 15.765738810551525,
+                "pass": true
+              },
+              {
+                "foregroundStep": 12,
+                "backgroundStep": 1,
+                "useCase": "Enhanced text on app background",
+                "minimumRatio": 7,
+                "required": true,
+                "ratio": 19.51172321964789,
+                "pass": true
+              }
+            ],
+            "issues": []
+          }
+        },
+        "accent": {
+          "name": "Grayish Lavender - B",
+          "role": "Accent",
+          "steps": [
+            { "step": 1, "hex": "#030303" },
+            { "step": 2, "hex": "#131212" },
+            { "step": 3, "hex": "#262425" },
+            { "step": 4, "hex": "#3c393a" },
+            { "step": 5, "hex": "#534e50" },
+            { "step": 6, "hex": "#6b6467" },
+            { "step": 7, "hex": "#867b7f" },
+            { "step": 8, "hex": "#a29299" },
+            { "step": 9, "hex": "#c0a9b3" },
+            { "step": 10, "hex": "#d7c2cb" },
+            { "step": 11, "hex": "#eddce3" },
+            { "step": 12, "hex": "#fff6fc" }
+          ],
+          "profile": "sRGB",
+          "method": "Teul OKLCH v3",
+          "mode": "dark",
+          "validation": {
+            "valid": true,
+            "anchorPreserved": true,
+            "finite": true,
+            "inSrgbGamut": true,
+            "monotonicLightness": true,
+            "monotonicRelativeLuminance": true,
+            "uniqueAdjacentSteps": true,
+            "requiredContrastPass": true,
+            "gamutMappedSteps": [12],
+            "contrast": [
+              {
+                "foregroundStep": 9,
+                "backgroundStep": 1,
+                "useCase": "Solid control on app background",
+                "minimumRatio": 3,
+                "required": false,
+                "ratio": 9.396293291657459,
+                "pass": true
+              },
+              {
+                "foregroundStep": 11,
+                "backgroundStep": 1,
+                "useCase": "Body text on app background",
+                "minimumRatio": 4.5,
+                "required": true,
+                "ratio": 15.662161745619896,
+                "pass": true
+              },
+              {
+                "foregroundStep": 12,
+                "backgroundStep": 1,
+                "useCase": "Enhanced text on app background",
+                "minimumRatio": 7,
+                "required": true,
+                "ratio": 19.48510653488603,
+                "pass": true
+              }
+            ],
+            "issues": []
+          }
+        }
+      }
+    },
+    "colorCounts": { "primary": 1, "secondary": 1, "tertiary": 1, "accent": 1 }
+  }
+}

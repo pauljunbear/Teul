@@ -1,0 +1,100 @@
+{
+  "capturedAt": "2026-08-21T12:00:00.000Z",
+  "scope": {
+    "kind": "current-file",
+    "usageScope": "current-page",
+    "selectedNodeIds": [],
+    "loadedPageIds": ["page-context"],
+    "excludedPageIds": [],
+    "coverage": "complete-supported-scope"
+  },
+  "documentProfile": "srgb",
+  "collections": [],
+  "variables": [],
+  "paintStyles": [
+    {
+      "styleId": "style-gradient",
+      "name": "Graphic/Gradient",
+      "description": "Structured gradient evidence.",
+      "paints": [
+        {
+          "order": 1,
+          "type": "GRADIENT_LINEAR",
+          "visible": true,
+          "opacity": 1,
+          "blendMode": "NORMAL",
+          "payload": {
+            "gradientStops": [
+              { "color": { "a": 1, "b": 0, "g": 0, "r": 1 }, "position": 0 },
+              { "color": { "a": 1, "b": 1, "g": 0, "r": 0 }, "position": 1 }
+            ],
+            "gradientTransform": [
+              [1, 0, 0],
+              [0, 1, 0]
+            ],
+            "type": "GRADIENT_LINEAR"
+          }
+        }
+      ],
+      "directDeclaration": null,
+      "governingEligibility": "unsupported",
+      "evidenceIds": ["e-style-gradient"]
+    },
+    {
+      "styleId": "style-translucent",
+      "name": "Overlay/Translucent",
+      "description": "Needs a rendered underlay.",
+      "paints": [
+        {
+          "order": 1,
+          "type": "SOLID",
+          "visible": true,
+          "opacity": 0.5,
+          "blendMode": "MULTIPLY",
+          "solidValue": { "colorSpace": "srgb", "components": [0.2, 0.4, 0.6], "alpha": 0.5 },
+          "payload": { "color": { "b": 0.6, "g": 0.4, "r": 0.2 }, "type": "SOLID" }
+        }
+      ],
+      "directDeclaration": null,
+      "governingEligibility": "context-dependent",
+      "evidenceIds": ["e-style-translucent"]
+    }
+  ],
+  "paletteStructures": [],
+  "usageEvidence": [],
+  "unsupported": [
+    {
+      "gapId": "gap-gradient",
+      "kind": "unsupported-paint",
+      "status": "unsupported",
+      "summary": "Gradient remains structured evidence and cannot govern one solid color.",
+      "evidenceIds": ["e-style-gradient"],
+      "consumerIds": ["color-math", "source-policy"]
+    },
+    {
+      "gapId": "gap-translucent",
+      "kind": "context-dependent-color",
+      "status": "unsupported",
+      "summary": "Translucent blended paint needs a rendered underlay.",
+      "evidenceIds": ["e-style-translucent"],
+      "consumerIds": ["accessibility", "color-math"]
+    }
+  ],
+  "evidence": [
+    {
+      "evidenceId": "e-style-gradient",
+      "kind": "figma-resource",
+      "locator": "style:style-gradient"
+    },
+    {
+      "evidenceId": "e-style-translucent",
+      "kind": "figma-resource",
+      "locator": "style:style-translucent"
+    }
+  ],
+  "enabledLibraryDescriptors": [],
+  "libraryBoundaryNote": "No enabled-library metadata was requested.",
+  "scannedNodeCount": 0,
+  "cancelled": false,
+  "partial": false
+}
